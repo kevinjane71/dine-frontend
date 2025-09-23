@@ -115,116 +115,116 @@ const Login = () => {
 
   return (
     <div style={{ 
-      minHeight: '100vh', 
-      backgroundColor: '#fef7f0',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
+      minHeight: "100vh", 
+      backgroundColor: "#fef7f0",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px"
     }}>
       <div style={{
-        backgroundColor: 'white',
-        borderRadius: '24px',
-        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-        width: '100%',
-        maxWidth: '440px',
-        overflow: 'hidden',
-        border: '1px solid #fed7aa'
+        backgroundColor: "white",
+        borderRadius: "24px",
+        boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+        width: "100%",
+        maxWidth: "440px",
+        overflow: "hidden",
+        border: "1px solid #fed7aa"
       }}>
         {/* Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
-          padding: '32px 24px',
-          textAlign: 'center',
-          color: 'white'
+          background: "linear-gradient(135deg, #e53e3e, #dc2626)",
+          padding: "32px 24px",
+          textAlign: "center",
+          color: "white"
         }}>
           <div style={{
-            width: '80px',
-            height: '80px',
-            backgroundColor: 'rgba(255,255,255,0.2)',
-            borderRadius: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px',
-            backdropFilter: 'blur(10px)'
+            width: "80px",
+            height: "80px",
+            backgroundColor: "rgba(255,255,255,0.2)",
+            borderRadius: "20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 16px",
+            backdropFilter: "blur(10px)"
           }}>
             <FaUtensils size={36} />
           </div>
           <h1 style={{
-            fontSize: '28px',
-            fontWeight: 'bold',
-            margin: '0 0 8px 0'
+            fontSize: "28px",
+            fontWeight: "bold",
+            margin: "0 0 8px 0"
           }}>
             Dine POS
           </h1>
           <p style={{
-            fontSize: '16px',
+            fontSize: "16px",
             opacity: 0.9,
             margin: 0
           }}>
             Restaurant Management System
           </p>
         </div>
-
+  
         {/* Login Form */}
-        <div style={{ padding: '32px 24px' }}>
-          {step === 'phone' ? (
+        <div style={{ padding: "32px 24px" }}>
+          {step === "phone" ? (
             <>
-              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <div style={{ textAlign: "center", marginBottom: "32px" }}>
                 <div style={{
-                  width: '60px',
-                  height: '60px',
-                  backgroundColor: '#fef7f0',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 16px',
-                  border: '2px solid #fed7aa'
+                  width: "60px",
+                  height: "60px",
+                  backgroundColor: "#fef7f0",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 16px",
+                  border: "2px solid #fed7aa"
                 }}>
-                  <FaPhone size={24} style={{ color: '#e53e3e' }} />
+                  <FaPhone size={24} style={{ color: "#e53e3e" }} />
                 </div>
                 <h2 style={{
-                  fontSize: '24px',
-                  fontWeight: 'bold',
-                  color: '#1f2937',
-                  margin: '0 0 8px 0'
+                  fontSize: "24px",
+                  fontWeight: "bold",
+                  color: "#1f2937",
+                  margin: "0 0 8px 0"
                 }}>
                   Phone Login
                 </h2>
                 <p style={{
-                  color: '#6b7280',
+                  color: "#6b7280",
                   margin: 0,
-                  fontSize: '14px'
+                  fontSize: "14px"
                 }}>
                   Enter your phone number to receive an OTP
                 </p>
               </div>
-
+  
               <form onSubmit={handlePhoneSubmit}>
-                <div style={{ marginBottom: '24px' }}>
+                <div style={{ marginBottom: "24px" }}>
                   <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#374151',
-                    marginBottom: '8px'
+                    display: "block",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "#374151",
+                    marginBottom: "8px"
                   }}>
                     Phone Number
                   </label>
-                  <div style={{ position: 'relative' }}>
+                  <div style={{ position: "relative" }}>
                     <div style={{
-                      position: 'absolute',
-                      left: '16px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      color: '#6b7280',
-                      fontSize: '14px',
-                      fontWeight: '500'
+                      position: "absolute",
+                      left: "16px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      color: "#6b7280",
+                      fontSize: "14px",
+                      fontWeight: "500"
                     }}>
                       🇮🇳 +91
                     </div>
@@ -235,84 +235,84 @@ const Login = () => {
                       onChange={handlePhoneChange}
                       placeholder="Enter 10-digit number"
                       style={{
-                        width: '100%',
-                        paddingLeft: '80px',
-                        paddingRight: '16px',
-                        paddingTop: '16px',
-                        paddingBottom: '16px',
-                        border: '2px solid #e5e7eb',
-                        borderRadius: '12px',
-                        fontSize: '16px',
-                        outline: 'none',
-                        backgroundColor: '#fef7f0',
-                        transition: 'all 0.2s',
-                        letterSpacing: '1px'
+                        width: "100%",
+                        paddingLeft: "80px",
+                        paddingRight: "16px",
+                        paddingTop: "16px",
+                        paddingBottom: "16px",
+                        border: "2px solid #e5e7eb",
+                        borderRadius: "12px",
+                        fontSize: "16px",
+                        outline: "none",
+                        backgroundColor: "#fef7f0",
+                        transition: "all 0.2s",
+                        letterSpacing: "1px"
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#e53e3e';
-                        e.target.style.backgroundColor = 'white';
+                        e.target.style.borderColor = "#e53e3e";
+                        e.target.style.backgroundColor = "white";
                       }}
                       onBlur={(e) => {
-                        e.target.style.borderColor = '#e5e7eb';
-                        e.target.style.backgroundColor = '#fef7f0';
+                        e.target.style.borderColor = "#e5e7eb";
+                        e.target.style.backgroundColor = "#fef7f0";
                       }}
                     />
                   </div>
                   {phoneNumber && phoneNumber.length === 10 && (
                     <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      marginTop: '8px',
-                      color: '#10b981',
-                      fontSize: '12px',
-                      fontWeight: '500'
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      marginTop: "8px",
+                      color: "#10b981",
+                      fontSize: "12px",
+                      fontWeight: "500"
                     }}>
                       <FaCheck size={10} />
                       Valid phone number
                     </div>
                   )}
                 </div>
-
+  
                 {error && (
                   <div style={{
-                    backgroundColor: '#fef2f2',
-                    border: '1px solid #fecaca',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    marginBottom: '20px'
+                    backgroundColor: "#fef2f2",
+                    border: "1px solid #fecaca",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    marginBottom: "20px"
                   }}>
                     <p style={{
-                      color: '#dc2626',
-                      fontSize: '14px',
+                      color: "#dc2626",
+                      fontSize: "14px",
                       margin: 0,
-                      fontWeight: '500'
+                      fontWeight: "500"
                     }}>
                       {error}
                     </p>
                   </div>
                 )}
-
+  
                 <button
                   type="submit"
                   disabled={loading || phoneNumber.length !== 10}
                   style={{
-                    width: '100%',
+                    width: "100%",
                     background: phoneNumber.length === 10 && !loading
-                      ? 'linear-gradient(135deg, #e53e3e, #dc2626)'
-                      : '#d1d5db',
-                    color: 'white',
-                    padding: '16px',
-                    borderRadius: '12px',
-                    fontWeight: '700',
-                    fontSize: '16px',
-                    border: 'none',
-                    cursor: phoneNumber.length === 10 && !loading ? 'pointer' : 'not-allowed',
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
+                      ? "linear-gradient(135deg, #e53e3e, #dc2626)"
+                      : "#d1d5db",
+                    color: "white",
+                    padding: "16px",
+                    borderRadius: "12px",
+                    fontWeight: "700",
+                    fontSize: "16px",
+                    border: "none",
+                    cursor: phoneNumber.length === 10 && !loading ? "pointer" : "not-allowed",
+                    transition: "all 0.2s",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px"
                   }}
                 >
                   {loading ? (
@@ -320,51 +320,51 @@ const Login = () => {
                   ) : (
                     <FaArrowRight size={16} />
                   )}
-                  {loading ? 'Sending OTP...' : 'Send OTP'}
+                  {loading ? "Sending OTP..." : "Send OTP"}
                 </button>
               </form>
             </>
           ) : (
             <>
-              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <div style={{ textAlign: "center", marginBottom: "32px" }}>
                 <div style={{
-                  width: '60px',
-                  height: '60px',
-                  backgroundColor: '#fef7f0',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 16px',
-                  border: '2px solid #fed7aa'
+                  width: "60px",
+                  height: "60px",
+                  backgroundColor: "#fef7f0",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 16px",
+                  border: "2px solid #fed7aa"
                 }}>
-                  <FaKey size={24} style={{ color: '#e53e3e' }} />
+                  <FaKey size={24} style={{ color: "#e53e3e" }} />
                 </div>
                 <h2 style={{
-                  fontSize: '24px',
-                  fontWeight: 'bold',
-                  color: '#1f2937',
-                  margin: '0 0 8px 0'
+                  fontSize: "24px",
+                  fontWeight: "bold",
+                  color: "#1f2937",
+                  margin: "0 0 8px 0"
                 }}>
                   Enter OTP
                 </h2>
                 <p style={{
-                  color: '#6b7280',
+                  color: "#6b7280",
                   margin: 0,
-                  fontSize: '14px'
+                  fontSize: "14px"
                 }}>
                   We have sent a 4-digit code to +91 {phoneNumber}
                 </p>
               </div>
-
+  
               <form onSubmit={handleOtpSubmit}>
-                <div style={{ marginBottom: '24px' }}>
+                <div style={{ marginBottom: "24px" }}>
                   <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#374151',
-                    marginBottom: '8px'
+                    display: "block",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "#374151",
+                    marginBottom: "8px"
                   }}>
                     OTP Code
                   </label>
@@ -376,96 +376,96 @@ const Login = () => {
                     placeholder="1234"
                     maxLength="4"
                     style={{
-                      width: '100%',
-                      padding: '16px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '12px',
-                      fontSize: '24px',
-                      outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      transition: 'all 0.2s',
-                      letterSpacing: '8px',
-                      textAlign: 'center',
-                      fontWeight: 'bold'
+                      width: "100%",
+                      padding: "16px",
+                      border: "2px solid #e5e7eb",
+                      borderRadius: "12px",
+                      fontSize: "24px",
+                      outline: "none",
+                      backgroundColor: "#fef7f0",
+                      transition: "all 0.2s",
+                      letterSpacing: "8px",
+                      textAlign: "center",
+                      fontWeight: "bold"
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#e53e3e';
-                      e.target.style.backgroundColor = 'white';
+                      e.target.style.borderColor = "#e53e3e";
+                      e.target.style.backgroundColor = "white";
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = '#e5e7eb';
-                      e.target.style.backgroundColor = '#fef7f0';
+                      e.target.style.borderColor = "#e5e7eb";
+                      e.target.style.backgroundColor = "#fef7f0";
                     }}
                   />
                   <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginTop: '12px'
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginTop: "12px"
                   }}>
                     <div style={{
-                      fontSize: '12px',
-                      color: '#6b7280'
+                      fontSize: "12px",
+                      color: "#6b7280"
                     }}>
-                      For testing use: <strong style={{ color: '#e53e3e' }}>1234 </strong>
+                      For testing use: <strong style={{ color: "#e53e3e" }}>1234 </strong>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setStep('phone')}
+                      onClick={() => setStep("phone")}
                       style={{
-                        fontSize: '12px',
-                        color: '#e53e3e',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: '600',
-                        textDecoration: 'underline'
+                        fontSize: "12px",
+                        color: "#e53e3e",
+                        backgroundColor: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        fontWeight: "600",
+                        textDecoration: "underline"
                       }}
                     >
                       Change Number
                     </button>
                   </div>
                 </div>
-
+  
                 {error && (
                   <div style={{
-                    backgroundColor: '#fef2f2',
-                    border: '1px solid #fecaca',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    marginBottom: '20px'
+                    backgroundColor: "#fef2f2",
+                    border: "1px solid #fecaca",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    marginBottom: "20px"
                   }}>
                     <p style={{
-                      color: '#dc2626',
-                      fontSize: '14px',
+                      color: "#dc2626",
+                      fontSize: "14px",
                       margin: 0,
-                      fontWeight: '500'
+                      fontWeight: "500"
                     }}>
                       {error}
                     </p>
                   </div>
                 )}
-
+  
                 <button
                   type="submit"
                   disabled={loading || otp.length !== 4}
                   style={{
-                    width: '100%',
+                    width: "100%",
                     background: otp.length === 4 && !loading
-                      ? 'linear-gradient(135deg, #10b981, #059669)'
-                      : '#d1d5db',
-                    color: 'white',
-                    padding: '16px',
-                    borderRadius: '12px',
-                    fontWeight: '700',
-                    fontSize: '16px',
-                    border: 'none',
-                    cursor: otp.length === 4 && !loading ? 'pointer' : 'not-allowed',
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
+                      ? "linear-gradient(135deg, #10b981, #059669)"
+                      : "#d1d5db",
+                    color: "white",
+                    padding: "16px",
+                    borderRadius: "12px",
+                    fontWeight: "700",
+                    fontSize: "16px",
+                    border: "none",
+                    cursor: otp.length === 4 && !loading ? "pointer" : "not-allowed",
+                    transition: "all 0.2s",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px"
                   }}
                 >
                   {loading ? (
@@ -473,23 +473,23 @@ const Login = () => {
                   ) : (
                     <FaCheck size={16} />
                   )}
-                  {loading ? 'Verifying...' : 'Verify and Login'}
+                  {loading ? "Verifying..." : "Verify and Login"}
                 </button>
               </form>
             </>
           )}
         </div>
-
+  
         {/* Footer */}
         <div style={{
-          padding: '20px 24px',
-          backgroundColor: '#fef7f0',
-          borderTop: '1px solid #fed7aa',
-          textAlign: 'center'
+          padding: "20px 24px",
+          backgroundColor: "#fef7f0",
+          borderTop: "1px solid #fed7aa",
+          textAlign: "center"
         }}>
           <p style={{
-            fontSize: '12px',
-            color: '#6b7280',
+            fontSize: "12px",
+            color: "#6b7280",
             margin: 0
           }}>
             Secure login powered by OTP verification
@@ -497,7 +497,7 @@ const Login = () => {
         </div>
       </div>
     </div>
-  );
+  );  
 };
 
 export default Login;
