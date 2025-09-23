@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   FaHome, 
   FaUtensils, 
@@ -10,25 +10,50 @@ import {
   FaQrcode, 
   FaClipboardList, 
   FaTags,
-  FaChair 
+  FaChair,
+  FaSignOutAlt,
+  FaPrint
 } from 'react-icons/fa';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 const Navigation = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  
+  // Load restaurant data
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // This could be improved to fetch from API
+        setSelectedRestaurant({
+          name: 'Sample Restaurant',
+          phone: '+91 9876543210'
+        });
+      } catch (error) {
+        console.error('Error loading restaurant data:', error);
+      }
+    };
+    loadData();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('dine_cart');
+    localStorage.removeItem('dine_saved_order');
+    router.push('/login');
+  };
   
   const navItems = [
-    { id: 'pos', name: 'POS', icon: FaHome, href: '/', color: '#ef4444' },
+    { id: 'pos', name: 'Orders', icon: FaHome, href: '/', color: '#ef4444' },
+    { id: 'orders', name: 'History', icon: FaClipboardList, href: '/orders', color: '#f59e0b' },
     { id: 'tables', name: 'Tables', icon: FaChair, href: '/tables', color: '#3b82f6' },
     { id: 'menu', name: 'Menu', icon: FaUtensils, href: '/menu', color: '#10b981' },
-    { id: 'orders', name: 'Orders', icon: FaClipboardList, href: '/orders', color: '#f59e0b' },
-    { id: 'kot', name: 'Kitchen', icon: FaClipboardList, href: '/kot', color: '#f97316' },
     { id: 'analytics', name: 'Analytics', icon: FaChartBar, href: '/analytics', color: '#8b5cf6' },
-    { id: 'customers', name: 'Customers', icon: FaUsers, href: '/customers', color: '#06b6d4' },
-    { id: 'qr-menu', name: 'QR Menu', icon: FaQrcode, href: '/qr-menu', color: '#84cc16' },
-    { id: 'offers', name: 'Offers', icon: FaTags, href: '/offers', color: '#ec4899' },
-    { id: 'settings', name: 'Settings', icon: FaCog, href: '/settings', color: '#6b7280' },
+    { id: 'admin', name: 'Admin', icon: FaUsers, href: '/admin', color: '#ec4899' },
+    { id: 'kot', name: 'KOT', icon: FaPrint, href: '/kot', color: '#f97316' },
   ];
 
   return (
@@ -116,27 +141,72 @@ const Navigation = () => {
         
         {/* Right Side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {/* Restaurant Info */}
           <div style={{ textAlign: 'right' }}>
             <p style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
-              Restaurant Name
+              {selectedRestaurant?.name || 'Restaurant'}
             </p>
             <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>
-              📞 9034142334
+              📞 {selectedRestaurant?.phone || '+91 9876543210'}
             </p>
           </div>
-          <div style={{ 
-            width: '36px', 
-            height: '36px', 
-            background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
-            borderRadius: '50%', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            color: 'white', 
-            fontWeight: 'bold',
-            fontSize: '14px'
-          }}>
-            R
+
+          {/* User Menu */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* User Info */}
+            <div style={{
+              padding: '6px 12px',
+              backgroundColor: '#f3f4f6',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              <div style={{
+                width: '24px',
+                height: '24px',
+                backgroundColor: '#10b981',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <FaUsers size={12} color="white" />
+              </div>
+              <span style={{ fontSize: '12px', fontWeight: '600', color: '#374151' }}>
+                Waiter
+              </span>
+            </div>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: '8px 12px',
+                backgroundColor: '#fee2e2',
+                color: '#dc2626',
+                border: '1px solid #fecaca',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#fecaca';
+                e.target.style.borderColor = '#f87171';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#fee2e2';
+                e.target.style.borderColor = '#fecaca';
+              }}
+            >
+              <FaSignOutAlt size={12} />
+              Logout
+            </button>
           </div>
         </div>
       </div>

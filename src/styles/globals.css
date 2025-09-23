@@ -510,6 +510,10 @@ textarea {
   to { transform: rotate(360deg); }
 }
 
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 .fade-in {
   animation: fadeIn 0.3s ease-in-out;
 }

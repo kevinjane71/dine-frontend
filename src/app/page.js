@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   FaSearch, 
   FaShoppingCart, 
@@ -18,12 +18,25 @@ import {
   FaFire,
   FaChair,
   FaEdit,
-  FaTimes
+  FaTimes,
+  FaSpinner,
+  FaCheckCircle,
+  FaHome,
+  FaClipboardList,
+  FaChartBar,
+  FaUsers,
+  FaCog,
+  FaSignOutAlt,
+  FaBars
 } from 'react-icons/fa';
+import apiClient from '../lib/api';
 
 export default function RestaurantPOS() {
   const searchParams = useSearchParams();
-  const [selectedCategory, setSelectedCategory] = useState('Fast Food');
+  const router = useRouter();
+  
+  // Core state
+  const [selectedCategory, setSelectedCategory] = useState('all-items');
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [quickSearch, setQuickSearch] = useState('');
@@ -31,28 +44,127 @@ export default function RestaurantPOS() {
   const [selectedTable, setSelectedTable] = useState(null);
   const [showTableSelector, setShowTableSelector] = useState(false);
   const [manualTableNumber, setManualTableNumber] = useState('');
+  
+  // API state
+  const [menuItems, setMenuItems] = useState([]);
+  const [restaurants, setRestaurants] = useState([]);
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
+  
+  // Payment state
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [orderComplete, setOrderComplete] = useState(false);
 
   const categories = [
-    { id: 'fast-food', name: 'Fast Food', emoji: '🍔' },
-    { id: 'beverages', name: 'Beverages', emoji: '🥤' },
-    { id: 'chinese', name: 'Chinese', emoji: '🥡' },
-    { id: 'pizza', name: 'Pizza', emoji: '🍕' },
-    { id: 'desserts', name: 'Desserts', emoji: '🍰' },
+    { id: 'all-items', name: 'All Items', emoji: '🍽️' },
+    { id: 'appetizer', name: 'Appetizers', emoji: '🥗' },
     { id: 'main-course', name: 'Main Course', emoji: '🍛' },
+    { id: 'rice', name: 'Rice & Biryani', emoji: '🍚' },
+    { id: 'dal', name: 'Dal & Curry', emoji: '🍲' },
+    { id: 'bread', name: 'Bread', emoji: '🍞' },
+    { id: 'beverages', name: 'Beverages', emoji: '🥤' },
+    { id: 'dessert', name: 'Desserts', emoji: '🍰' },
   ];
 
-  const menuItems = [
-    { id: 1, name: 'Aloo Tikki Burger', price: 249, category: 'fast-food', isVeg: true, description: 'Crispy potato patty with fresh veggies' },
-    { id: 2, name: 'Cheese Garlic Bread', price: 189, category: 'fast-food', isVeg: true, description: 'Buttery bread with melted cheese' },
-    { id: 3, name: 'Fresh Lime Water', price: 79, category: 'beverages', isVeg: true, description: 'Refreshing lemon drink' },
-    { id: 4, name: 'Masala Chai', price: 59, category: 'beverages', isVeg: true, description: 'Traditional spiced tea' },
-    { id: 5, name: 'Chicken Angara', price: 349, category: 'chinese', isVeg: false, description: 'Spicy boneless chicken' },
-    { id: 6, name: 'Chili Mushroom', price: 229, category: 'chinese', isVeg: true, description: 'Stir-fried mushrooms in chili sauce' },
-    { id: 7, name: 'Margherita Pizza', price: 299, category: 'pizza', isVeg: true, description: 'Classic tomato and mozzarella' },
-    { id: 8, name: 'Chocolate Brownie', price: 179, category: 'desserts', isVeg: true, description: 'Rich chocolate brownie with ice cream' },
-    { id: 9, name: 'Butter Chicken', price: 399, category: 'main-course', isVeg: false, description: 'Creamy tomato chicken curry' },
-    { id: 10, name: 'Dal Makhani', price: 249, category: 'main-course', isVeg: true, description: 'Rich black lentil curry' },
-  ];
+  // Authentication check
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
+
+  // Load cart from localStorage
+  useEffect(() => {
+    const savedCart = localStorage.getItem('dine_cart');
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        console.error('Error loading cart:', e);
+      }
+    }
+  }, []);
+
+  // Save cart to localStorage
+  useEffect(() => {
+    localStorage.setItem('dine_cart', JSON.stringify(cart));
+  }, [cart]);
+
+  // Load initial data
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  const loadInitialData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load restaurants
+      const restaurantsResponse = await apiClient.getRestaurants();
+      setRestaurants(restaurantsResponse.restaurants || []);
+      
+      // Select first restaurant or create one if none exist
+      if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
+        const restaurant = restaurantsResponse.restaurants[0];
+        setSelectedRestaurant(restaurant);
+        
+        // Load menu for selected restaurant
+        await loadMenu(restaurant.id);
+      } else {
+        // Create a sample restaurant
+        await createSampleRestaurant();
+      }
+      
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setError('Failed to load restaurant data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createSampleRestaurant = async () => {
+    try {
+      const restaurantData = {
+        name: 'Sample Restaurant',
+        address: '123 Food Street, City',
+        phone: '+91 9876543210',
+        cuisine: ['Indian', 'Continental'],
+        description: 'A sample restaurant for demo',
+        operatingHours: {
+          open: '09:00',
+          close: '23:00'
+        }
+      };
+      
+      const response = await apiClient.createRestaurant(restaurantData);
+      const restaurant = response.restaurant;
+      setSelectedRestaurant(restaurant);
+      setRestaurants([restaurant]);
+      
+      // Seed sample menu data
+      await apiClient.seedData(restaurant.id);
+      await loadMenu(restaurant.id);
+      
+    } catch (error) {
+      console.error('Error creating sample restaurant:', error);
+      setError('Failed to create sample restaurant');
+    }
+  };
+
+  const loadMenu = async (restaurantId) => {
+    try {
+      const response = await apiClient.getMenu(restaurantId);
+      setMenuItems(response.menuItems || []);
+    } catch (error) {
+      console.error('Error loading menu:', error);
+      setError('Failed to load menu');
+    }
+  };
 
   // Handle table parameters from URL
   useEffect(() => {
@@ -71,8 +183,7 @@ export default function RestaurantPOS() {
   }, [searchParams]);
 
   const filteredItems = menuItems.filter(item => {
-    const matchesCategory = selectedCategory === 'All Items' || 
-                          item.category === categories.find(c => c.name === selectedCategory)?.id;
+    const matchesCategory = selectedCategory === 'all-items' || item.category === selectedCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -108,7 +219,7 @@ export default function RestaurantPOS() {
     if (e.key === 'Enter' && quickSearch.trim()) {
       const searchValue = quickSearch.trim().toLowerCase();
       const foundItem = menuItems.find(item => 
-        item.shortCode.toLowerCase() === searchValue || 
+        item.shortCode?.toLowerCase() === searchValue || 
         item.name.toLowerCase().includes(searchValue)
       );
       
@@ -117,6 +228,100 @@ export default function RestaurantPOS() {
         setQuickSearch('');
       }
     }
+  };
+
+  const processOrder = async () => {
+    if (cart.length === 0 || !selectedRestaurant) return;
+
+    try {
+      setProcessing(true);
+      setError('');
+
+      // Prepare order data
+      const orderData = {
+        restaurantId: selectedRestaurant.id,
+        tableNumber: selectedTable?.name || null,
+        orderType,
+        items: cart.map(item => ({
+          menuItemId: item.id,
+          quantity: item.quantity,
+          notes: ''
+        })),
+        customerInfo: {
+          name: 'Walk-in Customer',
+          phone: ''
+        },
+        notes: ''
+      };
+
+      // Create order
+      const orderResponse = await apiClient.createOrder(orderData);
+      const orderId = orderResponse.order.id;
+
+      // Update table status if table is selected
+      if (selectedTable && selectedTable.id) {
+        await apiClient.updateTableStatus(selectedTable.id, 'occupied', orderId);
+      }
+
+      // Process payment (mock for cash payments)
+      if (paymentMethod === 'cash') {
+        await apiClient.verifyPayment({
+          orderId,
+          razorpay_payment_id: `cash_payment_${Date.now()}`,
+          razorpay_order_id: `cash_order_${Date.now()}`,
+          razorpay_signature: 'cash_signature'
+        });
+      }
+
+      // Clear cart and show success
+      setCart([]);
+      localStorage.removeItem('dine_cart');
+      setOrderComplete(true);
+
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setOrderComplete(false);
+        if (selectedTable && selectedTable.id) {
+          // Release table
+          apiClient.updateTableStatus(selectedTable.id, 'available');
+          setSelectedTable(null);
+        }
+      }, 3000);
+
+    } catch (error) {
+      console.error('Order processing error:', error);
+      setError('Failed to process order. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const saveOrder = () => {
+    // Save current cart state
+    localStorage.setItem('dine_saved_order', JSON.stringify({
+      cart,
+      orderType,
+      selectedTable,
+      timestamp: new Date().toISOString()
+    }));
+    alert('Order saved successfully!');
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    localStorage.removeItem('dine_cart');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('dine_cart');
+    localStorage.removeItem('dine_saved_order');
+    router.push('/login');
+  };
+
+  const navigateToPage = (page) => {
+    router.push(page);
   };
 
   const getItemQuantityInCart = (itemId) => {
@@ -142,13 +347,87 @@ export default function RestaurantPOS() {
     window.history.replaceState({}, '', window.location.pathname);
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div style={{ 
+        height: '100vh', 
+        backgroundColor: '#f9fafb', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: '16px'
+      }}>
+        <FaSpinner className="animate-spin" size={32} color="#e53e3e" />
+        <p style={{ color: '#6b7280', fontSize: '16px', fontWeight: '600' }}>Loading restaurant data...</p>
+      </div>
+    );
+  }
+
+  // Order complete state
+  if (orderComplete) {
+    return (
+      <div style={{ 
+        height: '100vh', 
+        backgroundColor: '#f0f9ff', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: '24px'
+      }}>
+        <div style={{
+          width: '120px',
+          height: '120px',
+          backgroundColor: '#10b981',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <FaCheckCircle size={60} color="white" />
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>
+            Order Complete!
+          </h1>
+          <p style={{ color: '#6b7280', fontSize: '18px', margin: 0 }}>
+            Payment processed successfully
+          </p>
+          {selectedTable && (
+            <p style={{ color: '#10b981', fontSize: '14px', fontWeight: '600', marginTop: '8px' }}>
+              Table {selectedTable.name} will be released shortly
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ height: '100vh', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <div style={{ backgroundColor: 'white', padding: '12px 16px', borderBottom: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Brand - Clickable Home Link */}
+            <button
+              onClick={() => navigateToPage('/')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                borderRadius: '8px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
               <div style={{ width: '32px', height: '32px', backgroundColor: '#e53e3e', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <FaUtensils color="white" size={16} />
               </div>
@@ -161,7 +440,10 @@ export default function RestaurantPOS() {
                       {selectedTable.name} - {selectedTable.floor} {selectedTable.capacity !== 'N/A' && `(${selectedTable.capacity} seats)`}
                     </span>
                     <button
-                      onClick={clearSelectedTable}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearSelectedTable();
+                      }}
                       style={{
                         marginLeft: '6px',
                         width: '16px',
@@ -181,6 +463,176 @@ export default function RestaurantPOS() {
                   </div>
                 )}
               </div>
+            </button>
+
+            {/* Navigation Menu */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#f9fafb', borderRadius: '12px', padding: '4px' }}>
+              <button
+                onClick={() => navigateToPage('/')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: 'white',
+                  color: '#e53e3e',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <FaHome size={12} />
+                Orders
+              </button>
+              
+              <button
+                onClick={() => navigateToPage('/orders')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: 'transparent',
+                  color: '#6b7280',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'white';
+                  e.target.style.color = '#e53e3e';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#6b7280';
+                }}
+              >
+                <FaClipboardList size={12} />
+                History
+              </button>
+
+              <button
+                onClick={() => navigateToPage('/tables')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: 'transparent',
+                  color: '#6b7280',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'white';
+                  e.target.style.color = '#e53e3e';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#6b7280';
+                }}
+              >
+                <FaChair size={12} />
+                Tables
+              </button>
+
+              <button
+                onClick={() => navigateToPage('/menu')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: 'transparent',
+                  color: '#6b7280',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'white';
+                  e.target.style.color = '#e53e3e';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#6b7280';
+                }}
+              >
+                <FaUtensils size={12} />
+                Menu
+              </button>
+
+              <button
+                onClick={() => navigateToPage('/analytics')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: 'transparent',
+                  color: '#6b7280',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'white';
+                  e.target.style.color = '#e53e3e';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#6b7280';
+                }}
+              >
+                <FaChartBar size={12} />
+                Analytics
+              </button>
+
+              <button
+                onClick={() => navigateToPage('/kot')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: 'transparent',
+                  color: '#6b7280',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'white';
+                  e.target.style.color = '#e53e3e';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#6b7280';
+                }}
+              >
+                <FaPrint size={12} />
+                KOT
+              </button>
             </div>
             
             {/* Order Type Selector */}
@@ -231,9 +683,74 @@ export default function RestaurantPOS() {
             )}
           </div>
           
-          <div style={{ color: '#374151', textAlign: 'right' }}>
-            <p style={{ fontWeight: '600', margin: 0, fontSize: '14px' }}>Restaurant Name</p>
-            <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>📞 9034142334</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Restaurant Info */}
+            <div style={{ color: '#374151', textAlign: 'right' }}>
+              <p style={{ fontWeight: '600', margin: 0, fontSize: '14px' }}>
+                {selectedRestaurant?.name || 'Restaurant'}
+              </p>
+              <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>
+                📞 {selectedRestaurant?.phone || '+91 9876543210'}
+              </p>
+            </div>
+
+            {/* User Menu */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* User Info */}
+              <div style={{
+                padding: '6px 12px',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <div style={{
+                  width: '24px',
+                  height: '24px',
+                  backgroundColor: '#10b981',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <FaUsers size={12} color="white" />
+                </div>
+                <span style={{ fontSize: '12px', fontWeight: '600', color: '#374151' }}>
+                  Waiter
+                </span>
+              </div>
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#fee2e2',
+                  color: '#dc2626',
+                  border: '1px solid #fecaca',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#fecaca';
+                  e.target.style.borderColor = '#f87171';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#fee2e2';
+                  e.target.style.borderColor = '#fecaca';
+                }}
+              >
+                <FaSignOutAlt size={12} />
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -268,52 +785,17 @@ export default function RestaurantPOS() {
           </div>
           
           <div style={{ padding: '8px', overflowY: 'auto', height: 'calc(100% - 100px)' }}>
-            <button
-              onClick={() => setSelectedCategory('All Items')}
-              style={{
-                width: '100%',
-                textAlign: 'left',
-                padding: '8px',
-                borderRadius: '8px',
-                fontWeight: '600',
-                border: 'none',
-                cursor: 'pointer',
-                marginBottom: '4px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                backgroundColor: selectedCategory === 'All Items' ? '#e53e3e' : 'transparent',
-                color: selectedCategory === 'All Items' ? 'white' : '#374151',
-                transition: 'all 0.2s',
-                fontSize: '13px'
-              }}
-            >
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '16px',
-                backgroundColor: selectedCategory === 'All Items' ? 'rgba(255,255,255,0.2)' : '#f3f4f6'
-              }}>
-                🍽️
-              </div>
-              <div>
-                <div style={{ fontWeight: 'bold', fontSize: '13px' }}>All Items</div>
-                <div style={{ fontSize: '10px', opacity: 0.8 }}>{menuItems.length} items</div>
-              </div>
-            </button>
             
             {categories.map((category) => {
-              const categoryItems = menuItems.filter(item => item.category === category.id);
-              const isSelected = selectedCategory === category.name;
+              const categoryItems = category.id === 'all-items' 
+                ? menuItems 
+                : menuItems.filter(item => item.category === category.id);
+              const isSelected = selectedCategory === category.id;
               
               return (
                 <button
                   key={category.id}
-                  onClick={() => setSelectedCategory(category.name)}
+                  onClick={() => setSelectedCategory(category.id)}
                   style={{
                     width: '100%',
                     textAlign: 'left',
@@ -452,9 +934,11 @@ export default function RestaurantPOS() {
                       </div>
                       
                       {/* Short Code */}
-                      <div style={{ position: 'absolute', top: '2px', right: '2px', fontSize: '8px', fontWeight: 'bold', color: '#6b7280', backgroundColor: 'rgba(255,255,255,0.8)', padding: '2px 4px', borderRadius: '4px' }}>
-                        {item.shortCode}
-                      </div>
+                      {item.shortCode && (
+                        <div style={{ position: 'absolute', top: '2px', right: '2px', fontSize: '8px', fontWeight: 'bold', color: '#6b7280', backgroundColor: 'rgba(255,255,255,0.8)', padding: '2px 4px', borderRadius: '4px' }}>
+                          {item.shortCode}
+                        </div>
+                      )}
                     </div>
                     
                     {/* Item Details */}
@@ -556,7 +1040,7 @@ export default function RestaurantPOS() {
         </div>
 
         {/* Cart Sidebar */}
-        <div style={{ width: '300px', backgroundColor: 'white', borderLeft: '2px solid #e5e7eb', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: '30%', minWidth: '320px', backgroundColor: 'white', borderLeft: '2px solid #e5e7eb', display: 'flex', flexDirection: 'column' }}>
           {/* Cart Header */}
           <div style={{ background: 'linear-gradient(135deg, #e53e3e, #dc2626)', padding: '16px', color: 'white' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
@@ -696,92 +1180,135 @@ export default function RestaurantPOS() {
               {/* Payment & Actions */}
               <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <button style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    padding: '8px',
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    fontSize: '11px'
-                  }}>
+                  <button 
+                    onClick={() => setPaymentMethod('cash')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      padding: '8px',
+                      backgroundColor: paymentMethod === 'cash' ? '#10b981' : 'white',
+                      color: paymentMethod === 'cash' ? 'white' : '#374151',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      fontSize: '11px'
+                    }}>
                     <FaMoneyBillWave size={12} />
                     Cash
                   </button>
-                  <button style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    padding: '8px',
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    fontSize: '11px'
-                  }}>
+                  <button 
+                    onClick={() => setPaymentMethod('card')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      padding: '8px',
+                      backgroundColor: paymentMethod === 'card' ? '#10b981' : 'white',
+                      color: paymentMethod === 'card' ? 'white' : '#374151',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      fontSize: '11px'
+                    }}>
                     <FaCreditCard size={12} />
                     Card/UPI
                   </button>
                 </div>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <button style={{
-                    background: 'linear-gradient(135deg, #f97316, #ea580c)',
-                    color: 'white',
-                    padding: '8px',
-                    borderRadius: '6px',
-                    fontWeight: 'bold',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    fontSize: '11px'
-                  }}>
+                  <button 
+                    onClick={saveOrder}
+                    style={{
+                      background: 'linear-gradient(135deg, #f97316, #ea580c)',
+                      color: 'white',
+                      padding: '8px',
+                      borderRadius: '6px',
+                      fontWeight: 'bold',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      fontSize: '11px'
+                    }}>
                     <FaSave size={10} />
                     Save
                   </button>
-                  <button style={{
-                    background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
-                    color: 'white',
-                    padding: '8px',
-                    borderRadius: '6px',
-                    fontWeight: 'bold',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    fontSize: '11px'
-                  }}>
-                    <FaPrint size={10} />
-                    Print
+                  <button 
+                    onClick={clearCart}
+                    style={{
+                      background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
+                      color: 'white',
+                      padding: '8px',
+                      borderRadius: '6px',
+                      fontWeight: 'bold',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      fontSize: '11px'
+                    }}>
+                    <FaTimes size={10} />
+                    Clear
                   </button>
                 </div>
                 
-                <button style={{
-                  width: '100%',
-                  backgroundColor: '#e5e7eb',
-                  color: '#374151',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  fontWeight: 'bold',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}>
-                  Hold Order
+                {/* Process Order Button */}
+                <button 
+                  onClick={processOrder}
+                  disabled={processing || cart.length === 0}
+                  style={{
+                    width: '100%',
+                    backgroundColor: processing || cart.length === 0 ? '#d1d5db' : '#10b981',
+                    color: 'white',
+                    padding: '12px',
+                    borderRadius: '6px',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    cursor: processing || cart.length === 0 ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}>
+                  {processing ? (
+                    <>
+                      <FaSpinner className="animate-spin" size={12} />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <FaCheckCircle size={12} />
+                      Complete Order (₹{getTotalAmount()})
+                    </>
+                  )}
                 </button>
+
+                {/* Error Message */}
+                {error && (
+                  <div style={{
+                    backgroundColor: '#fee2e2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '6px',
+                    padding: '8px',
+                    fontSize: '11px',
+                    color: '#dc2626',
+                    fontWeight: '600'
+                  }}>
+                    {error}
+                  </div>
+                )}
               </div>
             </div>
           )}

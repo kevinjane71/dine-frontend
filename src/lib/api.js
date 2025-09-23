@@ -39,20 +39,20 @@ class ApiClient {
 
   getToken() {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('dine_token');
+      return localStorage.getItem('authToken');
     }
     return null;
   }
 
   setToken(token) {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('dine_token', token);
+      localStorage.setItem('authToken', token);
     }
   }
 
   clearToken() {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('dine_token');
+      localStorage.removeItem('authToken');
     }
   }
 
@@ -181,6 +181,32 @@ class ApiClient {
   // Analytics endpoints
   async getAnalytics(restaurantId, period = '7d') {
     return this.request(`/api/analytics/${restaurantId}?period=${period}`);
+  }
+
+  // Table management endpoints
+  async getTables(restaurantId) {
+    return this.request(`/api/tables/${restaurantId}`);
+  }
+
+  async createTable(restaurantId, tableData) {
+    return this.request(`/api/tables/${restaurantId}`, {
+      method: 'POST',
+      body: tableData,
+    });
+  }
+
+  async updateTableStatus(tableId, status, orderId = null) {
+    return this.request(`/api/tables/${tableId}/status`, {
+      method: 'PATCH',
+      body: { status, orderId },
+    });
+  }
+
+  // Utility endpoints
+  async seedData(restaurantId) {
+    return this.request(`/api/seed-data/${restaurantId}`, {
+      method: 'POST',
+    });
   }
 }
 

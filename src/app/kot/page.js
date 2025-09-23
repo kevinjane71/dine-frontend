@@ -15,7 +15,13 @@ import {
   FaTimesCircle,
   FaPlay,
   FaPause,
-  FaSync
+  FaSync,
+  FaKitchenSet,
+  FaStopwatch,
+  FaClipboardCheck,
+  FaHome,
+  FaTruck,
+  FaShoppingBag
 } from 'react-icons/fa';
 
 const KitchenOrderTicket = () => {
@@ -105,23 +111,71 @@ const KitchenOrderTicket = () => {
     setKotOrders(mockKotOrders);
   }, []);
 
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      preparing: 'bg-blue-100 text-blue-800 border-blue-200',
-      ready: 'bg-green-100 text-green-800 border-green-200',
-      served: 'bg-gray-100 text-gray-700 border-gray-200'
+  const getStatusInfo = (status) => {
+    const statusMap = {
+      pending: { 
+        bg: '#fef3c7', 
+        text: '#92400e', 
+        label: 'Pending',
+        icon: FaClock,
+        border: '#fbbf24'
+      },
+      preparing: { 
+        bg: '#dbeafe', 
+        text: '#1e40af', 
+        label: 'Preparing',
+        icon: FaUtensils,
+        border: '#3b82f6'
+      },
+      ready: { 
+        bg: '#dcfce7', 
+        text: '#166534', 
+        label: 'Ready',
+        icon: FaCheckCircle,
+        border: '#22c55e'
+      },
+      served: { 
+        bg: '#f3f4f6', 
+        text: '#374151', 
+        label: 'Served',
+        icon: FaCheck,
+        border: '#6b7280'
+      }
     };
-    return colors[status] || 'bg-gray-100 text-gray-700 border-gray-200';
+    return statusMap[status] || statusMap.pending;
   };
 
-  const getPriorityColor = (priority) => {
-    const colors = {
-      urgent: 'bg-red-500 text-white',
-      normal: 'bg-blue-500 text-white',
-      low: 'bg-gray-500 text-white'
+  const getPriorityInfo = (priority) => {
+    const priorityMap = {
+      urgent: { 
+        bg: '#fecaca', 
+        text: '#991b1b', 
+        label: 'URGENT',
+        border: '#ef4444'
+      },
+      normal: { 
+        bg: '#dbeafe', 
+        text: '#1e40af', 
+        label: 'NORMAL',
+        border: '#3b82f6'
+      },
+      low: { 
+        bg: '#f3f4f6', 
+        text: '#374151', 
+        label: 'LOW',
+        border: '#6b7280'
+      }
     };
-    return colors[priority] || 'bg-gray-500 text-white';
+    return priorityMap[priority] || priorityMap.normal;
+  };
+
+  const getOrderTypeInfo = (type) => {
+    const typeMap = {
+      'dine-in': { icon: FaHome, label: 'Dine In', color: '#8b5cf6' },
+      'delivery': { icon: FaTruck, label: 'Delivery', color: '#3b82f6' },
+      'pickup': { icon: FaShoppingBag, label: 'Pickup', color: '#10b981' }
+    };
+    return typeMap[type] || typeMap['dine-in'];
   };
 
   const getSpiceIcon = (level) => {
@@ -172,26 +226,50 @@ const KitchenOrderTicket = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+    <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
       <Navigation />
       
-      <div className="h-[calc(100vh-80px)] flex flex-col">
+      <div style={{ height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
-        <div className="bg-white shadow-lg border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <FaUtensils className="text-white" size={20} />
+        <div style={{
+          backgroundColor: 'white',
+          padding: '20px 24px',
+          borderBottom: '1px solid #fed7aa',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ 
+                  width: '56px', 
+                  height: '56px', 
+                  background: 'linear-gradient(135deg, #f97316, #ea580c)', 
+                  borderRadius: '16px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)'
+                }}>
+                  <FaUtensils color="white" size={24} />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-800">Kitchen Order Tickets</h1>
-                  <p className="text-sm text-gray-500">Manage kitchen orders and cooking status</p>
+                  <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
+                    Kitchen Display
+                  </h1>
+                  <p style={{ color: '#6b7280', margin: 0, fontSize: '14px' }}>
+                    Live order tracking • {filteredOrders.length} orders in queue
+                  </p>
                 </div>
               </div>
               
-              {/* Status Filter */}
-              <div className="flex bg-gray-100 rounded-2xl p-2 shadow-inner">
+              {/* Status Filter Tabs */}
+              <div style={{ 
+                display: 'flex', 
+                backgroundColor: '#fef7f0', 
+                borderRadius: '16px', 
+                padding: '4px',
+                border: '1px solid #fed7aa'
+              }}>
                 {[
                   { key: 'all', label: 'All Orders', count: kotOrders.length },
                   { key: 'pending', label: 'Pending', count: kotOrders.filter(o => o.status === 'pending').length },
@@ -201,15 +279,32 @@ const KitchenOrderTicket = () => {
                   <button
                     key={status.key}
                     onClick={() => setSelectedStatus(status.key)}
-                    className={`px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                      selectedStatus === status.key
-                        ? 'bg-white text-orange-600 shadow-lg transform scale-105'
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '12px',
+                      fontWeight: '600',
+                      fontSize: '13px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      backgroundColor: selectedStatus === status.key ? 'white' : 'transparent',
+                      color: selectedStatus === status.key ? '#f97316' : '#6b7280',
+                      boxShadow: selectedStatus === status.key ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
                   >
                     {status.label}
                     {status.count > 0 && (
-                      <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-bold">
+                      <span style={{
+                        backgroundColor: selectedStatus === status.key ? '#fed7aa' : '#e5e7eb',
+                        color: selectedStatus === status.key ? '#c2410c' : '#6b7280',
+                        padding: '2px 6px',
+                        borderRadius: '10px',
+                        fontSize: '11px',
+                        fontWeight: 'bold'
+                      }}>
                         {status.count}
                       </span>
                     )}
@@ -218,176 +313,411 @@ const KitchenOrderTicket = () => {
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <button
                 onClick={() => setSoundEnabled(!soundEnabled)}
-                className={`p-3 rounded-xl font-semibold transition-all duration-200 ${
-                  soundEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                }`}
+                style={{
+                  padding: '10px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: soundEnabled ? '#dcfce7' : '#f3f4f6',
+                  color: soundEnabled ? '#166534' : '#6b7280'
+                }}
               >
                 <FaBell size={16} />
               </button>
-              <div className="text-right">
-                <p className="text-sm font-semibold text-gray-800">Kitchen Display</p>
-                <p className="text-xs text-gray-500">Live Updates • {new Date().toLocaleTimeString('en-IN', { hour12: true })}</p>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                  Kitchen Orders
+                </p>
+                <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                  Live • {new Date().toLocaleTimeString('en-IN', { hour12: true })}
+                </p>
               </div>
             </div>
           </div>
         </div>
 
         {/* KOT Grid */}
-        <div className="flex-1 p-6 overflow-y-auto">
+        <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
           {filteredOrders.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
+              gap: '20px'
+            }}>
               {filteredOrders.map((kot) => {
                 const timeElapsed = getTimeElapsed(kot.kotTime);
                 const isOverdue = timeElapsed > kot.estimatedTime;
+                const statusInfo = getStatusInfo(kot.status);
+                const priorityInfo = getPriorityInfo(kot.priority);
+                const typeInfo = getOrderTypeInfo(kot.orderType);
+                const StatusIcon = statusInfo.icon;
+                const TypeIcon = typeInfo.icon;
                 
                 return (
                   <div
                     key={kot.id}
-                    className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 ${
-                      kot.priority === 'urgent' ? 'border-red-500' : 
-                      kot.priority === 'normal' ? 'border-blue-500' : 'border-gray-400'
-                    } ${isOverdue && kot.status !== 'served' ? 'ring-2 ring-red-300 bg-red-50' : ''}`}
+                    style={{
+                      backgroundColor: 'white',
+                      borderRadius: '20px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                      border: `2px solid ${kot.priority === 'urgent' ? '#ef4444' : '#fed7aa'}`,
+                      overflow: 'hidden',
+                      transition: 'all 0.3s ease',
+                      ...(isOverdue && kot.status !== 'served' ? {
+                        backgroundColor: '#fef2f2',
+                        borderColor: '#ef4444',
+                        boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)'
+                      } : {})
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = isOverdue && kot.status !== 'served' 
+                        ? '0 4px 12px rgba(239, 68, 68, 0.2)' 
+                        : '0 4px 12px rgba(0,0,0,0.08)';
+                    }}
                   >
                     {/* KOT Header */}
-                    <div className="p-6 border-b border-gray-100">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-xl font-bold text-gray-800">{kot.id}</h3>
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${getPriorityColor(kot.priority)}`}>
-                            {kot.priority.toUpperCase()}
-                          </span>
+                    <div style={{ padding: '20px', borderBottom: '1px solid #f3f4f6' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{kot.id}</h3>
+                          <div style={{
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            backgroundColor: priorityInfo.bg,
+                            color: priorityInfo.text,
+                            border: `1px solid ${priorityInfo.border}`
+                          }}>
+                            {priorityInfo.label}
+                          </div>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(kot.status)}`}>
-                          {kot.status.toUpperCase()}
-                        </span>
+                        <div style={{
+                          padding: '6px 12px',
+                          borderRadius: '20px',
+                          fontSize: '11px',
+                          fontWeight: '600',
+                          backgroundColor: statusInfo.bg,
+                          color: statusInfo.text,
+                          border: `1px solid ${statusInfo.border}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <StatusIcon size={10} />
+                          {statusInfo.label}
+                        </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '14px' }}>
                         <div>
-                          <p className="text-gray-600">Order: <span className="font-semibold text-gray-800">{kot.orderId}</span></p>
-                          <p className="text-gray-600">Customer: <span className="font-semibold text-gray-800">{kot.customerName}</span></p>
+                          <div style={{ marginBottom: '4px' }}>
+                            <span style={{ color: '#6b7280' }}>Order:</span>
+                            <span style={{ fontWeight: '600', color: '#1f2937', marginLeft: '6px' }}>{kot.orderId}</span>
+                          </div>
+                          <div style={{ marginBottom: '4px' }}>
+                            <span style={{ color: '#6b7280' }}>Customer:</span>
+                            <span style={{ fontWeight: '600', color: '#1f2937', marginLeft: '6px' }}>{kot.customerName}</span>
+                          </div>
                         </div>
                         <div>
                           {kot.tableNumber ? (
-                            <p className="text-gray-600">Table: <span className="font-semibold text-gray-800">{kot.tableNumber}</span></p>
+                            <div style={{ marginBottom: '4px' }}>
+                              <span style={{ color: '#6b7280' }}>Table:</span>
+                              <span style={{ fontWeight: '600', color: '#1f2937', marginLeft: '6px' }}>{kot.tableNumber}</span>
+                            </div>
                           ) : (
-                            <p className="text-gray-600">Type: <span className="font-semibold text-gray-800 capitalize">{kot.orderType}</span></p>
+                            <div style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <TypeIcon size={12} style={{ color: typeInfo.color }} />
+                              <span style={{ fontWeight: '600', color: '#1f2937' }}>{typeInfo.label}</span>
+                            </div>
                           )}
-                          <p className="text-gray-600">Waiter: <span className="font-semibold text-gray-800">{kot.waiter}</span></p>
+                          <div style={{ marginBottom: '4px' }}>
+                            <span style={{ color: '#6b7280' }}>Waiter:</span>
+                            <span style={{ fontWeight: '600', color: '#1f2937', marginLeft: '6px' }}>{kot.waiter}</span>
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                        <div className="flex items-center gap-2">
-                          <FaClock className="text-gray-400" size={14} />
-                          <span className="text-sm text-gray-600">
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between', 
+                        marginTop: '12px', 
+                        paddingTop: '12px', 
+                        borderTop: '1px solid #f3f4f6'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <FaClock style={{ color: '#9ca3af', fontSize: '12px' }} />
+                          <span style={{ fontSize: '13px', color: '#6b7280' }}>
                             KOT: {formatTime(kot.kotTime)}
                           </span>
                         </div>
-                        <div className={`text-sm font-semibold ${
-                          isOverdue ? 'text-red-600' : timeElapsed > kot.estimatedTime * 0.8 ? 'text-orange-600' : 'text-green-600'
-                        }`}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          color: isOverdue ? '#ef4444' : timeElapsed > kot.estimatedTime * 0.8 ? '#f59e0b' : '#10b981'
+                        }}>
+                          <FaStopwatch size={12} />
                           {timeElapsed}m / {kot.estimatedTime}m
-                          {isOverdue && <FaExclamationTriangle className="inline ml-1" size={12} />}
+                          {isOverdue && <FaExclamationTriangle size={12} />}
                         </div>
                       </div>
                     </div>
                     
                     {/* Items List */}
-                    <div className="p-6">
-                      <h4 className="font-semibold text-gray-800 mb-4">Items ({kot.items.length})</h4>
-                      <div className="space-y-3">
+                    <div style={{ padding: '20px' }}>
+                      <h4 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '16px', fontSize: '15px' }}>
+                        Items ({kot.items.length})
+                      </h4>
+                      <div style={{ marginBottom: '16px' }}>
                         {kot.items.map((item, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="font-semibold text-gray-800">{item.quantity}x {item.name}</span>
+                          <div key={index} style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between', 
+                            padding: '10px 12px', 
+                            backgroundColor: '#fef7f0', 
+                            borderRadius: '10px',
+                            marginBottom: '8px',
+                            border: '1px solid #fed7aa'
+                          }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                <span style={{ 
+                                  fontWeight: 'bold', 
+                                  color: '#1f2937',
+                                  backgroundColor: 'white',
+                                  padding: '2px 6px',
+                                  borderRadius: '6px',
+                                  fontSize: '12px'
+                                }}>
+                                  {item.quantity}x
+                                </span>
+                                <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>{item.name}</span>
                                 {getSpiceIcon(item.spiceLevel)}
                               </div>
                               {item.notes && (
-                                <p className="text-sm text-orange-600 font-medium">Note: {item.notes}</p>
+                                <p style={{ fontSize: '12px', color: '#f59e0b', fontWeight: '500', margin: '0 0 2px 0' }}>
+                                  📝 {item.notes}
+                                </p>
                               )}
-                              <p className="text-xs text-gray-500 uppercase tracking-wide">{item.category}</p>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ 
+                                  fontSize: '10px', 
+                                  color: '#6b7280', 
+                                  textTransform: 'uppercase', 
+                                  letterSpacing: '0.5px',
+                                  backgroundColor: '#e5e7eb',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px'
+                                }}>
+                                  {item.category}
+                                </span>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <div className="text-sm font-semibold text-gray-700">{item.estimatedTime}m</div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151' }}>{item.estimatedTime}m</div>
+                              <div style={{ fontSize: '10px', color: '#9ca3af' }}>prep time</div>
                             </div>
                           </div>
                         ))}
                       </div>
                       
                       {kot.specialInstructions && (
-                        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <p className="text-sm text-yellow-800">
-                            <strong>Special Instructions:</strong> {kot.specialInstructions}
+                        <div style={{ 
+                          padding: '12px', 
+                          backgroundColor: '#fef3c7', 
+                          border: '1px solid #fbbf24', 
+                          borderRadius: '10px',
+                          marginBottom: '16px'
+                        }}>
+                          <p style={{ fontSize: '12px', color: '#92400e', margin: 0 }}>
+                            <strong>⚠️ Special Instructions:</strong> {kot.specialInstructions}
                           </p>
                         </div>
                       )}
                     </div>
                     
                     {/* Actions */}
-                    <div className="p-6 bg-gray-50 border-t border-gray-100">
-                      <div className="flex gap-3">
+                    <div style={{ 
+                      padding: '16px 20px', 
+                      backgroundColor: '#fef7f0', 
+                      borderTop: '1px solid #fed7aa',
+                      display: 'flex',
+                      gap: '8px'
+                    }}>
+                      <button
+                        onClick={() => setSelectedKot(kot)}
+                        style={{
+                          flex: 1,
+                          backgroundColor: '#3b82f6',
+                          color: 'white',
+                          padding: '10px 16px',
+                          borderRadius: '10px',
+                          fontWeight: '600',
+                          fontSize: '13px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <FaEye size={12} />
+                        View
+                      </button>
+                      
+                      {kot.status === 'pending' && (
                         <button
-                          onClick={() => setSelectedKot(kot)}
-                          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                          onClick={() => updateKotStatus(kot.id, 'preparing')}
+                          style={{
+                            flex: 1,
+                            backgroundColor: '#f59e0b',
+                            color: 'white',
+                            padding: '10px 16px',
+                            borderRadius: '10px',
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}
                         >
-                          <FaEye size={14} />
-                          View
+                          <FaPlay size={12} />
+                          Start Cooking
                         </button>
-                        
-                        {kot.status === 'pending' && (
-                          <button
-                            onClick={() => updateKotStatus(kot.id, 'preparing')}
-                            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
-                          >
-                            <FaPlay size={14} />
-                            Start
-                          </button>
-                        )}
-                        
-                        {kot.status === 'preparing' && (
-                          <button
-                            onClick={() => updateKotStatus(kot.id, 'ready')}
-                            className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
-                          >
-                            <FaCheck size={14} />
-                            Ready
-                          </button>
-                        )}
-                        
-                        {kot.status === 'ready' && (
-                          <button
-                            onClick={() => updateKotStatus(kot.id, 'served')}
-                            className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
-                          >
-                            <FaCheckCircle size={14} />
-                            Served
-                          </button>
-                        )}
-                        
+                      )}
+                      
+                      {kot.status === 'preparing' && (
                         <button
-                          onClick={() => printKot(kot)}
-                          className="bg-gray-600 hover:bg-gray-700 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center"
+                          onClick={() => updateKotStatus(kot.id, 'ready')}
+                          style={{
+                            flex: 1,
+                            backgroundColor: '#10b981',
+                            color: 'white',
+                            padding: '10px 16px',
+                            borderRadius: '10px',
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}
                         >
-                          <FaPrint size={14} />
+                          <FaCheck size={12} />
+                          Mark Ready
                         </button>
-                      </div>
+                      )}
+                      
+                      {kot.status === 'ready' && (
+                        <button
+                          onClick={() => updateKotStatus(kot.id, 'served')}
+                          style={{
+                            flex: 1,
+                            backgroundColor: '#8b5cf6',
+                            color: 'white',
+                            padding: '10px 16px',
+                            borderRadius: '10px',
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <FaCheckCircle size={12} />
+                          Served
+                        </button>
+                      )}
+                      
+                      <button
+                        onClick={() => printKot(kot)}
+                        style={{
+                          backgroundColor: '#6b7280',
+                          color: 'white',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          fontWeight: '600',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <FaPrint size={12} />
+                      </button>
                     </div>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-6">
-                <FaUtensils size={32} className="text-gray-400" />
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '80px 20px',
+              backgroundColor: 'white',
+              borderRadius: '20px',
+              border: '1px solid #fed7aa'
+            }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                backgroundColor: '#fef7f0',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '16px'
+              }}>
+                <FaUtensils size={32} style={{ color: '#d1d5db' }} />
               </div>
-              <h3 className="text-2xl font-bold text-gray-600 mb-3">No orders in kitchen</h3>
-              <p className="text-gray-500 text-center max-w-md">
+              <h3 style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                color: '#374151',
+                margin: '0 0 8px 0'
+              }}>
+                No orders in kitchen
+              </h3>
+              <p style={{
+                color: '#6b7280',
+                margin: 0,
+                textAlign: 'center',
+                maxWidth: '400px',
+                fontSize: '14px'
+              }}>
                 {selectedStatus === 'all' 
                   ? 'Kitchen orders will appear here when customers place orders.'
                   : `No orders with ${selectedStatus} status found.`
@@ -400,35 +730,95 @@ const KitchenOrderTicket = () => {
 
       {/* KOT Detail Modal */}
       {selectedKot && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-800">KOT Details - {selectedKot.id}</h2>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+          padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            width: '100%',
+            maxWidth: '800px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            border: '1px solid #fed7aa'
+          }}>
+            <div style={{
+              padding: '24px',
+              borderBottom: '1px solid #f3f4f6',
+              background: 'linear-gradient(135deg, #fef7f0, #fed7aa)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    backgroundColor: '#f97316',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <FaChefHat color="white" size={18} />
+                  </div>
+                  <h2 style={{
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    color: '#1f2937',
+                    margin: 0
+                  }}>
+                    KOT Details - {selectedKot.id}
+                  </h2>
+                </div>
                 <button
                   onClick={() => setSelectedKot(null)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                  style={{
+                    color: '#6b7280',
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
                 >
                   ×
                 </button>
               </div>
             </div>
             
-            <div className="p-6 space-y-6">
+            <div style={{ padding: '24px' }}>
               {/* Order Info Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-gray-50 p-4 rounded-xl">
-                  <h3 className="font-semibold text-gray-800 mb-2">Order Info</h3>
-                  <div className="space-y-1 text-sm">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                <div style={{ 
+                  backgroundColor: '#fef7f0', 
+                  padding: '16px', 
+                  borderRadius: '12px',
+                  border: '1px solid #fed7aa'
+                }}>
+                  <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', fontSize: '14px' }}>Order Info</h3>
+                  <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
                     <div><strong>Order ID:</strong> {selectedKot.orderId}</div>
                     <div><strong>KOT ID:</strong> {selectedKot.id}</div>
-                    <div><strong>Type:</strong> {selectedKot.orderType}</div>
+                    <div><strong>Type:</strong> {getOrderTypeInfo(selectedKot.orderType).label}</div>
                   </div>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-xl">
-                  <h3 className="font-semibold text-gray-800 mb-2">Customer</h3>
-                  <div className="space-y-1 text-sm">
+                <div style={{ 
+                  backgroundColor: '#fef7f0', 
+                  padding: '16px', 
+                  borderRadius: '12px',
+                  border: '1px solid #fed7aa'
+                }}>
+                  <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', fontSize: '14px' }}>Customer</h3>
+                  <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
                     <div><strong>Name:</strong> {selectedKot.customerName}</div>
                     {selectedKot.tableNumber && (
                       <div><strong>Table:</strong> {selectedKot.tableNumber}</div>
@@ -437,50 +827,116 @@ const KitchenOrderTicket = () => {
                   </div>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-xl">
-                  <h3 className="font-semibold text-gray-800 mb-2">Timing</h3>
-                  <div className="space-y-1 text-sm">
+                <div style={{ 
+                  backgroundColor: '#fef7f0', 
+                  padding: '16px', 
+                  borderRadius: '12px',
+                  border: '1px solid #fed7aa'
+                }}>
+                  <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', fontSize: '14px' }}>Timing</h3>
+                  <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
                     <div><strong>Order:</strong> {formatTime(selectedKot.orderTime)}</div>
                     <div><strong>KOT:</strong> {formatTime(selectedKot.kotTime)}</div>
                     <div><strong>Estimated:</strong> {selectedKot.estimatedTime}m</div>
                   </div>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-xl">
-                  <h3 className="font-semibold text-gray-800 mb-2">Status</h3>
-                  <div className="space-y-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(selectedKot.status)}`}>
-                      {selectedKot.status.toUpperCase()}
-                    </span>
-                    <span className={`block px-3 py-1 rounded-full text-xs font-bold ${getPriorityColor(selectedKot.priority)}`}>
-                      {selectedKot.priority.toUpperCase()}
-                    </span>
+                <div style={{ 
+                  backgroundColor: '#fef7f0', 
+                  padding: '16px', 
+                  borderRadius: '12px',
+                  border: '1px solid #fed7aa'
+                }}>
+                  <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', fontSize: '14px' }}>Status</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {(() => {
+                      const statusInfo = getStatusInfo(selectedKot.status);
+                      const priorityInfo = getPriorityInfo(selectedKot.priority);
+                      return (
+                        <>
+                          <div style={{
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            backgroundColor: statusInfo.bg,
+                            color: statusInfo.text,
+                            border: `1px solid ${statusInfo.border}`,
+                            textAlign: 'center'
+                          }}>
+                            {statusInfo.label}
+                          </div>
+                          <div style={{
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            backgroundColor: priorityInfo.bg,
+                            color: priorityInfo.text,
+                            border: `1px solid ${priorityInfo.border}`,
+                            textAlign: 'center'
+                          }}>
+                            {priorityInfo.label}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
               
               {/* Items Detail */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-4">Order Items</h3>
-                <div className="space-y-3">
+              <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '16px', fontSize: '16px' }}>Order Items</h3>
+                <div>
                   {selectedKot.items.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="font-bold text-lg">{item.quantity}x</span>
-                          <span className="font-semibold text-gray-800">{item.name}</span>
+                    <div key={index} style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between', 
+                      padding: '16px', 
+                      backgroundColor: '#fef7f0', 
+                      borderRadius: '12px',
+                      marginBottom: '12px',
+                      border: '1px solid #fed7aa'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                          <span style={{ 
+                            fontWeight: 'bold', 
+                            fontSize: '16px',
+                            backgroundColor: '#f97316',
+                            color: 'white',
+                            padding: '4px 8px',
+                            borderRadius: '8px',
+                            minWidth: '32px',
+                            textAlign: 'center'
+                          }}>
+                            {item.quantity}x
+                          </span>
+                          <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '16px' }}>{item.name}</span>
                           {getSpiceIcon(item.spiceLevel)}
-                          <span className="text-xs text-gray-500 uppercase tracking-wide bg-gray-200 px-2 py-1 rounded">
+                          <span style={{ 
+                            fontSize: '11px', 
+                            color: '#6b7280', 
+                            textTransform: 'uppercase', 
+                            letterSpacing: '0.5px',
+                            backgroundColor: '#e5e7eb',
+                            padding: '2px 8px',
+                            borderRadius: '6px'
+                          }}>
                             {item.category}
                           </span>
                         </div>
                         {item.notes && (
-                          <p className="text-sm text-orange-600 font-medium">📝 {item.notes}</p>
+                          <p style={{ fontSize: '14px', color: '#f59e0b', fontWeight: '500', margin: 0 }}>
+                            📝 {item.notes}
+                          </p>
                         )}
                       </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-gray-700">{item.estimatedTime}m</div>
-                        <div className="text-xs text-gray-500">prep time</div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#374151' }}>{item.estimatedTime}m</div>
+                        <div style={{ fontSize: '12px', color: '#9ca3af' }}>prep time</div>
                       </div>
                     </div>
                   ))}
@@ -488,25 +944,63 @@ const KitchenOrderTicket = () => {
               </div>
               
               {selectedKot.specialInstructions && (
-                <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl">
-                  <h3 className="font-semibold text-yellow-800 mb-2">⚠️ Special Instructions</h3>
-                  <p className="text-yellow-800">{selectedKot.specialInstructions}</p>
+                <div style={{ 
+                  backgroundColor: '#fef3c7', 
+                  border: '1px solid #fbbf24', 
+                  padding: '16px', 
+                  borderRadius: '12px',
+                  marginBottom: '24px'
+                }}>
+                  <h3 style={{ fontWeight: '600', color: '#92400e', marginBottom: '8px', fontSize: '16px' }}>⚠️ Special Instructions</h3>
+                  <p style={{ color: '#92400e', margin: 0 }}>{selectedKot.specialInstructions}</p>
                 </div>
               )}
             </div>
             
-            <div className="p-6 bg-gray-50 flex gap-4">
+            <div style={{ 
+              padding: '24px', 
+              backgroundColor: '#fef7f0', 
+              display: 'flex', 
+              gap: '12px',
+              borderTop: '1px solid #fed7aa'
+            }}>
               <button
                 onClick={() => setSelectedKot(null)}
-                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200"
+                style={{
+                  flex: 1,
+                  backgroundColor: '#6b7280',
+                  color: 'white',
+                  padding: '12px 20px',
+                  borderRadius: '12px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
               >
                 Close
               </button>
               <button
                 onClick={() => printKot(selectedKot)}
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                style={{
+                  flex: 1,
+                  background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                  color: 'white',
+                  padding: '12px 20px',
+                  borderRadius: '12px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
               >
-                <FaPrint size={16} />
+                <FaPrint size={14} />
                 Print KOT
               </button>
             </div>
