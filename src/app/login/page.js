@@ -407,7 +407,7 @@ const Login = () => {
                       fontSize: '12px',
                       color: '#6b7280'
                     }}>
-                      For testing use: <strong style={{ color: '#e53e3e' }}>1234</strong>
+                      For testing use: <strong style={{ color: '#e53e3e' }}>1234 </strong>
                     </div>
                     <button
                       type="button"
