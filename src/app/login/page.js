@@ -473,7 +473,7 @@ const Login = () => {
                   ) : (
                     <FaCheck size={16} />
                   )}
-                  {loading ? 'Verifying...' : 'Verify & Login'}
+                  {loading ? 'Verifying...' : 'Verify and Login'}
                 </button>
               </form>
             </>
