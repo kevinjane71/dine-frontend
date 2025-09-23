@@ -208,6 +208,44 @@ class ApiClient {
       method: 'POST',
     });
   }
+
+  // Staff Management endpoints
+  async getStaff(restaurantId) {
+    return this.request(`/api/staff/${restaurantId}`);
+  }
+
+  async addStaff(restaurantId, staffData) {
+    return this.request(`/api/staff/${restaurantId}`, {
+      method: 'POST',
+      body: staffData,
+    });
+  }
+
+  async updateStaff(staffId, updateData) {
+    return this.request(`/api/staff/${staffId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
+  async deleteStaff(staffId) {
+    return this.request(`/api/staff/${staffId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async staffLogin(phone, otp, restaurantId) {
+    const response = await this.request('/api/auth/staff/verify-otp', {
+      method: 'POST',
+      body: { phone, otp, restaurantId },
+    });
+    
+    if (response.token) {
+      this.setToken(response.token);
+    }
+    
+    return response;
+  }
 }
 
 const apiClient = new ApiClient();

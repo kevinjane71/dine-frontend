@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Navigation from '../../components/Navigation';
 import apiClient from '../../lib/api';
 import { 
@@ -21,11 +22,13 @@ import {
 } from 'react-icons/fa';
 
 const Admin = () => {
+  const router = useRouter();
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [authorized, setAuthorized] = useState(false);
   const [newStaff, setNewStaff] = useState({
     name: '',
     phone: '',
@@ -33,45 +36,80 @@ const Admin = () => {
     startDate: new Date().toISOString().split('T')[0]
   });
 
-  // Simulated staff data - will be replaced with real API
+  // Check authorization
   useEffect(() => {
-    const mockStaff = [
-      {
-        id: '1',
-        name: 'Rahul Kumar',
-        phone: '+91-9876543210',
-        role: 'waiter',
-        status: 'active',
-        startDate: '2024-01-15',
-        lastLogin: '2024-01-20T18:30:00',
-        ordersToday: 12,
-        totalOrders: 145
-      },
-      {
-        id: '2',
-        name: 'Priya Sharma',
-        phone: '+91-9123456789',
-        role: 'waiter',
-        status: 'active',
-        startDate: '2024-01-10',
-        lastLogin: '2024-01-20T17:45:00',
-        ordersToday: 8,
-        totalOrders: 98
-      },
-      {
-        id: '3',
-        name: 'Amit Patel',
-        phone: '+91-9555666777',
-        role: 'manager',
-        status: 'active',
-        startDate: '2023-12-01',
-        lastLogin: '2024-01-20T19:00:00',
-        ordersToday: 0,
-        totalOrders: 0
+    const checkAuth = () => {
+      try {
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+          router.push('/login');
+          return;
+        }
+
+        const user = JSON.parse(userData);
+        if (user.role !== 'owner') {
+          router.push('/');
+          return;
+        }
+
+        setAuthorized(true);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        router.push('/login');
       }
-    ];
-    setStaff(mockStaff);
-  }, []);
+    };
+
+    checkAuth();
+  }, [router]);
+
+  // Fetch staff data from API
+  useEffect(() => {
+    const fetchStaff = async () => {
+      if (!authorized) return;
+      
+      try {
+        setLoading(true);
+        
+        // Use hardcoded restaurant ID for now - should come from auth context
+        const restaurantId = 'vsPjRhR9pRZDwzv4MxvL';
+        
+        const response = await apiClient.getStaff(restaurantId);
+        setStaff(response.staff);
+      } catch (error) {
+        console.error('Error fetching staff:', error);
+        // Fall back to mock data if API fails
+        const mockStaff = [
+          {
+            id: '1',
+            name: 'Rahul Kumar',
+            phone: '+91-9876543210',
+            role: 'waiter',
+            status: 'active',
+            startDate: '2024-01-15',
+            lastLogin: '2024-01-20T18:30:00',
+            ordersToday: 12,
+            totalOrders: 145
+          },
+          {
+            id: '2',
+            name: 'Priya Sharma',
+            phone: '+91-9123456789',
+            role: 'waiter',
+            status: 'active',
+            startDate: '2024-01-10',
+            lastLogin: '2024-01-20T17:45:00',
+            ordersToday: 8,
+            totalOrders: 98
+          }
+        ];
+        setStaff(mockStaff);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStaff();
+  }, [authorized]);
 
   const getRoleInfo = (role) => {
     const roleMap = {
@@ -126,17 +164,14 @@ const Admin = () => {
     try {
       setLoading(true);
       
-      // TODO: Replace with actual API call
-      const staffMember = {
-        id: Date.now().toString(),
-        ...newStaff,
-        status: 'active',
-        lastLogin: null,
-        ordersToday: 0,
-        totalOrders: 0
-      };
+      // Use hardcoded restaurant ID for now - should come from auth context
+      const restaurantId = 'vsPjRhR9pRZDwzv4MxvL';
       
-      setStaff([...staff, staffMember]);
+      const response = await apiClient.addStaff(restaurantId, newStaff);
+      
+      // Add the new staff member to the local state
+      setStaff([...staff, response.staff]);
+      
       setNewStaff({
         name: '',
         phone: '',
@@ -144,22 +179,37 @@ const Admin = () => {
         startDate: new Date().toISOString().split('T')[0]
       });
       setShowAddModal(false);
+      
+      alert('Staff member added successfully!');
     } catch (error) {
       console.error('Error adding staff:', error);
-      alert('Failed to add staff member. Please try again.');
+      alert(`Failed to add staff member: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleStaffStatus = (staffId) => {
-    setStaff(staff.map(member => {
-      if (member.id === staffId) {
-        const newStatus = member.status === 'active' ? 'inactive' : 'active';
-        return { ...member, status: newStatus };
-      }
-      return member;
-    }));
+  const toggleStaffStatus = async (staffId) => {
+    try {
+      const member = staff.find(m => m.id === staffId);
+      if (!member) return;
+      
+      const newStatus = member.status === 'active' ? 'inactive' : 'active';
+      
+      await apiClient.updateStaff(staffId, { status: newStatus });
+      
+      setStaff(staff.map(member => {
+        if (member.id === staffId) {
+          return { ...member, status: newStatus };
+        }
+        return member;
+      }));
+      
+      alert(`Staff member ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully!`);
+    } catch (error) {
+      console.error('Error updating staff status:', error);
+      alert(`Failed to update staff status: ${error.message}`);
+    }
   };
 
   const filteredStaff = staff.filter(member =>
@@ -178,6 +228,38 @@ const Admin = () => {
       minute: '2-digit'
     });
   };
+
+  // Don't render anything until authorization is checked
+  if (!authorized) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: '#fef7f0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          backgroundColor: 'white',
+          padding: '40px',
+          borderRadius: '20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '4px solid #fce7f3',
+            borderTop: '4px solid #ec4899',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }} />
+          <p style={{ color: '#6b7280', margin: 0 }}>Checking permissions...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>

@@ -21,18 +21,25 @@ const Navigation = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [user, setUser] = useState(null);
   
-  // Load restaurant data
+  // Load restaurant and user data
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Load user data from localStorage
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+        
         // This could be improved to fetch from API
         setSelectedRestaurant({
           name: 'Sample Restaurant',
           phone: '+91 9876543210'
         });
       } catch (error) {
-        console.error('Error loading restaurant data:', error);
+        console.error('Error loading data:', error);
       }
     };
     loadData();
@@ -46,15 +53,21 @@ const Navigation = () => {
     router.push('/login');
   };
   
-  const navItems = [
-    { id: 'pos', name: 'Orders', icon: FaHome, href: '/', color: '#ef4444' },
-    { id: 'orders', name: 'History', icon: FaClipboardList, href: '/orders', color: '#f59e0b' },
-    { id: 'tables', name: 'Tables', icon: FaChair, href: '/tables', color: '#3b82f6' },
-    { id: 'menu', name: 'Menu', icon: FaUtensils, href: '/menu', color: '#10b981' },
-    { id: 'analytics', name: 'Analytics', icon: FaChartBar, href: '/analytics', color: '#8b5cf6' },
-    { id: 'admin', name: 'Admin', icon: FaUsers, href: '/admin', color: '#ec4899' },
-    { id: 'kot', name: 'KOT', icon: FaPrint, href: '/kot', color: '#f97316' },
+  const getAllNavItems = () => [
+    { id: 'pos', name: 'Orders', icon: FaHome, href: '/', color: '#ef4444', roles: ['owner', 'manager', 'waiter'] },
+    { id: 'orders', name: 'History', icon: FaClipboardList, href: '/orders', color: '#f59e0b', roles: ['owner', 'manager', 'waiter'] },
+    { id: 'tables', name: 'Tables', icon: FaChair, href: '/tables', color: '#3b82f6', roles: ['owner', 'manager', 'waiter'] },
+    { id: 'menu', name: 'Menu', icon: FaUtensils, href: '/menu', color: '#10b981', roles: ['owner', 'manager'] },
+    { id: 'analytics', name: 'Analytics', icon: FaChartBar, href: '/analytics', color: '#8b5cf6', roles: ['owner', 'manager'] },
+    { id: 'admin', name: 'Admin', icon: FaUsers, href: '/admin', color: '#ec4899', roles: ['owner'] },
+    { id: 'kot', name: 'KOT', icon: FaPrint, href: '/kot', color: '#f97316', roles: ['owner', 'manager', 'waiter'] },
   ];
+
+  // Filter navigation items based on user role
+  const navItems = getAllNavItems().filter(item => {
+    if (!user || !user.role) return true; // Show all items if user data not loaded
+    return item.roles.includes(user.role);
+  });
 
   return (
     <nav style={{
@@ -174,7 +187,7 @@ const Navigation = () => {
                 <FaUsers size={12} color="white" />
               </div>
               <span style={{ fontSize: '12px', fontWeight: '600', color: '#374151' }}>
-                Waiter
+                {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User'}
               </span>
             </div>
 
