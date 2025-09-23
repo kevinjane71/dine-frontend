@@ -353,7 +353,7 @@ const Login = () => {
                   margin: 0,
                   fontSize: '14px'
                 }}>
-                  We've sent a 4-digit code to +91 {phoneNumber}
+                  We have sent a 4-digit code to +91 {phoneNumber}
                 </p>
               </div>
 
@@ -407,7 +407,7 @@ const Login = () => {
                       fontSize: '12px',
                       color: '#6b7280'
                     }}>
-                      For testing, use: <strong style={{ color: '#e53e3e' }}>1234</strong>
+                      For testing use: <strong style={{ color: '#e53e3e' }}>1234</strong>
                     </div>
                     <button
                       type="button"
