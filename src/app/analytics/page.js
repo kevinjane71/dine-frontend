@@ -207,7 +207,7 @@ const Analytics = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Analytics Dashboard</h1>
-          <p className="text-gray-600">Track your restaurant's performance and insights</p>
+          <p className="text-gray-600">Track your restaurant&apos;s performance and insights</p>
         </div>
 
         {/* Stats Cards */}
