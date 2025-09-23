@@ -8,10 +8,13 @@ import {
   FaShoppingCart, 
   FaUsers, 
   FaCalendarAlt, 
-  FaTrendingUp,
   FaUtensils,
   FaClock
-} from 'react-icons/fa';
+} from "react-icons/fa";
+
+import { FiTrendingUp } from "react-icons/fi";  // trending up replacement
+
+
 
 const Analytics = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('7d');
@@ -258,7 +261,7 @@ const Analytics = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-green-100 rounded-lg">
-                <FaTrendingUp className="text-green-600" size={20} />
+                <FiTrendingUp className="text-green-600" size={20} />
               </div>
               <div>
                 <h4 className="font-semibold text-gray-800">Revenue Growth</h4>

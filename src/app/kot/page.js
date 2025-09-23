@@ -23,6 +23,7 @@ import {
   FaTruck,
   FaShoppingBag
 } from 'react-icons/fa';
+import { GiChefToque } from "react-icons/gi";
 
 const KitchenOrderTicket = () => {
   const [kotOrders, setKotOrders] = useState([]);
@@ -766,7 +767,7 @@ const KitchenOrderTicket = () => {
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    <FaChefHat color="white" size={18} />
+                    <GiChefToque color="white" size={18} />
                   </div>
                   <h2 style={{
                     fontSize: '24px',
