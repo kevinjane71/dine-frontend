@@ -600,7 +600,7 @@ const Admin = () => {
                     transition: 'all 0.2s',
                     boxSizing: 'border-box'
                   }}
-                  placeholder="Enter staff member's full name"
+                  placeholder="Enter staff member full name"
                 />
               </div>
 
