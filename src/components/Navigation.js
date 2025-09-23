@@ -9,7 +9,8 @@ import {
   FaCog, 
   FaQrcode, 
   FaClipboardList, 
-  FaTags 
+  FaTags,
+  FaChair 
 } from 'react-icons/fa';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,63 +19,123 @@ const Navigation = () => {
   const pathname = usePathname();
   
   const navItems = [
-    { id: 'pos', name: 'POS System', icon: FaHome, href: '/', color: '#e53e3e' },
-    { id: 'menu', name: 'Menu Management', icon: FaUtensils, href: '/menu', color: '#38a169' },
-    { id: 'orders', name: 'Orders', icon: FaClipboardList, href: '/orders', color: '#3182ce' },
-    { id: 'kot', name: 'Kitchen Orders', icon: FaClipboardList, href: '/kot', color: '#f97316' },
-    { id: 'analytics', name: 'Analytics', icon: FaChartBar, href: '/analytics', color: '#805ad5' },
-    { id: 'customers', name: 'Customers', icon: FaUsers, href: '/customers', color: '#d69e2e' },
-    { id: 'qr-menu', name: 'QR Menu', icon: FaQrcode, href: '/qr-menu', color: '#319795' },
-    { id: 'offers', name: 'Offers & Coupons', icon: FaTags, href: '/offers', color: '#e53e3e' },
-    { id: 'settings', name: 'Settings', icon: FaCog, href: '/settings', color: '#718096' },
+    { id: 'pos', name: 'POS', icon: FaHome, href: '/', color: '#ef4444' },
+    { id: 'tables', name: 'Tables', icon: FaChair, href: '/tables', color: '#3b82f6' },
+    { id: 'menu', name: 'Menu', icon: FaUtensils, href: '/menu', color: '#10b981' },
+    { id: 'orders', name: 'Orders', icon: FaClipboardList, href: '/orders', color: '#f59e0b' },
+    { id: 'kot', name: 'Kitchen', icon: FaClipboardList, href: '/kot', color: '#f97316' },
+    { id: 'analytics', name: 'Analytics', icon: FaChartBar, href: '/analytics', color: '#8b5cf6' },
+    { id: 'customers', name: 'Customers', icon: FaUsers, href: '/customers', color: '#06b6d4' },
+    { id: 'qr-menu', name: 'QR Menu', icon: FaQrcode, href: '/qr-menu', color: '#84cc16' },
+    { id: 'offers', name: 'Offers', icon: FaTags, href: '/offers', color: '#ec4899' },
+    { id: 'settings', name: 'Settings', icon: FaCog, href: '/settings', color: '#6b7280' },
   ];
 
   return (
-    <nav className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <FaUtensils className="text-white" size={20} />
+    <nav style={{
+      backgroundColor: '#ffffff',
+      borderBottom: '1px solid #f1f5f9',
+      padding: '12px 24px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ 
+              width: '36px', 
+              height: '36px', 
+              background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
+              borderRadius: '10px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+            }}>
+              <FaUtensils color="white" size={18} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">🍽️ Dine</h1>
-              <p className="text-xs text-gray-500">Restaurant Management</p>
+              <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+                Dine
+              </h1>
+              <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>
+                Restaurant System
+              </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-1">
+          {/* Navigation Items */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {navItems.map((item) => {
               const IconComponent = item.icon;
               const isActive = pathname === item.href;
               
               return (
                 <Link key={item.id} href={item.href}>
-                  <button
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2 ${
-                      isActive
-                        ? 'bg-primary text-white shadow-lg'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-                    }`}
+                  <div
+                    style={{
+                      padding: '10px 16px',
+                      borderRadius: '12px',
+                      fontWeight: '600',
+                      fontSize: '13px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      backgroundColor: isActive ? item.color : 'transparent',
+                      color: isActive ? 'white' : '#64748b',
+                      textDecoration: 'none',
+                      boxShadow: isActive ? `0 4px 14px ${item.color}40` : 'none',
+                      transform: isActive ? 'translateY(-1px)' : 'none'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = '#f8fafc';
+                        e.currentTarget.style.color = item.color;
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#64748b';
+                        e.currentTarget.style.transform = 'none';
+                      }
+                    }}
                   >
-                    <IconComponent 
-                      size={16} 
-                      style={{ color: isActive ? 'white' : item.color }} 
-                    />
+                    <IconComponent size={14} />
                     {item.name}
-                  </button>
+                  </div>
                 </Link>
               );
             })}
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-sm font-medium text-gray-800">Restaurant Name</p>
-            <p className="text-xs text-gray-500">Ground Floor</p>
+        {/* Right Side */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+              Restaurant Name
+            </p>
+            <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>
+              📞 9034142334
+            </p>
           </div>
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-red-600 rounded-full flex items-center justify-center text-white font-bold">
+          <div style={{ 
+            width: '36px', 
+            height: '36px', 
+            background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
+            borderRadius: '50%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            color: 'white', 
+            fontWeight: 'bold',
+            fontSize: '14px'
+          }}>
             R
           </div>
         </div>
