@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { 
   FaHome, 
   FaUtensils, 
@@ -17,7 +17,7 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
-const Navigation = () => {
+function NavigationContent() {
   const pathname = usePathname();
   const router = useRouter();
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
@@ -224,6 +224,58 @@ const Navigation = () => {
         </div>
       </div>
     </nav>
+  );
+}
+
+function NavigationFallback() {
+  return (
+    <nav style={{
+      backgroundColor: '#ffffff',
+      borderBottom: '1px solid #f1f5f9',
+      padding: '12px 24px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ 
+            width: '36px', 
+            height: '36px', 
+            background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
+            borderRadius: '10px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+          }}>
+            <FaUtensils color="white" size={18} />
+          </div>
+          <div>
+            <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+              Dine
+            </h1>
+            <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>
+              Restaurant System
+            </p>
+          </div>
+        </div>
+        <div style={{ 
+          width: '20px', 
+          height: '20px', 
+          border: '2px solid #e5e7eb',
+          borderTop: '2px solid #ef4444',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+      </div>
+    </nav>
+  );
+}
+
+const Navigation = () => {
+  return (
+    <Suspense fallback={<NavigationFallback />}>
+      <NavigationContent />
+    </Suspense>
   );
 };
 

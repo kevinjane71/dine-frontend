@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   FaSearch, 
@@ -31,7 +31,7 @@ import {
 } from 'react-icons/fa';
 import apiClient from '../lib/api';
 
-export default function RestaurantPOS() {
+function RestaurantPOSContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -1419,5 +1419,44 @@ export default function RestaurantPOS() {
         </div>
       )}
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#fef7f0',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <div style={{
+        textAlign: 'center',
+        backgroundColor: 'white',
+        padding: '40px',
+        borderRadius: '20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '4px solid #fed7aa',
+          borderTop: '4px solid #f59e0b',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          margin: '0 auto 16px'
+        }} />
+        <p style={{ color: '#6b7280', margin: 0 }}>Loading restaurant system...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function RestaurantPOS() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <RestaurantPOSContent />
+    </Suspense>
   );
 }
