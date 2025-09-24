@@ -37,7 +37,7 @@ const Orders = () => {
     router.push('/login');
   };
 
-  // Fetch real orders from backend - NO MOCK DATA FALLBACK
+  // Fetch real orders from backend
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -46,14 +46,44 @@ const Orders = () => {
         
         // Check if user is authenticated
         const token = localStorage.getItem('authToken');
-        if (!token) {
+        const userData = localStorage.getItem('user');
+        if (!token || !userData) {
           setError('Please log in to view orders');
           setLoading(false);
           return;
         }
-        
-        // Use hardcoded restaurant ID for now - should come from auth context
-        const restaurantId = 'vsPjRhR9pRZDwzv4MxvL';
+
+        const user = JSON.parse(userData);
+        let restaurantId = null;
+
+        // For staff members, use their assigned restaurant
+        if (user.restaurantId) {
+          restaurantId = user.restaurantId;
+        } 
+        // For owners, get selected restaurant from localStorage or first restaurant
+        else if (user.role === 'owner') {
+          try {
+            const restaurantsResponse = await apiClient.getRestaurants();
+            if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
+              const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+              const selectedRestaurant = restaurantsResponse.restaurants.find(r => r.id === savedRestaurantId) || 
+                                        restaurantsResponse.restaurants[0];
+              restaurantId = selectedRestaurant.id;
+            } else {
+              setError('No restaurants found. Please add a restaurant first.');
+              setLoading(false);
+              return;
+            }
+          } catch (err) {
+            setError('Failed to fetch restaurant information');
+            setLoading(false);
+            return;
+          }
+        } else {
+          setError('Unable to determine restaurant context');
+          setLoading(false);
+          return;
+        }
         
         const response = await apiClient.getOrders(restaurantId);
         

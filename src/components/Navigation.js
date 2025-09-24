@@ -12,7 +12,8 @@ import {
   FaTags,
   FaChair,
   FaSignOutAlt,
-  FaPrint
+  FaPrint,
+  FaChevronDown
 } from 'react-icons/fa';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -21,7 +22,21 @@ function NavigationContent() {
   const pathname = usePathname();
   const router = useRouter();
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [allRestaurants, setAllRestaurants] = useState([]);
+  const [showRestaurantDropdown, setShowRestaurantDropdown] = useState(false);
   const [user, setUser] = useState(null);
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showRestaurantDropdown && !event.target.closest('[data-restaurant-dropdown]')) {
+        setShowRestaurantDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showRestaurantDropdown]);
   
   // Load restaurant and user data
   useEffect(() => {
@@ -30,14 +45,61 @@ function NavigationContent() {
         // Load user data from localStorage
         const userData = localStorage.getItem('user');
         if (userData) {
-          setUser(JSON.parse(userData));
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
+          
+          // Fetch restaurant data from API for staff and owners
+          if (parsedUser.restaurantId) {
+            // For staff, get their specific restaurant
+            try {
+              const token = localStorage.getItem('authToken');
+              const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003'}/api/restaurants`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+              if (response.ok) {
+                const data = await response.json();
+                const userRestaurant = data.restaurants.find(r => r.id === parsedUser.restaurantId);
+                if (userRestaurant) {
+                  setSelectedRestaurant(userRestaurant);
+                }
+              }
+            } catch (error) {
+              console.error('Error fetching restaurant data:', error);
+            }
+          } else if (parsedUser.role === 'owner') {
+            // For owners, get all their restaurants
+            try {
+              const token = localStorage.getItem('authToken');
+              const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003'}/api/restaurants`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+              if (response.ok) {
+                const data = await response.json();
+                if (data.restaurants && data.restaurants.length > 0) {
+                  setAllRestaurants(data.restaurants);
+                  
+                  // Check if there's a previously selected restaurant in localStorage
+                  const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+                  const savedRestaurant = data.restaurants.find(r => r.id === savedRestaurantId);
+                  
+                  // Use saved restaurant or default to first one
+                  setSelectedRestaurant(savedRestaurant || data.restaurants[0]);
+                  if (!savedRestaurant) {
+                    localStorage.setItem('selectedRestaurantId', data.restaurants[0].id);
+                  }
+                }
+              }
+            } catch (error) {
+              console.error('Error fetching restaurant data:', error);
+            }
+          }
         }
-        
-        // This could be improved to fetch from API
-        setSelectedRestaurant({
-          name: 'Sample Restaurant',
-          phone: '+91 9876543210'
-        });
       } catch (error) {
         console.error('Error loading data:', error);
       }
@@ -50,7 +112,17 @@ function NavigationContent() {
     localStorage.removeItem('user');
     localStorage.removeItem('dine_cart');
     localStorage.removeItem('dine_saved_order');
+    localStorage.removeItem('selectedRestaurantId');
     router.push('/login');
+  };
+
+  const handleRestaurantChange = (restaurant) => {
+    setSelectedRestaurant(restaurant);
+    localStorage.setItem('selectedRestaurantId', restaurant.id);
+    setShowRestaurantDropdown(false);
+    
+    // Trigger a page refresh to reload data for the new restaurant
+    window.location.reload();
   };
   
   const getAllNavItems = () => [
@@ -165,13 +237,119 @@ function NavigationContent() {
         {/* Right Side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {/* Restaurant Info */}
-          <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
-              {selectedRestaurant?.name || 'Restaurant'}
-            </p>
-            <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>
-              📞 {selectedRestaurant?.phone || '+91 9876543210'}
-            </p>
+          <div style={{ position: 'relative' }} data-restaurant-dropdown>
+            {/* Restaurant Selector for Owners */}
+            {user?.role === 'owner' && allRestaurants.length > 1 ? (
+              <div 
+                onClick={() => setShowRestaurantDropdown(!showRestaurantDropdown)}
+                style={{ 
+                  textAlign: 'right', 
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '8px',
+                  backgroundColor: showRestaurantDropdown ? '#f3f4f6' : 'transparent',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (!showRestaurantDropdown) e.currentTarget.style.backgroundColor = '#f9fafb';
+                }}
+                onMouseLeave={(e) => {
+                  if (!showRestaurantDropdown) e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                      {selectedRestaurant?.name || 'Select Restaurant'}
+                    </p>
+                    <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>
+                      {selectedRestaurant?.phone ? `📞 ${selectedRestaurant.phone}` : '🍽️ Restaurant System'}
+                    </p>
+                  </div>
+                  <FaChevronDown style={{ fontSize: '10px', color: '#6b7280' }} />
+                </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                  {selectedRestaurant?.name || (user?.role === 'owner' ? 'Setup Restaurant' : 'Dine POS')}
+                </p>
+                <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>
+                  {selectedRestaurant?.phone ? `📞 ${selectedRestaurant.phone}` : '🍽️ Restaurant System'}
+                </p>
+              </div>
+            )}
+
+            {/* Restaurant Dropdown */}
+            {showRestaurantDropdown && allRestaurants.length > 1 && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '12px',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                zIndex: 50,
+                minWidth: '280px',
+                marginTop: '8px'
+              }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid #f3f4f6' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                    Switch Restaurant
+                  </h4>
+                </div>
+                {allRestaurants.map((restaurant) => (
+                  <div
+                    key={restaurant.id}
+                    onClick={() => handleRestaurantChange(restaurant)}
+                    style={{
+                      padding: '12px 16px',
+                      cursor: 'pointer',
+                      backgroundColor: selectedRestaurant?.id === restaurant.id ? '#fef7f0' : 'transparent',
+                      borderBottom: '1px solid #f9fafb',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedRestaurant?.id !== restaurant.id) {
+                        e.currentTarget.style.backgroundColor = '#f9fafb';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedRestaurant?.id !== restaurant.id) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        <p style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                          {restaurant.name}
+                        </p>
+                        {restaurant.phone && (
+                          <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>
+                            📞 {restaurant.phone}
+                          </p>
+                        )}
+                      </div>
+                      {selectedRestaurant?.id === restaurant.id && (
+                        <div style={{ 
+                          width: '20px', 
+                          height: '20px', 
+                          backgroundColor: '#10b981', 
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <div style={{ fontSize: '12px', color: 'white' }}>✓</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* User Menu */}

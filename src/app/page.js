@@ -105,15 +105,34 @@ function RestaurantPOSContent() {
     try {
       setLoading(true);
       
+      // Get user data to determine restaurant context
+      const userData = localStorage.getItem('user');
+      const user = userData ? JSON.parse(userData) : null;
+      
       // Load restaurants
       const restaurantsResponse = await apiClient.getRestaurants();
       setRestaurants(restaurantsResponse.restaurants || []);
       
-      // Select first restaurant or create one if none exist
-      if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
-        const restaurant = restaurantsResponse.restaurants[0];
-        setSelectedRestaurant(restaurant);
+      let restaurant = null;
+      
+      // For staff members, use their assigned restaurant
+      if (user?.restaurantId) {
+        restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
+      }
+      // For owners, use selected restaurant from localStorage or first restaurant
+      else if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
+        const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+        restaurant = restaurantsResponse.restaurants.find(r => r.id === savedRestaurantId) || 
+                    restaurantsResponse.restaurants[0];
         
+        // Save the selected restaurant ID if not already saved
+        if (!savedRestaurantId) {
+          localStorage.setItem('selectedRestaurantId', restaurant.id);
+        }
+      }
+      
+      if (restaurant) {
+        setSelectedRestaurant(restaurant);
         // Load menu for selected restaurant
         await loadMenu(restaurant.id);
       } else {

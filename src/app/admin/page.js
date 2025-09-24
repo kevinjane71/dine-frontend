@@ -287,9 +287,10 @@ const Admin = () => {
   );
 
   const filteredStaff = staff.filter(member =>
-    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.phone.includes(searchTerm) ||
-    member.role.toLowerCase().includes(searchTerm.toLowerCase())
+    (member.name && member.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (member.phone && member.phone.includes(searchTerm)) ||
+    (member.email && member.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (member.role && member.role.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const formatDateTime = (dateString) => {
@@ -748,8 +749,8 @@ const Admin = () => {
                           <RoleIcon color="white" size={20} />
                         </div>
                         <div>
-                          <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{member.name}</h3>
-                          <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>{member.phone}</p>
+                          <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{member.name || 'Unknown'}</h3>
+                          <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>{member.phone || member.email || 'No contact'}</p>
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '6px' }}>
@@ -795,7 +796,7 @@ const Admin = () => {
                         <div>
                           <span style={{ fontSize: '11px', color: '#6b7280', display: 'block' }}>Start Date</span>
                           <span style={{ fontSize: '13px', fontWeight: '500', color: '#1f2937' }}>
-                            {new Date(member.startDate).toLocaleDateString('en-IN')}
+                            {member.startDate ? new Date(member.startDate).toLocaleDateString('en-IN') : 'N/A'}
                           </span>
                         </div>
                       </div>
@@ -822,14 +823,14 @@ const Admin = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div style={{ textAlign: 'center' }}>
                             <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
-                              {member.ordersToday}
+                              {member.ordersToday || 0}
                             </div>
                             <div style={{ fontSize: '11px', color: '#6b7280' }}>Today</div>
                           </div>
                           <div style={{ width: '1px', height: '30px', backgroundColor: '#e2e8f0' }} />
                           <div style={{ textAlign: 'center' }}>
                             <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
-                              {member.totalOrders}
+                              {member.totalOrders || 0}
                             </div>
                             <div style={{ fontSize: '11px', color: '#6b7280' }}>Total Orders</div>
                           </div>
@@ -1631,10 +1632,11 @@ const Admin = () => {
                 }}>
                   <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '12px', fontSize: '16px' }}>Personal Information</h3>
                   <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
-                    <div style={{ marginBottom: '8px' }}><strong>Name:</strong> {selectedStaff.name}</div>
-                    <div style={{ marginBottom: '8px' }}><strong>Phone:</strong> {selectedStaff.phone}</div>
-                    <div style={{ marginBottom: '8px' }}><strong>Role:</strong> {getRoleInfo(selectedStaff.role).label}</div>
-                    <div style={{ marginBottom: '8px' }}><strong>Status:</strong> {getStatusInfo(selectedStaff.status).label}</div>
+                    <div style={{ marginBottom: '8px' }}><strong>Name:</strong> {selectedStaff.name || 'N/A'}</div>
+                    <div style={{ marginBottom: '8px' }}><strong>Phone:</strong> {selectedStaff.phone || 'N/A'}</div>
+                    <div style={{ marginBottom: '8px' }}><strong>Email:</strong> {selectedStaff.email || 'N/A'}</div>
+                    <div style={{ marginBottom: '8px' }}><strong>Role:</strong> {getRoleInfo(selectedStaff.role || 'waiter').label}</div>
+                    <div style={{ marginBottom: '8px' }}><strong>Status:</strong> {getStatusInfo(selectedStaff.status || 'active').label}</div>
                   </div>
                 </div>
                 
@@ -1646,12 +1648,12 @@ const Admin = () => {
                 }}>
                   <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '12px', fontSize: '16px' }}>Work Information</h3>
                   <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
-                    <div style={{ marginBottom: '8px' }}><strong>Start Date:</strong> {new Date(selectedStaff.startDate).toLocaleDateString('en-IN')}</div>
+                    <div style={{ marginBottom: '8px' }}><strong>Start Date:</strong> {selectedStaff.startDate ? new Date(selectedStaff.startDate).toLocaleDateString('en-IN') : 'N/A'}</div>
                     <div style={{ marginBottom: '8px' }}><strong>Last Login:</strong> {formatDateTime(selectedStaff.lastLogin)}</div>
                     {selectedStaff.role === 'waiter' && (
                       <>
-                        <div style={{ marginBottom: '8px' }}><strong>Orders Today:</strong> {selectedStaff.ordersToday}</div>
-                        <div style={{ marginBottom: '8px' }}><strong>Total Orders:</strong> {selectedStaff.totalOrders}</div>
+                        <div style={{ marginBottom: '8px' }}><strong>Orders Today:</strong> {selectedStaff.ordersToday || 0}</div>
+                        <div style={{ marginBottom: '8px' }}><strong>Total Orders:</strong> {selectedStaff.totalOrders || 0}</div>
                       </>
                     )}
                   </div>
