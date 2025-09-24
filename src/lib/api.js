@@ -209,6 +209,12 @@ class ApiClient {
     });
   }
 
+  async seedOrders(restaurantId) {
+    return this.request(`/api/seed-orders/${restaurantId}`, {
+      method: 'POST',
+    });
+  }
+
   // Staff Management endpoints
   async getStaff(restaurantId) {
     return this.request(`/api/staff/${restaurantId}`);
