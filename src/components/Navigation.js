@@ -64,10 +64,20 @@ function NavigationContent() {
   ];
 
   // Filter navigation items based on user role
+  // Filter navigation items based on user role
   const navItems = getAllNavItems().filter(item => {
-    if (!user || !user.role) return true; // Show all items if user data not loaded
-    return item.roles.includes(user.role);
+    if (!user || !user.role) {
+      // No user or role not found → show everything
+      return true;
+    }
+    // If user.role matches known roles → filter accordingly
+    if (['owner', 'manager', 'waiter'].includes(user.role)) {
+      return item.roles.includes(user.role);
+    }
+    // Any other role → show everything
+    return true;
   });
+
 
   return (
     <nav style={{

@@ -32,7 +32,7 @@ const Login = () => {
     
     try {
       // Call backend API to send OTP
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dine-backend-lake.vercel.app';
       const response = await fetch(`${backendUrl}/api/auth/phone/send-otp`, {
         method: 'POST',
         headers: {
