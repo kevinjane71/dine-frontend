@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Header from '../components/Navigation';
 import { 
   FaSearch, 
   FaShoppingCart, 
@@ -126,7 +127,7 @@ function RestaurantPOSContent() {
       setLoading(false);
     }
   };
-
+ 
   const createSampleRestaurant = async () => {
     try {
       const restaurantData = {
@@ -348,19 +349,16 @@ function RestaurantPOSContent() {
   };
 
   // Loading state
+  
   if (loading) {
     return (
-      <div style={{ 
-        height: '100vh', 
-        backgroundColor: '#f9fafb', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        flexDirection: 'column',
-        gap: '16px'
-      }}>
-        <FaSpinner className="animate-spin" size={32} color="#e53e3e" />
-        <p style={{ color: '#6b7280', fontSize: '16px', fontWeight: '600' }}>Loading restaurant data...</p>
+      <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+        <Header handleLogout={handleLogout} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '16px', color: '#6b7280' }}>Loading orders...</div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -408,353 +406,8 @@ function RestaurantPOSContent() {
   return (
     <div style={{ height: '100vh', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div style={{ backgroundColor: 'white', padding: '12px 16px', borderBottom: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Brand - Clickable Home Link */}
-            <button
-              onClick={() => navigateToPage('/')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                backgroundColor: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '4px',
-                borderRadius: '8px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-            >
-              <div style={{ width: '32px', height: '32px', backgroundColor: '#e53e3e', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <FaUtensils color="white" size={16} />
-              </div>
-              <div>
-                <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Dine POS</h1>
-                {selectedTable && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                    <FaChair size={12} color="#e53e3e" />
-                    <span style={{ fontSize: '12px', fontWeight: '600', color: '#e53e3e' }}>
-                      {selectedTable.name} - {selectedTable.floor} {selectedTable.capacity !== 'N/A' && `(${selectedTable.capacity} seats)`}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        clearSelectedTable();
-                      }}
-                      style={{
-                        marginLeft: '6px',
-                        width: '16px',
-                        height: '16px',
-                        borderRadius: '50%',
-                        backgroundColor: '#f3f4f6',
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#6b7280'
-                      }}
-                    >
-                      <FaTimes size={8} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </button>
-
-            {/* Navigation Menu */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#f9fafb', borderRadius: '12px', padding: '4px' }}>
-              <button
-                onClick={() => navigateToPage('/')}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  backgroundColor: 'white',
-                  color: '#e53e3e',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <FaHome size={12} />
-                Orders
-              </button>
-              
-              <button
-                onClick={() => navigateToPage('/orders')}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  backgroundColor: 'transparent',
-                  color: '#6b7280',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'white';
-                  e.target.style.color = '#e53e3e';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#6b7280';
-                }}
-              >
-                <FaClipboardList size={12} />
-                History
-              </button>
-
-              <button
-                onClick={() => navigateToPage('/tables')}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  backgroundColor: 'transparent',
-                  color: '#6b7280',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'white';
-                  e.target.style.color = '#e53e3e';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#6b7280';
-                }}
-              >
-                <FaChair size={12} />
-                Tables
-              </button>
-
-              <button
-                onClick={() => navigateToPage('/menu')}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  backgroundColor: 'transparent',
-                  color: '#6b7280',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'white';
-                  e.target.style.color = '#e53e3e';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#6b7280';
-                }}
-              >
-                <FaUtensils size={12} />
-                Menu
-              </button>
-
-              <button
-                onClick={() => navigateToPage('/analytics')}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  backgroundColor: 'transparent',
-                  color: '#6b7280',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'white';
-                  e.target.style.color = '#e53e3e';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#6b7280';
-                }}
-              >
-                <FaChartBar size={12} />
-                Analytics
-              </button>
-
-              <button
-                onClick={() => navigateToPage('/kot')}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  backgroundColor: 'transparent',
-                  color: '#6b7280',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'white';
-                  e.target.style.color = '#e53e3e';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#6b7280';
-                }}
-              >
-                <FaPrint size={12} />
-                KOT
-              </button>
-            </div>
-            
-            {/* Order Type Selector */}
-            <div style={{ display: 'flex', backgroundColor: '#f3f4f6', borderRadius: '12px', padding: '4px' }}>
-              {['dine-in', 'delivery', 'pickup'].map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setOrderType(type)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    fontWeight: '600',
-                    fontSize: '12px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    backgroundColor: orderType === type ? 'white' : 'transparent',
-                    color: orderType === type ? '#e53e3e' : '#6b7280',
-                    boxShadow: orderType === type ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
-                  }}
-                >
-                  {type === 'dine-in' ? '🍽️ Dine In' : type === 'delivery' ? '🚚 Delivery' : '🥡 Pickup'}
-                </button>
-              ))}
-            </div>
-            
-            {/* Table Selection Button - Only show for dine-in without table */}
-            {orderType === 'dine-in' && !selectedTable && (
-              <button
-                onClick={() => setShowTableSelector(true)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  border: '1px solid #e5e7eb',
-                  cursor: 'pointer',
-                  backgroundColor: 'white',
-                  color: '#374151',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                <FaChair size={12} />
-                Select Table
-              </button>
-            )}
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {/* Restaurant Info */}
-            <div style={{ color: '#374151', textAlign: 'right' }}>
-              <p style={{ fontWeight: '600', margin: 0, fontSize: '14px' }}>
-                {selectedRestaurant?.name || 'Restaurant'}
-              </p>
-              <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>
-                📞 {selectedRestaurant?.phone || '+91 9876543210'}
-              </p>
-            </div>
-
-            {/* User Menu */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {/* User Info */}
-              <div style={{
-                padding: '6px 12px',
-                backgroundColor: '#f3f4f6',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                <div style={{
-                  width: '24px',
-                  height: '24px',
-                  backgroundColor: '#10b981',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <FaUsers size={12} color="white" />
-                </div>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: '#374151' }}>
-                  Waiter
-                </span>
-              </div>
-
-              {/* Logout Button */}
-              <button
-                onClick={handleLogout}
-                style={{
-                  padding: '8px 12px',
-                  backgroundColor: '#fee2e2',
-                  color: '#dc2626',
-                  border: '1px solid #fecaca',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#fecaca';
-                  e.target.style.borderColor = '#f87171';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#fee2e2';
-                  e.target.style.borderColor = '#fecaca';
-                }}
-              >
-                <FaSignOutAlt size={12} />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      
+      <Header handleLogout={handleLogout} />
       {/* Main Content */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* Categories Sidebar */}
