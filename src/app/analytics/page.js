@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navigation from '../../components/Navigation';
+import { useRouter } from 'next/navigation';
+import Header from '../../components/Header';
 import { 
   FaChartLine, 
   FaMoneyBillWave, 
@@ -17,6 +18,16 @@ import { FiTrendingUp } from "react-icons/fi";  // trending up replacement
 
 
 const Analytics = () => {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('dine_cart');
+    localStorage.removeItem('dine_saved_order');
+    router.push('/login');
+  };
+
   const [selectedPeriod, setSelectedPeriod] = useState('7d');
   const [analytics, setAnalytics] = useState({
     totalRevenue: 45670,
@@ -201,7 +212,7 @@ const Analytics = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
+      <Header handleLogout={handleLogout} />
       
       <div className="p-6">
         {/* Header */}

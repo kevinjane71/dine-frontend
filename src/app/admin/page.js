@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import Navigation from '../../components/Navigation';
+import Header from '../../components/Header';
 import apiClient from '../../lib/api';
 import { 
   FaUsers, 
@@ -61,6 +61,14 @@ const Admin = () => {
 
     checkAuth();
   }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('dine_cart');
+    localStorage.removeItem('dine_saved_order');
+    router.push('/login');
+  };
 
   // Fetch staff data from API
   useEffect(() => {
@@ -263,7 +271,7 @@ const Admin = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
-      <Navigation />
+      <Header handleLogout={handleLogout} />
       
       <div style={{ padding: '24px' }}>
         {/* Header */}

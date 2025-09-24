@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navigation from '../../components/Navigation';
+import { useRouter } from 'next/navigation';
+import Header from '../../components/Header';
 import apiClient from '../../lib/api';
 import { 
   FaEye, 
@@ -27,6 +28,7 @@ import {
 } from 'react-icons/fa';
 
 const Orders = () => {
+  const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
@@ -34,6 +36,14 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('dine_cart');
+    localStorage.removeItem('dine_saved_order');
+    router.push('/login');
+  };
 
   // Fetch real orders from backend
   useEffect(() => {
@@ -189,7 +199,7 @@ const Orders = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
-      <Navigation />
+      <Header handleLogout={handleLogout} />
       
       <div style={{ padding: '24px' }}>
         {/* Header */}

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Navigation from '../../components/Navigation';
+import { useRouter } from 'next/navigation';
+import Header from '../../components/Header';
 import { 
   FaPlus, 
   FaTrash,
@@ -16,6 +17,16 @@ import {
 } from 'react-icons/fa';
 
 const TableManagement = () => {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('dine_cart');
+    localStorage.removeItem('dine_saved_order');
+    router.push('/login');
+  };
+
   const [floors, setFloors] = useState([]);
   const [showAddTable, setShowAddTable] = useState(false);
   const [showAddFloor, setShowAddFloor] = useState(false);
@@ -247,7 +258,7 @@ const TableManagement = () => {
 
   return (
     <div style={{ height: '100vh', backgroundColor: '#fef7f0', overflow: 'hidden' }}>
-      <Navigation />
+      <Header handleLogout={handleLogout} />
       
       <div style={{ height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}

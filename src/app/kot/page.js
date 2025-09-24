@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navigation from '../../components/Navigation';
+import { useRouter } from 'next/navigation';
+import Header from '../../components/Header';
 import { 
   FaPrint, 
   FaClock, 
@@ -26,6 +27,16 @@ import {
 import { GiChefToque } from "react-icons/gi";
 
 const KitchenOrderTicket = () => {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('dine_cart');
+    localStorage.removeItem('dine_saved_order');
+    router.push('/login');
+  };
+
   const [kotOrders, setKotOrders] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedKot, setSelectedKot] = useState(null);
@@ -228,7 +239,7 @@ const KitchenOrderTicket = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
-      <Navigation />
+      <Header handleLogout={handleLogout} />
       
       <div style={{ height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}

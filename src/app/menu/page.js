@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navigation from '../../components/Navigation';
+import { useRouter } from 'next/navigation';
+import Header from '../../components/Header';
 import { 
   FaPlus, 
   FaEdit, 
@@ -19,6 +20,16 @@ import {
 } from 'react-icons/fa';
 
 const MenuManagement = () => {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('dine_cart');
+    localStorage.removeItem('dine_saved_order');
+    router.push('/login');
+  };
+
   const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([
     { id: 'fast-food', name: 'Fast Food' },
@@ -114,7 +125,7 @@ const MenuManagement = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
-      <Navigation />
+      <Header handleLogout={handleLogout} />
       
       <div style={{ padding: '24px' }}>
         {/* Header */}
