@@ -57,6 +57,7 @@ function RestaurantPOSContent() {
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderComplete, setOrderComplete] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(null); // { orderId: 'ORD-123', show: true }
 
   const categories = [
     { id: 'all-items', name: 'All Items', emoji: '🍽️' },
@@ -238,15 +239,26 @@ function RestaurantPOSContent() {
       setProcessing(true);
       setError('');
 
+      // Get current user/staff info
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      
       // Prepare order data
       const orderData = {
         restaurantId: selectedRestaurant.id,
         tableNumber: selectedTable?.name || null,
         orderType,
+        paymentMethod,
+        staffInfo: {
+          id: currentUser.id,
+          name: currentUser.name || 'Staff',
+          role: currentUser.role || 'waiter'
+        },
         items: cart.map(item => ({
           menuItemId: item.id,
           quantity: item.quantity,
-          notes: ''
+          notes: '',
+          name: item.name,
+          price: item.price
         })),
         customerInfo: {
           name: 'Walk-in Customer',
@@ -264,30 +276,47 @@ function RestaurantPOSContent() {
         await apiClient.updateTableStatus(selectedTable.id, 'occupied', orderId);
       }
 
-      // Process payment (mock for cash payments)
+      // Process payment based on method
       if (paymentMethod === 'cash') {
         await apiClient.verifyPayment({
           orderId,
           razorpay_payment_id: `cash_payment_${Date.now()}`,
           razorpay_order_id: `cash_order_${Date.now()}`,
-          razorpay_signature: 'cash_signature'
+          razorpay_signature: 'cash_signature',
+          paymentMethod: 'cash'
+        });
+      } else if (paymentMethod === 'upi') {
+        await apiClient.verifyPayment({
+          orderId,
+          razorpay_payment_id: `upi_payment_${Date.now()}`,
+          razorpay_order_id: `upi_order_${Date.now()}`,
+          razorpay_signature: 'upi_signature',
+          paymentMethod: 'upi'
+        });
+      } else if (paymentMethod === 'card') {
+        await apiClient.verifyPayment({
+          orderId,
+          razorpay_payment_id: `card_payment_${Date.now()}`,
+          razorpay_order_id: `card_order_${Date.now()}`,
+          razorpay_signature: 'card_signature',
+          paymentMethod: 'card'
         });
       }
 
-      // Clear cart and show success
+      // Clear cart and show inline success
       setCart([]);
       localStorage.removeItem('dine_cart');
-      setOrderComplete(true);
-
-      // Reset after 3 seconds
+      setOrderSuccess({ orderId, show: true });
+      
+      // Auto-hide success message after 5 seconds
       setTimeout(() => {
-        setOrderComplete(false);
+        setOrderSuccess(null);
         if (selectedTable && selectedTable.id) {
           // Release table
           apiClient.updateTableStatus(selectedTable.id, 'available');
           setSelectedTable(null);
         }
-      }, 3000);
+      }, 5000);
 
     } catch (error) {
       console.error('Order processing error:', error);
@@ -363,45 +392,7 @@ function RestaurantPOSContent() {
     );
   }
 
-  // Order complete state
-  if (orderComplete) {
-    return (
-      <div style={{ 
-        height: '100vh', 
-        backgroundColor: '#f0f9ff', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        flexDirection: 'column',
-        gap: '24px'
-      }}>
-        <div style={{
-          width: '120px',
-          height: '120px',
-          backgroundColor: '#10b981',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <FaCheckCircle size={60} color="white" />
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>
-            Order Complete!
-          </h1>
-          <p style={{ color: '#6b7280', fontSize: '18px', margin: 0 }}>
-            Payment processed successfully
-          </p>
-          {selectedTable && (
-            <p style={{ color: '#10b981', fontSize: '14px', fontWeight: '600', marginTop: '8px' }}>
-              Table {selectedTable.name} will be released shortly
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  }
+  // Removed full screen success - using inline success instead
 
   return (
     <div style={{ height: '100vh', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
@@ -830,9 +821,31 @@ function RestaurantPOSContent() {
                 </div>
               </div>
 
-              {/* Payment & Actions */}
-              <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              {/* Success Message */}
+              {orderSuccess?.show && (
+                <div style={{ 
+                  padding: '12px', 
+                  backgroundColor: '#dcfce7', 
+                  border: '1px solid #22c55e',
+                  borderRadius: '8px',
+                  margin: '12px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <FaCheckCircle size={16} style={{ color: '#22c55e' }} />
+                    <span style={{ fontWeight: '600', color: '#166534', fontSize: '14px' }}>Order Complete!</span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#166534' }}>
+                    Order #{orderSuccess.orderId} has been processed successfully
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Options */}
+              <div style={{ padding: '12px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                  Payment Method:
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '8px' }}>
                   <button 
                     onClick={() => setPaymentMethod('cash')}
                     style={{
@@ -840,11 +853,11 @@ function RestaurantPOSContent() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '4px',
-                      padding: '8px',
-                      backgroundColor: paymentMethod === 'cash' ? '#10b981' : 'white',
-                      color: paymentMethod === 'cash' ? 'white' : '#374151',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '6px',
+                      padding: '10px 6px',
+                      backgroundColor: '#f8fafc',
+                      color: paymentMethod === 'cash' ? '#22c55e' : '#64748b',
+                      border: paymentMethod === 'cash' ? '2px solid #22c55e' : '1px solid #e2e8f0',
+                      borderRadius: '8px',
                       fontWeight: '600',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
@@ -854,24 +867,44 @@ function RestaurantPOSContent() {
                     Cash
                   </button>
                   <button 
-                    onClick={() => setPaymentMethod('card')}
+                    onClick={() => setPaymentMethod('upi')}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '4px',
-                      padding: '8px',
-                      backgroundColor: paymentMethod === 'card' ? '#10b981' : 'white',
-                      color: paymentMethod === 'card' ? 'white' : '#374151',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '6px',
+                      padding: '10px 6px',
+                      backgroundColor: '#f8fafc',
+                      color: paymentMethod === 'upi' ? '#22c55e' : '#64748b',
+                      border: paymentMethod === 'upi' ? '2px solid #22c55e' : '1px solid #e2e8f0',
+                      borderRadius: '8px',
                       fontWeight: '600',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
                       fontSize: '11px'
                     }}>
                     <FaCreditCard size={12} />
-                    Card/UPI
+                    UPI
+                  </button>
+                  <button 
+                    onClick={() => setPaymentMethod('card')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      padding: '10px 6px',
+                      backgroundColor: '#f8fafc',
+                      color: paymentMethod === 'card' ? '#22c55e' : '#64748b',
+                      border: paymentMethod === 'card' ? '2px solid #22c55e' : '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      fontSize: '11px'
+                    }}>
+                    <FaCreditCard size={12} />
+                    Card
                   </button>
                 </div>
                 

@@ -69,7 +69,9 @@ const Orders = () => {
           status: order.status,
           type: order.orderType,
           orderTime: order.createdAt.toDate ? order.createdAt.toDate().toISOString() : order.createdAt,
-          notes: order.notes
+          notes: order.notes,
+          paymentMethod: order.paymentMethod || 'cash',
+          staffInfo: order.staffInfo || null
         }));
         
         setOrders(transformedOrders);
@@ -399,6 +401,16 @@ const Orders = () => {
                     </div>
                   </div>
 
+                  {/* Staff & Payment */}
+                  <div style={{ minWidth: '120px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '500', color: '#1f2937' }}>
+                      {order.staffInfo?.name || 'Staff'}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#6b7280' }}>
+                      {order.paymentMethod || 'cash'} • {order.staffInfo?.role || 'waiter'}
+                    </div>
+                  </div>
+
                   {/* Total */}
                   <div style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937', minWidth: '60px' }}>
                     ₹{order.total}
@@ -557,6 +569,23 @@ const Orders = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Staff & Payment Info */}
+              {selectedOrder.staffInfo && (
+                <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>Order Taken By</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>
+                        {selectedOrder.staffInfo.name}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                        {selectedOrder.staffInfo.role} • Payment: {selectedOrder.paymentMethod}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div style={{ 
                 display: 'flex', 

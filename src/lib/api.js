@@ -129,6 +129,19 @@ class ApiClient {
     });
   }
 
+  async updateRestaurant(restaurantId, updateData) {
+    return this.request(`/api/restaurants/${restaurantId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
+  async deleteRestaurant(restaurantId) {
+    return this.request(`/api/restaurants/${restaurantId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Menu endpoints
   async getMenu(restaurantId, category = null) {
     const query = category ? `?category=${category}` : '';
@@ -240,10 +253,10 @@ class ApiClient {
     });
   }
 
-  async staffLogin(phone, otp, restaurantId) {
-    const response = await this.request('/api/auth/staff/verify-otp', {
+  async staffLogin(loginId, password) {
+    const response = await this.request('/api/auth/staff/login', {
       method: 'POST',
-      body: { phone, otp, restaurantId },
+      body: { loginId, password },
     });
     
     if (response.token) {
