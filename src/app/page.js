@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Header from '../components/Navigation';
+import Onboarding from '../components/Onboarding';
+import EmptyMenuPrompt from '../components/EmptyMenuPrompt';
 import { 
   FaSearch, 
   FaShoppingCart, 
@@ -54,28 +56,93 @@ function RestaurantPOSContent() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
+  
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(null); // { orderId: 'ORD-123', show: true }
 
-  const categories = [
-    { id: 'all-items', name: 'All Items', emoji: '🍽️' },
-    { id: 'appetizer', name: 'Appetizers', emoji: '🥗' },
-    { id: 'main-course', name: 'Main Course', emoji: '🍛' },
-    { id: 'rice', name: 'Rice & Biryani', emoji: '🍚' },
-    { id: 'dal', name: 'Dal & Curry', emoji: '🍲' },
-    { id: 'bread', name: 'Bread', emoji: '🍞' },
-    { id: 'beverages', name: 'Beverages', emoji: '🥤' },
-    { id: 'dessert', name: 'Desserts', emoji: '🍰' },
-  ];
+  // Generate dynamic categories based on actual menu items
+  const getDynamicCategories = () => {
+    if (!menuItems || menuItems.length === 0) {
+      return [{ id: 'all-items', name: 'All Items', emoji: '🍽️', count: 0 }];
+    }
+    
+    // Get unique categories from menu items
+    const categoryMap = new Map();
+    categoryMap.set('all-items', { id: 'all-items', name: 'All Items', emoji: '🍽️', count: menuItems.length });
+    
+    menuItems.forEach(item => {
+      if (item.category) {
+        const categoryId = item.category.toLowerCase();
+        if (categoryMap.has(categoryId)) {
+          categoryMap.get(categoryId).count++;
+        } else {
+          // Create dynamic category with appropriate emoji
+          const emoji = getCategoryEmoji(item.category);
+          categoryMap.set(categoryId, {
+            id: categoryId,
+            name: item.category.charAt(0).toUpperCase() + item.category.slice(1),
+            emoji: emoji,
+            count: 1
+          });
+        }
+      }
+    });
+    
+    return Array.from(categoryMap.values());
+  };
+  
+  // Get appropriate emoji for category
+  const getCategoryEmoji = (category) => {
+    const categoryLower = category.toLowerCase();
+    const emojiMap = {
+      'appetizer': '🥗', 'appetizers': '🥗', 'starter': '🥗', 'starters': '🥗',
+      'main': '🍛', 'main-course': '🍛', 'mains': '🍛', 'entree': '🍛', 'entrees': '🍛',
+      'rice': '🍚', 'biryani': '🍚', 'biryanis': '🍚', 'fried-rice': '🍚',
+      'dal': '🍲', 'curry': '🍲', 'curries': '🍲', 'gravy': '🍲',
+      'bread': '🍞', 'breads': '🍞', 'naan': '🍞', 'roti': '🍞', 'chapati': '🍞',
+      'beverage': '🥤', 'beverages': '🥤', 'drinks': '🥤', 'juice': '🧃', 'tea': '☕', 'coffee': '☕',
+      'dessert': '🍰', 'desserts': '🍰', 'sweet': '🧁', 'sweets': '🧁', 'ice-cream': '🍨',
+      'snack': '🍿', 'snacks': '🍿', 'chaat': '🍿',
+      'pizza': '🍕', 'pizzas': '🍕',
+      'burger': '🍔', 'burgers': '🍔',
+      'sandwich': '🥪', 'sandwiches': '🥪',
+      'salad': '🥙', 'salads': '🥙',
+      'soup': '🍜', 'soups': '🍜',
+      'pasta': '🍝', 'pastas': '🍝',
+      'chinese': '🥢', 'asian': '🥢',
+      'tandoor': '🔥', 'grilled': '🔥', 'bbq': '🔥'
+    };
+    
+    return emojiMap[categoryLower] || '🍽️';
+  };
+  
+  const categories = getDynamicCategories();
 
-  // Authentication check
+  // Authentication check and onboarding detection
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
       router.push('/login');
       return;
+    }
+    
+    // Check if user needs onboarding
+    const userData = localStorage.getItem('user');
+    const onboardingSkipped = localStorage.getItem('onboarding_skipped');
+    const hasCompletedOnboarding = localStorage.getItem('onboarding_completed');
+    
+    if (userData && !onboardingSkipped && !hasCompletedOnboarding) {
+      const user = JSON.parse(userData);
+      // Show onboarding for owners who haven't set up a restaurant
+      if (user.role === 'owner' || !user.role) {
+        setIsFirstTimeUser(true);
+        setShowOnboarding(true);
+      }
     }
   }, [router]);
 
@@ -136,8 +203,13 @@ function RestaurantPOSContent() {
         // Load menu for selected restaurant
         await loadMenu(restaurant.id);
       } else {
-        // Create a sample restaurant
-        await createSampleRestaurant();
+        // Check if user should see onboarding or create sample restaurant
+        if (isFirstTimeUser && !localStorage.getItem('onboarding_skipped')) {
+          setShowOnboarding(true);
+        } else {
+          // Create a sample restaurant for users who skipped onboarding
+          await createSampleRestaurant();
+        }
       }
       
     } catch (error) {
@@ -176,6 +248,30 @@ function RestaurantPOSContent() {
       setError('Failed to create sample restaurant');
     }
   };
+  
+  // Handle onboarding completion
+  const handleOnboardingComplete = async (restaurant) => {
+    setShowOnboarding(false);
+    setIsFirstTimeUser(false);
+    localStorage.setItem('onboarding_completed', 'true');
+    
+    // Update restaurant list and selected restaurant
+    setSelectedRestaurant(restaurant);
+    setRestaurants(prev => [...prev, restaurant]);
+    
+    // Load menu for the new restaurant
+    await loadMenu(restaurant.id);
+  };
+  
+  // Handle onboarding skip
+  const handleOnboardingSkip = () => {
+    setShowOnboarding(false);
+    setIsFirstTimeUser(false);
+    localStorage.setItem('onboarding_skipped', 'true');
+    
+    // Continue with loading initial data
+    loadInitialData();
+  };
 
   const loadMenu = async (restaurantId) => {
     try {
@@ -204,7 +300,7 @@ function RestaurantPOSContent() {
   }, [searchParams]);
 
   const filteredItems = menuItems.filter(item => {
-    const matchesCategory = selectedCategory === 'all-items' || item.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all-items' || item.category?.toLowerCase() === selectedCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -401,15 +497,29 @@ function RestaurantPOSContent() {
     window.history.replaceState({}, '', window.location.pathname);
   };
 
-  // Loading state
+  // Show onboarding if needed
+  if (showOnboarding && isFirstTimeUser) {
+    return (
+      <>
+        <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+          <Header handleLogout={handleLogout} />
+        </div>
+        <Onboarding 
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      </>
+    );
+  }
   
+  // Loading state
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
         <Header handleLogout={handleLogout} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '16px', color: '#6b7280' }}>Loading orders...</div>
+            <div style={{ fontSize: '16px', color: '#6b7280' }}>Loading restaurant...</div>
           </div>
         </div>
       </div>
@@ -457,7 +567,7 @@ function RestaurantPOSContent() {
             {categories.map((category) => {
               const categoryItems = category.id === 'all-items' 
                 ? menuItems 
-                : menuItems.filter(item => item.category === category.id);
+                : menuItems.filter(item => item.category?.toLowerCase() === category.id);
               const isSelected = selectedCategory === category.id;
               
               return (
@@ -506,11 +616,20 @@ function RestaurantPOSContent() {
 
         {/* Menu Items */}
         <div style={{ flex: 1, backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
+          {/* Show empty menu prompt if no menu items */}
+          {filteredItems.length === 0 && menuItems.length === 0 && !loading ? (
+            <EmptyMenuPrompt 
+              restaurantName={selectedRestaurant?.name} 
+              onAddMenu={() => router.push('/menu')}
+            />
+          ) : (
+          <>
+            {/* Menu Header */}
           <div style={{ padding: '8px 12px', backgroundColor: 'white', borderBottom: '1px solid #f3f4f6' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <div>
                 <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                  {selectedCategory}
+                  {categories.find(c => c.id === selectedCategory)?.name || 'All Items'}
                 </h2>
                 <p style={{ color: '#6b7280', margin: '2px 0 0 0', fontSize: '11px' }}>{filteredItems.length} items</p>
               </div>
@@ -705,11 +824,13 @@ function RestaurantPOSContent() {
               })}
             </div>
           </div>
+          </>
+          )}
         </div>
 
-        {/* Cart Sidebar */}
+       
         <div style={{ width: '30%', minWidth: '320px', backgroundColor: 'white', borderLeft: '2px solid #e5e7eb', display: 'flex', flexDirection: 'column' }}>
-          {/* Compact Cart Header */}
+         
           <div style={{ 
             background: 'linear-gradient(135deg, #e53e3e, #dc2626)', 
             padding: '12px 16px', 
@@ -721,7 +842,7 @@ function RestaurantPOSContent() {
                 <span style={{ fontSize: '14px', fontWeight: 'bold' }}>Order Summary</span>
               </div>
               
-              {/* Clear Cart Button */}
+              
            
               <button
                 onClick={clearCart}
@@ -739,10 +860,10 @@ function RestaurantPOSContent() {
                 }}
               >
                 <FaTimes size={10} />
-                Clear
+                Clear Order
               </button>
             </div>
-            
+           
             {/* Order Type Selector */}
             <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
               <button
@@ -779,18 +900,17 @@ function RestaurantPOSContent() {
               </button>
             </div>
             
-            
           </div>
 
-          {/* Cart Items */}
+        
           <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
             {cart.length === 0 ? (
               <div style={{ textAlign: 'center', paddingTop: '30px' }}>
                 <div style={{ width: '40px', height: '40px', backgroundColor: '#f3f4f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                  <FaShoppingCart size={16} color="#9ca3af" />
+                  <FaUtensils size={16} color="#9ca3af" />
                 </div>
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#6b7280', margin: '0 0 4px 0' }}>Cart is Empty</h3>
-                <p style={{ color: '#9ca3af', fontSize: '10px' }}>Add items to get started</p>
+                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#6b7280', margin: '0 0 4px 0' }}>No Items Added</h3>
+                <p style={{ color: '#9ca3af', fontSize: '10px' }}>Add items to create your order</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -877,7 +997,7 @@ function RestaurantPOSContent() {
             )}
           </div>
 
-          {/* Cart Footer */}
+         
           {cart.length > 0 && (
             <div style={{ borderTop: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
               {/* Total */}
@@ -890,7 +1010,7 @@ function RestaurantPOSContent() {
                 </div>
               </div>
 
-              {/* Success Message */}
+             
               {orderSuccess?.show && (
                 <div style={{ 
                   padding: '16px', 
@@ -1029,7 +1149,7 @@ function RestaurantPOSContent() {
                     
                     <button 
                       onClick={() => {
-                        if (window.confirm('Are you sure you want to clear the cart?')) {
+                        if (window.confirm('Are you sure you want to clear this order?')) {
                           clearCart();
                         }
                       }}
@@ -1054,7 +1174,7 @@ function RestaurantPOSContent() {
                       onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                     >
                       <FaTimes size={10} />
-                      CLEAR
+                      CLEAR ORDER
                     </button>
                   </div>
 

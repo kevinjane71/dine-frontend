@@ -11,6 +11,7 @@ import {
   FaEdit, 
   FaTrash, 
   FaEye, 
+  FaEyeSlash,
   FaSearch,
   FaUserCheck,
   FaUserTimes,
@@ -23,7 +24,11 @@ import {
   FaUserShield,
   FaUtensils,
   FaTabs,
-  FaArrowRight
+  FaArrowRight,
+  FaKey,
+  FaIdBadge,
+  FaCopy,
+  FaUserCog
 } from 'react-icons/fa';
 
 const Admin = () => {
@@ -51,9 +56,14 @@ const Admin = () => {
     phone: '',
     email: '',
     address: '',
-    role: 'waiter',
+    role: 'employee',
     startDate: new Date().toISOString().split('T')[0]
   });
+  const [showPassword, setShowPassword] = useState({});
+  const [customRoles, setCustomRoles] = useState(['employee', 'manager', 'admin']);
+  const [newCustomRole, setNewCustomRole] = useState('');
+  const [currentUserRole, setCurrentUserRole] = useState('owner');
+  const [copiedCredentials, setCopiedCredentials] = useState({});
 
   // Check authorization
   useEffect(() => {
@@ -75,12 +85,14 @@ const Admin = () => {
         const user = JSON.parse(userData);
         console.log('Admin page: User role:', user.role);
         
-        // Allow owners and users without a specific role (backward compatibility)
-        // if (user.role && user.role !== 'owner') {
-        //   console.log('Admin page: User is not owner, redirecting to home');
-        //   router.push('/');
-        //   return;
-        // }
+        setCurrentUserRole(user.role || 'owner');
+        
+        // Allow owners and admin roles to access admin page
+        if (user.role && !['owner', 'admin'].includes(user.role)) {
+          console.log('Admin page: User does not have admin access, redirecting to home');
+          router.push('/');
+          return;
+        }
 
         console.log('Admin page: Authorization successful');
         setAuthorized(true);
@@ -143,26 +155,69 @@ const Admin = () => {
 
   const getRoleInfo = (role) => {
     const roleMap = {
-      waiter: {
-        label: 'Waiter',
+      owner: {
+        label: 'Owner',
+        icon: FaCrown,
+        color: '#dc2626',
+        bg: '#fee2e2'
+      },
+      admin: {
+        label: 'Admin',
+        icon: FaUserShield,
+        color: '#7c3aed',
+        bg: '#e9d5ff'
+      },
+      manager: {
+        label: 'Manager',
+        icon: FaUserCog,
+        color: '#059669',
+        bg: '#d1fae5'
+      },
+      employee: {
+        label: 'Employee',
         icon: FaUsers,
         color: '#3b82f6',
         bg: '#dbeafe'
       },
-      manager: {
-        label: 'Manager',
-        icon: FaUserShield,
-        color: '#8b5cf6',
-        bg: '#e9d5ff'
+      waiter: {
+        label: 'Waiter',
+        icon: FaUtensils,
+        color: '#f59e0b',
+        bg: '#fef3c7'
       },
-      admin: {
-        label: 'Admin',
-        icon: FaCrown,
+      cashier: {
+        label: 'Cashier',
+        icon: FaUserCheck,
+        color: '#8b5cf6',
+        bg: '#f3e8ff'
+      },
+      chef: {
+        label: 'Chef',
+        icon: FaUtensils,
         color: '#ef4444',
-        bg: '#fee2e2'
+        bg: '#fecaca'
+      },
+      cook: {
+        label: 'Cook',
+        icon: FaUtensils,
+        color: '#f97316',
+        bg: '#fed7aa'
+      },
+      supervisor: {
+        label: 'Supervisor',
+        icon: FaUserShield,
+        color: '#10b981',
+        bg: '#dcfce7'
       }
     };
-    return roleMap[role] || roleMap.waiter;
+    
+    // Handle custom roles or roles not in the predefined map
+    return roleMap[role] || {
+      label: role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Staff',
+      icon: FaUsers,
+      color: '#6b7280',
+      bg: '#f3f4f6'
+    };
   };
 
   const getStatusInfo = (status) => {
@@ -223,6 +278,27 @@ const Admin = () => {
     }
   };
 
+  // Generate unique credentials for new staff
+  const generateCredentials = () => {
+    // Generate unique user ID: RES001, RES002, etc.
+    const existingIds = staff.map(member => member.loginId).filter(Boolean);
+    let counter = 1;
+    let userId;
+    do {
+      userId = `${selectedRestaurant?.name?.substring(0, 3).toUpperCase() || 'RES'}${counter.toString().padStart(3, '0')}`;
+      counter++;
+    } while (existingIds.includes(userId));
+    
+    // Generate random 6-character alphanumeric password
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+    for (let i = 0; i < 6; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    return { userId, password };
+  };
+
   const handleAddStaff = async (e) => {
     e.preventDefault();
     if (!selectedRestaurant) {
@@ -230,25 +306,46 @@ const Admin = () => {
       return;
     }
 
+    // Validate role permissions
+    if (currentUserRole !== 'owner' && newStaff.role === 'admin') {
+      alert('Only owners can create admin roles');
+      return;
+    }
+
     try {
       setLoading(true);
       
-      const response = await apiClient.addStaff(selectedRestaurant.id, newStaff);
+      // Generate unique credentials
+      const credentials = generateCredentials();
       
-      // Add the new staff member to the local state
-      setStaff([...staff, response.staff]);
+      const staffData = {
+        ...newStaff,
+        loginId: credentials.userId,
+        password: credentials.password,
+        restaurantId: selectedRestaurant.id
+      };
+      
+      const response = await apiClient.addStaff(selectedRestaurant.id, staffData);
+      
+      // Add the new staff member with credentials to local state
+      const newStaffMember = {
+        ...response.staff,
+        loginId: credentials.userId,
+        tempPassword: credentials.password // Store temporarily for display
+      };
+      setStaff([...staff, newStaffMember]);
       
       setNewStaff({
         name: '',
         phone: '',
         email: '',
         address: '',
-        role: 'waiter',
+        role: 'employee',
         startDate: new Date().toISOString().split('T')[0]
       });
       setShowAddStaffModal(false);
       
-      alert('Staff member added successfully!');
+      alert(`Staff member added successfully!\n\nLogin Credentials:\nUser ID: ${credentials.userId}\nPassword: ${credentials.password}\n\nPlease save these credentials securely.`);
     } catch (error) {
       console.error('Error adding staff:', error);
       alert(`Failed to add staff member: ${error.message}`);
@@ -302,6 +399,88 @@ const Admin = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const copyToClipboard = async (text, type, memberId) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedCredentials(prev => ({
+        ...prev,
+        [`${memberId}_${type}`]: true
+      }));
+      setTimeout(() => {
+        setCopiedCredentials(prev => ({
+          ...prev,
+          [`${memberId}_${type}`]: false
+        }));
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  const togglePasswordVisibility = (memberId) => {
+    setShowPassword(prev => ({
+      ...prev,
+      [memberId]: !prev[memberId]
+    }));
+  };
+
+  const canManageStaff = (targetRole) => {
+    const roleHierarchy = {
+      'owner': 4,
+      'admin': 3,
+      'manager': 2,
+      'employee': 1
+    };
+    
+    const currentLevel = roleHierarchy[currentUserRole] || 0;
+    const targetLevel = roleHierarchy[targetRole] || 1;
+    
+    // Owners can manage everyone, admins can manage managers and below, etc.
+    return currentLevel > targetLevel;
+  };
+
+  const getPerformanceStats = (member) => {
+    // Different stats based on role
+    switch (member.role) {
+      case 'waiter':
+        return {
+          todayLabel: 'Orders Today',
+          todayValue: member.ordersToday || 0,
+          totalLabel: 'Total Orders',
+          totalValue: member.totalOrders || 0
+        };
+      case 'manager':
+        return {
+          todayLabel: 'Staff Managed',
+          todayValue: member.staffCount || 0,
+          totalLabel: 'Total Revenue',
+          totalValue: `₹${(member.totalRevenue || 0).toLocaleString()}`
+        };
+      case 'cashier':
+        return {
+          todayLabel: 'Transactions',
+          todayValue: member.transactionsToday || 0,
+          totalLabel: 'Total Sales',
+          totalValue: `₹${(member.totalSales || 0).toLocaleString()}`
+        };
+      case 'chef':
+      case 'cook':
+        return {
+          todayLabel: 'Dishes Made',
+          todayValue: member.dishesToday || 0,
+          totalLabel: 'Total Dishes',
+          totalValue: member.totalDishes || 0
+        };
+      default:
+        return {
+          todayLabel: 'Tasks Today',
+          todayValue: member.tasksToday || 0,
+          totalLabel: 'Total Tasks',
+          totalValue: member.totalTasks || 0
+        };
+    }
   };
 
   // Don't render anything until authorization is checked
@@ -790,6 +969,138 @@ const Admin = () => {
                   
                   {/* Staff Details */}
                   <div style={{ padding: '20px' }}>
+                    {/* Login Credentials Section */}
+                    {(member.loginId || member.tempPassword) && (
+                      <div style={{ 
+                        backgroundColor: '#f0f9ff', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        marginBottom: '16px',
+                        border: '1px solid #0ea5e9'
+                      }}>
+                        <h4 style={{ 
+                          fontSize: '14px', 
+                          fontWeight: '600', 
+                          color: '#0c4a6e', 
+                          marginBottom: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}>
+                          <FaKey size={12} />
+                          Login Credentials
+                        </h4>
+                        
+                        {/* User ID Badge */}
+                        <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <FaIdBadge style={{ color: '#0ea5e9', fontSize: '14px' }} />
+                          <div style={{ flex: 1 }}>
+                            <span style={{ fontSize: '11px', color: '#6b7280', display: 'block' }}>User ID</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ 
+                                fontSize: '13px', 
+                                fontWeight: '600', 
+                                color: '#0c4a6e',
+                                backgroundColor: '#e0f2fe',
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                fontFamily: 'monospace'
+                              }}>
+                                {member.loginId || 'N/A'}
+                              </span>
+                              {member.loginId && (
+                                <button
+                                  onClick={() => copyToClipboard(member.loginId, 'userId', member.id)}
+                                  style={{
+                                    backgroundColor: copiedCredentials[`${member.id}_userId`] ? '#10b981' : '#0ea5e9',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '4px 8px',
+                                    cursor: 'pointer',
+                                    fontSize: '11px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    transition: 'all 0.2s'
+                                  }}
+                                >
+                                  <FaCopy size={10} />
+                                  {copiedCredentials[`${member.id}_userId`] ? 'Copied!' : 'Copy'}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Password with show/hide */}
+                        {(member.tempPassword || member.password) && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FaKey style={{ color: '#0ea5e9', fontSize: '14px' }} />
+                            <div style={{ flex: 1 }}>
+                              <span style={{ fontSize: '11px', color: '#6b7280', display: 'block' }}>Password</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ 
+                                  fontSize: '13px', 
+                                  fontWeight: '600', 
+                                  color: '#0c4a6e',
+                                  backgroundColor: '#e0f2fe',
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  fontFamily: 'monospace',
+                                  minWidth: '60px'
+                                }}>
+                                  {showPassword[member.id] 
+                                    ? (member.tempPassword || member.password || 'N/A')
+                                    : '••••••'
+                                  }
+                                </span>
+                                <button
+                                  onClick={() => togglePasswordVisibility(member.id)}
+                                  style={{
+                                    backgroundColor: '#6b7280',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '4px 8px',
+                                    cursor: 'pointer',
+                                    fontSize: '11px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  {showPassword[member.id] ? <FaEyeSlash size={10} /> : <FaEye size={10} />}
+                                  {showPassword[member.id] ? 'Hide' : 'Show'}
+                                </button>
+                                {(member.tempPassword || member.password) && (
+                                  <button
+                                    onClick={() => copyToClipboard(member.tempPassword || member.password, 'password', member.id)}
+                                    style={{
+                                      backgroundColor: copiedCredentials[`${member.id}_password`] ? '#10b981' : '#0ea5e9',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '6px',
+                                      padding: '4px 8px',
+                                      cursor: 'pointer',
+                                      fontSize: '11px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '4px',
+                                      transition: 'all 0.2s'
+                                    }}
+                                  >
+                                    <FaCopy size={10} />
+                                    {copiedCredentials[`${member.id}_password`] ? 'Copied!' : 'Copy'}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaCalendarAlt style={{ color: '#9ca3af', fontSize: '12px' }} />
@@ -812,31 +1123,35 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    {member.role === 'waiter' && (
-                      <div style={{ 
-                        backgroundColor: '#f8fafc', 
-                        padding: '12px', 
-                        borderRadius: '10px',
-                        marginBottom: '16px',
-                        border: '1px solid #e2e8f0'
-                      }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
-                              {member.ordersToday || 0}
+                    {/* Dynamic Performance Stats */}
+                    {(() => {
+                      const stats = getPerformanceStats(member);
+                      return (
+                        <div style={{ 
+                          backgroundColor: '#f8fafc', 
+                          padding: '12px', 
+                          borderRadius: '10px',
+                          marginBottom: '16px',
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ textAlign: 'center' }}>
+                              <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
+                                {stats.todayValue}
+                              </div>
+                              <div style={{ fontSize: '11px', color: '#6b7280' }}>{stats.todayLabel}</div>
                             </div>
-                            <div style={{ fontSize: '11px', color: '#6b7280' }}>Today</div>
-                          </div>
-                          <div style={{ width: '1px', height: '30px', backgroundColor: '#e2e8f0' }} />
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
-                              {member.totalOrders || 0}
+                            <div style={{ width: '1px', height: '30px', backgroundColor: '#e2e8f0' }} />
+                            <div style={{ textAlign: 'center' }}>
+                              <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
+                                {stats.totalValue}
+                              </div>
+                              <div style={{ fontSize: '11px', color: '#6b7280' }}>{stats.totalLabel}</div>
                             </div>
-                            <div style={{ fontSize: '11px', color: '#6b7280' }}>Total Orders</div>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                   
                   {/* Actions */}
@@ -847,10 +1162,11 @@ const Admin = () => {
                     gap: '8px',
                     borderTop: '1px solid #fce7f3'
                   }}>
+                    {/* View button - available to everyone */}
                     <button
                       onClick={() => setSelectedStaff(member)}
                       style={{
-                        flex: 1,
+                        flex: canManageStaff(member.role) ? 1 : 2,
                         backgroundColor: '#3b82f6',
                         color: 'white',
                         padding: '10px 16px',
@@ -867,31 +1183,59 @@ const Admin = () => {
                       }}
                     >
                       <FaEye size={12} />
-                      View
+                      View Details
                     </button>
                     
-                    <button
-                      onClick={() => toggleStaffStatus(member.id)}
-                      style={{
-                        flex: 1,
-                        backgroundColor: member.status === 'active' ? '#ef4444' : '#10b981',
-                        color: 'white',
-                        padding: '10px 16px',
-                        borderRadius: '10px',
-                        fontWeight: '600',
-                        fontSize: '13px',
-                        border: 'none',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      {member.status === 'active' ? <FaUserTimes size={12} /> : <FaUserCheck size={12} />}
-                      {member.status === 'active' ? 'Deactivate' : 'Activate'}
-                    </button>
+                    {/* Status toggle - only if user can manage this staff member */}
+                    {canManageStaff(member.role) && (
+                      <button
+                        onClick={() => toggleStaffStatus(member.id)}
+                        style={{
+                          flex: 1,
+                          backgroundColor: member.status === 'active' ? '#ef4444' : '#10b981',
+                          color: 'white',
+                          padding: '10px 16px',
+                          borderRadius: '10px',
+                          fontWeight: '600',
+                          fontSize: '13px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        {member.status === 'active' ? <FaUserTimes size={12} /> : <FaUserCheck size={12} />}
+                        {member.status === 'active' ? 'Deactivate' : 'Activate'}
+                      </button>
+                    )}
+
+                    {/* Edit button - only for higher-level roles and if can manage */}
+                    {(currentUserRole === 'owner' || currentUserRole === 'admin') && canManageStaff(member.role) && (
+                      <button
+                        style={{
+                          flex: 1,
+                          backgroundColor: '#f59e0b',
+                          color: 'white',
+                          padding: '10px 16px',
+                          borderRadius: '10px',
+                          fontWeight: '600',
+                          fontSize: '13px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <FaEdit size={12} />
+                        Edit
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -1477,10 +1821,84 @@ const Admin = () => {
                     boxSizing: 'border-box'
                   }}
                 >
-                  <option value="waiter">Waiter</option>
-                  <option value="manager">Manager</option>
+                  {customRoles.map(role => {
+                    // Only show admin option to owners
+                    if (role === 'admin' && currentUserRole !== 'owner') {
+                      return null;
+                    }
+                    return (
+                      <option key={role} value={role}>
+                        {role.charAt(0).toUpperCase() + role.slice(1)}
+                      </option>
+                    );
+                  })}
+                  <option value="custom" style={{ fontStyle: 'italic', color: '#6b7280' }}>+ Add Custom Role</option>
                 </select>
               </div>
+
+              {/* Custom Role Input */}
+              {newStaff.role === 'custom' && (
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '14px', 
+                    fontWeight: '600', 
+                    color: '#374151', 
+                    marginBottom: '8px' 
+                  }}>
+                    Custom Role Name *
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      value={newCustomRole}
+                      onChange={(e) => {
+                        const value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        if (!['owner', 'admin'].includes(value)) {
+                          setNewCustomRole(value);
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '12px 16px',
+                        border: '2px solid #e5e7eb',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        backgroundColor: '#fef7f0',
+                        transition: 'all 0.2s',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="supervisor, cashier, cook, etc."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (newCustomRole && !customRoles.includes(newCustomRole)) {
+                          setCustomRoles([...customRoles, newCustomRole]);
+                          setNewStaff({ ...newStaff, role: newCustomRole });
+                          setNewCustomRole('');
+                        }
+                      }}
+                      disabled={!newCustomRole || customRoles.includes(newCustomRole)}
+                      style={{
+                        padding: '12px 16px',
+                        backgroundColor: newCustomRole && !customRoles.includes(newCustomRole) ? '#10b981' : '#d1d5db',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontWeight: '600',
+                        cursor: newCustomRole && !customRoles.includes(newCustomRole) ? 'pointer' : 'not-allowed'
+                      }}
+                    >
+                      Add
+                    </button>
+                  </div>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0 0' }}>
+                    Note: Cannot create &apos;owner&apos; or &apos;admin&apos; roles
+                  </p>
+                </div>
+              )}
 
               <div style={{ marginBottom: '24px' }}>
                 <label style={{ 
@@ -1622,6 +2040,140 @@ const Admin = () => {
             </div>
             
             <div style={{ padding: '24px' }}>
+              {/* Login Credentials - Full Width */}
+              {(selectedStaff.loginId || selectedStaff.tempPassword) && (
+                <div style={{ 
+                  backgroundColor: '#f0f9ff', 
+                  padding: '20px', 
+                  borderRadius: '16px',
+                  marginBottom: '24px',
+                  border: '1px solid #0ea5e9'
+                }}>
+                  <h3 style={{ 
+                    fontWeight: '600', 
+                    color: '#0c4a6e', 
+                    marginBottom: '16px', 
+                    fontSize: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <FaKey size={16} />
+                    Login Credentials
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                    {/* User ID */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <FaIdBadge style={{ color: '#0ea5e9', fontSize: '16px' }} />
+                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#0c4a6e' }}>User ID</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '700', 
+                          color: '#0c4a6e',
+                          backgroundColor: '#e0f2fe',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          fontFamily: 'monospace',
+                          flex: 1
+                        }}>
+                          {selectedStaff.loginId || 'N/A'}
+                        </span>
+                        {selectedStaff.loginId && (
+                          <button
+                            onClick={() => copyToClipboard(selectedStaff.loginId, 'userId', selectedStaff.id)}
+                            style={{
+                              backgroundColor: copiedCredentials[`${selectedStaff.id}_userId`] ? '#10b981' : '#0ea5e9',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            <FaCopy size={12} />
+                            {copiedCredentials[`${selectedStaff.id}_userId`] ? 'Copied!' : 'Copy'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Password */}
+                    {(selectedStaff.tempPassword || selectedStaff.password) && (
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                          <FaKey style={{ color: '#0ea5e9', fontSize: '16px' }} />
+                          <span style={{ fontSize: '14px', fontWeight: '600', color: '#0c4a6e' }}>Password</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ 
+                            fontSize: '16px', 
+                            fontWeight: '700', 
+                            color: '#0c4a6e',
+                            backgroundColor: '#e0f2fe',
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            fontFamily: 'monospace',
+                            flex: 1,
+                            minWidth: '100px'
+                          }}>
+                            {showPassword[selectedStaff.id] 
+                              ? (selectedStaff.tempPassword || selectedStaff.password || 'N/A')
+                              : '••••••••'
+                            }
+                          </span>
+                          <button
+                            onClick={() => togglePasswordVisibility(selectedStaff.id)}
+                            style={{
+                              backgroundColor: '#6b7280',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            {showPassword[selectedStaff.id] ? <FaEyeSlash size={12} /> : <FaEye size={12} />}
+                            {showPassword[selectedStaff.id] ? 'Hide' : 'Show'}
+                          </button>
+                          <button
+                            onClick={() => copyToClipboard(selectedStaff.tempPassword || selectedStaff.password, 'password', selectedStaff.id)}
+                            style={{
+                              backgroundColor: copiedCredentials[`${selectedStaff.id}_password`] ? '#10b981' : '#0ea5e9',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            <FaCopy size={12} />
+                            {copiedCredentials[`${selectedStaff.id}_password`] ? 'Copied!' : 'Copy'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Staff Info */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
                 <div style={{ 
@@ -1635,7 +2187,7 @@ const Admin = () => {
                     <div style={{ marginBottom: '8px' }}><strong>Name:</strong> {selectedStaff.name || 'N/A'}</div>
                     <div style={{ marginBottom: '8px' }}><strong>Phone:</strong> {selectedStaff.phone || 'N/A'}</div>
                     <div style={{ marginBottom: '8px' }}><strong>Email:</strong> {selectedStaff.email || 'N/A'}</div>
-                    <div style={{ marginBottom: '8px' }}><strong>Role:</strong> {getRoleInfo(selectedStaff.role || 'waiter').label}</div>
+                    <div style={{ marginBottom: '8px' }}><strong>Role:</strong> {getRoleInfo(selectedStaff.role || 'employee').label}</div>
                     <div style={{ marginBottom: '8px' }}><strong>Status:</strong> {getStatusInfo(selectedStaff.status || 'active').label}</div>
                   </div>
                 </div>
@@ -1650,12 +2202,15 @@ const Admin = () => {
                   <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
                     <div style={{ marginBottom: '8px' }}><strong>Start Date:</strong> {selectedStaff.startDate ? new Date(selectedStaff.startDate).toLocaleDateString('en-IN') : 'N/A'}</div>
                     <div style={{ marginBottom: '8px' }}><strong>Last Login:</strong> {formatDateTime(selectedStaff.lastLogin)}</div>
-                    {selectedStaff.role === 'waiter' && (
-                      <>
-                        <div style={{ marginBottom: '8px' }}><strong>Orders Today:</strong> {selectedStaff.ordersToday || 0}</div>
-                        <div style={{ marginBottom: '8px' }}><strong>Total Orders:</strong> {selectedStaff.totalOrders || 0}</div>
-                      </>
-                    )}
+                    {(() => {
+                      const stats = getPerformanceStats(selectedStaff);
+                      return (
+                        <>
+                          <div style={{ marginBottom: '8px' }}><strong>{stats.todayLabel}:</strong> {stats.todayValue}</div>
+                          <div style={{ marginBottom: '8px' }}><strong>{stats.totalLabel}:</strong> {stats.totalValue}</div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
