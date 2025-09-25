@@ -210,6 +210,11 @@ function RestaurantPOSContent() {
   });
 
   const addToCart = (item) => {
+    // Hide success message when adding new items
+    if (orderSuccess?.show) {
+      setOrderSuccess(null);
+    }
+    
     setCart(prevCart => {
       const existingItem = prevCart.find(cartItem => cartItem.id === item.id);
       if (existingItem) {
@@ -616,7 +621,7 @@ function RestaurantPOSContent() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
                         <div>
                           <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#e53e3e' }}>
-                            ₹{item.price}
+                            Rs.{item.price}
                           </span>
                         </div>
                         
@@ -704,32 +709,77 @@ function RestaurantPOSContent() {
 
         {/* Cart Sidebar */}
         <div style={{ width: '30%', minWidth: '320px', backgroundColor: 'white', borderLeft: '2px solid #e5e7eb', display: 'flex', flexDirection: 'column' }}>
-          {/* Cart Header */}
-          <div style={{ background: 'linear-gradient(135deg, #e53e3e, #dc2626)', padding: '16px', color: 'white' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-              <div style={{ width: '32px', height: '32px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <FaShoppingCart size={16} />
+          {/* Compact Cart Header */}
+          <div style={{ 
+            background: 'linear-gradient(135deg, #e53e3e, #dc2626)', 
+            padding: '12px 16px', 
+            color: 'white' 
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaShoppingCart size={14} />
+                <span style={{ fontSize: '14px', fontWeight: 'bold' }}>Order Summary</span>
               </div>
-              <div>
-                <h2 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>Order Summary</h2>
-                <p style={{ opacity: 0.9, margin: 0, fontSize: '12px' }}>Review items</p>
-              </div>
+              
+              {/* Clear Cart Button */}
+           
+              <button
+                onClick={clearCart}
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '4px 8px',
+                  color: 'white',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <FaTimes size={10} />
+                Clear
+              </button>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-              <div style={{ textAlign: 'center', padding: '8px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
-                <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{cart.length}</div>
-                <div style={{ fontSize: '10px', fontWeight: '600', opacity: 0.9 }}>ITEMS</div>
-              </div>
-              <div style={{ textAlign: 'center', padding: '8px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
-                <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{cart.reduce((sum, item) => sum + item.quantity, 0)}</div>
-                <div style={{ fontSize: '10px', fontWeight: '600', opacity: 0.9 }}>QTY</div>
-              </div>
-              <div style={{ textAlign: 'center', padding: '8px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
-                <div style={{ fontSize: '18px', fontWeight: 'bold' }}>₹{getTotalAmount()}</div>
-                <div style={{ fontSize: '10px', fontWeight: '600', opacity: 0.9 }}>TOTAL</div>
-              </div>
+            {/* Order Type Selector */}
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
+              <button
+                onClick={() => setOrderType('dine-in')}
+                style={{
+                  flex: 1,
+                  backgroundColor: orderType === 'dine-in' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '6px',
+                  padding: '6px 8px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                🍽️ DINE IN
+              </button>
+              <button
+                onClick={() => setOrderType('takeaway')}
+                style={{
+                  flex: 1,
+                  backgroundColor: orderType === 'takeaway' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '6px',
+                  padding: '6px 8px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                📦 TAKEAWAY
+              </button>
             </div>
+            
+            
           </div>
 
           {/* Cart Items */}
@@ -752,7 +802,7 @@ function RestaurantPOSContent() {
                           {item.name.length > 16 ? item.name.substring(0, 16) + '...' : item.name}
                         </h4>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#e53e3e' }}>₹{item.price}</span>
+                          <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#e53e3e' }}>Rs.{item.price}</span>
                           <div style={{
                             padding: '1px 4px',
                             borderRadius: '8px',
@@ -819,7 +869,7 @@ function RestaurantPOSContent() {
                     </div>
                     
                     <div style={{ fontSize: '10px', fontWeight: '600', color: '#374151', textAlign: 'right' }}>
-                      Subtotal: ₹{item.price * item.quantity}
+                      Subtotal: Rs.{item.price * item.quantity}
                     </div>
                   </div>
                 ))}
@@ -835,7 +885,7 @@ function RestaurantPOSContent() {
                 <div style={{ background: 'linear-gradient(135deg, #1f2937, #111827)', color: 'white', padding: '16px', borderRadius: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '14px', fontWeight: 'bold' }}>Grand Total</span>
-                    <span style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{getTotalAmount()}</span>
+                    <span style={{ fontSize: '24px', fontWeight: 'bold' }}>Rs.{getTotalAmount()}</span>
                   </div>
                 </div>
               </div>
@@ -843,178 +893,268 @@ function RestaurantPOSContent() {
               {/* Success Message */}
               {orderSuccess?.show && (
                 <div style={{ 
-                  padding: '12px', 
+                  padding: '16px', 
                   backgroundColor: '#dcfce7', 
-                  border: '1px solid #22c55e',
-                  borderRadius: '8px',
-                  margin: '12px'
+                  border: '2px solid #22c55e',
+                  borderRadius: '12px',
+                  margin: '12px',
+                  textAlign: 'center'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <FaCheckCircle size={16} style={{ color: '#22c55e' }} />
-                    <span style={{ fontWeight: '600', color: '#166534', fontSize: '14px' }}>Order Complete!</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <div style={{ 
+                      width: '32px', 
+                      height: '32px', 
+                      backgroundColor: '#22c55e', 
+                      borderRadius: '50%', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
+                      <FaCheckCircle size={18} style={{ color: 'white' }} />
+                    </div>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#166534' }}>
-                    Order #{orderSuccess.orderId} has been processed successfully
+                  <div style={{ fontWeight: '700', color: '#166534', fontSize: '16px', marginBottom: '4px' }}>Order Complete!</div>
+                  <div style={{ fontSize: '12px', color: '#166534', marginBottom: '12px' }}>
+                    Order #{orderSuccess.orderId} processed successfully
                   </div>
+                  <button
+                    onClick={() => {
+                      setOrderSuccess(null);
+                      setCart([]);
+                      localStorage.removeItem('dine_cart');
+                    }}
+                    style={{
+                      background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                      color: 'white',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      margin: '0 auto'
+                    }}
+                  >
+                    <FaPlus size={10} />
+                    Start New Order
+                  </button>
                 </div>
               )}
 
-              {/* Payment Options */}
-              <div style={{ padding: '12px' }}>
-                <div style={{ fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                  Payment Method:
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '8px' }}>
-                  <button 
-                    onClick={() => setPaymentMethod('cash')}
-                    style={{
+              {/* Actions Section - Redesigned */}
+              {!orderSuccess?.show && (
+                <div style={{ padding: '16px', borderTop: '1px solid #e5e7eb' }}>
+                  {/* Payment Method Selection */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <div style={{ 
+                      fontSize: '13px', 
+                      fontWeight: '700', 
+                      color: '#1f2937', 
+                      marginBottom: '10px',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      padding: '10px 6px',
-                      backgroundColor: '#f8fafc',
-                      color: paymentMethod === 'cash' ? '#22c55e' : '#64748b',
-                      border: paymentMethod === 'cash' ? '2px solid #22c55e' : '1px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      fontSize: '11px'
+                      gap: '6px'
                     }}>
-                    <FaMoneyBillWave size={12} />
-                    Cash
-                  </button>
-                  <button 
-                    onClick={() => setPaymentMethod('upi')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      padding: '10px 6px',
-                      backgroundColor: '#f8fafc',
-                      color: paymentMethod === 'upi' ? '#22c55e' : '#64748b',
-                      border: paymentMethod === 'upi' ? '2px solid #22c55e' : '1px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      fontSize: '11px'
-                    }}>
-                    <FaCreditCard size={12} />
-                    UPI
-                  </button>
-                  <button 
-                    onClick={() => setPaymentMethod('card')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      padding: '10px 6px',
-                      backgroundColor: '#f8fafc',
-                      color: paymentMethod === 'card' ? '#22c55e' : '#64748b',
-                      border: paymentMethod === 'card' ? '2px solid #22c55e' : '1px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      fontSize: '11px'
-                    }}>
-                    <FaCreditCard size={12} />
-                    Card
-                  </button>
-                </div>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <button 
-                    onClick={saveOrder}
-                    style={{
-                      background: 'linear-gradient(135deg, #f97316, #ea580c)',
-                      color: 'white',
-                      padding: '8px',
-                      borderRadius: '6px',
-                      fontWeight: 'bold',
-                      border: 'none',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      fontSize: '11px'
-                    }}>
-                    <FaSave size={10} />
-                    Save
-                  </button>
-                  <button 
-                    onClick={clearCart}
-                    style={{
-                      background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
-                      color: 'white',
-                      padding: '8px',
-                      borderRadius: '6px',
-                      fontWeight: 'bold',
-                      border: 'none',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      fontSize: '11px'
-                    }}>
-                    <FaTimes size={10} />
-                    Clear
-                  </button>
-                </div>
-                
-                {/* Process Order Button */}
-                <button 
-                  onClick={processOrder}
-                  disabled={processing || cart.length === 0}
-                  style={{
-                    width: '100%',
-                    backgroundColor: processing || cart.length === 0 ? '#d1d5db' : '#10b981',
-                    color: 'white',
-                    padding: '12px',
-                    borderRadius: '6px',
-                    fontWeight: 'bold',
-                    border: 'none',
-                    cursor: processing || cart.length === 0 ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}>
-                  {processing ? (
-                    <>
-                      <FaSpinner className="animate-spin" size={12} />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <FaCheckCircle size={12} />
-                      Complete Order (₹{getTotalAmount()})
-                    </>
-                  )}
-                </button>
-
-                {/* Error Message */}
-                {error && (
-                  <div style={{
-                    backgroundColor: '#fee2e2',
-                    border: '1px solid #fecaca',
-                    borderRadius: '6px',
-                    padding: '8px',
-                    fontSize: '11px',
-                    color: '#dc2626',
-                    fontWeight: '600'
-                  }}>
-                    {error}
+                      <FaCreditCard size={12} />
+                      Payment Method
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {[
+                        { id: 'cash', label: 'Cash', icon: FaMoneyBillWave },
+                        { id: 'upi', label: 'UPI', icon: FaCreditCard },
+                        { id: 'card', label: 'Card', icon: FaCreditCard }
+                      ].map((method) => {
+                        const Icon = method.icon;
+                        const isSelected = paymentMethod === method.id;
+                        return (
+                          <button
+                            key={method.id}
+                            onClick={() => setPaymentMethod(method.id)}
+                            style={{
+                              flex: 1,
+                              padding: '10px 8px',
+                              backgroundColor: isSelected ? '#22c55e' : 'white',
+                              color: isSelected ? 'white' : '#6b7280',
+                              border: isSelected ? '2px solid #22c55e' : '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontWeight: '600',
+                              fontSize: '11px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: '4px',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <Icon size={14} />
+                            {method.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                )}
-              </div>
+
+                  {/* Quick Actions */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <button 
+                      onClick={saveOrder}
+                      style={{
+                        flex: 1,
+                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                        color: 'white',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        fontWeight: '700',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        fontSize: '12px',
+                        transition: 'transform 0.1s'
+                      }}
+                      onMouseDown={(e) => e.target.style.transform = 'scale(0.98)'}
+                      onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+                      onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                    >
+                      <FaSave size={11} />
+                      SAVE
+                    </button>
+                    
+                    <button 
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to clear the cart?')) {
+                          clearCart();
+                        }
+                      }}
+                      style={{
+                        background: 'linear-gradient(135deg, #6b7280, #4b5563)',
+                        color: 'white',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        fontWeight: '700',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        fontSize: '12px',
+                        minWidth: '80px',
+                        transition: 'transform 0.1s'
+                      }}
+                      onMouseDown={(e) => e.target.style.transform = 'scale(0.98)'}
+                      onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+                      onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                    >
+                      <FaTimes size={10} />
+                      CLEAR
+                    </button>
+                  </div>
+
+                  {/* Complete Order Button */}
+                  <button 
+                    onClick={processOrder}
+                    disabled={processing || cart.length === 0}
+                    style={{
+                      width: '100%',
+                      background: processing || cart.length === 0 
+                        ? 'linear-gradient(135deg, #d1d5db, #9ca3af)' 
+                        : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                      color: 'white',
+                      padding: '16px 20px',
+                      borderRadius: '12px',
+                      fontWeight: '800',
+                      border: 'none',
+                      cursor: processing || cart.length === 0 ? 'not-allowed' : 'pointer',
+                      fontSize: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '10px',
+                      boxShadow: processing || cart.length === 0 ? 'none' : '0 4px 12px rgba(34, 197, 94, 0.3)',
+                      transition: 'all 0.2s',
+                      transform: processing || cart.length === 0 ? 'none' : 'translateY(0)',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}
+                    onMouseDown={(e) => {
+                      if (!processing && cart.length > 0) {
+                        e.target.style.transform = 'translateY(2px)';
+                        e.target.style.boxShadow = '0 2px 6px rgba(34, 197, 94, 0.3)';
+                      }
+                    }}
+                    onMouseUp={(e) => {
+                      if (!processing && cart.length > 0) {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!processing && cart.length > 0) {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
+                      }
+                    }}
+                  >
+                    {processing ? (
+                      <>
+                        <div style={{
+                          width: '16px',
+                          height: '16px',
+                          border: '2px solid rgba(255,255,255,0.3)',
+                          borderTop: '2px solid white',
+                          borderRadius: '50%',
+                          animation: 'spin 1s linear infinite'
+                        }} />
+                        Processing Order...
+                      </>
+                    ) : (
+                      <>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}>
+                          <FaCheckCircle size={16} />
+                          <span>COMPLETE ORDER</span>
+                        </div>
+                        <div style={{
+                          backgroundColor: 'rgba(255,255,255,0.2)',
+                          padding: '4px 8px',
+                          borderRadius: '6px',
+                          fontSize: '14px',
+                          fontWeight: '800'
+                        }}>
+                          Rs.{getTotalAmount()}
+                        </div>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Error Message */}
+                  {error && (
+                    <div style={{
+                      backgroundColor: '#fee2e2',
+                      border: '1px solid #fecaca',
+                      borderRadius: '6px',
+                      padding: '8px',
+                      fontSize: '11px',
+                      color: '#dc2626',
+                      fontWeight: '600',
+                      marginTop: '8px'
+                    }}>
+                      {error}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
