@@ -155,6 +155,19 @@ class ApiClient {
     });
   }
 
+  async updateMenuItem(itemId, updateData) {
+    return this.request(`/api/menus/item/${itemId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
+  async deleteMenuItem(itemId) {
+    return this.request(`/api/menus/item/${itemId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Order endpoints
   async createOrder(orderData) {
     return this.request('/api/orders', {

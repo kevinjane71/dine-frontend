@@ -20,6 +20,7 @@ import {
 } from 'react-icons/fa';
 
 const Orders = () => {
+  console.log('Orders page: Component rendering');
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -39,53 +40,75 @@ const Orders = () => {
 
   // Fetch real orders from backend
   useEffect(() => {
+    console.log('Orders page: useEffect triggered');
     const fetchOrders = async () => {
       try {
         setLoading(true);
         setError(null);
         
+        console.log('Orders page: Starting fetchOrders');
+        
         // Check if user is authenticated
         const token = localStorage.getItem('authToken');
         const userData = localStorage.getItem('user');
+        console.log('Orders page: Token exists:', !!token);
+        console.log('Orders page: User data exists:', !!userData);
+        
         if (!token || !userData) {
+          console.log('Orders page: Missing authentication data');
           setError('Please log in to view orders');
           setLoading(false);
           return;
         }
 
         const user = JSON.parse(userData);
+        console.log('Orders page: User role:', user.role);
+        console.log('Orders page: User restaurantId:', user.restaurantId);
+        
         let restaurantId = null;
 
         // For staff members, use their assigned restaurant
         if (user.restaurantId) {
           restaurantId = user.restaurantId;
+          console.log('Orders page: Using staff restaurant ID:', restaurantId);
         } 
-        // For owners, get selected restaurant from localStorage or first restaurant
-        else if (user.role === 'owner') {
+        // For owners or customers (legacy), get selected restaurant from localStorage or first restaurant
+        else if (user.role === 'owner' || user.role === 'customer') {
           try {
+            console.log('Orders page: Fetching restaurants for owner');
             const restaurantsResponse = await apiClient.getRestaurants();
+            console.log('Orders page: Restaurants response:', restaurantsResponse);
+            
             if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
               const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+              console.log('Orders page: Saved restaurant ID:', savedRestaurantId);
+              
               const selectedRestaurant = restaurantsResponse.restaurants.find(r => r.id === savedRestaurantId) || 
                                         restaurantsResponse.restaurants[0];
               restaurantId = selectedRestaurant.id;
+              console.log('Orders page: Selected restaurant:', selectedRestaurant);
             } else {
+              console.log('Orders page: No restaurants found');
               setError('No restaurants found. Please add a restaurant first.');
               setLoading(false);
               return;
             }
           } catch (err) {
+            console.error('Orders page: Error fetching restaurants:', err);
             setError('Failed to fetch restaurant information');
             setLoading(false);
             return;
           }
         } else {
+          console.log('Orders page: Unknown user role');
           setError('Unable to determine restaurant context');
           setLoading(false);
           return;
         }
         
+        console.log('Orders page: Making API call with restaurant ID:', restaurantId);
         const response = await apiClient.getOrders(restaurantId);
+        console.log('Orders page: API response:', response);
         
         // Transform backend order data to match frontend format
         const transformedOrders = response.orders.map(order => ({
@@ -104,17 +127,24 @@ const Orders = () => {
           staffInfo: order.staffInfo || null
         }));
         
+        console.log('Orders page: Transformed orders:', transformedOrders);
         setOrders(transformedOrders);
       } catch (error) {
-        console.error('Error fetching orders:', error);
+        console.error('Orders page: Error fetching orders:', error);
         setError('Failed to fetch orders. Please ensure you are logged in and try again.');
         setOrders([]);
       } finally {
+        console.log('Orders page: Setting loading to false');
         setLoading(false);
       }
     };
 
-    fetchOrders();
+    console.log('Orders page: About to call fetchOrders');
+    fetchOrders().catch(err => {
+      console.error('Orders page: Unhandled error in fetchOrders:', err);
+      setError('Unexpected error occurred');
+      setLoading(false);
+    });
   }, []);
 
   const getStatusInfo = (status) => {

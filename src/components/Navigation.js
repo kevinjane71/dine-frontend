@@ -69,7 +69,7 @@ function NavigationContent() {
             } catch (error) {
               console.error('Error fetching restaurant data:', error);
             }
-          } else if (parsedUser.role === 'owner') {
+          } else if (parsedUser.role === 'owner' || parsedUser.role === 'customer') {
             // For owners, get all their restaurants
             try {
               const token = localStorage.getItem('authToken');
@@ -239,7 +239,7 @@ function NavigationContent() {
           {/* Restaurant Info */}
           <div style={{ position: 'relative' }} data-restaurant-dropdown>
             {/* Restaurant Selector for Owners */}
-            {user?.role === 'owner' && allRestaurants.length > 1 ? (
+            {(user?.role === 'owner' || user?.role === 'customer') && allRestaurants.length > 1 ? (
               <div 
                 onClick={() => setShowRestaurantDropdown(!showRestaurantDropdown)}
                 style={{ 
@@ -272,7 +272,7 @@ function NavigationContent() {
             ) : (
               <div style={{ textAlign: 'right' }}>
                 <p style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
-                  {selectedRestaurant?.name || (user?.role === 'owner' ? 'Setup Restaurant' : 'Dine POS')}
+                  {selectedRestaurant?.name || ((user?.role === 'owner' || user?.role === 'customer') ? 'Setup Restaurant' : 'Dine POS')}
                 </p>
                 <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>
                   {selectedRestaurant?.phone ? `📞 ${selectedRestaurant.phone}` : '🍽️ Restaurant System'}

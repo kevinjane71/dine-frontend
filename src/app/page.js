@@ -119,7 +119,7 @@ function RestaurantPOSContent() {
       if (user?.restaurantId) {
         restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
       }
-      // For owners, use selected restaurant from localStorage or first restaurant
+      // For owners or customers (legacy), use selected restaurant from localStorage or first restaurant
       else if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
         const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
         restaurant = restaurantsResponse.restaurants.find(r => r.id === savedRestaurantId) || 
