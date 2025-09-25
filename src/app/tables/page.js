@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Navigation from '../../components/Navigation';
+import apiClient from '../../lib/api';
 import { 
   FaPlus, 
   FaTrash,
@@ -12,81 +14,122 @@ import {
   FaCheck,
   FaBan,
   FaChair,
-  FaHome
+  FaHome,
+  FaEdit,
+  FaEllipsisV,
+  FaCalendarAlt,
+  FaTools,
+  FaTimes,
+  FaPhoneAlt,
+  FaUser,
+  FaChevronDown
 } from 'react-icons/fa';
 
 const TableManagement = () => {
+  const router = useRouter();
   const [floors, setFloors] = useState([]);
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  // Modal states
   const [showAddTable, setShowAddTable] = useState(false);
   const [showAddFloor, setShowAddFloor] = useState(false);
+  const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  const scrollContainerRef = useRef(null);
-
+  const [selectedFloorForTable, setSelectedFloorForTable] = useState(null);
+  
+  // Dropdown state
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  
   // Form states
   const [newFloor, setNewFloor] = useState({ name: '', description: '' });
   const [newTable, setNewTable] = useState({
     name: '',
     capacity: 4,
-    type: 'regular'
+    type: 'regular',
+    floorId: null
+  });
+  const [bookingData, setBookingData] = useState({
+    customerName: '',
+    customerPhone: '',
+    partySize: 2,
+    bookingDate: '',
+    bookingTime: '',
+    notes: ''
   });
 
-  // Fix hydration by using useEffect for client-side only code
+  const scrollContainerRef = useRef(null);
+
+  // Load data on component mount
   useEffect(() => {
-    setIsClient(true);
-    
-    // Use static IDs to prevent hydration issues
-    const defaultFloors = [
-      {
-        id: 1,
-        name: 'Ground Floor',
-        description: 'Main dining area',
-        tables: [
-          { id: 1, name: '1', capacity: 4, status: 'available', type: 'regular' },
-          { id: 2, name: '2', capacity: 2, status: 'occupied', type: 'small', customerName: 'John Doe', startTime: '19:30' },
-          { id: 3, name: '3', capacity: 6, status: 'reserved', type: 'large', customerName: 'Smith Family', reservationTime: '20:00' },
-          { id: 4, name: '4', capacity: 4, status: 'cleaning', type: 'regular' },
-          { id: 5, name: '5', capacity: 8, status: 'available', type: 'large' },
-          { id: 6, name: '6', capacity: 4, status: 'available', type: 'regular' },
-          { id: 7, name: '7', capacity: 2, status: 'available', type: 'small' },
-          { id: 8, name: '8', capacity: 4, status: 'available', type: 'regular' },
-          { id: 9, name: '9', capacity: 6, status: 'available', type: 'large' },
-          { id: 10, name: '10', capacity: 4, status: 'available', type: 'regular' },
-        ]
-      },
-      {
-        id: 2,
-        name: 'First Floor',
-        description: 'Premium dining & private rooms',
-        tables: [
-          { id: 11, name: 'V1', capacity: 6, status: 'occupied', type: 'vip', customerName: 'Patel Family', startTime: '19:15' },
-          { id: 12, name: 'V2', capacity: 8, status: 'reserved', type: 'vip', customerName: 'Corporate Event', reservationTime: '21:00' },
-          { id: 13, name: 'P1', capacity: 10, status: 'available', type: 'private' },
-          { id: 14, name: '11', capacity: 4, status: 'available', type: 'regular' },
-          { id: 15, name: '12', capacity: 4, status: 'available', type: 'regular' },
-          { id: 16, name: '13', capacity: 2, status: 'available', type: 'small' },
-          { id: 17, name: '14', capacity: 6, status: 'available', type: 'large' },
-          { id: 18, name: '15', capacity: 4, status: 'available', type: 'regular' },
-          { id: 19, name: '16', capacity: 4, status: 'available', type: 'regular' },
-          { id: 20, name: '17', capacity: 8, status: 'available', type: 'large' },
-        ]
-      },
-      {
-        id: 3,
-        name: 'Second Floor',
-        description: 'Rooftop & Events',
-        tables: [
-          { id: 21, name: '18', capacity: 4, status: 'available', type: 'regular' },
-          { id: 22, name: '19', capacity: 4, status: 'available', type: 'regular' },
-          { id: 23, name: '20', capacity: 6, status: 'available', type: 'large' },
-          { id: 24, name: '21', capacity: 8, status: 'available', type: 'large' },
-          { id: 25, name: '22', capacity: 20, status: 'available', type: 'private' },
-        ]
-      }
-    ];
-    setFloors(defaultFloors);
+    loadInitialData();
   }, []);
+
+  const loadInitialData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Get user data and restaurant context
+      const userData = localStorage.getItem('user');
+      const user = userData ? JSON.parse(userData) : null;
+      
+      // Load restaurants
+      const restaurantsResponse = await apiClient.getRestaurants();
+      const restaurants = restaurantsResponse.restaurants || [];
+      
+      let restaurant = null;
+      
+      // Determine selected restaurant
+      if (user?.restaurantId) {
+        restaurant = restaurants.find(r => r.id === user.restaurantId);
+      } else if (restaurants.length > 0) {
+        const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+        restaurant = restaurants.find(r => r.id === savedRestaurantId) || restaurants[0];
+      }
+      
+      if (restaurant) {
+        setSelectedRestaurant(restaurant);
+        await loadFloorsAndTables(restaurant.id);
+      } else {
+        setError('No restaurant found');
+      }
+      
+    } catch (err) {
+      console.error('Error loading initial data:', err);
+      setError(err.message || 'Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadFloorsAndTables = async (restaurantId) => {
+    try {
+      // Try to get floors first
+      const floorsResponse = await apiClient.getFloors(restaurantId);
+      if (floorsResponse.floors && floorsResponse.floors.length > 0) {
+        setFloors(floorsResponse.floors);
+      } else {
+        // If no floors, get tables and create a default floor structure
+        const tablesResponse = await apiClient.getTables(restaurantId);
+        const tables = tablesResponse.tables || [];
+        
+        // Create default floor with all tables
+        const defaultFloor = {
+          id: 'default',
+          name: 'Main Floor',
+          description: 'Main dining area',
+          tables: tables,
+          restaurantId: restaurantId
+        };
+        setFloors([defaultFloor]);
+      }
+    } catch (err) {
+      console.error('Error loading floors and tables:', err);
+      setError('Failed to load tables');
+    }
+  };
 
   const getTableStatusInfo = (status) => {
     const statusMap = {
@@ -140,92 +183,194 @@ const TableManagement = () => {
     return typeMap[type] || typeMap.regular;
   };
 
-  const addFloor = () => {
-    if (!newFloor.name.trim()) return;
+  // API operations
+  const addFloor = async () => {
+    if (!newFloor.name.trim() || !selectedRestaurant) return;
     
-    const newId = floors.length > 0 ? Math.max(...floors.map(f => f.id)) + 1 : 1;
-    const floor = {
-      id: newId,
-      name: newFloor.name,
-      description: newFloor.description,
-      tables: []
-    };
-    
-    setFloors([...floors, floor]);
-    setNewFloor({ name: '', description: '' });
-    setShowAddFloor(false);
-  };
-
-  const addTable = (floorId) => {
-    if (!newTable.name.trim()) return;
-    
-    const allTables = floors.flatMap(f => f.tables);
-    const newId = allTables.length > 0 ? Math.max(...allTables.map(t => t.id)) + 1 : 1;
-    
-    const table = {
-      id: newId,
-      name: newTable.name,
-      capacity: parseInt(newTable.capacity),
-      status: 'available',
-      type: newTable.type
-    };
-    
-    const updatedFloors = floors.map(floor => {
-      if (floor.id === floorId) {
-        return { ...floor, tables: [...floor.tables, table] };
-      }
-      return floor;
-    });
-    
-    setFloors(updatedFloors);
-    setNewTable({
-      name: `T${updatedFloors.find(f => f.id === floorId).tables.length + 1}`,
-      capacity: 4,
-      type: 'regular'
-    });
-    setShowAddTable(false);
-  };
-
-  const updateTableStatus = (tableId, newStatus) => {
-    const updatedFloors = floors.map(floor => ({
-      ...floor,
-      tables: floor.tables.map(table => {
-        if (table.id === tableId) {
-          const updatedTable = { ...table, status: newStatus };
-          if (newStatus === 'available') {
-            updatedTable.customerName = null;
-            updatedTable.startTime = null;
-            updatedTable.reservationTime = null;
-          }
-          return updatedTable;
-        }
-        return table;
-      })
-    }));
-    setFloors(updatedFloors);
-  };
-
-  const deleteTable = (tableId) => {
-    if (confirm('Are you sure you want to delete this table?')) {
-      const updatedFloors = floors.map(floor => ({
-        ...floor,
-        tables: floor.tables.filter(t => t.id !== tableId)
-      }));
-      setFloors(updatedFloors);
+    try {
+      const floorData = {
+        name: newFloor.name.trim(),
+        description: newFloor.description.trim() || null
+      };
+      
+      const response = await apiClient.createFloor(selectedRestaurant.id, floorData);
+      const newFloorData = { ...response.floor, tables: [] };
+      
+      setFloors(prev => [...prev, newFloorData]);
+      setNewFloor({ name: '', description: '' });
+      setShowAddFloor(false);
+      
+    } catch (err) {
+      console.error('Error adding floor:', err);
+      alert(`Failed to add floor: ${err.message}`);
     }
   };
 
-  const handleTableClick = (table) => {
-    if (editMode) {
-      setSelectedTable(table);
-    } else if (table.status === 'available') {
-      const floor = floors.find(f => f.tables.some(t => t.id === table.id));
-      const params = new URLSearchParams({
-        table: table.name,
-        capacity: table.capacity.toString(),
-        floor: floor.name
+  const addTable = async () => {
+    if (!newTable.name.trim() || !selectedFloorForTable || !selectedRestaurant) return;
+    
+    try {
+      const tableData = {
+        name: newTable.name.trim(),
+        capacity: parseInt(newTable.capacity),
+        type: newTable.type,
+        floorId: selectedFloorForTable,
+        status: 'available'
+      };
+      
+      const response = await apiClient.createTable(selectedRestaurant.id, tableData);
+      
+      // Update floors state with new table
+      setFloors(prev => prev.map(floor => {
+        if (floor.id === selectedFloorForTable) {
+          return {
+            ...floor,
+            tables: [...(floor.tables || []), response.table]
+          };
+        }
+        return floor;
+      }));
+      
+      setNewTable({ name: '', capacity: 4, type: 'regular', floorId: null });
+      setSelectedFloorForTable(null);
+      setShowAddTable(false);
+      
+    } catch (err) {
+      console.error('Error adding table:', err);
+      alert(`Failed to add table: ${err.message}`);
+    }
+  };
+
+  const updateTableStatus = async (tableId, newStatus, additionalData = {}) => {
+    try {
+      await apiClient.updateTableStatus(tableId, newStatus, additionalData.orderId);
+      
+      // Update local state
+      setFloors(prev => prev.map(floor => ({
+        ...floor,
+        tables: (floor.tables || []).map(table => {
+          if (table.id === tableId) {
+            const updatedTable = { ...table, status: newStatus, ...additionalData };
+            if (newStatus === 'available') {
+              updatedTable.customerName = null;
+              updatedTable.startTime = null;
+              updatedTable.reservationTime = null;
+            }
+            return updatedTable;
+          }
+          return table;
+        })
+      })));
+      
+      setActiveDropdown(null);
+    } catch (err) {
+      console.error('Error updating table status:', err);
+      alert(`Failed to update table: ${err.message}`);
+    }
+  };
+
+  const deleteTable = async (tableId) => {
+    if (!confirm('Are you sure you want to delete this table?')) return;
+    
+    try {
+      await apiClient.deleteTable(tableId);
+      
+      setFloors(prev => prev.map(floor => ({
+        ...floor,
+        tables: (floor.tables || []).filter(t => t.id !== tableId)
+      })));
+      
+      setActiveDropdown(null);
+    } catch (err) {
+      console.error('Error deleting table:', err);
+      alert(`Failed to delete table: ${err.message}`);
+    }
+  };
+
+  const createBooking = async () => {
+    if (!selectedTable || !bookingData.customerName.trim() || !selectedRestaurant) return;
+    
+    try {
+      const booking = {
+        tableId: selectedTable.id,
+        customerName: bookingData.customerName.trim(),
+        customerPhone: bookingData.customerPhone.trim() || null,
+        partySize: parseInt(bookingData.partySize),
+        bookingDate: bookingData.bookingDate,
+        bookingTime: bookingData.bookingTime,
+        notes: bookingData.notes.trim() || null,
+        status: 'confirmed'
+      };
+      
+      await apiClient.createBooking(selectedRestaurant.id, booking);
+      
+      // Update table status to reserved
+      await updateTableStatus(selectedTable.id, 'reserved', {
+        customerName: bookingData.customerName,
+        reservationTime: bookingData.bookingTime
       });
-      window.location.href = `/?${params.toString()}`;
+      
+      // Reset form
+      setBookingData({
+        customerName: '',
+        customerPhone: '',
+        partySize: 2,
+        bookingDate: '',
+        bookingTime: '',
+        notes: ''
+      });
+      setShowBookingForm(false);
+      setSelectedTable(null);
+      
+    } catch (err) {
+      console.error('Error creating booking:', err);
+      alert(`Failed to create booking: ${err.message}`);
+    }
+  };
+
+  // Handle table actions
+  const handleTableAction = (action, table) => {
+    setSelectedTable(table);
+    setActiveDropdown(null);
+    
+    switch (action) {
+      case 'take-order':
+        // Redirect to order page with table info
+        const floor = floors.find(f => (f.tables || []).some(t => t.id === table.id));
+        const params = new URLSearchParams({
+          table: table.name,
+          capacity: table.capacity.toString(),
+          floor: floor?.name || 'Main Floor'
+        });
+        router.push(`/?${params.toString()}`);
+        break;
+        
+      case 'book-table':
+        // Set default date and time
+        const now = new Date();
+        setBookingData(prev => ({
+          ...prev,
+          bookingDate: now.toISOString().split('T')[0],
+          bookingTime: now.toTimeString().slice(0, 5),
+          partySize: table.capacity
+        }));
+        setShowBookingForm(true);
+        break;
+        
+      case 'out-of-service':
+        updateTableStatus(table.id, 'out-of-service');
+        break;
+        
+      case 'cleaning':
+        updateTableStatus(table.id, 'cleaning');
+        break;
+        
+      case 'make-available':
+        updateTableStatus(table.id, 'available');
+        break;
+        
+      default:
+        break;
     }
   };
 
@@ -236,11 +381,47 @@ const TableManagement = () => {
     }
   };
 
-  // Don't render anything until client-side hydration is complete
-  if (!isClient) {
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (activeDropdown && !event.target.closest('.table-dropdown')) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [activeDropdown]);
+
+  if (loading) {
     return (
       <div style={{ height: '100vh', backgroundColor: '#fef7f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#6b7280', fontSize: '16px' }}>Loading...</div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '16px', color: '#6b7280' }}>Loading table management...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ height: '100vh', backgroundColor: '#fef7f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '16px', color: '#dc2626', marginBottom: '16px' }}>Error: {error}</div>
+          <button
+            onClick={() => loadInitialData()}
+            style={{
+              background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
+              color: 'white',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -257,7 +438,7 @@ const TableManagement = () => {
           borderBottom: '1px solid #f3e8ff', 
           boxShadow: '0 1px 3px rgba(0,0,0,0.05)' 
         }}>
-          {/* Color Coding Legend at Top */}
+          {/* Status Legend */}
           <div style={{ 
             display: 'flex', 
             justifyContent: 'center', 
@@ -290,6 +471,7 @@ const TableManagement = () => {
               </div>
             ))}
           </div>
+
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -310,14 +492,14 @@ const TableManagement = () => {
                     Table Management
                   </h1>
                   <p style={{ color: '#6b7280', margin: 0, fontSize: '12px' }}>
-                    Cinema seat style • Quick selection
+                    {selectedRestaurant?.name} • Interactive table actions
                   </p>
                 </div>
               </div>
               
-              {/* Floor Navigation Tabs */}
+              {/* Floor Navigation */}
               <div style={{ display: 'flex', backgroundColor: '#f8f9fa', borderRadius: '10px', padding: '3px', gap: '2px' }}>
-                {floors.map((floor, index) => (
+                {floors.map((floor) => (
                   <button
                     key={floor.id}
                     onClick={() => scrollToFloor(floor.id)}
@@ -354,7 +536,7 @@ const TableManagement = () => {
                       fontSize: '10px',
                       fontWeight: 'bold'
                     }}>
-                      {floor.tables.length}
+                      {(floor.tables || []).length}
                     </span>
                   </button>
                 ))}
@@ -375,35 +557,17 @@ const TableManagement = () => {
                   }}
                 >
                   <FaPlus size={8} />
-                  Add
+                  Add Floor
                 </button>
               </div>
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button
-                onClick={() => setEditMode(!editMode)}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  backgroundColor: editMode ? '#f59e0b' : '#f3f4f6',
-                  color: editMode ? 'white' : '#374151',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px'
+                onClick={() => {
+                  setSelectedFloorForTable(floors[0]?.id || null);
+                  setShowAddTable(true);
                 }}
-              >
-                <FaCog size={12} />
-                {editMode ? 'Exit Edit' : 'Edit'}
-              </button>
-              
-              <button
-                onClick={() => setShowAddTable(true)}
                 style={{
                   background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
                   color: 'white',
@@ -439,9 +603,8 @@ const TableManagement = () => {
         >
           {floors.map((floor) => (
             <div key={floor.id} id={`floor-${floor.id}`} style={{ marginBottom: '40px' }}>
-              {/* Floor Section */}
               <div style={{ position: 'relative' }}>
-                {/* Floor Label on Right - Horizontal */}
+                {/* Floor Label */}
                 <div style={{
                   position: 'absolute',
                   right: '20px',
@@ -459,175 +622,254 @@ const TableManagement = () => {
                   {floor.name}
                 </div>
 
-                {/* Tables Grid - Compact Colored Cards */}
+                {/* Tables Grid */}
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))',
-                  gap: '8px',
-                  maxWidth: 'calc(100% - 160px)', // Leave space for floor label
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))',
+                  gap: '12px',
+                  maxWidth: 'calc(100% - 160px)',
                   margin: '0 auto',
                   justifyContent: 'center',
                   justifyItems: 'center'
                 }}>
-                  {floor.tables.map((table) => {
+                  {(floor.tables || []).map((table) => {
                     const statusInfo = getTableStatusInfo(table.status);
-                    const isClickable = !editMode && table.status === 'available';
+                    const isDropdownOpen = activeDropdown === table.id;
                     
                     return (
-                      <div key={table.id} style={{ position: 'relative' }}>
-                        {/* Table Card - Full Background Color */}
+                      <div key={table.id} style={{ position: 'relative' }} className="table-dropdown">
+                        {/* Table Card */}
                         <div
-                          onClick={() => handleTableClick(table)}
+                          onClick={() => setActiveDropdown(isDropdownOpen ? null : table.id)}
                           style={{
-                            width: '60px',
-                            height: '60px',
+                            width: '70px',
+                            height: '70px',
                             backgroundColor: statusInfo.bg,
                             borderRadius: '8px',
-                            cursor: isClickable ? 'pointer' : editMode ? 'pointer' : 'default',
+                            cursor: 'pointer',
                             transition: 'all 0.2s ease',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             position: 'relative',
-                            boxShadow: table.status === 'available' 
-                              ? '0 2px 6px rgba(167, 243, 208, 0.5)'
-                              : '0 2px 4px rgba(0,0,0,0.1)',
-                            border: `2px solid ${statusInfo.border}`
+                            border: `2px solid ${statusInfo.border}`,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                           }}
                           onMouseEnter={(e) => {
-                            if (isClickable) {
-                              e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(167, 243, 208, 0.6)';
-                            }
+                            e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)';
                           }}
                           onMouseLeave={(e) => {
-                            if (isClickable) {
-                              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                              e.currentTarget.style.boxShadow = '0 2px 6px rgba(167, 243, 208, 0.5)';
-                            }
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
                           }}
                         >
-                          {/* Edit Controls */}
-                          {editMode && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteTable(table.id);
-                              }}
-                              style={{
-                                position: 'absolute',
-                                top: '2px',
-                                right: '2px',
-                                width: '16px',
-                                height: '16px',
-                                borderRadius: '50%',
-                                backgroundColor: 'rgba(0,0,0,0.7)',
-                                color: 'white',
-                                border: 'none',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '8px'
-                              }}
-                            >
-                              <FaTrash size={6} />
-                            </button>
-                          )}
-
-                          {/* Table Number - Large and Centered */}
+                          {/* Table Number */}
                           <div style={{ 
                             fontSize: '18px', 
                             fontWeight: 'bold', 
-                            color: statusInfo.text,
-                            textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                            color: statusInfo.text
                           }}>
                             {table.name}
                           </div>
 
-                          {/* Quick Action for Non-Available Tables */}
-                          {!editMode && table.status !== 'available' && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                updateTableStatus(table.id, 'available');
-                              }}
-                              style={{
-                                position: 'absolute',
-                                bottom: '2px',
-                                right: '2px',
-                                width: '12px',
-                                height: '12px',
-                                borderRadius: '50%',
-                                backgroundColor: 'rgba(255,255,255,0.9)',
-                                color: '#10b981',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontSize: '6px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                              }}
-                            >
-                              <FaCheck size={4} />
-                            </button>
-                          )}
+                          {/* Dropdown indicator */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '4px',
+                            right: '4px',
+                            width: '16px',
+                            height: '16px',
+                            backgroundColor: 'rgba(0,0,0,0.1)',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                            <FaChevronDown size={8} style={{ color: statusInfo.text }} />
+                          </div>
                         </div>
 
-                        {/* Info Below Card - Small Text */}
+                        {/* Table Info */}
                         <div style={{ 
-                          marginTop: '4px',
-                          fontSize: '8px',
+                          marginTop: '6px',
+                          fontSize: '9px',
                           color: '#6b7280',
                           textAlign: 'center',
                           lineHeight: '1.2'
                         }}>
-                          <div>{table.capacity} seats • {getTableTypeInfo(table.type).seats}</div>
+                          <div>{table.capacity} seats</div>
                           {table.customerName && (
-                            <div style={{ color: '#ef4444', fontWeight: '600' }}>
-                              {table.customerName.length > 8 ? table.customerName.substring(0, 8) + '...' : table.customerName}
+                            <div style={{ color: '#ef4444', fontWeight: '600', marginTop: '2px' }}>
+                              {table.customerName.length > 10 ? table.customerName.substring(0, 10) + '...' : table.customerName}
                             </div>
                           )}
-                          {table.startTime && <div>Since {table.startTime}</div>}
-                          {table.reservationTime && <div>@ {table.reservationTime}</div>}
                         </div>
+
+                        {/* Action Dropdown */}
+                        {isDropdownOpen && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '80px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            backgroundColor: 'white',
+                            borderRadius: '8px',
+                            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                            border: '1px solid #e5e7eb',
+                            zIndex: 20,
+                            minWidth: '140px',
+                            overflow: 'hidden'
+                          }}>
+                            {table.status === 'available' && (
+                              <>
+                                <button
+                                  onClick={() => handleTableAction('take-order', table)}
+                                  style={{
+                                    width: '100%',
+                                    padding: '10px 12px',
+                                    border: 'none',
+                                    backgroundColor: 'white',
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    color: '#059669'
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
+                                  onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                >
+                                  <FaUtensils size={12} />
+                                  Take Order
+                                </button>
+                                <button
+                                  onClick={() => handleTableAction('book-table', table)}
+                                  style={{
+                                    width: '100%',
+                                    padding: '10px 12px',
+                                    border: 'none',
+                                    backgroundColor: 'white',
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    color: '#d97706'
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.backgroundColor = '#fefbf0'}
+                                  onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                >
+                                  <FaCalendarAlt size={12} />
+                                  Book Table
+                                </button>
+                              </>
+                            )}
+                            
+                            <button
+                              onClick={() => handleTableAction('out-of-service', table)}
+                              style={{
+                                width: '100%',
+                                padding: '10px 12px',
+                                border: 'none',
+                                backgroundColor: 'white',
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                color: '#7c3aed'
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f3ff'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                            >
+                              <FaTools size={12} />
+                              Out of Service
+                            </button>
+                            
+                            <button
+                              onClick={() => handleTableAction('cleaning', table)}
+                              style={{
+                                width: '100%',
+                                padding: '10px 12px',
+                                border: 'none',
+                                backgroundColor: 'white',
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                color: '#4b5563'
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                            >
+                              <FaUtensils size={12} />
+                              Cleaning
+                            </button>
+                            
+                            {table.status !== 'available' && (
+                              <button
+                                onClick={() => handleTableAction('make-available', table)}
+                                style={{
+                                  width: '100%',
+                                  padding: '10px 12px',
+                                  border: 'none',
+                                  backgroundColor: 'white',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  fontSize: '12px',
+                                  fontWeight: '600',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  color: '#059669'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                              >
+                                <FaCheck size={12} />
+                                Make Available
+                              </button>
+                            )}
+                            
+                            <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
+                            
+                            <button
+                              onClick={() => deleteTable(table.id)}
+                              style={{
+                                width: '100%',
+                                padding: '10px 12px',
+                                border: 'none',
+                                backgroundColor: 'white',
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                color: '#dc2626'
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                            >
+                              <FaTrash size={12} />
+                              Delete Table
+                            </button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
-
-                  {/* Add Table Button for Each Floor */}
-                  {editMode && (
-                    <div style={{ position: 'relative' }}>
-                      <div
-                        onClick={() => setShowAddTable(true)}
-                        style={{
-                          width: '60px',
-                          height: '60px',
-                          backgroundColor: '#f8f9fa',
-                          borderRadius: '8px',
-                          border: '2px dashed #cbd5e1',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#6b7280'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = '#e53e3e';
-                          e.currentTarget.style.color = '#e53e3e';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = '#cbd5e1';
-                          e.currentTarget.style.color = '#6b7280';
-                        }}
-                      >
-                        <FaPlus size={12} />
-                        <span style={{ fontSize: '7px', fontWeight: '600', marginTop: '2px' }}>ADD</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Floor Statistics */}
@@ -646,7 +888,7 @@ const TableManagement = () => {
                 }}>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
-                      {floor.tables.length}
+                      {(floor.tables || []).length}
                     </div>
                     <div style={{ fontSize: '10px', color: '#6b7280', fontWeight: '500' }}>
                       Total Tables
@@ -655,7 +897,7 @@ const TableManagement = () => {
                   <div style={{ width: '1px', backgroundColor: '#e5e7eb', margin: '0 4px' }} />
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#10b981' }}>
-                      {floor.tables.filter(t => t.status === 'available').length}
+                      {(floor.tables || []).filter(t => t.status === 'available').length}
                     </div>
                     <div style={{ fontSize: '10px', color: '#6b7280', fontWeight: '500' }}>
                       Available
@@ -664,7 +906,7 @@ const TableManagement = () => {
                   <div style={{ width: '1px', backgroundColor: '#e5e7eb', margin: '0 4px' }} />
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#ef4444' }}>
-                      {floor.tables.filter(t => t.status === 'occupied').length}
+                      {(floor.tables || []).filter(t => t.status === 'occupied').length}
                     </div>
                     <div style={{ fontSize: '10px', color: '#6b7280', fontWeight: '500' }}>
                       Occupied
@@ -703,7 +945,7 @@ const TableManagement = () => {
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                  Floor Name
+                  Floor Name *
                 </label>
                 <input
                   type="text"
@@ -716,7 +958,8 @@ const TableManagement = () => {
                     borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0'
+                    backgroundColor: '#fef7f0',
+                    boxSizing: 'border-box'
                   }}
                   placeholder="e.g., Ground Floor, Terrace"
                 />
@@ -737,7 +980,8 @@ const TableManagement = () => {
                     borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0'
+                    backgroundColor: '#fef7f0',
+                    boxSizing: 'border-box'
                   }}
                   placeholder="e.g., Main dining area"
                 />
@@ -763,15 +1007,18 @@ const TableManagement = () => {
               </button>
               <button
                 onClick={addFloor}
+                disabled={!newFloor.name.trim()}
                 style={{
                   flex: 1,
-                  background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
+                  background: newFloor.name.trim() 
+                    ? 'linear-gradient(135deg, #e53e3e, #dc2626)'
+                    : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
                   color: 'white',
                   padding: '10px 16px',
                   borderRadius: '8px',
                   fontWeight: '600',
                   border: 'none',
-                  cursor: 'pointer',
+                  cursor: newFloor.name.trim() ? 'pointer' : 'not-allowed',
                   fontSize: '14px'
                 }}
               >
@@ -806,10 +1053,35 @@ const TableManagement = () => {
             </div>
             
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                  Select Floor *
+                </label>
+                <select
+                  value={selectedFloorForTable || ''}
+                  onChange={(e) => setSelectedFloorForTable(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    backgroundColor: '#fef7f0',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="">Select a floor</option>
+                  {floors.map(floor => (
+                    <option key={floor.id} value={floor.id}>{floor.name}</option>
+                  ))}
+                </select>
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                    Table Name
+                    Table Name *
                   </label>
                   <input
                     type="text"
@@ -822,7 +1094,8 @@ const TableManagement = () => {
                       borderRadius: '8px',
                       fontSize: '14px',
                       outline: 'none',
-                      backgroundColor: '#fef7f0'
+                      backgroundColor: '#fef7f0',
+                      boxSizing: 'border-box'
                     }}
                     placeholder="e.g., T1, V1"
                   />
@@ -830,7 +1103,7 @@ const TableManagement = () => {
                 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                    Capacity
+                    Capacity *
                   </label>
                   <input
                     type="number"
@@ -845,7 +1118,8 @@ const TableManagement = () => {
                       borderRadius: '8px',
                       fontSize: '14px',
                       outline: 'none',
-                      backgroundColor: '#fef7f0'
+                      backgroundColor: '#fef7f0',
+                      boxSizing: 'border-box'
                     }}
                   />
                 </div>
@@ -865,7 +1139,8 @@ const TableManagement = () => {
                     borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0'
+                    backgroundColor: '#fef7f0',
+                    boxSizing: 'border-box'
                   }}
                 >
                   <option value="small">Small (1-2 seats)</option>
@@ -879,7 +1154,11 @@ const TableManagement = () => {
             
             <div style={{ padding: '20px', backgroundColor: '#fef7f0', display: 'flex', gap: '10px' }}>
               <button
-                onClick={() => setShowAddTable(false)}
+                onClick={() => {
+                  setShowAddTable(false);
+                  setSelectedFloorForTable(null);
+                  setNewTable({ name: '', capacity: 4, type: 'regular', floorId: null });
+                }}
                 style={{
                   flex: 1,
                   backgroundColor: '#6b7280',
@@ -895,12 +1174,215 @@ const TableManagement = () => {
                 Cancel
               </button>
               <button
-                onClick={() => addTable(floors[0]?.id)}
+                onClick={addTable}
+                disabled={!newTable.name.trim() || !selectedFloorForTable}
                 style={{
                   flex: 1,
-                  background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
+                  background: (newTable.name.trim() && selectedFloorForTable)
+                    ? 'linear-gradient(135deg, #e53e3e, #dc2626)'
+                    : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
                   color: 'white',
                   padding: '10px 16px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: (newTable.name.trim() && selectedFloorForTable) ? 'pointer' : 'not-allowed',
+                  fontSize: '14px'
+                }}
+              >
+                Add Table
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Booking Form Modal */}
+      {showBookingForm && selectedTable && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+          padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+            width: '100%',
+            maxWidth: '500px'
+          }}>
+            <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
+                Book Table {selectedTable.name}
+              </h2>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                Capacity: {selectedTable.capacity} people
+              </p>
+            </div>
+            
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                    Customer Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={bookingData.customerName}
+                    onChange={(e) => setBookingData({...bookingData, customerName: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: '#fef7f0',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="Enter customer name"
+                  />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={bookingData.customerPhone}
+                    onChange={(e) => setBookingData({...bookingData, customerPhone: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: '#fef7f0',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="+91 9876543210"
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                    Party Size *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={selectedTable.capacity}
+                    value={bookingData.partySize}
+                    onChange={(e) => setBookingData({...bookingData, partySize: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: '#fef7f0',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                    Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={bookingData.bookingDate}
+                    onChange={(e) => setBookingData({...bookingData, bookingDate: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: '#fef7f0',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                    Time *
+                  </label>
+                  <input
+                    type="time"
+                    value={bookingData.bookingTime}
+                    onChange={(e) => setBookingData({...bookingData, bookingTime: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: '#fef7f0',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                  Special Notes
+                </label>
+                <textarea
+                  value={bookingData.notes}
+                  onChange={(e) => setBookingData({...bookingData, notes: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    backgroundColor: '#fef7f0',
+                    boxSizing: 'border-box',
+                    minHeight: '60px',
+                    resize: 'vertical',
+                    fontFamily: 'inherit'
+                  }}
+                  placeholder="Any special requirements or notes..."
+                />
+              </div>
+            </div>
+            
+            <div style={{ padding: '20px', backgroundColor: '#fef7f0', display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  setShowBookingForm(false);
+                  setSelectedTable(null);
+                  setBookingData({
+                    customerName: '',
+                    customerPhone: '',
+                    partySize: 2,
+                    bookingDate: '',
+                    bookingTime: '',
+                    notes: ''
+                  });
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: '#6b7280',
+                  color: 'white',
+                  padding: '12px 16px',
                   borderRadius: '8px',
                   fontWeight: '600',
                   border: 'none',
@@ -908,7 +1390,31 @@ const TableManagement = () => {
                   fontSize: '14px'
                 }}
               >
-                Add Table
+                Cancel
+              </button>
+              <button
+                onClick={createBooking}
+                disabled={!bookingData.customerName.trim() || !bookingData.bookingDate || !bookingData.bookingTime}
+                style={{
+                  flex: 2,
+                  background: (bookingData.customerName.trim() && bookingData.bookingDate && bookingData.bookingTime)
+                    ? 'linear-gradient(135deg, #d97706, #b45309)'
+                    : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
+                  color: 'white',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: (bookingData.customerName.trim() && bookingData.bookingDate && bookingData.bookingTime) ? 'pointer' : 'not-allowed',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <FaCalendarAlt size={14} />
+                Confirm Booking
               </button>
             </div>
           </div>

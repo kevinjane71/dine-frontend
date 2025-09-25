@@ -52,7 +52,9 @@ const MenuManagement = () => {
     isVeg: true,
     spiceLevel: 'medium',
     shortCode: '',
-    image: ''
+    image: '',
+    isAvailable: true,
+    stockQuantity: null
   });
 
   // Close dropdowns when clicking outside
@@ -211,6 +213,22 @@ const MenuManagement = () => {
     }
   };
 
+  const handleToggleAvailability = async (itemId, currentStatus) => {
+    try {
+      setProcessing(true);
+      const updatedData = { isAvailable: !currentStatus };
+      await apiClient.updateMenuItem(itemId, updatedData);
+      setMenuItems(items => items.map(item => 
+        item.id === itemId ? { ...item, isAvailable: !currentStatus } : item
+      ));
+    } catch (error) {
+      console.error('Error updating availability:', error);
+      setError('Failed to update item availability');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -220,7 +238,9 @@ const MenuManagement = () => {
       isVeg: true,
       spiceLevel: 'medium',
       shortCode: '',
-      image: ''
+      image: '',
+      isAvailable: true,
+      stockQuantity: null
     });
     setEditingItem(null);
     setShowAddForm(false);
@@ -730,7 +750,9 @@ const MenuManagement = () => {
                     boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                     border: '1px solid #f1f5f9',
                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                    position: 'relative'
+                    position: 'relative',
+                    opacity: item.isAvailable === false ? 0.6 : 1,
+                    filter: item.isAvailable === false ? 'grayscale(0.3)' : 'none'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
@@ -842,6 +864,28 @@ const MenuManagement = () => {
                       }}>
                         {item.shortCode}
                       </div>
+
+                      {/* Availability Status Badge */}
+                      {item.isAvailable === false && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '12px',
+                          right: '12px',
+                          background: 'linear-gradient(45deg, #ef4444, #dc2626)',
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '15px',
+                          fontSize: '10px',
+                          fontWeight: '700',
+                          letterSpacing: '0.5px',
+                          boxShadow: '0 2px 6px rgba(239, 68, 68, 0.4)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          🚫 OUT OF STOCK
+                        </div>
+                      )}
                     </div>
                     
                     {/* Content Section */}
@@ -894,7 +938,7 @@ const MenuManagement = () => {
                       </p>
                       
                       {/* Modern Action Buttons */}
-                      <div style={{ display: 'flex', gap: '10px' }}>
+                      <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -904,16 +948,16 @@ const MenuManagement = () => {
                             flex: 1,
                             background: 'linear-gradient(45deg, #3b82f6 0%, #1d4ed8 100%)',
                             color: 'white',
-                            padding: '12px 16px',
-                            borderRadius: '12px',
-                            fontSize: '13px',
+                            padding: '10px 14px',
+                            borderRadius: '10px',
+                            fontSize: '12px',
                             fontWeight: '600',
                             border: 'none',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '6px',
+                            gap: '5px',
                             boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
                             transition: 'all 0.2s ease'
                           }}
@@ -926,8 +970,49 @@ const MenuManagement = () => {
                             e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
                           }}
                         >
-                          <FaEdit size={12} />
+                          <FaEdit size={11} />
                           Edit
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleAvailability(item.id, item.isAvailable);
+                          }}
+                          style={{
+                            background: item.isAvailable 
+                              ? 'linear-gradient(45deg, #f59e0b 0%, #d97706 100%)'
+                              : 'linear-gradient(45deg, #10b981 0%, #059669 100%)',
+                            color: 'white',
+                            padding: '10px',
+                            borderRadius: '10px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: item.isAvailable 
+                              ? '0 4px 12px rgba(245, 158, 11, 0.3)'
+                              : '0 4px 12px rgba(16, 185, 129, 0.3)',
+                            transition: 'all 0.2s ease',
+                            minWidth: '36px'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.boxShadow = item.isAvailable 
+                              ? '0 6px 16px rgba(245, 158, 11, 0.4)'
+                              : '0 6px 16px rgba(16, 185, 129, 0.4)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = item.isAvailable 
+                              ? '0 4px 12px rgba(245, 158, 11, 0.3)'
+                              : '0 4px 12px rgba(16, 185, 129, 0.3)';
+                          }}
+                          title={item.isAvailable ? 'Mark as Out of Stock' : 'Mark as Available'}
+                        >
+                          {item.isAvailable ? '🚫' : '✅'}
                         </button>
                         <button
                           onClick={(e) => {
@@ -937,9 +1022,9 @@ const MenuManagement = () => {
                           style={{
                             background: 'linear-gradient(45deg, #ef4444 0%, #dc2626 100%)',
                             color: 'white',
-                            padding: '12px',
-                            borderRadius: '12px',
-                            fontSize: '13px',
+                            padding: '10px',
+                            borderRadius: '10px',
+                            fontSize: '12px',
                             fontWeight: '600',
                             border: 'none',
                             cursor: 'pointer',
@@ -947,7 +1032,8 @@ const MenuManagement = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.2s ease',
+                            minWidth: '36px'
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.transform = 'translateY(-1px)';
@@ -958,7 +1044,7 @@ const MenuManagement = () => {
                             e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
                           }}
                         >
-                          <FaTrash size={12} />
+                          <FaTrash size={11} />
                         </button>
                       </div>
                     </div>
@@ -1063,8 +1149,9 @@ const MenuManagement = () => {
                             <h4 style={{
                               fontSize: '14px',
                               fontWeight: '600',
-                              color: '#1f2937',
-                              margin: 0
+                              color: item.isAvailable === false ? '#9ca3af' : '#1f2937',
+                              margin: 0,
+                              textDecoration: item.isAvailable === false ? 'line-through' : 'none'
                             }}>
                               {item.name}
                             </h4>
@@ -1079,6 +1166,19 @@ const MenuManagement = () => {
                             }}>
                               {item.shortCode}
                             </span>
+                            {item.isAvailable === false && (
+                              <span style={{
+                                backgroundColor: '#ef4444',
+                                color: 'white',
+                                padding: '2px 6px',
+                                borderRadius: '8px',
+                                fontSize: '8px',
+                                fontWeight: '700',
+                                letterSpacing: '0.5px'
+                              }}>
+                                OUT OF STOCK
+                              </span>
+                            )}
                           </div>
                           <p style={{
                             fontSize: '12px',
@@ -1122,6 +1222,27 @@ const MenuManagement = () => {
                             }}
                           >
                             <FaEdit size={10} />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleAvailability(item.id, item.isAvailable);
+                            }}
+                            style={{
+                              backgroundColor: item.isAvailable ? '#f59e0b' : '#10b981',
+                              color: 'white',
+                              padding: '6px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                            title={item.isAvailable ? 'Mark as Out of Stock' : 'Mark as Available'}
+                          >
+                            {item.isAvailable ? '🚫' : '✅'}
                           </button>
                           <button
                             onClick={(e) => {
@@ -1607,96 +1728,194 @@ const MenuManagement = () => {
                 </div>
               </div>
               
-              {/* Veg/Non-Veg */}
-              <div style={{ marginBottom: '32px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  marginBottom: '12px'
-                }}>
-                  🥬 Food Type
-                </label>
-                <div style={{ display: 'flex', gap: '16px' }}>
+              {/* Food Type and Availability */}
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '32px' }}>
+                {/* Veg/Non-Veg */}
+                <div>
                   <label style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    cursor: 'pointer',
-                    padding: '16px 20px',
-                    borderRadius: '16px',
-                    border: formData.isVeg === true ? '3px solid #10b981' : '2px solid #e5e7eb',
-                    backgroundColor: formData.isVeg === true ? '#ecfdf5' : '#fef7f0',
-                    transition: 'all 0.3s ease',
-                    flex: 1
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#374151',
+                    marginBottom: '12px'
                   }}>
-                    <input
-                      type="radio"
-                      checked={formData.isVeg === true}
-                      onChange={() => setFormData({...formData, isVeg: true})}
-                      style={{ display: 'none' }}
-                    />
-                    <div style={{
-                      width: '20px',
-                      height: '20px',
-                      border: '3px solid #10b981',
-                      borderRadius: '4px',
+                    🥬 Food Type
+                  </label>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <label style={{
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'white'
+                      gap: '10px',
+                      cursor: 'pointer',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: formData.isVeg === true ? '3px solid #10b981' : '2px solid #e5e7eb',
+                      backgroundColor: formData.isVeg === true ? '#ecfdf5' : '#fef7f0',
+                      transition: 'all 0.3s ease',
+                      flex: 1
                     }}>
+                      <input
+                        type="radio"
+                        checked={formData.isVeg === true}
+                        onChange={() => setFormData({...formData, isVeg: true})}
+                        style={{ display: 'none' }}
+                      />
                       <div style={{
-                        width: '10px',
-                        height: '10px',
-                        backgroundColor: '#10b981',
-                        borderRadius: '2px'
-                      }} />
-                    </div>
-                    <span style={{ fontSize: '16px', fontWeight: '600', color: '#10b981' }}>
-                      🥬 Vegetarian
-                    </span>
-                  </label>
-                  <label style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    cursor: 'pointer',
-                    padding: '16px 20px',
-                    borderRadius: '16px',
-                    border: formData.isVeg === false ? '3px solid #ef4444' : '2px solid #e5e7eb',
-                    backgroundColor: formData.isVeg === false ? '#fef2f2' : '#fef7f0',
-                    transition: 'all 0.3s ease',
-                    flex: 1
-                  }}>
-                    <input
-                      type="radio"
-                      checked={formData.isVeg === false}
-                      onChange={() => setFormData({...formData, isVeg: false})}
-                      style={{ display: 'none' }}
-                    />
-                    <div style={{
-                      width: '20px',
-                      height: '20px',
-                      border: '3px solid #ef4444',
-                      borderRadius: '4px',
+                        width: '18px',
+                        height: '18px',
+                        border: '3px solid #10b981',
+                        borderRadius: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'white'
+                      }}>
+                        <div style={{
+                          width: '8px',
+                          height: '8px',
+                          backgroundColor: '#10b981',
+                          borderRadius: '2px'
+                        }} />
+                      </div>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#10b981' }}>
+                        🥬 Veg
+                      </span>
+                    </label>
+                    <label style={{
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'white'
+                      gap: '10px',
+                      cursor: 'pointer',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: formData.isVeg === false ? '3px solid #ef4444' : '2px solid #e5e7eb',
+                      backgroundColor: formData.isVeg === false ? '#fef2f2' : '#fef7f0',
+                      transition: 'all 0.3s ease',
+                      flex: 1
                     }}>
+                      <input
+                        type="radio"
+                        checked={formData.isVeg === false}
+                        onChange={() => setFormData({...formData, isVeg: false})}
+                        style={{ display: 'none' }}
+                      />
                       <div style={{
-                        width: '10px',
-                        height: '10px',
-                        backgroundColor: '#ef4444',
-                        borderRadius: '50%'
-                      }} />
-                    </div>
-                    <span style={{ fontSize: '16px', fontWeight: '600', color: '#ef4444' }}>
-                      🍖 Non-Vegetarian
-                    </span>
+                        width: '18px',
+                        height: '18px',
+                        border: '3px solid #ef4444',
+                        borderRadius: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'white'
+                      }}>
+                        <div style={{
+                          width: '8px',
+                          height: '8px',
+                          backgroundColor: '#ef4444',
+                          borderRadius: '50%'
+                        }} />
+                      </div>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#ef4444' }}>
+                        🍖 Non-Veg
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Availability */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#374151',
+                    marginBottom: '12px'
+                  }}>
+                    📦 Availability
                   </label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      cursor: 'pointer',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      border: formData.isAvailable === true ? '2px solid #10b981' : '2px solid #e5e7eb',
+                      backgroundColor: formData.isAvailable === true ? '#ecfdf5' : '#fef7f0',
+                      transition: 'all 0.3s ease'
+                    }}>
+                      <input
+                        type="radio"
+                        checked={formData.isAvailable === true}
+                        onChange={() => setFormData({...formData, isAvailable: true})}
+                        style={{ display: 'none' }}
+                      />
+                      <div style={{
+                        width: '14px',
+                        height: '14px',
+                        border: '2px solid #10b981',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'white'
+                      }}>
+                        {formData.isAvailable === true && (
+                          <div style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#10b981',
+                            borderRadius: '50%'
+                          }} />
+                        )}
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#10b981' }}>
+                        ✅ Available
+                      </span>
+                    </label>
+                    <label style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      cursor: 'pointer',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      border: formData.isAvailable === false ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                      backgroundColor: formData.isAvailable === false ? '#fef2f2' : '#fef7f0',
+                      transition: 'all 0.3s ease'
+                    }}>
+                      <input
+                        type="radio"
+                        checked={formData.isAvailable === false}
+                        onChange={() => setFormData({...formData, isAvailable: false})}
+                        style={{ display: 'none' }}
+                      />
+                      <div style={{
+                        width: '14px',
+                        height: '14px',
+                        border: '2px solid #ef4444',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'white'
+                      }}>
+                        {formData.isAvailable === false && (
+                          <div style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#ef4444',
+                            borderRadius: '50%'
+                          }} />
+                        )}
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#ef4444' }}>
+                        🚫 Out of Stock
+                      </span>
+                    </label>
+                  </div>
                 </div>
               </div>
               

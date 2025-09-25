@@ -36,6 +36,7 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState('restaurants');
   const [restaurants, setRestaurants] = useState([]);
   const [staff, setStaff] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showAddRestaurantModal, setShowAddRestaurantModal] = useState(false);
@@ -152,6 +153,27 @@ const Admin = () => {
 
     fetchStaff();
   }, [authorized, selectedRestaurant]);
+
+  // Fetch menu data when restaurant is selected and menu tab is active
+  useEffect(() => {
+    const fetchMenu = async () => {
+      if (!authorized || !selectedRestaurant || activeTab !== 'menu') return;
+      
+      try {
+        setLoading(true);
+        const response = await apiClient.getMenu(selectedRestaurant.id);
+        setMenuItems(response.menuItems || []);
+      } catch (error) {
+        console.error('Error fetching menu:', error);
+        // Don't redirect on API failure - just show empty state
+        setMenuItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenu();
+  }, [authorized, selectedRestaurant, activeTab]);
 
   const getRoleInfo = (role) => {
     const roleMap = {
@@ -426,6 +448,38 @@ const Admin = () => {
     }));
   };
 
+  // Menu management functions
+  const toggleMenuItemAvailability = async (itemId, currentStatus) => {
+    try {
+      setLoading(true);
+      const updatedData = { isAvailable: !currentStatus };
+      await apiClient.updateMenuItem(itemId, updatedData);
+      setMenuItems(items => items.map(item => 
+        item.id === itemId ? { ...item, isAvailable: !currentStatus } : item
+      ));
+    } catch (error) {
+      console.error('Error updating menu item availability:', error);
+      alert(`Failed to update item availability: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteMenuItem = async (itemId) => {
+    if (!confirm('Are you sure you want to delete this menu item?')) return;
+
+    try {
+      setLoading(true);
+      await apiClient.deleteMenuItem(itemId);
+      setMenuItems(items => items.filter(item => item.id !== itemId));
+    } catch (error) {
+      console.error('Error deleting menu item:', error);
+      alert(`Failed to delete menu item: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const canManageStaff = (targetRole) => {
     const roleHierarchy = {
       'owner': 4,
@@ -548,7 +602,7 @@ const Admin = () => {
                   Admin Dashboard
                 </h1>
                 <p style={{ color: '#6b7280', margin: 0, fontSize: '14px' }}>
-                  Manage restaurants and staff • {restaurants.length} restaurants • {staff.length} staff members
+                  Manage restaurants and staff • {restaurants.length} restaurants • {staff.length} staff members • {menuItems.length} menu items
                 </p>
               </div>
             </div>
@@ -594,6 +648,26 @@ const Admin = () => {
               >
                 <FaUsers size={14} />
                 Staff
+              </button>
+              <button
+                onClick={() => setActiveTab('menu')}
+                style={{
+                  backgroundColor: activeTab === 'menu' ? '#ec4899' : 'transparent',
+                  color: activeTab === 'menu' ? 'white' : '#6b7280',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  border: activeTab === 'menu' ? 'none' : '2px solid #e5e7eb',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <FaUtensils size={14} />
+                Menu
               </button>
             </div>
           </div>
@@ -643,32 +717,60 @@ const Admin = () => {
           </div>
           
           {/* Add Button */}
-          <button
-            onClick={() => activeTab === 'restaurants' ? setShowAddRestaurantModal(true) : setShowAddStaffModal(true)}
-            style={{
-              background: 'linear-gradient(135deg, #ec4899, #db2777)',
-              color: 'white',
-              padding: '12px 20px',
-              borderRadius: '12px',
-              fontWeight: '600',
-              fontSize: '14px',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(236, 72, 153, 0.3)',
-              marginLeft: '16px'
-            }}
-          >
-            <FaPlus size={14} />
-            Add {activeTab === 'restaurants' ? 'Restaurant' : 'Staff'}
-          </button>
+          {activeTab !== 'menu' && (
+            <button
+              onClick={() => activeTab === 'restaurants' ? setShowAddRestaurantModal(true) : setShowAddStaffModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, #ec4899, #db2777)',
+                color: 'white',
+                padding: '12px 20px',
+                borderRadius: '12px',
+                fontWeight: '600',
+                fontSize: '14px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(236, 72, 153, 0.3)',
+                marginLeft: '16px'
+              }}
+            >
+              <FaPlus size={14} />
+              Add {activeTab === 'restaurants' ? 'Restaurant' : 'Staff'}
+            </button>
+          )}
+          
+          {/* Menu Management Button */}
+          {activeTab === 'menu' && (
+            <button
+              onClick={() => router.push('/menu')}
+              style={{
+                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                color: 'white',
+                padding: '12px 20px',
+                borderRadius: '12px',
+                fontWeight: '600',
+                fontSize: '14px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+                marginLeft: '16px'
+              }}
+            >
+              <FaEdit size={14} />
+              Full Menu Management
+            </button>
+          )}
         </div>
 
-        {/* Restaurant Selection for Staff Tab */}
-        {activeTab === 'staff' && (
+        {/* Restaurant Selection for Staff and Menu Tabs */}
+        {(activeTab === 'staff' || activeTab === 'menu') && (
           <div style={{
             backgroundColor: 'white',
             borderRadius: '16px',
@@ -1241,7 +1343,222 @@ const Admin = () => {
               );
             })}
           </div>
-        )}
+        ) : activeTab === 'menu' ? (
+          // Menu Items Grid
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '20px'
+          }}>
+            {menuItems.filter(item => 
+              item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              item.shortCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              item.category?.toLowerCase().includes(searchTerm.toLowerCase())
+            ).map((item) => {
+              const getCategoryEmoji = (category) => {
+                const emojiMap = {
+                  'appetizer': '🥗',
+                  'main-course': '🍽️',
+                  'dessert': '🍰',
+                  'beverages': '🥤',
+                  'rice': '🍚',
+                  'bread': '🥖',
+                  'dal': '🍛',
+                  'fast-food': '🍔',
+                  'chinese': '🥢',
+                  'pizza': '🍕'
+                };
+                return emojiMap[category] || '🍽️';
+              };
+
+              return (
+                <div key={item.id} style={{
+                  backgroundColor: 'white',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                  border: '1px solid #fce7f3',
+                  transition: 'all 0.3s ease',
+                  opacity: item.isAvailable === false ? 0.7 : 1,
+                  filter: item.isAvailable === false ? 'grayscale(0.3)' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+                }}>
+                  {/* Menu Item Header */}
+                  <div style={{
+                    height: '80px',
+                    background: item.isVeg 
+                      ? 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+                      : 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+                    position: 'relative',
+                    padding: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ fontSize: '32px' }}>
+                        {getCategoryEmoji(item.category)}
+                      </div>
+                      <div style={{
+                        width: '16px',
+                        height: '16px',
+                        backgroundColor: 'white',
+                        border: `2px solid ${item.isVeg ? '#48bb78' : '#f56565'}`,
+                        borderRadius: item.isVeg ? '3px' : '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <div style={{
+                          width: '6px',
+                          height: '6px',
+                          backgroundColor: item.isVeg ? '#48bb78' : '#f56565',
+                          borderRadius: item.isVeg ? '1px' : '50%'
+                        }} />
+                      </div>
+                    </div>
+                    
+                    <div style={{
+                      background: 'rgba(255,255,255,0.9)',
+                      padding: '6px 12px',
+                      borderRadius: '16px',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      color: '#2d3748'
+                    }}>
+                      ₹{item.price}
+                    </div>
+                    
+                    {/* Short Code and Availability Badge */}
+                    <div style={{ position: 'absolute', top: '8px', left: '8px', display: 'flex', gap: '8px' }}>
+                      <div style={{
+                        background: 'linear-gradient(45deg, #ec4899, #db2777)',
+                        color: 'white',
+                        padding: '2px 8px',
+                        borderRadius: '10px',
+                        fontSize: '9px',
+                        fontWeight: '700'
+                      }}>
+                        {item.shortCode}
+                      </div>
+                      {item.isAvailable === false && (
+                        <div style={{
+                          background: 'linear-gradient(45deg, #ef4444, #dc2626)',
+                          color: 'white',
+                          padding: '2px 8px',
+                          borderRadius: '10px',
+                          fontSize: '9px',
+                          fontWeight: '700'
+                        }}>
+                          OUT OF STOCK
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Menu Item Details */}
+                  <div style={{ padding: '16px' }}>
+                    <h3 style={{
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      color: item.isAvailable === false ? '#9ca3af' : '#2d3748',
+                      margin: '0 0 8px 0',
+                      textDecoration: item.isAvailable === false ? 'line-through' : 'none'
+                    }}>
+                      {item.name}
+                    </h3>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <div style={{
+                        backgroundColor: '#f0f4f8',
+                        color: '#4a5568',
+                        padding: '2px 6px',
+                        borderRadius: '8px',
+                        fontSize: '10px',
+                        fontWeight: '600'
+                      }}>
+                        {item.category?.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') || 'Main Course'}
+                      </div>
+                      
+                      {item.spiceLevel && (
+                        <div style={{ fontSize: '12px' }}>
+                          {item.spiceLevel === 'mild' ? '🌶️' : item.spiceLevel === 'medium' ? '🌶️🌶️' : '🌶️🌶️🌶️'}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <p style={{
+                      fontSize: '12px',
+                      color: '#718096',
+                      lineHeight: '1.4',
+                      margin: '0 0 16px 0',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}>
+                      {item.description || 'A delicious dish prepared with finest ingredients'}
+                    </p>
+                    
+                    {/* Quick Actions */}
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={() => toggleMenuItemAvailability(item.id, item.isAvailable)}
+                        style={{
+                          flex: 1,
+                          background: item.isAvailable 
+                            ? 'linear-gradient(45deg, #f59e0b 0%, #d97706 100%)'
+                            : 'linear-gradient(45deg, #10b981 0%, #059669 100%)',
+                          color: 'white',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          fontSize: '11px',
+                          fontWeight: '600',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        {item.isAvailable ? '🚫 Mark Unavailable' : '✅ Mark Available'}
+                      </button>
+                      <button
+                        onClick={() => deleteMenuItem(item.id)}
+                        style={{
+                          background: 'linear-gradient(45deg, #ef4444 0%, #dc2626 100%)',
+                          color: 'white',
+                          padding: '8px',
+                          borderRadius: '8px',
+                          fontSize: '11px',
+                          fontWeight: '600',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s ease',
+                          minWidth: '32px'
+                        }}
+                      >
+                        <FaTrash size={10} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
 
         {/* Empty States */}
         {activeTab === 'restaurants' && filteredRestaurants.length === 0 && (
@@ -1318,6 +1635,72 @@ const Admin = () => {
               {!selectedRestaurant ? 'Please select a restaurant to manage its staff.' : 
                 searchTerm ? 'Try adjusting your search criteria.' : 'Add your first staff member to get started.'}
             </p>
+          </div>
+        )}
+
+        {activeTab === 'menu' && menuItems.filter(item => 
+          item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.shortCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.category?.toLowerCase().includes(searchTerm.toLowerCase())
+        ).length === 0 && (
+          <div style={{
+            textAlign: 'center',
+            padding: '80px 20px',
+            backgroundColor: 'white',
+            borderRadius: '20px',
+            border: '1px solid #fce7f3'
+          }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              backgroundColor: '#fef7f0',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px'
+            }}>
+              <FaUtensils size={32} style={{ color: '#d1d5db' }} />
+            </div>
+            <h3 style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              color: '#374151',
+              margin: '0 0 8px 0'
+            }}>
+              {!selectedRestaurant ? 'Select a restaurant first' : 'No menu items found'}
+            </h3>
+            <p style={{
+              color: '#6b7280',
+              margin: '0 0 16px 0',
+              fontSize: '14px'
+            }}>
+              {!selectedRestaurant ? 'Please select a restaurant to manage its menu.' : 
+                searchTerm ? 'Try adjusting your search criteria.' : 'No menu items available for this restaurant.'}
+            </p>
+            {selectedRestaurant && !searchTerm && (
+              <button
+                onClick={() => router.push('/menu')}
+                style={{
+                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  color: 'white',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  margin: '0 auto'
+                }}
+              >
+                <FaPlus size={14} />
+                Add Menu Items
+              </button>
+            )}
           </div>
         )}
       </div>

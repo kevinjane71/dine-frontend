@@ -228,6 +228,71 @@ class ApiClient {
     });
   }
 
+  async updateTable(tableId, updateData) {
+    return this.request(`/api/tables/${tableId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
+  async deleteTable(tableId) {
+    return this.request(`/api/tables/${tableId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Floor management endpoints
+  async getFloors(restaurantId) {
+    return this.request(`/api/floors/${restaurantId}`);
+  }
+
+  async createFloor(restaurantId, floorData) {
+    return this.request(`/api/floors/${restaurantId}`, {
+      method: 'POST',
+      body: floorData,
+    });
+  }
+
+  async updateFloor(floorId, updateData) {
+    return this.request(`/api/floors/${floorId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
+  async deleteFloor(floorId) {
+    return this.request(`/api/floors/${floorId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Table booking endpoints
+  async createBooking(restaurantId, bookingData) {
+    return this.request(`/api/bookings/${restaurantId}`, {
+      method: 'POST',
+      body: bookingData,
+    });
+  }
+
+  async getBookings(restaurantId, filters = {}) {
+    const query = new URLSearchParams(filters).toString();
+    const queryString = query ? `?${query}` : '';
+    return this.request(`/api/bookings/${restaurantId}${queryString}`);
+  }
+
+  async updateBooking(bookingId, updateData) {
+    return this.request(`/api/bookings/${bookingId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
+  async cancelBooking(bookingId) {
+    return this.request(`/api/bookings/${bookingId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Utility endpoints
   async seedData(restaurantId) {
     return this.request(`/api/seed-data/${restaurantId}`, {
