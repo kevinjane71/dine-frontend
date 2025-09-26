@@ -29,6 +29,29 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Mobile responsive state
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  // Mobile detection hook
+  useEffect(() => {
+    const checkMobile = () => {
+      const width = window.innerWidth;
+      const isMobileView = width <= 768;
+      setIsMobile(isMobileView);
+    };
+    
+    // Check immediately and also with a delay for hydration
+    checkMobile();
+    const timeoutId = setTimeout(checkMobile, 100);
+    
+    window.addEventListener('resize', checkMobile);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
@@ -258,7 +281,17 @@ const Orders = () => {
         <Header handleLogout={handleLogout} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '16px', color: '#6b7280' }}>Loading orders...</div>
+            <div style={{ 
+              width: '48px', 
+              height: '48px', 
+              border: '4px solid #fed7aa',
+              borderTop: '4px solid #f97316',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px auto'
+            }} />
+            <div style={{ fontSize: '18px', color: '#6b7280', fontWeight: '600' }}>Loading orders...</div>
+            <div style={{ fontSize: '14px', color: '#9ca3af', marginTop: '8px' }}>Getting order history</div>
           </div>
         </div>
       </div>
@@ -300,27 +333,220 @@ const Orders = () => {
     <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
       <Header handleLogout={handleLogout} />
       
-      <div style={{ padding: '16px' }}>
-        {/* Compact Header */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          marginBottom: '16px'
-        }}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: 0 }}>
-              Orders
-            </h1>
-            <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 0 0' }}>
-              {filteredOrders.length} orders found
-            </p>
+      <div style={{ padding: isMobile ? '12px' : '16px' }}>
+        {/* Mobile Header */}
+        {isMobile && (
+          <div style={{
+            backgroundColor: 'white',
+            margin: '-12px -12px 16px -12px',
+            padding: '16px',
+            borderBottom: '1px solid #e5e7eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div>
+              <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: 0 }}>Orders</h1>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0 0' }}>
+                {filteredOrders.length} orders
+              </p>
+            </div>
+            <button
+              onClick={() => setShowMobileFilters(!showMobileFilters)}
+              style={{
+                padding: '8px 12px',
+                backgroundColor: showMobileFilters ? '#3b82f6' : '#f3f4f6',
+                color: showMobileFilters ? 'white' : '#374151',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <FaFilter size={12} />
+              Filters
+            </button>
           </div>
-        </div>
+        )}
+        
+        {/* Desktop Header */}
+        {!isMobile && (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            marginBottom: '16px'
+          }}>
+            <div>
+              <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: 0 }}>
+                Orders
+              </h1>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 0 0' }}>
+                {filteredOrders.length} orders found
+              </p>
+            </div>
+          </div>
+        )}
 
-        {/* Compact Filters */}
+        {/* Mobile Filters Modal */}
+        {isMobile && showMobileFilters && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 999,
+            display: 'flex',
+            alignItems: 'flex-end'
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              width: '100%',
+              borderTopLeftRadius: '16px',
+              borderTopRightRadius: '16px',
+              maxHeight: '70vh',
+              overflowY: 'auto',
+              padding: '20px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937', margin: 0 }}>Filter Orders</h3>
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  style={{
+                    padding: '8px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '4px',
+                    fontSize: '18px',
+                    color: '#6b7280'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Mobile Search */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                    Search Orders
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <FaSearch style={{
+                      position: 'absolute',
+                      left: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: '#9ca3af',
+                      fontSize: '14px'
+                    }} />
+                    <input
+                      type="text"
+                      placeholder="Search by ID or customer name..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      style={{
+                        width: '100%',
+                        paddingLeft: '36px',
+                        paddingRight: '12px',
+                        paddingTop: '12px',
+                        paddingBottom: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        outline: 'none',
+                        backgroundColor: 'white',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Mobile Status Filter */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                    Order Status
+                  </label>
+                  <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      backgroundColor: 'white',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="preparing">Preparing</option>
+                    <option value="ready">Ready</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+                
+                {/* Mobile Type Filter */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                    Order Type
+                  </label>
+                  <select
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      backgroundColor: 'white',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="all">All Types</option>
+                    <option value="dine-in">Dine In</option>
+                    <option value="delivery">Delivery</option>
+                    <option value="pickup">Pickup</option>
+                  </select>
+                </div>
+                
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    marginTop: '8px'
+                  }}
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Desktop Filters */}
         <div style={{ 
-          display: 'flex', 
+          display: isMobile ? 'none' : 'flex', 
           gap: '12px', 
           alignItems: 'center',
           marginBottom: '16px',
@@ -400,8 +626,8 @@ const Orders = () => {
           </select>
         </div>
 
-        {/* Compact Orders List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {/* Orders List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '12px' : '8px' }}>
           {filteredOrders.map((order) => {
             const statusInfo = getStatusInfo(order.status);
             const typeInfo = getTypeInfo(order.type);
@@ -414,25 +640,129 @@ const Orders = () => {
                 style={{
                   backgroundColor: 'white',
                   border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  padding: '16px',
+                  borderRadius: isMobile ? '12px' : '8px',
+                  padding: isMobile ? '16px' : '16px',
                   display: 'flex',
-                  alignItems: 'center',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  alignItems: isMobile ? 'stretch' : 'center',
                   justifyContent: 'space-between',
-                  gap: '16px',
-                  transition: 'all 0.2s'
+                  gap: isMobile ? '12px' : '16px',
+                  transition: 'all 0.2s',
+                  boxShadow: isMobile ? '0 2px 8px rgba(0,0,0,0.06)' : 'none'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#d1d5db';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                  if (!isMobile) {
+                    e.currentTarget.style.borderColor = '#d1d5db';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#e5e7eb';
-                  e.currentTarget.style.boxShadow = 'none';
+                  if (!isMobile) {
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
                 }}
               >
-                {/* Order Info */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+                {/* Mobile Order Layout */}
+                {isMobile ? (
+                  <>
+                    {/* Mobile Order Header */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '16px', color: '#1f2937' }}>
+                            {order.id}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                            {getTimeAgo(order.orderTime)}
+                          </div>
+                        </div>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          backgroundColor: typeInfo.bg,
+                          color: typeInfo.text,
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '600'
+                        }}>
+                          <TypeIcon size={10} />
+                          {typeInfo.label}
+                        </div>
+                      </div>
+                      <div style={{ fontWeight: '700', fontSize: '18px', color: '#1f2937' }}>
+                        ₹{order.total}
+                      </div>
+                    </div>
+                    
+                    {/* Mobile Customer & Table */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937' }}>
+                          {order.customerName}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                          {order.tableNumber ? `Table ${order.tableNumber}` : order.phone}
+                        </div>
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '6px 10px',
+                        backgroundColor: statusInfo.bg,
+                        color: statusInfo.text,
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: '600'
+                      }}>
+                        <StatusIcon size={12} />
+                        {statusInfo.label}
+                      </div>
+                    </div>
+                    
+                    {/* Mobile Items Preview */}
+                    <div style={{ padding: '8px 0' }}>
+                      <div style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.4' }}>
+                        {order.items.slice(0, 2).map(item => `${item.quantity}× ${item.name}`).join(', ')}
+                        {order.items.length > 2 && (
+                          <span style={{ color: '#6b7280' }}>
+                            {' '}+{order.items.length - 2} more items
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Mobile Action Button */}
+                    <button
+                      onClick={() => setSelectedOrder(order)}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <FaEye size={12} />
+                      View Details
+                    </button>
+                  </>
+                ) : (
+                  // Desktop Order Layout
+                  <>
+                    {/* Order Info */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
                   {/* Order ID & Time */}
                   <div style={{ minWidth: '100px' }}>
                     <div style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937' }}>
@@ -477,8 +807,8 @@ const Orders = () => {
                   </div>
                 </div>
 
-                {/* Status & Type & Actions */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {/* Status & Type & Actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {/* Type Badge */}
                   <div style={{
                     display: 'flex',
@@ -533,7 +863,9 @@ const Orders = () => {
                     <FaEye size={10} />
                     View
                   </button>
-                </div>
+                    </div>
+                  </>
+                )}
               </div>
             );
           })}
@@ -561,42 +893,50 @@ const Orders = () => {
         )}
       </div>
 
-      {/* Order Details Modal - Compact */}
+      {/* Order Details Modal - Mobile Responsive */}
       {selectedOrder && (
         <div style={{
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.5)',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: isMobile ? 'flex-end' : 'center',
           justifyContent: 'center',
           zIndex: 50,
-          padding: '16px'
+          padding: isMobile ? '0' : '16px'
         }}>
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '12px',
+            borderRadius: isMobile ? '16px 16px 0 0' : '12px',
             width: '100%',
-            maxWidth: '500px',
-            maxHeight: '80vh',
+            maxWidth: isMobile ? '100%' : '500px',
+            maxHeight: isMobile ? '85vh' : '80vh',
             overflowY: 'auto'
           }}>
             {/* Modal Header */}
-            <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
+            <div style={{ padding: isMobile ? '16px 20px' : '20px', borderBottom: '1px solid #e5e7eb' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
-                  Order {selectedOrder.id}
-                </h3>
+                <div>
+                  <h3 style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: '#1f2937', margin: 0 }}>
+                    Order {selectedOrder.id}
+                  </h3>
+                  {isMobile && (
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0 0' }}>
+                      {getTimeAgo(selectedOrder.orderTime)}
+                    </p>
+                  )}
+                </div>
                 <button
                   onClick={() => setSelectedOrder(null)}
                   style={{
                     color: '#6b7280',
-                    fontSize: '20px',
+                    fontSize: isMobile ? '24px' : '20px',
                     fontWeight: 'bold',
                     border: 'none',
                     backgroundColor: 'transparent',
                     cursor: 'pointer',
-                    padding: '4px'
+                    padding: isMobile ? '8px' : '4px',
+                    borderRadius: '4px'
                   }}
                 >
                   ×
@@ -605,42 +945,79 @@ const Orders = () => {
             </div>
 
             {/* Modal Content */}
-            <div style={{ padding: '20px' }}>
+            <div style={{ padding: isMobile ? '16px 20px' : '20px' }}>
               <div style={{ marginBottom: '16px' }}>
-                <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>Customer</div>
-                <div style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937' }}>{selectedOrder.customerName}</div>
-                <div style={{ fontSize: '14px', color: '#6b7280' }}>{selectedOrder.phone}</div>
+                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Customer Information</div>
+                <div style={{ 
+                  padding: isMobile ? '12px' : '12px', 
+                  backgroundColor: '#f8fafc', 
+                  borderRadius: '8px', 
+                  border: '1px solid #e2e8f0' 
+                }}>
+                  <div style={{ fontSize: isMobile ? '15px' : '16px', fontWeight: '600', color: '#1f2937', marginBottom: '4px' }}>{selectedOrder.customerName}</div>
+                  <div style={{ fontSize: '13px', color: '#6b7280' }}>{selectedOrder.phone}</div>
+                  {selectedOrder.tableNumber && (
+                    <div style={{ fontSize: '13px', color: '#3b82f6', fontWeight: '500', marginTop: '2px' }}>Table {selectedOrder.tableNumber}</div>
+                  )}
+                </div>
               </div>
 
               <div style={{ marginBottom: '16px' }}>
-                <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>Items</div>
-                {selectedOrder.items.map((item, index) => (
-                  <div key={index} style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    padding: '8px 0',
-                    borderBottom: index < selectedOrder.items.length - 1 ? '1px solid #f3f4f6' : 'none'
-                  }}>
-                    <div>
-                      <span style={{ fontWeight: '500' }}>{item.quantity}x</span> {item.name}
+                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Order Items</div>
+                <div style={{ backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  {selectedOrder.items.map((item, index) => (
+                    <div key={index} style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      padding: isMobile ? '12px' : '12px',
+                      borderBottom: index < selectedOrder.items.length - 1 ? '1px solid #e2e8f0' : 'none'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ 
+                            backgroundColor: '#3b82f6', 
+                            color: 'white', 
+                            padding: '2px 6px', 
+                            borderRadius: '4px', 
+                            fontSize: '11px', 
+                            fontWeight: '600',
+                            minWidth: '20px',
+                            textAlign: 'center'
+                          }}>{item.quantity}</span>
+                          <span style={{ fontSize: isMobile ? '14px' : '14px', fontWeight: '500', color: '#1f2937' }}>{item.name}</span>
+                        </div>
+                      </div>
+                      <div style={{ fontWeight: '600', fontSize: isMobile ? '14px' : '14px', color: '#1f2937' }}>₹{item.price * item.quantity}</div>
                     </div>
-                    <div style={{ fontWeight: '500' }}>₹{item.price * item.quantity}</div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
 
               {/* Staff & Payment Info */}
               {selectedOrder.staffInfo && (
-                <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>Order Taken By</div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>
-                        {selectedOrder.staffInfo.name}
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Order Details</div>
+                  <div style={{ padding: isMobile ? '12px' : '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+                    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: isMobile ? '8px' : '0' }}>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
+                          {selectedOrder.staffInfo.name}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                          {selectedOrder.staffInfo.role}
+                        </div>
                       </div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                        {selectedOrder.staffInfo.role} • Payment: {selectedOrder.paymentMethod}
+                      <div style={{ 
+                        backgroundColor: '#22c55e', 
+                        color: 'white', 
+                        padding: '4px 8px', 
+                        borderRadius: '4px', 
+                        fontSize: '11px', 
+                        fontWeight: '600',
+                        textTransform: 'uppercase'
+                      }}>
+                        {selectedOrder.paymentMethod || 'Cash'}
                       </div>
                     </div>
                   </div>
@@ -652,15 +1029,19 @@ const Orders = () => {
                 justifyContent: 'space-between', 
                 alignItems: 'center',
                 paddingTop: '16px',
-                borderTop: '2px solid #e5e7eb'
+                borderTop: '2px solid #e5e7eb',
+                marginTop: '8px'
               }}>
-                <span style={{ fontSize: '16px', fontWeight: '600' }}>Total</span>
-                <span style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937' }}>₹{selectedOrder.total}</span>
+                <span style={{ fontSize: isMobile ? '16px' : '16px', fontWeight: '700', color: '#1f2937' }}>Total Amount</span>
+                <span style={{ fontSize: isMobile ? '20px' : '18px', fontWeight: '700', color: '#059669' }}>₹{selectedOrder.total}</span>
               </div>
 
               {selectedOrder.notes && (
-                <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#fef3c7', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '14px', color: '#92400e' }}><strong>Notes:</strong> {selectedOrder.notes}</div>
+                <div style={{ marginTop: '16px' }}>
+                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Special Notes</div>
+                  <div style={{ padding: '12px', backgroundColor: '#fef3c7', borderRadius: '8px', border: '1px solid #fbbf24' }}>
+                    <div style={{ fontSize: '14px', color: '#92400e', fontStyle: 'italic' }}>{selectedOrder.notes}</div>
+                  </div>
                 </div>
               )}
             </div>

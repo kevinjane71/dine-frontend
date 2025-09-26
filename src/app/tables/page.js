@@ -32,6 +32,10 @@ const TableManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
+  // Mobile responsive state
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  
   // Modal states
   const [showAddTable, setShowAddTable] = useState(false);
   const [showAddFloor, setShowAddFloor] = useState(false);
@@ -60,6 +64,25 @@ const TableManagement = () => {
   });
 
   const scrollContainerRef = useRef(null);
+
+  // Mobile detection hook
+  useEffect(() => {
+    const checkMobile = () => {
+      const width = window.innerWidth;
+      const isMobileView = width <= 768;
+      setIsMobile(isMobileView);
+    };
+    
+    // Check immediately and also with a delay for hydration
+    checkMobile();
+    const timeoutId = setTimeout(checkMobile, 100);
+    
+    window.addEventListener('resize', checkMobile);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   // Load data on component mount
   useEffect(() => {
@@ -395,9 +418,27 @@ const TableManagement = () => {
 
   if (loading) {
     return (
-      <div style={{ height: '100vh', backgroundColor: '#fef7f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '16px', color: '#6b7280' }}>Loading table management...</div>
+      <div style={{ height: '100vh', backgroundColor: '#fef7f0', display: 'flex', flexDirection: 'column' }}>
+        <Navigation />
+        <div style={{ 
+          flex: 1,
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ 
+              width: '48px', 
+              height: '48px', 
+              border: '4px solid #fed7aa',
+              borderTop: '4px solid #f97316',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px auto'
+            }} />
+            <div style={{ fontSize: '18px', color: '#6b7280', fontWeight: '600' }}>Loading table management...</div>
+            <div style={{ fontSize: '14px', color: '#9ca3af', marginTop: '8px' }}>Setting up your restaurant layout</div>
+          </div>
         </div>
       </div>
     );
@@ -405,22 +446,55 @@ const TableManagement = () => {
 
   if (error) {
     return (
-      <div style={{ height: '100vh', backgroundColor: '#fef7f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '16px', color: '#dc2626', marginBottom: '16px' }}>Error: {error}</div>
-          <button
-            onClick={() => loadInitialData()}
-            style={{
-              background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
-              color: 'white',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer'
-            }}
-          >
-            Retry
-          </button>
+      <div style={{ height: '100vh', backgroundColor: '#fef7f0', display: 'flex', flexDirection: 'column' }}>
+        <Navigation />
+        <div style={{ 
+          flex: 1,
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center'
+        }}>
+          <div style={{ textAlign: 'center', maxWidth: '400px', padding: '20px' }}>
+            <div style={{ 
+              width: '64px', 
+              height: '64px', 
+              backgroundColor: '#fee2e2',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px auto'
+            }}>
+              <FaBan size={32} style={{ color: '#dc2626' }} />
+            </div>
+            <div style={{ fontSize: '18px', color: '#dc2626', marginBottom: '8px', fontWeight: '600' }}>Failed to Load Tables</div>
+            <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '16px' }}>{error}</div>
+            <button
+              onClick={() => loadInitialData()}
+              style={{
+                background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
+                color: 'white',
+                padding: '12px 24px',
+                borderRadius: '12px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '14px',
+                boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 16px rgba(220, 38, 38, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3)';
+              }}
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -431,13 +505,192 @@ const TableManagement = () => {
       <Navigation />
       
       <div style={{ height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
+        {/* Mobile Top Bar */}
+        <div style={{
+          backgroundColor: 'white',
+          borderBottom: '1px solid #e5e7eb',
+          padding: '12px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px'
+        }} className="block md:hidden">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ 
+              width: '32px', 
+              height: '32px', 
+              backgroundColor: '#e53e3e', 
+              borderRadius: '8px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              boxShadow: '0 2px 6px rgba(229, 62, 62, 0.3)'
+            }}>
+              <FaChair color="white" size={16} />
+            </div>
+            <div>
+              <h1 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Tables</h1>
+              <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>{selectedRestaurant?.name}</p>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => setShowMobileFilters(!showMobileFilters)}
+              style={{
+                padding: '8px 10px',
+                backgroundColor: showMobileFilters ? '#e53e3e' : '#f3f4f6',
+                color: showMobileFilters ? 'white' : '#374151',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <FaChevronDown size={10} />
+              Floors
+            </button>
+            
+            <button
+              onClick={() => {
+                setSelectedFloorForTable(floors[0]?.id || null);
+                setShowAddTable(true);
+              }}
+              style={{
+                padding: '8px 10px',
+                backgroundColor: '#e53e3e',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <FaPlus size={10} />
+              Add
+            </button>
+          </div>
+        </div>
+        
+        {/* Mobile Floors Filter Modal */}
+        {isMobile && showMobileFilters && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 999,
+            display: 'flex',
+            alignItems: 'flex-end'
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              width: '100%',
+              borderTopLeftRadius: '16px',
+              borderTopRightRadius: '16px',
+              maxHeight: '60vh',
+              overflowY: 'auto',
+              padding: '20px',
+              transform: showMobileFilters ? 'translateY(0)' : 'translateY(100%)',
+              transition: 'transform 0.3s ease'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Select Floor</h3>
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  style={{
+                    padding: '6px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '4px'
+                  }}
+                >
+                  <FaTimes size={16} color="#6b7280" />
+                </button>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {floors.map((floor) => (
+                  <button
+                    key={floor.id}
+                    onClick={() => {
+                      scrollToFloor(floor.id);
+                      setShowMobileFilters(false);
+                    }}
+                    style={{
+                      padding: '12px 16px',
+                      backgroundColor: '#fef7f0',
+                      border: '1px solid #fed7aa',
+                      borderRadius: '8px',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <FaHome size={14} color="#e53e3e" />
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>{floor.name}</span>
+                    </div>
+                    <div style={{
+                      backgroundColor: '#e53e3e',
+                      color: 'white',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontWeight: 'bold'
+                    }}>
+                      {(floor.tables || []).length}
+                    </div>
+                  </button>
+                ))}
+                
+                <button
+                  onClick={() => {
+                    setShowAddFloor(true);
+                    setShowMobileFilters(false);
+                  }}
+                  style={{
+                    padding: '12px 16px',
+                    backgroundColor: '#e53e3e',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    marginTop: '8px'
+                  }}
+                >
+                  <FaPlus size={12} />
+                  Add New Floor
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Desktop Header */}
         <div style={{ 
           backgroundColor: 'white', 
           padding: '12px 20px', 
           borderBottom: '1px solid #f3e8ff', 
           boxShadow: '0 1px 3px rgba(0,0,0,0.05)' 
-        }}>
+        }} className="hidden md:block">
           {/* Status Legend */}
           <div style={{ 
             display: 'flex', 
@@ -591,6 +844,41 @@ const TableManagement = () => {
           </div>
         </div>
 
+        {/* Mobile Status Legend */}
+        <div style={{
+          backgroundColor: 'white',
+          padding: '12px 16px',
+          borderBottom: '1px solid #e5e7eb',
+          overflowX: 'auto'
+        }} className="block md:hidden">
+          <div style={{
+            display: 'flex',
+            gap: '12px',
+            minWidth: 'max-content'
+          }}>
+            {Object.entries({
+              available: getTableStatusInfo('available'),
+              occupied: getTableStatusInfo('occupied'),
+              reserved: getTableStatusInfo('reserved'),
+              cleaning: getTableStatusInfo('cleaning'),
+              'out-of-service': getTableStatusInfo('out-of-service')
+            }).map(([status, info]) => (
+              <div key={status} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '2px',
+                  backgroundColor: info.bg,
+                  border: `1px solid ${info.border}`
+                }} />
+                <span style={{ fontSize: '10px', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
+                  {info.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Scrollable Floor Content */}
         <div 
           ref={scrollContainerRef}
@@ -598,7 +886,7 @@ const TableManagement = () => {
             flex: 1, 
             overflowY: 'auto', 
             backgroundColor: '#fef7f0',
-            padding: '20px'
+            padding: isMobile ? '16px' : '20px'
           }}
         >
           {floors.map((floor) => (
@@ -609,16 +897,16 @@ const TableManagement = () => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  marginBottom: '30px',
-                  padding: '0 20px'
+                  marginBottom: isMobile ? '20px' : '30px',
+                  padding: isMobile ? '0 4px' : '0 20px'
                 }}>
                   {/* Floor Label */}
                   <div style={{
                     backgroundColor: '#e53e3e',
                     color: 'white',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    fontSize: '14px',
+                    padding: isMobile ? '6px 12px' : '8px 16px',
+                    borderRadius: isMobile ? '6px' : '8px',
+                    fontSize: isMobile ? '12px' : '14px',
                     fontWeight: 'bold',
                     boxShadow: '0 2px 8px rgba(229, 62, 62, 0.3)'
                   }}>
@@ -628,44 +916,44 @@ const TableManagement = () => {
                   {/* Compact Stats */}
                   <div style={{ 
                     display: 'flex', 
-                    gap: '8px',
+                    gap: isMobile ? '6px' : '8px',
                     backgroundColor: 'white',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
+                    padding: isMobile ? '6px 8px' : '8px 12px',
+                    borderRadius: isMobile ? '6px' : '8px',
                     boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
                   }}>
                     <div style={{ 
                       textAlign: 'center',
-                      minWidth: '32px'
+                      minWidth: isMobile ? '24px' : '32px'
                     }}>
-                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>
+                      <div style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 'bold', color: '#1f2937' }}>
                         {(floor.tables || []).length}
                       </div>
-                      <div style={{ fontSize: '9px', color: '#6b7280', fontWeight: '500' }}>
+                      <div style={{ fontSize: isMobile ? '8px' : '9px', color: '#6b7280', fontWeight: '500' }}>
                         Total
                       </div>
                     </div>
                     <div style={{ width: '1px', backgroundColor: '#e5e7eb' }} />
                     <div style={{ 
                       textAlign: 'center',
-                      minWidth: '32px'
+                      minWidth: isMobile ? '24px' : '32px'
                     }}>
-                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#10b981' }}>
+                      <div style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 'bold', color: '#10b981' }}>
                         {(floor.tables || []).filter(t => t.status === 'available').length}
                       </div>
-                      <div style={{ fontSize: '9px', color: '#6b7280', fontWeight: '500' }}>
+                      <div style={{ fontSize: isMobile ? '8px' : '9px', color: '#6b7280', fontWeight: '500' }}>
                         Free
                       </div>
                     </div>
                     <div style={{ width: '1px', backgroundColor: '#e5e7eb' }} />
                     <div style={{ 
                       textAlign: 'center',
-                      minWidth: '32px'
+                      minWidth: isMobile ? '24px' : '32px'
                     }}>
-                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ef4444' }}>
+                      <div style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 'bold', color: '#ef4444' }}>
                         {(floor.tables || []).filter(t => t.status === 'occupied').length}
                       </div>
-                      <div style={{ fontSize: '9px', color: '#6b7280', fontWeight: '500' }}>
+                      <div style={{ fontSize: isMobile ? '8px' : '9px', color: '#6b7280', fontWeight: '500' }}>
                         Busy
                       </div>
                     </div>
@@ -675,12 +963,15 @@ const TableManagement = () => {
                 {/* Tables Grid */}
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))',
-                  gap: '12px',
-                  maxWidth: 'calc(100% - 160px)',
+                  gridTemplateColumns: isMobile 
+                    ? 'repeat(auto-fill, minmax(80px, 1fr))' 
+                    : 'repeat(auto-fill, minmax(70px, 1fr))',
+                  gap: isMobile ? '16px' : '12px',
+                  maxWidth: isMobile ? '100%' : 'calc(100% - 160px)',
                   margin: '0 auto',
                   justifyContent: 'center',
-                  justifyItems: 'center'
+                  justifyItems: 'center',
+                  padding: isMobile ? '0 4px' : '0'
                 }}>
                   {(floor.tables || []).map((table) => {
                     const statusInfo = getTableStatusInfo(table.status);
@@ -692,10 +983,10 @@ const TableManagement = () => {
                         <div
                           onClick={() => setActiveDropdown(isDropdownOpen ? null : table.id)}
                           style={{
-                            width: '70px',
-                            height: '70px',
+                            width: isMobile ? '80px' : '70px',
+                            height: isMobile ? '80px' : '70px',
                             backgroundColor: statusInfo.bg,
-                            borderRadius: '8px',
+                            borderRadius: isMobile ? '12px' : '8px',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
                             display: 'flex',
@@ -703,7 +994,7 @@ const TableManagement = () => {
                             justifyContent: 'center',
                             position: 'relative',
                             border: `2px solid ${statusInfo.border}`,
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                            boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)'
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
@@ -716,7 +1007,7 @@ const TableManagement = () => {
                         >
                           {/* Table Number */}
                           <div style={{ 
-                            fontSize: '18px', 
+                            fontSize: isMobile ? '20px' : '18px', 
                             fontWeight: 'bold', 
                             color: statusInfo.text
                           }}>
@@ -726,12 +1017,12 @@ const TableManagement = () => {
                           {/* Enhanced Dropdown indicator */}
                           <div style={{
                             position: 'absolute',
-                            bottom: '2px',
-                            right: '2px',
-                            width: '20px',
-                            height: '20px',
+                            bottom: isMobile ? '3px' : '2px',
+                            right: isMobile ? '3px' : '2px',
+                            width: isMobile ? '24px' : '20px',
+                            height: isMobile ? '24px' : '20px',
                             backgroundColor: 'rgba(255,255,255,0.9)',
-                            borderRadius: '6px',
+                            borderRadius: isMobile ? '8px' : '6px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -770,8 +1061,8 @@ const TableManagement = () => {
 
                         {/* Table Info */}
                         <div style={{ 
-                          marginTop: '6px',
-                          fontSize: '9px',
+                          marginTop: isMobile ? '8px' : '6px',
+                          fontSize: isMobile ? '11px' : '9px',
                           color: '#6b7280',
                           textAlign: 'center',
                           lineHeight: '1.2'
@@ -788,15 +1079,15 @@ const TableManagement = () => {
                         {isDropdownOpen && (
                           <div style={{
                             position: 'absolute',
-                            top: '80px',
+                            top: isMobile ? '90px' : '80px',
                             left: '50%',
                             transform: 'translateX(-50%)',
                             backgroundColor: 'white',
-                            borderRadius: '8px',
-                            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                            borderRadius: isMobile ? '12px' : '8px',
+                            boxShadow: isMobile ? '0 12px 32px rgba(0,0,0,0.2)' : '0 8px 25px rgba(0,0,0,0.15)',
                             border: '1px solid #e5e7eb',
                             zIndex: 20,
-                            minWidth: '140px',
+                            minWidth: isMobile ? '160px' : '140px',
                             overflow: 'hidden'
                           }}>
                             {table.status === 'available' && (
@@ -805,22 +1096,22 @@ const TableManagement = () => {
                                   onClick={() => handleTableAction('take-order', table)}
                                   style={{
                                     width: '100%',
-                                    padding: '10px 12px',
+                                    padding: isMobile ? '14px 16px' : '10px 12px',
                                     border: 'none',
                                     backgroundColor: 'white',
                                     textAlign: 'left',
                                     cursor: 'pointer',
-                                    fontSize: '12px',
+                                    fontSize: isMobile ? '14px' : '12px',
                                     fontWeight: '600',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '8px',
+                                    gap: isMobile ? '10px' : '8px',
                                     color: '#059669'
                                   }}
                                   onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
                                   onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                                 >
-                                  <FaUtensils size={12} />
+                                  <FaUtensils size={isMobile ? 14 : 12} />
                                   Take Order
                                 </button>
                                 <button
@@ -842,7 +1133,7 @@ const TableManagement = () => {
                                   onMouseEnter={(e) => e.target.style.backgroundColor = '#fefbf0'}
                                   onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                                 >
-                                  <FaCalendarAlt size={12} />
+                                  <FaCalendarAlt size={isMobile ? 14 : 12} />
                                   Book Table
                                 </button>
                               </>
@@ -867,7 +1158,7 @@ const TableManagement = () => {
                               onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f3ff'}
                               onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                             >
-                              <FaTools size={12} />
+                              <FaTools size={isMobile ? 14 : 12} />
                               Out of Service
                             </button>
                             
@@ -914,7 +1205,7 @@ const TableManagement = () => {
                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
                                 onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                               >
-                                <FaCheck size={12} />
+                                <FaCheck size={isMobile ? 14 : 12} />
                                 Make Available
                               </button>
                             )}
@@ -940,7 +1231,7 @@ const TableManagement = () => {
                               onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
                               onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                             >
-                              <FaTrash size={12} />
+                              <FaTrash size={isMobile ? 14 : 12} />
                               Delete Table
                             </button>
                           </div>
@@ -963,17 +1254,19 @@ const TableManagement = () => {
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.5)',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: isMobile ? 'flex-end' : 'center',
           justifyContent: 'center',
           zIndex: 50,
-          padding: '16px'
+          padding: isMobile ? '0' : '16px'
         }}>
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '16px',
+            borderRadius: isMobile ? '16px 16px 0 0' : '16px',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
             width: '100%',
-            maxWidth: '400px'
+            maxWidth: isMobile ? '100%' : '400px',
+            maxHeight: isMobile ? '80vh' : 'auto',
+            overflowY: isMobile ? 'auto' : 'visible'
           }}>
             <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Add New Floor</h2>
@@ -1073,17 +1366,19 @@ const TableManagement = () => {
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.5)',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: isMobile ? 'flex-end' : 'center',
           justifyContent: 'center',
           zIndex: 50,
-          padding: '16px'
+          padding: isMobile ? '0' : '16px'
         }}>
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '16px',
+            borderRadius: isMobile ? '16px 16px 0 0' : '16px',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
             width: '100%',
-            maxWidth: '400px'
+            maxWidth: isMobile ? '100%' : '400px',
+            maxHeight: isMobile ? '80vh' : 'auto',
+            overflowY: isMobile ? 'auto' : 'visible'
           }}>
             <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Add New Table</h2>
@@ -1115,7 +1410,7 @@ const TableManagement = () => {
                 </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
                     Table Name *
@@ -1241,17 +1536,19 @@ const TableManagement = () => {
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.5)',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: isMobile ? 'flex-end' : 'center',
           justifyContent: 'center',
           zIndex: 50,
-          padding: '16px'
+          padding: isMobile ? '0' : '16px'
         }}>
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '16px',
+            borderRadius: isMobile ? '16px 16px 0 0' : '16px',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
             width: '100%',
-            maxWidth: '500px'
+            maxWidth: isMobile ? '100%' : '500px',
+            maxHeight: isMobile ? '80vh' : 'auto',
+            overflowY: isMobile ? 'auto' : 'visible'
           }}>
             <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
@@ -1263,7 +1560,7 @@ const TableManagement = () => {
             </div>
             
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
                     Customer Name *
@@ -1309,7 +1606,7 @@ const TableManagement = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
                     Party Size *
