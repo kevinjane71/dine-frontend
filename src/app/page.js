@@ -517,9 +517,20 @@ function RestaurantPOSContent() {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
         <Header handleLogout={handleLogout} />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: 'calc(100vh - 80px)' 
+        }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '16px', color: '#6b7280' }}>Loading restaurant...</div>
+            <FaSpinner style={{ 
+              fontSize: '48px', 
+              color: '#ef4444', 
+              animation: 'spin 1s linear infinite',
+              marginBottom: '16px'
+            }} />
+            <p style={{ fontSize: '18px', color: '#6b7280' }}>Loading your restaurant...</p>
           </div>
         </div>
       </div>
@@ -535,10 +546,14 @@ function RestaurantPOSContent() {
       <Header handleLogout={handleLogout} />
       {/* Main Content */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* Categories Sidebar */}
+        {/* Menu Sections Sidebar */}
         <div style={{ width: '240px', backgroundColor: 'white', borderRight: '2px solid #e5e7eb', boxShadow: '2px 0 4px rgba(0,0,0,0.1)' }}>
           <div style={{ padding: '16px', borderBottom: '1px solid #f3f4f6' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', marginBottom: '12px' }}>Categories</h2>
+            <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaUtensils style={{ fontSize: '14px', color: '#ef4444' }} />
+              Menu Sections
+            </h2>
+            <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 12px 0' }}>Browse by dish type</p>
             <div style={{ position: 'relative' }}>
               <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={14} />
               <input
@@ -577,36 +592,43 @@ function RestaurantPOSContent() {
                   style={{
                     width: '100%',
                     textAlign: 'left',
-                    padding: '8px',
-                    borderRadius: '8px',
-                    fontWeight: '600',
-                    border: 'none',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    fontWeight: '500',
+                    border: isSelected ? '2px solid #ef4444' : '1px solid #f3f4f6',
                     cursor: 'pointer',
-                    marginBottom: '4px',
+                    marginBottom: '6px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    backgroundColor: isSelected ? '#e53e3e' : 'transparent',
-                    color: isSelected ? 'white' : '#374151',
-                    transition: 'all 0.2s',
-                    fontSize: '13px'
+                    gap: '12px',
+                    backgroundColor: isSelected ? '#fef2f2' : '#fafafa',
+                    color: isSelected ? '#dc2626' : '#374151',
+                    transition: 'all 0.3s ease',
+                    fontSize: '14px',
+                    boxShadow: isSelected ? '0 2px 8px rgba(239, 68, 68, 0.15)' : '0 1px 3px rgba(0,0,0,0.05)'
                   }}
                 >
                   <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '16px',
-                    backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : '#f3f4f6'
+                    fontSize: '18px',
+                    backgroundColor: isSelected ? '#ef4444' : '#ffffff',
+                    boxShadow: isSelected ? 'inset 0 2px 4px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.05)',
+                    transition: 'all 0.3s ease'
                   }}>
-                    {category.emoji}
+                    {isSelected ? '🍽️' : category.emoji}
                   </div>
-                  <div>
-                    <div style={{ fontWeight: 'bold', fontSize: '13px' }}>{category.name}</div>
-                    <div style={{ fontSize: '10px', opacity: 0.8 }}>{categoryItems.length} items</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '2px' }}>{category.name}</div>
+                    <div style={{ 
+                      fontSize: '11px', 
+                      color: isSelected ? '#dc2626' : '#6b7280',
+                      fontWeight: '500'
+                    }}>{categoryItems.length} dishes available</div>
                   </div>
                 </button>
               );
@@ -618,10 +640,18 @@ function RestaurantPOSContent() {
         <div style={{ flex: 1, backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
           {/* Show empty menu prompt if no menu items */}
           {filteredItems.length === 0 && menuItems.length === 0 && !loading ? (
-            <EmptyMenuPrompt 
-              restaurantName={selectedRestaurant?.name} 
-              onAddMenu={() => router.push('/menu')}
-            />
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              height: '100%',
+              width: '100%'
+            }}>
+              <EmptyMenuPrompt 
+                restaurantName={selectedRestaurant?.name} 
+                onAddMenu={() => router.push('/menu')}
+              />
+            </div>
           ) : (
           <>
             {/* Menu Header */}
@@ -829,7 +859,9 @@ function RestaurantPOSContent() {
         </div>
 
        
-        <div style={{ width: '30%', minWidth: '320px', backgroundColor: 'white', borderLeft: '2px solid #e5e7eb', display: 'flex', flexDirection: 'column' }}>
+        {/* Order Summary - Only show when there are menu items */}
+        {!(filteredItems.length === 0 && menuItems.length === 0 && !loading) && (
+          <div style={{ width: '30%', minWidth: '320px', backgroundColor: 'white', borderLeft: '2px solid #e5e7eb', display: 'flex', flexDirection: 'column' }}>
          
           <div style={{ 
             background: 'linear-gradient(135deg, #e53e3e, #dc2626)', 
@@ -1278,6 +1310,7 @@ function RestaurantPOSContent() {
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* Table Selector Modal */}
