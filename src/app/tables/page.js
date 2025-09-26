@@ -604,22 +604,72 @@ const TableManagement = () => {
           {floors.map((floor) => (
             <div key={floor.id} id={`floor-${floor.id}`} style={{ marginBottom: '40px' }}>
               <div style={{ position: 'relative' }}>
-                {/* Floor Label */}
+                {/* Floor Label & Stats Row */}
                 <div style={{
-                  position: 'absolute',
-                  right: '20px',
-                  top: '20px',
-                  backgroundColor: '#e53e3e',
-                  color: 'white',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  zIndex: 10,
-                  boxShadow: '0 2px 8px rgba(229, 62, 62, 0.3)',
-                  whiteSpace: 'nowrap'
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '30px',
+                  padding: '0 20px'
                 }}>
-                  {floor.name}
+                  {/* Floor Label */}
+                  <div style={{
+                    backgroundColor: '#e53e3e',
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    boxShadow: '0 2px 8px rgba(229, 62, 62, 0.3)'
+                  }}>
+                    {floor.name}
+                  </div>
+
+                  {/* Compact Stats */}
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '8px',
+                    backgroundColor: 'white',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
+                  }}>
+                    <div style={{ 
+                      textAlign: 'center',
+                      minWidth: '32px'
+                    }}>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>
+                        {(floor.tables || []).length}
+                      </div>
+                      <div style={{ fontSize: '9px', color: '#6b7280', fontWeight: '500' }}>
+                        Total
+                      </div>
+                    </div>
+                    <div style={{ width: '1px', backgroundColor: '#e5e7eb' }} />
+                    <div style={{ 
+                      textAlign: 'center',
+                      minWidth: '32px'
+                    }}>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#10b981' }}>
+                        {(floor.tables || []).filter(t => t.status === 'available').length}
+                      </div>
+                      <div style={{ fontSize: '9px', color: '#6b7280', fontWeight: '500' }}>
+                        Free
+                      </div>
+                    </div>
+                    <div style={{ width: '1px', backgroundColor: '#e5e7eb' }} />
+                    <div style={{ 
+                      textAlign: 'center',
+                      minWidth: '32px'
+                    }}>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ef4444' }}>
+                        {(floor.tables || []).filter(t => t.status === 'occupied').length}
+                      </div>
+                      <div style={{ fontSize: '9px', color: '#6b7280', fontWeight: '500' }}>
+                        Busy
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Tables Grid */}
@@ -673,20 +723,48 @@ const TableManagement = () => {
                             {table.name}
                           </div>
 
-                          {/* Dropdown indicator */}
+                          {/* Enhanced Dropdown indicator */}
                           <div style={{
                             position: 'absolute',
-                            bottom: '4px',
-                            right: '4px',
-                            width: '16px',
-                            height: '16px',
-                            backgroundColor: 'rgba(0,0,0,0.1)',
-                            borderRadius: '50%',
+                            bottom: '2px',
+                            right: '2px',
+                            width: '20px',
+                            height: '20px',
+                            backgroundColor: 'rgba(255,255,255,0.9)',
+                            borderRadius: '6px',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                            border: '1px solid rgba(0,0,0,0.1)',
+                            transition: 'all 0.2s ease'
                           }}>
-                            <FaChevronDown size={8} style={{ color: statusInfo.text }} />
+                            <div style={{
+                              width: '8px',
+                              height: '2px',
+                              backgroundColor: '#4b5563',
+                              borderRadius: '1px',
+                              position: 'relative'
+                            }}>
+                              <div style={{
+                                position: 'absolute',
+                                top: '-3px',
+                                left: '0',
+                                width: '8px',
+                                height: '2px',
+                                backgroundColor: '#4b5563',
+                                borderRadius: '1px'
+                              }} />
+                              <div style={{
+                                position: 'absolute',
+                                top: '3px',
+                                left: '0',
+                                width: '8px',
+                                height: '2px',
+                                backgroundColor: '#4b5563',
+                                borderRadius: '1px'
+                              }} />
+                            </div>
                           </div>
                         </div>
 
@@ -872,47 +950,6 @@ const TableManagement = () => {
                   })}
                 </div>
 
-                {/* Floor Statistics */}
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  gap: '12px', 
-                  flexWrap: 'wrap',
-                  marginTop: '20px',
-                  padding: '10px 16px',
-                  backgroundColor: 'white',
-                  borderRadius: '10px',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-                  maxWidth: 'calc(100% - 160px)',
-                  margin: '20px auto 0'
-                }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
-                      {(floor.tables || []).length}
-                    </div>
-                    <div style={{ fontSize: '10px', color: '#6b7280', fontWeight: '500' }}>
-                      Total Tables
-                    </div>
-                  </div>
-                  <div style={{ width: '1px', backgroundColor: '#e5e7eb', margin: '0 4px' }} />
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#10b981' }}>
-                      {(floor.tables || []).filter(t => t.status === 'available').length}
-                    </div>
-                    <div style={{ fontSize: '10px', color: '#6b7280', fontWeight: '500' }}>
-                      Available
-                    </div>
-                  </div>
-                  <div style={{ width: '1px', backgroundColor: '#e5e7eb', margin: '0 4px' }} />
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#ef4444' }}>
-                      {(floor.tables || []).filter(t => t.status === 'occupied').length}
-                    </div>
-                    <div style={{ fontSize: '10px', color: '#6b7280', fontWeight: '500' }}>
-                      Occupied
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           ))}
