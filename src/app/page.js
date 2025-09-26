@@ -64,6 +64,11 @@ function RestaurantPOSContent() {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(null); // { orderId: 'ORD-123', show: true }
+  
+  // Mobile responsive state
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [showMobileCart, setShowMobileCart] = useState(false);
 
   // Generate dynamic categories based on actual menu items
   const getDynamicCategories = () => {
@@ -122,6 +127,17 @@ function RestaurantPOSContent() {
   };
   
   const categories = getDynamicCategories();
+
+  // Mobile detection hook
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Authentication check and onboarding detection
   useEffect(() => {
@@ -542,12 +558,128 @@ function RestaurantPOSContent() {
   return (
     <div style={{ height: '100vh', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      
       <Header handleLogout={handleLogout} />
+      
+      {/* Mobile Top Bar */}
+      {isMobile && (
+        <div style={{
+          backgroundColor: 'white',
+          borderBottom: '1px solid #e5e7eb',
+          padding: '12px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px'
+        }}>
+          {/* Search Bar */}
+          <div style={{ flex: 1, position: 'relative' }}>
+            <FaSearch style={{ 
+              position: 'absolute', 
+              left: '12px', 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              color: '#9ca3af' 
+            }} size={16} />
+            <input
+              type="text"
+              placeholder="Search menu..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                paddingLeft: '40px',
+                paddingRight: '12px',
+                paddingTop: '12px',
+                paddingBottom: '12px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '12px',
+                backgroundColor: '#f9fafb',
+                fontSize: '14px',
+                outline: 'none'
+              }}
+            />
+          </div>
+          
+          {/* Category Filter Button */}
+          <button
+            onClick={() => setShowMobileSidebar(true)}
+            style={{
+              padding: '12px',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontWeight: '600',
+              fontSize: '14px',
+              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
+            }}
+          >
+            <FaBars size={16} />
+            Categories
+          </button>
+          
+          {/* Cart Button */}
+          <button
+            onClick={() => setShowMobileCart(true)}
+            style={{
+              padding: '12px',
+              backgroundColor: cart.length > 0 ? '#10b981' : '#6b7280',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontWeight: '600',
+              fontSize: '14px',
+              position: 'relative',
+              boxShadow: cart.length > 0 ? '0 2px 8px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(107, 114, 128, 0.3)'
+            }}
+          >
+            <FaShoppingCart size={16} />
+            {cart.length > 0 && (
+              <span style={{
+                position: 'absolute',
+                top: '-8px',
+                right: '-8px',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                borderRadius: '50%',
+                width: '20px',
+                height: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                fontWeight: 'bold'
+              }}>
+                {cart.reduce((sum, item) => sum + item.quantity, 0)}
+              </span>
+            )}
+          </button>
+        </div>
+      )}
+      
       {/* Main Content */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* Menu Sections Sidebar */}
-        <div style={{ width: '240px', backgroundColor: 'white', borderRight: '2px solid #e5e7eb', boxShadow: '2px 0 4px rgba(0,0,0,0.1)' }}>
+      <div style={{ 
+        display: 'flex', 
+        flex: 1, 
+        overflow: 'hidden',
+        flexDirection: isMobile ? 'column' : 'row'
+      }}>
+        {/* Desktop Menu Sections Sidebar */}
+        {!isMobile && (
+          <div style={{ 
+            width: '240px', 
+            backgroundColor: 'white', 
+            borderRight: '2px solid #e5e7eb', 
+            boxShadow: '2px 0 4px rgba(0,0,0,0.1)' 
+          }}>
           <div style={{ padding: '16px', borderBottom: '1px solid #f3f4f6' }}>
             <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FaUtensils style={{ fontSize: '14px', color: '#ef4444' }} />
@@ -634,7 +766,8 @@ function RestaurantPOSContent() {
               );
             })}
           </div>
-        </div>
+          </div>
+        )}
 
         {/* Menu Items */}
         <div style={{ flex: 1, backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
@@ -690,11 +823,13 @@ function RestaurantPOSContent() {
             </div>
           </div>
           
-          <div style={{ flex: 1, padding: '8px', overflowY: 'auto' }}>
+          <div style={{ flex: 1, padding: isMobile ? '16px' : '8px', overflowY: 'auto' }}>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-              gap: '8px'
+              gridTemplateColumns: isMobile 
+                ? 'repeat(auto-fill, minmax(160px, 1fr))' 
+                : 'repeat(auto-fill, minmax(140px, 1fr))',
+              gap: isMobile ? '16px' : '8px'
             }}>
               {filteredItems.map((item) => {
                 const quantityInCart = getItemQuantityInCart(item.id);
@@ -704,12 +839,12 @@ function RestaurantPOSContent() {
                     key={item.id}
                     style={{
                       backgroundColor: 'white',
-                      borderRadius: '6px',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                      borderRadius: isMobile ? '16px' : '6px',
+                      boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.1)' : '0 1px 3px rgba(0,0,0,0.1)',
                       overflow: 'hidden',
                       transition: 'all 0.2s',
                       cursor: 'pointer',
-                      height: '160px',
+                      height: isMobile ? '200px' : '160px',
                       display: 'flex',
                       flexDirection: 'column',
                       border: quantityInCart > 0 ? '2px solid #e53e3e' : '1px solid #e5e7eb'
@@ -725,14 +860,14 @@ function RestaurantPOSContent() {
                   >
                     {/* Item Image */}
                     <div style={{
-                      height: '60px',
+                      height: isMobile ? '80px' : '60px',
                       background: 'linear-gradient(135deg, #fed7aa, #fecaca)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       position: 'relative'
                     }}>
-                      <div style={{ fontSize: '24px', opacity: 0.3 }}>
+                      <div style={{ fontSize: isMobile ? '32px' : '24px', opacity: 0.3 }}>
                         {categories.find(c => c.id === item.category)?.emoji || '🍽️'}
                       </div>
                       
@@ -759,17 +894,40 @@ function RestaurantPOSContent() {
                     </div>
                     
                     {/* Item Details */}
-                    <div style={{ padding: '8px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                      <h3 style={{ fontWeight: 'bold', fontSize: '12px', color: '#1f2937', margin: '0 0 2px 0', lineHeight: '1.2' }}>
-                        {item.name.length > 18 ? item.name.substring(0, 18) + '...' : item.name}
+                    <div style={{ padding: isMobile ? '12px' : '8px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                      <h3 style={{ 
+                        fontWeight: 'bold', 
+                        fontSize: isMobile ? '14px' : '12px', 
+                        color: '#1f2937', 
+                        margin: '0 0 4px 0', 
+                        lineHeight: '1.2' 
+                      }}>
+                        {isMobile 
+                          ? (item.name.length > 20 ? item.name.substring(0, 20) + '...' : item.name)
+                          : (item.name.length > 18 ? item.name.substring(0, 18) + '...' : item.name)
+                        }
                       </h3>
-                      <p style={{ color: '#6b7280', fontSize: '9px', margin: '0 0 6px 0', lineHeight: '1.3', flex: 1, overflow: 'hidden' }}>
-                        {item.description.length > 30 ? item.description.substring(0, 30) + '...' : item.description}
+                      <p style={{ 
+                        color: '#6b7280', 
+                        fontSize: isMobile ? '12px' : '9px', 
+                        margin: '0 0 8px 0', 
+                        lineHeight: '1.3', 
+                        flex: 1, 
+                        overflow: 'hidden' 
+                      }}>
+                        {isMobile 
+                          ? (item.description.length > 40 ? item.description.substring(0, 40) + '...' : item.description)
+                          : (item.description.length > 30 ? item.description.substring(0, 30) + '...' : item.description)
+                        }
                       </p>
                       
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
                         <div>
-                          <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#e53e3e' }}>
+                          <span style={{ 
+                            fontSize: isMobile ? '16px' : '14px', 
+                            fontWeight: 'bold', 
+                            color: '#e53e3e' 
+                          }}>
                             Rs.{item.price}
                           </span>
                         </div>
@@ -780,19 +938,20 @@ function RestaurantPOSContent() {
                             style={{
                               background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
                               color: 'white',
-                              padding: '4px 8px',
-                              borderRadius: '4px',
+                              padding: isMobile ? '8px 12px' : '4px 8px',
+                              borderRadius: isMobile ? '8px' : '4px',
                               fontWeight: 'bold',
                               border: 'none',
                               cursor: 'pointer',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '3px',
+                              gap: isMobile ? '6px' : '3px',
                               transition: 'all 0.2s',
-                              fontSize: '9px'
+                              fontSize: isMobile ? '12px' : '9px',
+                              boxShadow: isMobile ? '0 2px 8px rgba(229, 62, 62, 0.3)' : 'none'
                             }}
                           >
-                            <FaPlus size={8} />
+                            <FaPlus size={isMobile ? 12 : 8} />
                             ADD
                           </button>
                         ) : (
@@ -1312,6 +1471,345 @@ function RestaurantPOSContent() {
         </div>
         )}
       </div>
+
+      {/* Mobile Category Sidebar */}
+      {isMobile && showMobileSidebar && (
+        <>
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 998
+            }}
+            onClick={() => setShowMobileSidebar(false)}
+          />
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            height: '100vh',
+            width: '280px',
+            backgroundColor: 'white',
+            zIndex: 999,
+            boxShadow: '4px 0 20px rgba(0, 0, 0, 0.1)',
+            transform: showMobileSidebar ? 'translateX(0)' : 'translateX(-100%)',
+            transition: 'transform 0.3s ease',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Mobile Sidebar Header */}
+            <div style={{
+              padding: '20px',
+              borderBottom: '1px solid #f1f5f9',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+                Menu Categories
+              </h2>
+              <button
+                onClick={() => setShowMobileSidebar(false)}
+                style={{
+                  padding: '8px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  borderRadius: '6px'
+                }}
+              >
+                <FaTimes size={18} color="#6b7280" />
+              </button>
+            </div>
+
+            {/* Mobile Categories */}
+            <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
+              {categories.map((category) => {
+                const isSelected = selectedCategory === category.id;
+                
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => {
+                      setSelectedCategory(category.id);
+                      setShowMobileSidebar(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '16px',
+                      borderRadius: '16px',
+                      fontWeight: '600',
+                      border: isSelected ? '2px solid #ef4444' : '1px solid #f3f4f6',
+                      cursor: 'pointer',
+                      marginBottom: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      backgroundColor: isSelected ? '#fef2f2' : '#fafafa',
+                      color: isSelected ? '#dc2626' : '#374151',
+                      transition: 'all 0.3s ease',
+                      fontSize: '16px',
+                      boxShadow: isSelected ? '0 4px 12px rgba(239, 68, 68, 0.15)' : '0 2px 6px rgba(0,0,0,0.05)'
+                    }}
+                  >
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '24px',
+                      backgroundColor: isSelected ? '#ef4444' : '#ffffff',
+                      boxShadow: isSelected ? 'inset 0 2px 4px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.05)',
+                      transition: 'all 0.3s ease'
+                    }}>
+                      {isSelected ? '🍽️' : category.emoji}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '700', marginBottom: '4px' }}>{category.name}</div>
+                      <div style={{ fontSize: '12px', opacity: 0.7 }}>{category.count} items</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Mobile Cart Modal */}
+      {isMobile && showMobileCart && (
+        <>
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 998
+            }}
+            onClick={() => setShowMobileCart(false)}
+          />
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            right: 0,
+            height: '100vh',
+            width: '90%',
+            maxWidth: '400px',
+            backgroundColor: 'white',
+            zIndex: 999,
+            boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.1)',
+            transform: showMobileCart ? 'translateX(0)' : 'translateX(100%)',
+            transition: 'transform 0.3s ease',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Mobile Cart Header */}
+            <div style={{
+              padding: '20px',
+              borderBottom: '1px solid #f1f5f9',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+                Your Order ({cart.reduce((sum, item) => sum + item.quantity, 0)} items)
+              </h2>
+              <button
+                onClick={() => setShowMobileCart(false)}
+                style={{
+                  padding: '8px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  borderRadius: '6px'
+                }}
+              >
+                <FaTimes size={18} color="#6b7280" />
+              </button>
+            </div>
+
+            {/* Mobile Cart Content */}
+            <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
+              {cart.length === 0 ? (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '40px 20px',
+                  color: '#6b7280'
+                }}>
+                  <FaShoppingCart size={48} style={{ marginBottom: '16px', color: '#d1d5db' }} />
+                  <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Your cart is empty</p>
+                  <p style={{ fontSize: '14px' }}>Add some delicious items to get started!</p>
+                </div>
+              ) : (
+                cart.map((item, index) => (
+                  <div key={index} style={{
+                    padding: '16px',
+                    backgroundColor: '#fef7f0',
+                    borderRadius: '16px',
+                    marginBottom: '12px',
+                    border: '1px solid #fed7aa'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#1f2937', margin: '0 0 4px 0' }}>
+                          {item.name}
+                        </h4>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 8px 0' }}>
+                          Rs.{item.price} each
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(index)}
+                        style={{
+                          padding: '6px',
+                          backgroundColor: '#fee2e2',
+                          color: '#dc2626',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          marginLeft: '8px'
+                        }}
+                      >
+                        <FaTimes size={12} />
+                      </button>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        backgroundColor: 'white',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb'
+                      }}>
+                        <button
+                          onClick={() => updateCartQuantity(index, Math.max(0, item.quantity - 1))}
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#ef4444',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            borderRadius: '8px 0 0 8px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <FaMinus size={12} />
+                        </button>
+                        <span style={{
+                          width: '40px',
+                          height: '32px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 'bold',
+                          color: '#1f2937',
+                          borderLeft: '1px solid #e5e7eb',
+                          borderRight: '1px solid #e5e7eb',
+                          fontSize: '14px'
+                        }}>
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => addToCart(item)}
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#10b981',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            borderRadius: '0 8px 8px 0',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <FaPlus size={12} />
+                        </button>
+                      </div>
+                      
+                      <div style={{ fontSize: '16px', fontWeight: '700', color: '#374151' }}>
+                        Rs.{item.price * item.quantity}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Mobile Cart Footer */}
+            {cart.length > 0 && (
+              <div style={{ borderTop: '1px solid #e5e7eb', backgroundColor: '#f9fafb', padding: '20px' }}>
+                <div style={{ 
+                  background: 'linear-gradient(135deg, #1f2937, #111827)', 
+                  color: 'white', 
+                  padding: '16px', 
+                  borderRadius: '12px',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '16px', fontWeight: 'bold' }}>Grand Total</span>
+                    <span style={{ fontSize: '24px', fontWeight: 'bold' }}>Rs.{getTotalAmount()}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setShowMobileCart(false);
+                    processOrder();
+                  }}
+                  disabled={processing}
+                  style={{
+                    width: '100%',
+                    background: processing 
+                      ? 'linear-gradient(135deg, #9ca3af, #6b7280)' 
+                      : 'linear-gradient(135deg, #10b981, #059669)',
+                    color: 'white',
+                    padding: '16px',
+                    borderRadius: '12px',
+                    fontWeight: '700',
+                    fontSize: '16px',
+                    border: 'none',
+                    cursor: processing ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)'
+                  }}
+                >
+                  {processing ? (
+                    <>
+                      <FaSpinner style={{ animation: 'spin 1s linear infinite' }} size={16} />
+                      Processing Order...
+                    </>
+                  ) : (
+                    <>
+                      <FaCheckCircle size={16} />
+                      COMPLETE ORDER • Rs.{getTotalAmount()}
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Table Selector Modal */}
       {showTableSelector && (
