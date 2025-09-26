@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Navigation from '../../components/Navigation';
 import { 
   FaPrint, 
@@ -21,103 +22,109 @@ import {
   FaClipboardCheck,
   FaHome,
   FaTruck,
-  FaShoppingBag
+  FaShoppingBag,
+  FaSpinner,
+  FaTable
 } from 'react-icons/fa';
 import { GiChefToque } from "react-icons/gi";
+import apiClient from '../../lib/api';
 
 const KitchenOrderTicket = () => {
+  const router = useRouter();
   const [kotOrders, setKotOrders] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedKot, setSelectedKot] = useState(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const [currentRestaurant, setCurrentRestaurant] = useState(null);
+  const [timers, setTimers] = useState({}); // For cooking timers
 
-  // Mock KOT data - replace with real data from API
-  useEffect(() => {
-    const mockKotOrders = [
-      {
-        id: 'KOT-001',
-        orderId: 'ORD-001',
-        tableNumber: '12',
-        customerName: 'Rahul Sharma',
-        orderType: 'dine-in',
-        items: [
-          { id: 1, name: 'Butter Chicken', quantity: 2, spiceLevel: 'medium', notes: 'Extra gravy', category: 'main-course', estimatedTime: 15 },
-          { id: 2, name: 'Garlic Naan', quantity: 4, spiceLevel: 'mild', notes: '', category: 'bread', estimatedTime: 8 },
-          { id: 3, name: 'Mango Lassi', quantity: 2, spiceLevel: 'mild', notes: 'Less sugar', category: 'beverages', estimatedTime: 3 }
-        ],
-        status: 'pending',
-        priority: 'normal',
-        orderTime: '2024-01-15T19:30:00',
-        kotTime: '2024-01-15T19:32:00',
-        estimatedTime: 18,
-        specialInstructions: 'Customer is allergic to nuts',
-        waiter: 'Amit Kumar'
-      },
-      {
-        id: 'KOT-002',
-        orderId: 'ORD-002',
-        tableNumber: null,
-        customerName: 'Priya Patel',
-        orderType: 'delivery',
-        items: [
-          { id: 4, name: 'Veg Biryani', quantity: 1, spiceLevel: 'medium', notes: 'Extra raita', category: 'main-course', estimatedTime: 20 },
-          { id: 5, name: 'Papad', quantity: 2, spiceLevel: 'mild', notes: 'Roasted not fried', category: 'starters', estimatedTime: 5 }
-        ],
-        status: 'preparing',
-        priority: 'urgent',
-        orderTime: '2024-01-15T19:15:00',
-        kotTime: '2024-01-15T19:17:00',
-        estimatedTime: 25,
-        specialInstructions: 'Pack separately for delivery',
-        waiter: 'Delivery Team'
-      },
-      {
-        id: 'KOT-003',
-        orderId: 'ORD-003',
-        tableNumber: '5',
-        customerName: 'Amit Kumar',
-        orderType: 'dine-in',
-        items: [
-          { id: 6, name: 'Paneer Tikka', quantity: 1, spiceLevel: 'hot', notes: 'Well done', category: 'starters', estimatedTime: 12 },
-          { id: 7, name: 'Dal Makhani', quantity: 1, spiceLevel: 'medium', notes: '', category: 'main-course', estimatedTime: 10 },
-          { id: 8, name: 'Tandoori Roti', quantity: 3, spiceLevel: 'mild', notes: '', category: 'bread', estimatedTime: 6 }
-        ],
-        status: 'ready',
-        priority: 'normal',
-        orderTime: '2024-01-15T18:45:00',
-        kotTime: '2024-01-15T18:47:00',
-        estimatedTime: 15,
-        specialInstructions: '',
-        waiter: 'Sunita Sharma'
-      },
-      {
-        id: 'KOT-004',
-        orderId: 'ORD-004',
-        tableNumber: null,
-        customerName: 'Sneha Gupta',
-        orderType: 'pickup',
-        items: [
-          { id: 9, name: 'Chicken Wings', quantity: 2, spiceLevel: 'hot', notes: 'Extra spicy sauce', category: 'starters', estimatedTime: 15 },
-          { id: 10, name: 'Cold Coffee', quantity: 1, spiceLevel: 'mild', notes: 'No ice', category: 'beverages', estimatedTime: 3 }
-        ],
-        status: 'served',
-        priority: 'normal',
-        orderTime: '2024-01-15T20:00:00',
-        kotTime: '2024-01-15T20:02:00',
-        estimatedTime: 18,
-        specialInstructions: 'Call customer when ready: +91-9123456789',
-        waiter: 'Pickup Counter'
+  // Load restaurant and KOT data
+  const loadKotData = useCallback(async (showSpinner = true) => {
+    try {
+      if (showSpinner) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
       }
-    ];
-    setKotOrders(mockKotOrders);
+      setError('');
+
+      // Get current restaurant from auth or localStorage
+      const restaurants = await apiClient.getRestaurants();
+      if (!restaurants.restaurants || restaurants.restaurants.length === 0) {
+        throw new Error('No restaurants found');
+      }
+      
+      const restaurant = restaurants.restaurants[0]; // Use first restaurant for now
+      setCurrentRestaurant(restaurant);
+
+      // Get KOT orders for this restaurant
+      const response = await apiClient.getKotOrders(restaurant.id);
+      
+      if (response.orders) {
+        setKotOrders(response.orders);
+      } else {
+        setKotOrders([]);
+      }
+
+    } catch (error) {
+      console.error('Error loading KOT data:', error);
+      setError(error.message || 'Failed to load kitchen orders');
+      setKotOrders([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
+
+  // Initial load and auto-refresh setup
+  useEffect(() => {
+    loadKotData();
+
+    // Set up auto-refresh every 1 minute
+    const interval = setInterval(() => {
+      loadKotData(false); // Refresh without showing loader
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, [loadKotData]);
+
+  // Update cooking timers every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimers(prevTimers => {
+        const newTimers = { ...prevTimers };
+        kotOrders.forEach(order => {
+          if (order.status === 'preparing' && order.cookingStartTime) {
+            const startTime = new Date(order.cookingStartTime);
+            const now = new Date();
+            const elapsed = Math.floor((now - startTime) / 1000); // seconds
+            newTimers[order.id] = elapsed;
+          }
+        });
+        return newTimers;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [kotOrders]);
+
+  // Handle authentication check
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      router.push('/auth');
+    }
+  }, [router]);
 
   const getStatusInfo = (status) => {
     const statusMap = {
-      pending: { 
+      confirmed: { 
         bg: '#fef3c7', 
         text: '#92400e', 
-        label: 'Pending',
+        label: 'Confirmed',
         icon: FaClock,
         border: '#fbbf24'
       },
@@ -143,7 +150,7 @@ const KitchenOrderTicket = () => {
         border: '#6b7280'
       }
     };
-    return statusMap[status] || statusMap.pending;
+    return statusMap[status] || statusMap.confirmed;
   };
 
   const getPriorityInfo = (priority) => {
@@ -188,15 +195,106 @@ const KitchenOrderTicket = () => {
     return <FaFire style={{ color: spiceColors[level] }} size={12} />;
   };
 
-  const updateKotStatus = (kotId, newStatus) => {
-    setKotOrders(orders => orders.map(order => 
-      order.id === kotId ? { ...order, status: newStatus } : order
-    ));
-    
-    // Play notification sound if enabled
-    if (soundEnabled && newStatus === 'ready') {
-      // In a real app, you'd play a sound here
-      console.log('🔔 Order ready notification sound');
+  const updateKotStatus = async (kotId, orderId, newStatus) => {
+    try {
+      // Update status via API
+      await apiClient.updateKotStatus(orderId, newStatus);
+      
+      // Update local state optimistically
+      setKotOrders(orders => orders.map(order => 
+        order.kotId === kotId ? { ...order, status: newStatus } : order
+      ));
+      
+      // Play notification sound if enabled
+      if (soundEnabled && newStatus === 'ready') {
+        // In a real app, you'd play a sound here
+        console.log('🔔 Order ready notification sound');
+      }
+
+      // Refresh data after a short delay to get updated server state
+      setTimeout(() => {
+        loadKotData(false);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error updating KOT status:', error);
+      setError('Failed to update order status');
+      
+      // Refresh data to ensure consistency
+      loadKotData(false);
+    }
+  };
+
+  const startCooking = async (kotId, orderId) => {
+    try {
+      await apiClient.startCooking(orderId);
+      
+      // Update local state
+      setKotOrders(orders => orders.map(order => 
+        order.kotId === kotId ? { 
+          ...order, 
+          status: 'preparing',
+          cookingStartTime: new Date().toISOString()
+        } : order
+      ));
+
+      // Refresh to get server state
+      setTimeout(() => {
+        loadKotData(false);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error starting cooking:', error);
+      setError('Failed to start cooking timer');
+    }
+  };
+
+  const markReady = async (kotId, orderId) => {
+    try {
+      await apiClient.markReady(orderId);
+      
+      // Update local state
+      setKotOrders(orders => orders.map(order => 
+        order.kotId === kotId ? { 
+          ...order, 
+          status: 'ready',
+          cookingEndTime: new Date().toISOString()
+        } : order
+      ));
+
+      // Play notification sound
+      if (soundEnabled) {
+        console.log('🔔 Order ready notification sound');
+      }
+
+      // Refresh to get server state
+      setTimeout(() => {
+        loadKotData(false);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error marking ready:', error);
+      setError('Failed to mark order as ready');
+    }
+  };
+
+  const markServed = async (kotId, orderId) => {
+    try {
+      await apiClient.markServed(orderId);
+      
+      // Update local state
+      setKotOrders(orders => orders.map(order => 
+        order.kotId === kotId ? { ...order, status: 'served' } : order
+      ));
+
+      // Refresh to get server state
+      setTimeout(() => {
+        loadKotData(false);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error marking served:', error);
+      setError('Failed to mark order as served');
     }
   };
 
@@ -205,26 +303,124 @@ const KitchenOrderTicket = () => {
   });
 
   const formatTime = (timeString) => {
-    const date = new Date(timeString);
-    return date.toLocaleTimeString('en-IN', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
+    try {
+      const date = new Date(timeString);
+      return date.toLocaleTimeString('en-IN', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      });
+    } catch (error) {
+      return '--:--';
+    }
   };
 
   const getTimeElapsed = (kotTime) => {
-    const now = new Date();
-    const kotDate = new Date(kotTime);
-    const diffInMinutes = Math.floor((now - kotDate) / (1000 * 60));
-    return diffInMinutes;
+    try {
+      const now = new Date();
+      const kotDate = new Date(kotTime);
+      const diffInMinutes = Math.floor((now - kotDate) / (1000 * 60));
+      return Math.max(0, diffInMinutes);
+    } catch (error) {
+      return 0;
+    }
+  };
+
+  const formatCookingTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getPriorityFromOrder = (order) => {
+    // Determine priority based on order age and type
+    const elapsed = getTimeElapsed(order.kotTime);
+    const isOverdue = elapsed > (order.estimatedTime || 15);
+    
+    if (isOverdue) return 'urgent';
+    if (order.orderType === 'delivery') return 'urgent';
+    return 'normal';
   };
 
   const printKot = (kot) => {
     // In a real application, this would trigger a printer
-    console.log('Printing KOT:', kot.id);
-    alert(`Printing KOT ${kot.id} to kitchen printer...`);
+    console.log('Printing KOT:', kot.kotId || kot.id);
+    alert(`Printing KOT ${kot.kotId || kot.id} to kitchen printer...`);
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
+        <Navigation />
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: 'calc(100vh - 80px)' 
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <FaSpinner style={{ 
+              fontSize: '48px', 
+              color: '#f97316', 
+              animation: 'spin 1s linear infinite',
+              marginBottom: '16px'
+            }} />
+            <p style={{ fontSize: '18px', color: '#6b7280' }}>Loading kitchen orders...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && kotOrders.length === 0) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
+        <Navigation />
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: 'calc(100vh - 80px)' 
+        }}>
+          <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+            <FaExclamationTriangle style={{ 
+              fontSize: '48px', 
+              color: '#ef4444', 
+              marginBottom: '16px'
+            }} />
+            <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
+              Error Loading Orders
+            </h3>
+            <p style={{ fontSize: '16px', color: '#6b7280', marginBottom: '24px' }}>
+              {error}
+            </p>
+            <button
+              onClick={() => loadKotData()}
+              style={{
+                backgroundColor: '#f97316',
+                color: 'white',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                border: 'none',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: '0 auto'
+              }}
+            >
+              <FaSync />
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
@@ -258,7 +454,8 @@ const KitchenOrderTicket = () => {
                     Kitchen Display
                   </h1>
                   <p style={{ color: '#6b7280', margin: 0, fontSize: '14px' }}>
-                    Live order tracking • {filteredOrders.length} orders in queue
+                    {currentRestaurant?.name || 'Restaurant'} • {filteredOrders.length} orders in queue
+                    {refreshing && <span style={{ color: '#f97316' }}> • Refreshing...</span>}
                   </p>
                 </div>
               </div>
@@ -273,7 +470,7 @@ const KitchenOrderTicket = () => {
               }}>
                 {[
                   { key: 'all', label: 'All Orders', count: kotOrders.length },
-                  { key: 'pending', label: 'Pending', count: kotOrders.filter(o => o.status === 'pending').length },
+                  { key: 'confirmed', label: 'Confirmed', count: kotOrders.filter(o => o.status === 'confirmed').length },
                   { key: 'preparing', label: 'Preparing', count: kotOrders.filter(o => o.status === 'preparing').length },
                   { key: 'ready', label: 'Ready', count: kotOrders.filter(o => o.status === 'ready').length }
                 ].map((status) => (
@@ -431,7 +628,16 @@ const KitchenOrderTicket = () => {
                           </div>
                         </div>
                         <div>
-                          {kot.tableNumber ? (
+                          {kot.tableInfo ? (
+                            <div style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <FaTable size={12} style={{ color: '#10b981' }} />
+                              <span style={{ color: '#6b7280' }}>Table:</span>
+                              <span style={{ fontWeight: '600', color: '#1f2937' }}>
+                                {kot.tableInfo.floorName} - {kot.tableInfo.number}
+                                {kot.tableInfo.capacity && ` (${kot.tableInfo.capacity} seats)`}
+                              </span>
+                            </div>
+                          ) : kot.tableNumber ? (
                             <div style={{ marginBottom: '4px' }}>
                               <span style={{ color: '#6b7280' }}>Table:</span>
                               <span style={{ fontWeight: '600', color: '#1f2937', marginLeft: '6px' }}>{kot.tableNumber}</span>
@@ -444,7 +650,7 @@ const KitchenOrderTicket = () => {
                           )}
                           <div style={{ marginBottom: '4px' }}>
                             <span style={{ color: '#6b7280' }}>Waiter:</span>
-                            <span style={{ fontWeight: '600', color: '#1f2937', marginLeft: '6px' }}>{kot.waiter}</span>
+                            <span style={{ fontWeight: '600', color: '#1f2937', marginLeft: '6px' }}>{kot.waiterName || kot.waiter}</span>
                           </div>
                         </div>
                       </div>
@@ -583,9 +789,9 @@ const KitchenOrderTicket = () => {
                         View
                       </button>
                       
-                      {kot.status === 'pending' && (
+                      {kot.status === 'confirmed' && (
                         <button
-                          onClick={() => updateKotStatus(kot.id, 'preparing')}
+                          onClick={() => startCooking(kot.kotId, kot.id)}
                           style={{
                             flex: 1,
                             backgroundColor: '#f59e0b',
@@ -609,33 +815,52 @@ const KitchenOrderTicket = () => {
                       )}
                       
                       {kot.status === 'preparing' && (
-                        <button
-                          onClick={() => updateKotStatus(kot.id, 'ready')}
-                          style={{
+                        <>
+                          <div style={{
                             flex: 1,
-                            backgroundColor: '#10b981',
-                            color: 'white',
+                            backgroundColor: '#dbeafe',
+                            color: '#1e40af',
                             padding: '10px 16px',
                             borderRadius: '10px',
                             fontWeight: '600',
                             fontSize: '13px',
-                            border: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
+                            border: '1px solid #3b82f6',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '6px'
-                          }}
-                        >
-                          <FaCheck size={12} />
-                          Mark Ready
-                        </button>
+                          }}>
+                            <FaStopwatch size={12} />
+                            {formatCookingTime(timers[kot.id] || 0)}
+                          </div>
+                          <button
+                            onClick={() => markReady(kot.kotId, kot.id)}
+                            style={{
+                              flex: 1,
+                              backgroundColor: '#10b981',
+                              color: 'white',
+                              padding: '10px 16px',
+                              borderRadius: '10px',
+                              fontWeight: '600',
+                              fontSize: '13px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <FaCheck size={12} />
+                            Mark Ready
+                          </button>
+                        </>
                       )}
                       
                       {kot.status === 'ready' && (
                         <button
-                          onClick={() => updateKotStatus(kot.id, 'served')}
+                          onClick={() => markServed(kot.kotId, kot.id)}
                           style={{
                             flex: 1,
                             backgroundColor: '#8b5cf6',
@@ -820,11 +1045,13 @@ const KitchenOrderTicket = () => {
                 }}>
                   <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', fontSize: '14px' }}>Customer</h3>
                   <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
-                    <div><strong>Name:</strong> {selectedKot.customerName}</div>
-                    {selectedKot.tableNumber && (
+                      <div><strong>Name:</strong> {selectedKot.customerName}</div>
+                    {selectedKot.tableInfo ? (
+                      <div><strong>Table:</strong> {selectedKot.tableInfo.floorName} - {selectedKot.tableInfo.number} ({selectedKot.tableInfo.capacity} seats)</div>
+                    ) : selectedKot.tableNumber && (
                       <div><strong>Table:</strong> {selectedKot.tableNumber}</div>
                     )}
-                    <div><strong>Waiter:</strong> {selectedKot.waiter}</div>
+                    <div><strong>Waiter:</strong> {selectedKot.waiterName || selectedKot.waiter}</div>
                   </div>
                 </div>
                 

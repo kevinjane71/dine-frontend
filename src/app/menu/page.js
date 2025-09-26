@@ -28,6 +28,108 @@ import {
   FaEye
 } from 'react-icons/fa';
 
+// Custom Dropdown Component
+const CustomDropdown = ({ label, value, onChange, options, placeholder = "Select option" }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(
+    options.find(opt => opt.value === value) || null
+  );
+
+  const handleSelect = (option) => {
+    setSelectedOption(option);
+    onChange(option.value);
+    setIsOpen(false);
+  };
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {label && (
+        <label style={{
+          display: 'block',
+          fontSize: '14px',
+          fontWeight: '500',
+          color: '#374151',
+          marginBottom: '6px'
+        }}>
+          {label}
+        </label>
+      )}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: '100%',
+          padding: '12px 16px',
+          border: '1px solid #e5e7eb',
+          borderRadius: '6px',
+          backgroundColor: 'white',
+          fontSize: '14px',
+          textAlign: 'left',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          transition: 'all 0.2s ease',
+          outline: 'none'
+        }}
+        onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+        onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+      >
+        <span style={{ color: selectedOption ? '#1f2937' : '#9ca3af' }}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <span style={{ 
+          fontSize: '12px', 
+          color: '#6b7280',
+          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          transition: 'transform 0.2s ease'
+        }}>
+          ▼
+        </span>
+      </button>
+      
+      {isOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          right: 0,
+          backgroundColor: 'white',
+          border: '1px solid #e5e7eb',
+          borderRadius: '6px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 1000,
+          marginTop: '2px'
+        }}>
+          {options.map((option, index) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => handleSelect(option)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                textAlign: 'left',
+                fontSize: '14px',
+                color: '#1f2937',
+                cursor: 'pointer',
+                transition: 'background-color 0.15s ease',
+                borderBottom: index < options.length - 1 ? '1px solid #f3f4f6' : 'none'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const MenuManagement = () => {
   const router = useRouter();
   const [menuItems, setMenuItems] = useState([]);
@@ -1466,12 +1568,12 @@ const MenuManagement = () => {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <h2 style={{
-                  fontSize: '24px',
-                  fontWeight: '700',
+                  fontSize: '20px',
+                  fontWeight: '600',
                   color: '#1f2937',
                   margin: 0
                 }}>
-                  {editingItem ? '🍽️ Edit Dish' : '🍽️ Add New Dish'}
+                  {editingItem ? 'Edit Dish' : 'Add New Dish'}
                 </h2>
                 <button
                   onClick={resetForm}
@@ -1499,18 +1601,18 @@ const MenuManagement = () => {
               </div>
             </div>
             
-            <form onSubmit={handleSubmit} style={{ padding: '32px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+            <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '16px' }}>
                 {/* Name */}
                 <div>
                   <label style={{
                     display: 'block',
                     fontSize: '14px',
-                    fontWeight: '600',
+                    fontWeight: '500',
                     color: '#374151',
-                    marginBottom: '8px'
+                    marginBottom: '6px'
                   }}>
-                    🍽️ Dish Name *
+                    Dish Name *
                   </label>
                   <input
                     type="text"
@@ -1520,22 +1622,16 @@ const MenuManagement = () => {
                     style={{
                       width: '100%',
                       padding: '12px 16px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '12px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
                       fontSize: '14px',
                       outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      transition: 'all 0.2s ease'
+                      backgroundColor: 'white',
+                      transition: 'border-color 0.2s ease'
                     }}
-                    placeholder="Enter delicious dish name"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#ef4444';
-                      e.target.style.backgroundColor = 'white';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#e5e7eb';
-                      e.target.style.backgroundColor = '#fef7f0';
-                    }}
+                    placeholder="Enter dish name"
+                    onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                   />
                 </div>
                 
@@ -1544,11 +1640,11 @@ const MenuManagement = () => {
                   <label style={{
                     display: 'block',
                     fontSize: '14px',
-                    fontWeight: '600',
+                    fontWeight: '500',
                     color: '#374151',
-                    marginBottom: '8px'
+                    marginBottom: '6px'
                   }}>
-                    🏷️ Short Code *
+                    Short Code *
                   </label>
                   <input
                     type="text"
@@ -1558,36 +1654,30 @@ const MenuManagement = () => {
                     style={{
                       width: '100%',
                       padding: '12px 16px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '12px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
                       fontSize: '14px',
                       outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      transition: 'all 0.2s ease'
+                      backgroundColor: 'white',
+                      transition: 'border-color 0.2s ease'
                     }}
                     placeholder="e.g., DAL, SAM"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#ef4444';
-                      e.target.style.backgroundColor = 'white';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#e5e7eb';
-                      e.target.style.backgroundColor = '#fef7f0';
-                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                   />
                 </div>
               </div>
               
               {/* Description */}
-              <div style={{ marginBottom: '20px' }}>
+              <div style={{ marginBottom: '16px' }}>
                 <label style={{
                   display: 'block',
                   fontSize: '14px',
-                  fontWeight: '600',
+                  fontWeight: '500',
                   color: '#374151',
-                  marginBottom: '8px'
+                  marginBottom: '6px'
                 }}>
-                  📝 Description
+                  Description
                 </label>
                 <textarea
                   value={formData.description}
@@ -1595,39 +1685,33 @@ const MenuManagement = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: 'white',
                     resize: 'vertical',
                     minHeight: '80px',
-                    transition: 'all 0.2s ease'
+                    transition: 'border-color 0.2s ease'
                   }}
                   rows="3"
-                  placeholder="Describe this delicious dish..."
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#ef4444';
-                    e.target.style.backgroundColor = 'white';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
-                    e.target.style.backgroundColor = '#fef7f0';
-                  }}
+                  placeholder="Describe this dish..."
+                  onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                 />
               </div>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '16px', marginBottom: '16px' }}>
                 {/* Price */}
                 <div>
                   <label style={{
                     display: 'block',
                     fontSize: '14px',
-                    fontWeight: '600',
+                    fontWeight: '500',
                     color: '#374151',
-                    marginBottom: '8px'
+                    marginBottom: '6px'
                   }}>
-                    💰 Price (₹) *
+                    Price (₹) *
                   </label>
                   <input
                     type="number"
@@ -1639,22 +1723,16 @@ const MenuManagement = () => {
                     style={{
                       width: '100%',
                       padding: '12px 16px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '12px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
                       fontSize: '14px',
                       outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      transition: 'all 0.2s ease'
+                      backgroundColor: 'white',
+                      transition: 'border-color 0.2s ease'
                     }}
                     placeholder="0.00"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#ef4444';
-                      e.target.style.backgroundColor = 'white';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#e5e7eb';
-                      e.target.style.backgroundColor = '#fef7f0';
-                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                   />
                 </div>
                 
@@ -1663,11 +1741,11 @@ const MenuManagement = () => {
                   <label style={{
                     display: 'block',
                     fontSize: '14px',
-                    fontWeight: '600',
+                    fontWeight: '500',
                     color: '#374151',
-                    marginBottom: '8px'
+                    marginBottom: '6px'
                   }}>
-                    🏷️ Category *
+                    Category *
                   </label>
                   <input
                     type="text"
@@ -1677,149 +1755,85 @@ const MenuManagement = () => {
                     style={{
                       width: '100%',
                       padding: '12px 16px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '12px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
                       fontSize: '14px',
                       outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      transition: 'all 0.2s ease'
+                      backgroundColor: 'white',
+                      transition: 'border-color 0.2s ease'
                     }}
                     placeholder="e.g., appetizer, main-course"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#ef4444';
-                      e.target.style.backgroundColor = 'white';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#e5e7eb';
-                      e.target.style.backgroundColor = '#fef7f0';
-                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                   />
                 </div>
                 
                 {/* Spice Level */}
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#374151',
-                    marginBottom: '8px'
-                  }}>
-                    🌶️ Spice Level
-                  </label>
-                  <select
+                  <CustomDropdown
+                    label="Spice Level"
                     value={formData.spiceLevel}
-                    onChange={(e) => setFormData({...formData, spiceLevel: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '12px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <option value="mild">🌶️ Mild</option>
-                    <option value="medium">🌶️🌶️ Medium</option>
-                    <option value="hot">🌶️🌶️🌶️ Hot</option>
-                  </select>
+                    onChange={(value) => setFormData({...formData, spiceLevel: value})}
+                    options={[
+                      { value: 'mild', label: 'Mild' },
+                      { value: 'medium', label: 'Medium' },
+                      { value: 'hot', label: 'Hot' }
+                    ]}
+                    placeholder="Select spice level"
+                  />
                 </div>
               </div>
               
               {/* Food Type and Availability */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '32px' }}>
-                {/* Veg/Non-Veg */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                {/* Food Type */}
                 <div>
                   <label style={{
                     display: 'block',
                     fontSize: '14px',
-                    fontWeight: '600',
+                    fontWeight: '500',
                     color: '#374151',
-                    marginBottom: '12px'
+                    marginBottom: '6px'
                   }}>
-                    🥬 Food Type
+                    Food Type
                   </label>
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      cursor: 'pointer',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: formData.isVeg === true ? '3px solid #10b981' : '2px solid #e5e7eb',
-                      backgroundColor: formData.isVeg === true ? '#ecfdf5' : '#fef7f0',
-                      transition: 'all 0.3s ease',
-                      flex: 1
-                    }}>
-                      <input
-                        type="radio"
-                        checked={formData.isVeg === true}
-                        onChange={() => setFormData({...formData, isVeg: true})}
-                        style={{ display: 'none' }}
-                      />
-                      <div style={{
-                        width: '18px',
-                        height: '18px',
-                        border: '3px solid #10b981',
-                        borderRadius: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: 'white'
-                      }}>
-                        <div style={{
-                          width: '8px',
-                          height: '8px',
-                          backgroundColor: '#10b981',
-                          borderRadius: '2px'
-                        }} />
-                      </div>
-                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#10b981' }}>
-                        🥬 Veg
-                      </span>
-                    </label>
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      cursor: 'pointer',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: formData.isVeg === false ? '3px solid #ef4444' : '2px solid #e5e7eb',
-                      backgroundColor: formData.isVeg === false ? '#fef2f2' : '#fef7f0',
-                      transition: 'all 0.3s ease',
-                      flex: 1
-                    }}>
-                      <input
-                        type="radio"
-                        checked={formData.isVeg === false}
-                        onChange={() => setFormData({...formData, isVeg: false})}
-                        style={{ display: 'none' }}
-                      />
-                      <div style={{
-                        width: '18px',
-                        height: '18px',
-                        border: '3px solid #ef4444',
-                        borderRadius: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: 'white'
-                      }}>
-                        <div style={{
-                          width: '8px',
-                          height: '8px',
-                          backgroundColor: '#ef4444',
-                          borderRadius: '50%'
-                        }} />
-                      </div>
-                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#ef4444' }}>
-                        🍖 Non-Veg
-                      </span>
-                    </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, isVeg: true})}
+                      style={{
+                        flex: 1,
+                        padding: '10px 16px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        backgroundColor: formData.isVeg === true ? '#10b981' : 'white',
+                        color: formData.isVeg === true ? 'white' : '#6b7280',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      Veg
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, isVeg: false})}
+                      style={{
+                        flex: 1,
+                        padding: '10px 16px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        backgroundColor: formData.isVeg === false ? '#ef4444' : 'white',
+                        color: formData.isVeg === false ? 'white' : '#6b7280',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      Non-Veg
+                    </button>
                   </div>
                 </div>
 
@@ -1828,93 +1842,49 @@ const MenuManagement = () => {
                   <label style={{
                     display: 'block',
                     fontSize: '14px',
-                    fontWeight: '600',
+                    fontWeight: '500',
                     color: '#374151',
-                    marginBottom: '12px'
+                    marginBottom: '6px'
                   }}>
-                    📦 Availability
+                    Availability
                   </label>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      cursor: 'pointer',
-                      padding: '10px 14px',
-                      borderRadius: '10px',
-                      border: formData.isAvailable === true ? '2px solid #10b981' : '2px solid #e5e7eb',
-                      backgroundColor: formData.isAvailable === true ? '#ecfdf5' : '#fef7f0',
-                      transition: 'all 0.3s ease'
-                    }}>
-                      <input
-                        type="radio"
-                        checked={formData.isAvailable === true}
-                        onChange={() => setFormData({...formData, isAvailable: true})}
-                        style={{ display: 'none' }}
-                      />
-                      <div style={{
-                        width: '14px',
-                        height: '14px',
-                        border: '2px solid #10b981',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: 'white'
-                      }}>
-                        {formData.isAvailable === true && (
-                          <div style={{
-                            width: '6px',
-                            height: '6px',
-                            backgroundColor: '#10b981',
-                            borderRadius: '50%'
-                          }} />
-                        )}
-                      </div>
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#10b981' }}>
-                        ✅ Available
-                      </span>
-                    </label>
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      cursor: 'pointer',
-                      padding: '10px 14px',
-                      borderRadius: '10px',
-                      border: formData.isAvailable === false ? '2px solid #ef4444' : '2px solid #e5e7eb',
-                      backgroundColor: formData.isAvailable === false ? '#fef2f2' : '#fef7f0',
-                      transition: 'all 0.3s ease'
-                    }}>
-                      <input
-                        type="radio"
-                        checked={formData.isAvailable === false}
-                        onChange={() => setFormData({...formData, isAvailable: false})}
-                        style={{ display: 'none' }}
-                      />
-                      <div style={{
-                        width: '14px',
-                        height: '14px',
-                        border: '2px solid #ef4444',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: 'white'
-                      }}>
-                        {formData.isAvailable === false && (
-                          <div style={{
-                            width: '6px',
-                            height: '6px',
-                            backgroundColor: '#ef4444',
-                            borderRadius: '50%'
-                          }} />
-                        )}
-                      </div>
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#ef4444' }}>
-                        🚫 Out of Stock
-                      </span>
-                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, isAvailable: true})}
+                      style={{
+                        padding: '10px 16px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        backgroundColor: formData.isAvailable === true ? '#10b981' : 'white',
+                        color: formData.isAvailable === true ? 'white' : '#6b7280',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        textAlign: 'left'
+                      }}
+                    >
+                      Available
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, isAvailable: false})}
+                      style={{
+                        padding: '10px 16px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        backgroundColor: formData.isAvailable === false ? '#ef4444' : 'white',
+                        color: formData.isAvailable === false ? 'white' : '#6b7280',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        textAlign: 'left'
+                      }}
+                    >
+                      Out of Stock
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1922,32 +1892,24 @@ const MenuManagement = () => {
               {/* Actions */}
               <div style={{ 
                 display: 'flex', 
-                gap: '16px', 
-                paddingTop: '24px', 
-                borderTop: '1px solid #f3f4f6' 
+                gap: '12px', 
+                justifyContent: 'flex-end',
+                paddingTop: '16px',
+                borderTop: '1px solid #f3f4f6'
               }}>
                 <button
                   type="button"
                   onClick={resetForm}
                   style={{
-                    flex: 1,
-                    backgroundColor: '#6b7280',
-                    color: 'white',
-                    padding: '16px 24px',
-                    borderRadius: '16px',
-                    fontWeight: '600',
-                    fontSize: '16px',
-                    border: 'none',
+                    padding: '12px 24px',
+                    backgroundColor: '#f3f4f6',
+                    color: '#6b7280',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#4b5563';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#6b7280';
-                    e.currentTarget.style.transform = 'translateY(0)';
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   Cancel
@@ -1956,42 +1918,18 @@ const MenuManagement = () => {
                   type="submit"
                   disabled={processing}
                   style={{
-                    flex: 2,
-                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    padding: '12px 24px',
+                    backgroundColor: processing ? '#d1d5db' : '#3b82f6',
                     color: 'white',
-                    padding: '16px 24px',
-                    borderRadius: '16px',
-                    fontWeight: '600',
-                    fontSize: '16px',
+                    fontSize: '14px',
+                    fontWeight: '500',
                     border: 'none',
+                    borderRadius: '6px',
                     cursor: processing ? 'not-allowed' : 'pointer',
-                    opacity: processing ? 0.7 : 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '12px',
-                    boxShadow: '0 8px 24px rgba(239, 68, 68, 0.3)',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!processing) {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 12px 32px rgba(239, 68, 68, 0.4)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!processing) {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.3)';
-                    }
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  {processing ? (
-                    <FaSpinner style={{ animation: 'spin 1s linear infinite' }} />
-                  ) : (
-                    <FaSave size={16} />
-                  )}
-                  {processing ? 'Saving Dish...' : (editingItem ? 'Update Dish' : 'Add Delicious Dish')}
+                  {processing ? 'Processing...' : editingItem ? 'Update Dish' : 'Add Dish'}
                 </button>
               </div>
             </form>

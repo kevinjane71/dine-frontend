@@ -343,6 +343,50 @@ class ApiClient {
     
     return response;
   }
+
+  // KOT (Kitchen Order Ticket) endpoints
+  async getKotOrders(restaurantId, status = null) {
+    const query = status ? `?status=${status}` : '';
+    return this.request(`/api/kot/${restaurantId}${query}`);
+  }
+
+  async updateKotStatus(orderId, status, notes = null) {
+    return this.request(`/api/kot/${orderId}/status`, {
+      method: 'PATCH',
+      body: { status, ...(notes && { notes }) },
+    });
+  }
+
+  async getKotDetails(restaurantId, orderId) {
+    return this.request(`/api/kot/${restaurantId}/${orderId}`);
+  }
+
+  async startCooking(orderId) {
+    return this.request(`/api/kot/${orderId}/status`, {
+      method: 'PATCH',
+      body: { 
+        status: 'preparing',
+        cookingStartTime: new Date().toISOString()
+      },
+    });
+  }
+
+  async markReady(orderId) {
+    return this.request(`/api/kot/${orderId}/status`, {
+      method: 'PATCH',
+      body: { 
+        status: 'ready',
+        cookingEndTime: new Date().toISOString()
+      },
+    });
+  }
+
+  async markServed(orderId) {
+    return this.request(`/api/kot/${orderId}/status`, {
+      method: 'PATCH',
+      body: { status: 'served' },
+    });
+  }
 }
 
 const apiClient = new ApiClient();
