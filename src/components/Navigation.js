@@ -244,7 +244,7 @@ function NavigationContent() {
           
           {/* Desktop Navigation */}
           {!isMobile && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden', flexShrink: 1, minWidth: 0 }}>
               {navItems.map((item) => {
                 const IconComponent = item.icon;
                 const isActive = pathname === item.href;

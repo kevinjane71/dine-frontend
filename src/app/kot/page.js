@@ -448,44 +448,45 @@ const KitchenOrderTicket = () => {
         {/* Header */}
         <div style={{
           backgroundColor: 'white',
-          padding: isClient && isMobile ? '16px' : '20px 24px',
+          padding: isClient && isMobile ? '12px 16px' : '20px 24px',
           borderBottom: '1px solid #fed7aa',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          overflow: 'hidden'
         }}>
           {isClient && isMobile ? (
             // Mobile Header Layout
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
                   <div style={{ 
-                    width: '40px', 
-                    height: '40px', 
+                    width: '32px', 
+                    height: '32px', 
                     background: 'linear-gradient(135deg, #f97316, #ea580c)', 
-                    borderRadius: '12px', 
+                    borderRadius: '8px', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)'
+                    flexShrink: 0
                   }}>
-                    <FaUtensils color="white" size={18} />
+                    <FaUtensils color="white" size={14} />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h1 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       Kitchen Display
                     </h1>
-                    <p style={{ color: '#6b7280', margin: 0, fontSize: '12px' }}>
-                      {filteredOrders.length} orders • {currentRestaurant?.name || 'Restaurant'}
+                    <p style={{ color: '#6b7280', margin: 0, fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {filteredOrders.length} orders{currentRestaurant?.name && ` • ${currentRestaurant.name}`}
                       {refreshing && <span style={{ color: '#f97316' }}> • Syncing...</span>}
                     </p>
                   </div>
                 </div>
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                   <button
                     onClick={() => setSoundEnabled(!soundEnabled)}
                     style={{
-                      padding: '8px',
-                      borderRadius: '8px',
+                      padding: '6px',
+                      borderRadius: '6px',
                       border: 'none',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
@@ -493,27 +494,27 @@ const KitchenOrderTicket = () => {
                       color: soundEnabled ? '#166534' : '#6b7280'
                     }}
                   >
-                    <FaBell size={14} />
+                    <FaBell size={12} />
                   </button>
                   <button
                     onClick={() => setShowMobileFilters(!showMobileFilters)}
                     style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
+                      padding: '6px 8px',
+                      borderRadius: '6px',
                       border: '1px solid #fed7aa',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
                       backgroundColor: showMobileFilters ? '#f97316' : 'white',
                       color: showMobileFilters ? 'white' : '#f97316',
-                      fontSize: '12px',
+                      fontSize: '10px',
                       fontWeight: '600',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '3px'
                     }}
                   >
-                    <FaFilter size={12} />
-                    Status
+                    <FaFilter size={10} />
+                    Filter
                   </button>
                 </div>
               </div>
@@ -521,10 +522,11 @@ const KitchenOrderTicket = () => {
               {/* Mobile Status Quick View */}
               <div style={{ 
                 display: 'flex', 
-                gap: '8px',
+                gap: '6px',
                 overflowX: 'auto',
-                paddingBottom: '4px',
-                scrollBehavior: 'smooth'
+                paddingBottom: '2px',
+                scrollBehavior: 'smooth',
+                marginTop: '8px'
               }}>
                 {[
                   { key: 'all', label: 'All', count: kotOrders.length },
@@ -536,10 +538,10 @@ const KitchenOrderTicket = () => {
                     key={status.key}
                     onClick={() => setSelectedStatus(status.key)}
                     style={{
-                      padding: '6px 12px',
-                      borderRadius: '20px',
+                      padding: '4px 8px',
+                      borderRadius: '16px',
                       fontWeight: '600',
-                      fontSize: '11px',
+                      fontSize: '10px',
                       border: selectedStatus === status.key ? 'none' : '1px solid #fed7aa',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
@@ -547,7 +549,7 @@ const KitchenOrderTicket = () => {
                       color: selectedStatus === status.key ? 'white' : '#f97316',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px',
+                      gap: '3px',
                       whiteSpace: 'nowrap',
                       minWidth: 'fit-content'
                     }}
@@ -557,11 +559,11 @@ const KitchenOrderTicket = () => {
                       <span style={{
                         backgroundColor: selectedStatus === status.key ? 'rgba(255,255,255,0.3)' : '#fed7aa',
                         color: selectedStatus === status.key ? 'white' : '#c2410c',
-                        padding: '1px 4px',
-                        borderRadius: '8px',
-                        fontSize: '10px',
+                        padding: '1px 3px',
+                        borderRadius: '6px',
+                        fontSize: '8px',
                         fontWeight: 'bold',
-                        minWidth: '16px',
+                        minWidth: '14px',
                         textAlign: 'center'
                       }}>
                         {status.count}
@@ -1078,28 +1080,28 @@ const KitchenOrderTicket = () => {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '80px 20px',
+              padding: isClient && isMobile ? '40px 20px' : '80px 20px',
               backgroundColor: 'white',
-              borderRadius: '20px',
+              borderRadius: isClient && isMobile ? '16px' : '20px',
               border: '1px solid #fed7aa'
             }}>
               <div style={{
-                width: '80px',
-                height: '80px',
+                width: isClient && isMobile ? '60px' : '80px',
+                height: isClient && isMobile ? '60px' : '80px',
                 backgroundColor: '#fef7f0',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: '16px'
+                marginBottom: isClient && isMobile ? '12px' : '16px'
               }}>
-                <FaUtensils size={32} style={{ color: '#d1d5db' }} />
+                <FaUtensils size={isClient && isMobile ? 24 : 32} style={{ color: '#d1d5db' }} />
               </div>
               <h3 style={{
-                fontSize: '20px',
+                fontSize: isClient && isMobile ? '16px' : '20px',
                 fontWeight: '600',
                 color: '#374151',
-                margin: '0 0 8px 0'
+                margin: '0 0 6px 0'
               }}>
                 No orders in kitchen
               </h3>
@@ -1108,7 +1110,7 @@ const KitchenOrderTicket = () => {
                 margin: 0,
                 textAlign: 'center',
                 maxWidth: '400px',
-                fontSize: '14px'
+                fontSize: isClient && isMobile ? '12px' : '14px'
               }}>
                 {selectedStatus === 'all' 
                   ? 'Kitchen orders will appear here when customers place orders.'
