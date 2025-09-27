@@ -65,6 +65,21 @@ const Admin = () => {
   const [newCustomRole, setNewCustomRole] = useState('');
   const [currentUserRole, setCurrentUserRole] = useState('owner');
   const [copiedCredentials, setCopiedCredentials] = useState({});
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Client-side hydration and mobile detection
+  useEffect(() => {
+    setIsClient(true);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Check authorization
   useEffect(() => {
@@ -573,42 +588,140 @@ const Admin = () => {
     <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
       <Navigation />
       
-      <div style={{ padding: '24px' }}>
+      <div style={{ padding: isClient && isMobile ? '16px' : '24px' }}>
         {/* Header */}
         <div style={{ 
           backgroundColor: 'white', 
-          padding: '24px', 
+          padding: isClient && isMobile ? '16px' : '24px', 
           borderRadius: '16px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-          marginBottom: '24px',
+          marginBottom: isClient && isMobile ? '16px' : '24px',
           border: '1px solid #fce7f3'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ 
-                width: '56px', 
-                height: '56px', 
-                background: 'linear-gradient(135deg, #ec4899, #db2777)', 
-                borderRadius: '16px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(236, 72, 153, 0.3)'
-              }}>
-                <FaShieldAlt color="white" size={24} />
+          {isClient && isMobile ? (
+            // Mobile Header Layout
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  background: 'linear-gradient(135deg, #ec4899, #db2777)', 
+                  borderRadius: '12px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(236, 72, 153, 0.3)'
+                }}>
+                  <FaShieldAlt color="white" size={18} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>
+                    Admin Dashboard
+                  </h1>
+                  <p style={{ color: '#6b7280', margin: 0, fontSize: '12px' }}>
+                    {restaurants.length} restaurants • {staff.length} staff
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
-                  Admin Dashboard
-                </h1>
-                <p style={{ color: '#6b7280', margin: 0, fontSize: '14px' }}>
-                  Manage restaurants and staff • {restaurants.length} restaurants • {staff.length} staff members
-                </p>
+              
+              {/* Mobile Tab Navigation */}
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  onClick={() => setActiveTab('restaurants')}
+                  style={{
+                    flex: 1,
+                    backgroundColor: activeTab === 'restaurants' ? '#ec4899' : 'transparent',
+                    color: activeTab === 'restaurants' ? 'white' : '#6b7280',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    border: activeTab === 'restaurants' ? 'none' : '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <FaStore size={10} />
+                  Restaurants
+                </button>
+                <button
+                  onClick={() => setActiveTab('staff')}
+                  style={{
+                    flex: 1,
+                    backgroundColor: activeTab === 'staff' ? '#ec4899' : 'transparent',
+                    color: activeTab === 'staff' ? 'white' : '#6b7280',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    border: activeTab === 'staff' ? 'none' : '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <FaUsers size={10} />
+                  Staff
+                </button>
+                <button
+                  onClick={() => setActiveTab('menu')}
+                  style={{
+                    flex: 1,
+                    backgroundColor: activeTab === 'menu' ? '#ec4899' : 'transparent',
+                    color: activeTab === 'menu' ? 'white' : '#6b7280',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    border: activeTab === 'menu' ? 'none' : '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <FaUtensils size={10} />
+                  Menu
+                </button>
               </div>
             </div>
-            
-            {/* Tab Navigation */}
-            <div style={{ display: 'flex', gap: '8px' }}>
+          ) : (
+            // Desktop Header Layout
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ 
+                  width: '56px', 
+                  height: '56px', 
+                  background: 'linear-gradient(135deg, #ec4899, #db2777)', 
+                  borderRadius: '16px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(236, 72, 153, 0.3)'
+                }}>
+                  <FaShieldAlt color="white" size={24} />
+                </div>
+                <div>
+                  <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
+                    Admin Dashboard
+                  </h1>
+                  <p style={{ color: '#6b7280', margin: 0, fontSize: '14px' }}>
+                    Manage restaurants and staff • {restaurants.length} restaurants • {staff.length} staff members
+                  </p>
+                </div>
+              </div>
+              
+              {/* Desktop Tab Navigation */}
+              <div style={{ display: 'flex', gap: '8px' }}>
               <button
                 onClick={() => setActiveTab('restaurants')}
                 style={{
@@ -670,7 +783,8 @@ const Admin = () => {
                 Menu
               </button>
             </div>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Action Bar */}
@@ -678,22 +792,29 @@ const Admin = () => {
           backgroundColor: 'white',
           borderRadius: '16px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          padding: '20px',
-          marginBottom: '24px',
+          padding: isClient && isMobile ? '16px' : '20px',
+          marginBottom: isClient && isMobile ? '16px' : '24px',
           border: '1px solid #fce7f3',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          flexDirection: isClient && isMobile ? 'column' : 'row',
+          gap: isClient && isMobile ? '12px' : '0'
         }}>
           {/* Search Bar */}
-          <div style={{ position: 'relative', maxWidth: '400px', flex: 1 }}>
+          <div style={{ 
+            position: 'relative', 
+            maxWidth: isClient && isMobile ? '100%' : '400px', 
+            flex: 1,
+            width: isClient && isMobile ? '100%' : 'auto'
+          }}>
             <FaSearch style={{
               position: 'absolute',
               left: '12px',
               top: '50%',
               transform: 'translateY(-50%)',
               color: '#9ca3af',
-              fontSize: '14px'
+              fontSize: isClient && isMobile ? '12px' : '14px'
             }} />
             <input
               type="text"
@@ -702,13 +823,13 @@ const Admin = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 width: '100%',
-                paddingLeft: '40px',
-                paddingRight: '16px',
-                paddingTop: '12px',
-                paddingBottom: '12px',
+                paddingLeft: isClient && isMobile ? '36px' : '40px',
+                paddingRight: isClient && isMobile ? '12px' : '16px',
+                paddingTop: isClient && isMobile ? '10px' : '12px',
+                paddingBottom: isClient && isMobile ? '10px' : '12px',
                 border: '2px solid #e5e7eb',
                 borderRadius: '12px',
-                fontSize: '14px',
+                fontSize: isClient && isMobile ? '13px' : '14px',
                 outline: 'none',
                 backgroundColor: '#fef7f0',
                 transition: 'all 0.2s'
@@ -723,18 +844,20 @@ const Admin = () => {
               style={{
                 background: 'linear-gradient(135deg, #ec4899, #db2777)',
                 color: 'white',
-                padding: '12px 20px',
+                padding: isClient && isMobile ? '10px 16px' : '12px 20px',
                 borderRadius: '12px',
                 fontWeight: '600',
-                fontSize: '14px',
+                fontSize: isClient && isMobile ? '13px' : '14px',
                 border: 'none',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 display: 'flex',
+                width: isClient && isMobile ? '100%' : 'auto',
+                justifyContent: 'center',
                 alignItems: 'center',
                 gap: '8px',
                 boxShadow: '0 4px 12px rgba(236, 72, 153, 0.3)',
-                marginLeft: '16px'
+                marginLeft: isClient && isMobile ? '0' : '16px'
               }}
             >
               <FaPlus size={14} />
@@ -817,8 +940,8 @@ const Admin = () => {
           // Restaurants Grid
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-            gap: '20px'
+            gridTemplateColumns: isClient && isMobile ? '1fr' : 'repeat(auto-fill, minmax(380px, 1fr))',
+            gap: isClient && isMobile ? '16px' : '20px'
           }}>
             {filteredRestaurants.map((restaurant) => (
               <div key={restaurant.id} style={{
@@ -987,8 +1110,8 @@ const Admin = () => {
           // Staff Grid
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-            gap: '20px'
+            gridTemplateColumns: isClient && isMobile ? '1fr' : 'repeat(auto-fill, minmax(380px, 1fr))',
+            gap: isClient && isMobile ? '16px' : '20px'
           }}>
             {filteredStaff.map((member) => {
               const roleInfo = getRoleInfo(member.role);
@@ -1007,15 +1130,19 @@ const Admin = () => {
                   cursor: 'pointer'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
+                  if (!isClient || !isMobile) {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+                  if (!isClient || !isMobile) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+                  }
                 }}>
                   {/* Staff Header */}
-                  <div style={{ padding: '20px', borderBottom: '1px solid #f3f4f6' }}>
+                  <div style={{ padding: isClient && isMobile ? '16px' : '20px', borderBottom: '1px solid #f3f4f6' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{
@@ -1030,11 +1157,11 @@ const Admin = () => {
                           <RoleIcon color="white" size={20} />
                         </div>
                         <div>
-                          <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{member.name || 'Unknown'}</h3>
-                          <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>{member.phone || member.email || 'No contact'}</p>
+                          <h3 style={{ fontSize: isClient && isMobile ? '16px' : '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{member.name || 'Unknown'}</h3>
+                          <p style={{ fontSize: isClient && isMobile ? '12px' : '13px', color: '#6b7280', margin: 0 }}>{member.phone || member.email || 'No contact'}</p>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', gap: '6px' }}>
+                      <div style={{ display: 'flex', gap: isClient && isMobile ? '4px' : '6px', flexWrap: 'wrap' }}>
                         <div style={{
                           padding: '4px 12px',
                           borderRadius: '20px',
@@ -1070,14 +1197,14 @@ const Admin = () => {
                   </div>
                   
                   {/* Staff Details */}
-                  <div style={{ padding: '20px' }}>
+                  <div style={{ padding: isClient && isMobile ? '16px' : '20px' }}>
                     {/* Login Credentials Section */}
                     {(member.loginId || member.tempPassword) && (
                       <div style={{ 
                         backgroundColor: '#f0f9ff', 
-                        padding: '16px', 
+                        padding: isClient && isMobile ? '12px' : '16px', 
                         borderRadius: '12px',
-                        marginBottom: '16px',
+                        marginBottom: isClient && isMobile ? '12px' : '16px',
                         border: '1px solid #0ea5e9'
                       }}>
                         <h4 style={{ 
@@ -1203,7 +1330,7 @@ const Admin = () => {
                       </div>
                     )}
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isClient && isMobile ? '1fr' : '1fr 1fr', gap: isClient && isMobile ? '12px' : '16px', marginBottom: isClient && isMobile ? '12px' : '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaCalendarAlt style={{ color: '#9ca3af', fontSize: '12px' }} />
                         <div>
@@ -1231,9 +1358,9 @@ const Admin = () => {
                       return (
                         <div style={{ 
                           backgroundColor: '#f8fafc', 
-                          padding: '12px', 
+                          padding: isClient && isMobile ? '10px' : '12px', 
                           borderRadius: '10px',
-                          marginBottom: '16px',
+                          marginBottom: isClient && isMobile ? '12px' : '16px',
                           border: '1px solid #e2e8f0'
                         }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1258,33 +1385,34 @@ const Admin = () => {
                   
                   {/* Actions */}
                   <div style={{ 
-                    padding: '16px 20px', 
+                    padding: isClient && isMobile ? '12px 16px' : '16px 20px', 
                     backgroundColor: '#fef7f0', 
                     display: 'flex', 
-                    gap: '8px',
-                    borderTop: '1px solid #fce7f3'
+                    gap: isClient && isMobile ? '6px' : '8px',
+                    borderTop: '1px solid #fce7f3',
+                    flexWrap: isClient && isMobile ? 'wrap' : 'nowrap'
                   }}>
                     {/* View button - available to everyone */}
                     <button
                       onClick={() => setSelectedStaff(member)}
                       style={{
-                        flex: canManageStaff(member.role) ? 1 : 2,
+                        flex: isClient && isMobile ? '1 1 100%' : (canManageStaff(member.role) ? 1 : 2),
                         backgroundColor: '#3b82f6',
                         color: 'white',
-                        padding: '10px 16px',
+                        padding: isClient && isMobile ? '8px 12px' : '10px 16px',
                         borderRadius: '10px',
                         fontWeight: '600',
-                        fontSize: '13px',
+                        fontSize: isClient && isMobile ? '12px' : '13px',
                         border: 'none',
                         cursor: 'pointer',
                         transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '6px'
+                        gap: isClient && isMobile ? '4px' : '6px'
                       }}
                     >
-                      <FaEye size={12} />
+                      <FaEye size={isClient && isMobile ? 10 : 12} />
                       View Details
                     </button>
                     
@@ -1293,23 +1421,23 @@ const Admin = () => {
                       <button
                         onClick={() => toggleStaffStatus(member.id)}
                         style={{
-                          flex: 1,
+                          flex: isClient && isMobile ? '1 1 45%' : 1,
                           backgroundColor: member.status === 'active' ? '#ef4444' : '#10b981',
                           color: 'white',
-                          padding: '10px 16px',
+                          padding: isClient && isMobile ? '8px 12px' : '10px 16px',
                           borderRadius: '10px',
                           fontWeight: '600',
-                          fontSize: '13px',
+                          fontSize: isClient && isMobile ? '12px' : '13px',
                           border: 'none',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '6px'
+                          gap: isClient && isMobile ? '4px' : '6px'
                         }}
                       >
-                        {member.status === 'active' ? <FaUserTimes size={12} /> : <FaUserCheck size={12} />}
+                        {member.status === 'active' ? <FaUserTimes size={isClient && isMobile ? 10 : 12} /> : <FaUserCheck size={isClient && isMobile ? 10 : 12} />}
                         {member.status === 'active' ? 'Deactivate' : 'Activate'}
                       </button>
                     )}
@@ -1318,20 +1446,20 @@ const Admin = () => {
                     {(currentUserRole === 'owner' || currentUserRole === 'admin') && canManageStaff(member.role) && (
                       <button
                         style={{
-                          flex: 1,
+                          flex: isClient && isMobile ? '1 1 45%' : 1,
                           backgroundColor: '#f59e0b',
                           color: 'white',
-                          padding: '10px 16px',
+                          padding: isClient && isMobile ? '8px 12px' : '10px 16px',
                           borderRadius: '10px',
                           fontWeight: '600',
-                          fontSize: '13px',
+                          fontSize: isClient && isMobile ? '12px' : '13px',
                           border: 'none',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '6px'
+                          gap: isClient && isMobile ? '4px' : '6px'
                         }}
                       >
                         <FaEdit size={12} />
@@ -2365,6 +2493,28 @@ const Admin = () => {
           </div>
         </div>
       )}
+      
+      <style jsx>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideUp {
+          from { 
+            transform: translateY(100%);
+          }
+          to { 
+            transform: translateY(0);
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .mobile-modal {
+            transform: translateY(0) !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

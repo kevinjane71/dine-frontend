@@ -1751,7 +1751,6 @@ function RestaurantPOSContent() {
               )}
             </div>
 
-            {/* Mobile Cart Footer */}
             {cart.length > 0 && (
               <div style={{ borderTop: '1px solid #e5e7eb', backgroundColor: '#f9fafb', padding: '20px' }}>
                 <div style={{ 

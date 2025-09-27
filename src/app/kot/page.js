@@ -24,7 +24,8 @@ import {
   FaTruck,
   FaShoppingBag,
   FaSpinner,
-  FaTable
+  FaTable,
+  FaFilter
 } from 'react-icons/fa';
 import { GiChefToque } from "react-icons/gi";
 import apiClient from '../../lib/api';
@@ -40,6 +41,9 @@ const KitchenOrderTicket = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [currentRestaurant, setCurrentRestaurant] = useState(null);
   const [timers, setTimers] = useState({}); // For cooking timers
+  const [isMobile, setIsMobile] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Load restaurant and KOT data
   const loadKotData = useCallback(async (showSpinner = true) => {
@@ -77,6 +81,17 @@ const KitchenOrderTicket = () => {
       setLoading(false);
       setRefreshing(false);
     }
+  }, []);
+
+  // Mobile detection with client-side hydration safety
+  useEffect(() => {
+    setIsClient(true);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Initial load and auto-refresh setup
@@ -360,13 +375,16 @@ const KitchenOrderTicket = () => {
           height: 'calc(100vh - 80px)' 
         }}>
           <div style={{ textAlign: 'center' }}>
-            <FaSpinner style={{ 
-              fontSize: '48px', 
-              color: '#f97316', 
+            <div style={{
+              width: '48px',
+              height: '48px',
+              border: '4px solid #fed7aa',
+              borderTop: '4px solid #f97316',
+              borderRadius: '50%',
               animation: 'spin 1s linear infinite',
-              marginBottom: '16px'
+              margin: '0 auto 16px auto'
             }} />
-            <p style={{ fontSize: '18px', color: '#6b7280' }}>Loading kitchen orders...</p>
+            <p style={{ fontSize: '18px', color: '#6b7280', fontWeight: '600' }}>Loading kitchen orders...</p>
           </div>
         </div>
       </div>
@@ -430,78 +448,121 @@ const KitchenOrderTicket = () => {
         {/* Header */}
         <div style={{
           backgroundColor: 'white',
-          padding: '20px 24px',
+          padding: isClient && isMobile ? '16px' : '20px 24px',
           borderBottom: '1px solid #fed7aa',
           boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ 
-                  width: '56px', 
-                  height: '56px', 
-                  background: 'linear-gradient(135deg, #f97316, #ea580c)', 
-                  borderRadius: '16px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)'
-                }}>
-                  <FaUtensils color="white" size={24} />
+          {isClient && isMobile ? (
+            // Mobile Header Layout
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ 
+                    width: '40px', 
+                    height: '40px', 
+                    background: 'linear-gradient(135deg, #f97316, #ea580c)', 
+                    borderRadius: '12px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)'
+                  }}>
+                    <FaUtensils color="white" size={18} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>
+                      Kitchen Display
+                    </h1>
+                    <p style={{ color: '#6b7280', margin: 0, fontSize: '12px' }}>
+                      {filteredOrders.length} orders • {currentRestaurant?.name || 'Restaurant'}
+                      {refreshing && <span style={{ color: '#f97316' }}> • Syncing...</span>}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
-                    Kitchen Display
-                  </h1>
-                  <p style={{ color: '#6b7280', margin: 0, fontSize: '14px' }}>
-                    {currentRestaurant?.name || 'Restaurant'} • {filteredOrders.length} orders in queue
-                    {refreshing && <span style={{ color: '#f97316' }}> • Refreshing...</span>}
-                  </p>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    onClick={() => setSoundEnabled(!soundEnabled)}
+                    style={{
+                      padding: '8px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      backgroundColor: soundEnabled ? '#dcfce7' : '#f3f4f6',
+                      color: soundEnabled ? '#166534' : '#6b7280'
+                    }}
+                  >
+                    <FaBell size={14} />
+                  </button>
+                  <button
+                    onClick={() => setShowMobileFilters(!showMobileFilters)}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #fed7aa',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      backgroundColor: showMobileFilters ? '#f97316' : 'white',
+                      color: showMobileFilters ? 'white' : '#f97316',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <FaFilter size={12} />
+                    Status
+                  </button>
                 </div>
               </div>
               
-              {/* Status Filter Tabs */}
+              {/* Mobile Status Quick View */}
               <div style={{ 
                 display: 'flex', 
-                backgroundColor: '#fef7f0', 
-                borderRadius: '16px', 
-                padding: '4px',
-                border: '1px solid #fed7aa'
+                gap: '8px',
+                overflowX: 'auto',
+                paddingBottom: '4px',
+                scrollBehavior: 'smooth'
               }}>
                 {[
-                  { key: 'all', label: 'All Orders', count: kotOrders.length },
-                  { key: 'confirmed', label: 'Confirmed', count: kotOrders.filter(o => o.status === 'confirmed').length },
-                  { key: 'preparing', label: 'Preparing', count: kotOrders.filter(o => o.status === 'preparing').length },
+                  { key: 'all', label: 'All', count: kotOrders.length },
+                  { key: 'confirmed', label: 'New', count: kotOrders.filter(o => o.status === 'confirmed').length },
+                  { key: 'preparing', label: 'Cooking', count: kotOrders.filter(o => o.status === 'preparing').length },
                   { key: 'ready', label: 'Ready', count: kotOrders.filter(o => o.status === 'ready').length }
                 ].map((status) => (
                   <button
                     key={status.key}
                     onClick={() => setSelectedStatus(status.key)}
                     style={{
-                      padding: '8px 16px',
-                      borderRadius: '12px',
+                      padding: '6px 12px',
+                      borderRadius: '20px',
                       fontWeight: '600',
-                      fontSize: '13px',
-                      border: 'none',
+                      fontSize: '11px',
+                      border: selectedStatus === status.key ? 'none' : '1px solid #fed7aa',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
-                      backgroundColor: selectedStatus === status.key ? 'white' : 'transparent',
-                      color: selectedStatus === status.key ? '#f97316' : '#6b7280',
-                      boxShadow: selectedStatus === status.key ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
+                      backgroundColor: selectedStatus === status.key ? '#f97316' : 'white',
+                      color: selectedStatus === status.key ? 'white' : '#f97316',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '6px'
+                      gap: '4px',
+                      whiteSpace: 'nowrap',
+                      minWidth: 'fit-content'
                     }}
                   >
                     {status.label}
                     {status.count > 0 && (
                       <span style={{
-                        backgroundColor: selectedStatus === status.key ? '#fed7aa' : '#e5e7eb',
-                        color: selectedStatus === status.key ? '#c2410c' : '#6b7280',
-                        padding: '2px 6px',
-                        borderRadius: '10px',
-                        fontSize: '11px',
-                        fontWeight: 'bold'
+                        backgroundColor: selectedStatus === status.key ? 'rgba(255,255,255,0.3)' : '#fed7aa',
+                        color: selectedStatus === status.key ? 'white' : '#c2410c',
+                        padding: '1px 4px',
+                        borderRadius: '8px',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        minWidth: '16px',
+                        textAlign: 'center'
                       }}>
                         {status.count}
                       </span>
@@ -510,41 +571,122 @@ const KitchenOrderTicket = () => {
                 ))}
               </div>
             </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <button
-                onClick={() => setSoundEnabled(!soundEnabled)}
-                style={{
-                  padding: '10px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  backgroundColor: soundEnabled ? '#dcfce7' : '#f3f4f6',
-                  color: soundEnabled ? '#166534' : '#6b7280'
-                }}
-              >
-                <FaBell size={16} />
-              </button>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
-                  Kitchen Orders
-                </p>
-                <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
-                  Live • {new Date().toLocaleTimeString('en-IN', { hour12: true })}
-                </p>
+          ) : (
+            // Desktop Header Layout
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ 
+                    width: '56px', 
+                    height: '56px', 
+                    background: 'linear-gradient(135deg, #f97316, #ea580c)', 
+                    borderRadius: '16px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)'
+                  }}>
+                    <FaUtensils color="white" size={24} />
+                  </div>
+                  <div>
+                    <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
+                      Kitchen Display
+                    </h1>
+                    <p style={{ color: '#6b7280', margin: 0, fontSize: '14px' }}>
+                      {currentRestaurant?.name || 'Restaurant'} • {filteredOrders.length} orders in queue
+                      {refreshing && <span style={{ color: '#f97316' }}> • Refreshing...</span>}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Desktop Status Filter Tabs */}
+                <div style={{ 
+                  display: 'flex', 
+                  backgroundColor: '#fef7f0', 
+                  borderRadius: '16px', 
+                  padding: '4px',
+                  border: '1px solid #fed7aa'
+                }}>
+                  {[
+                    { key: 'all', label: 'All Orders', count: kotOrders.length },
+                    { key: 'confirmed', label: 'Confirmed', count: kotOrders.filter(o => o.status === 'confirmed').length },
+                    { key: 'preparing', label: 'Preparing', count: kotOrders.filter(o => o.status === 'preparing').length },
+                    { key: 'ready', label: 'Ready', count: kotOrders.filter(o => o.status === 'ready').length }
+                  ].map((status) => (
+                    <button
+                      key={status.key}
+                      onClick={() => setSelectedStatus(status.key)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '12px',
+                        fontWeight: '600',
+                        fontSize: '13px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        backgroundColor: selectedStatus === status.key ? 'white' : 'transparent',
+                        color: selectedStatus === status.key ? '#f97316' : '#6b7280',
+                        boxShadow: selectedStatus === status.key ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      {status.label}
+                      {status.count > 0 && (
+                        <span style={{
+                          backgroundColor: selectedStatus === status.key ? '#fed7aa' : '#e5e7eb',
+                          color: selectedStatus === status.key ? '#c2410c' : '#6b7280',
+                          padding: '2px 6px',
+                          borderRadius: '10px',
+                          fontSize: '11px',
+                          fontWeight: 'bold'
+                        }}>
+                          {status.count}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <button
+                  onClick={() => setSoundEnabled(!soundEnabled)}
+                  style={{
+                    padding: '10px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    backgroundColor: soundEnabled ? '#dcfce7' : '#f3f4f6',
+                    color: soundEnabled ? '#166534' : '#6b7280'
+                  }}
+                >
+                  <FaBell size={16} />
+                </button>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                    Kitchen Orders
+                  </p>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                    Live • {new Date().toLocaleTimeString('en-IN', { hour12: true })}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* KOT Grid */}
-        <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
+        <div style={{ flex: 1, padding: isClient && isMobile ? '16px' : '24px', overflowY: 'auto' }}>
           {filteredOrders.length > 0 ? (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
-              gap: '20px'
+              gridTemplateColumns: isClient && isMobile 
+                ? '1fr' 
+                : 'repeat(auto-fill, minmax(400px, 1fr))',
+              gap: isClient && isMobile ? '16px' : '20px'
             }}>
               {filteredOrders.map((kot) => {
                 const timeElapsed = getTimeElapsed(kot.kotTime);
@@ -583,14 +725,26 @@ const KitchenOrderTicket = () => {
                     }}
                   >
                     {/* KOT Header */}
-                    <div style={{ padding: '20px', borderBottom: '1px solid #f3f4f6' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ padding: isClient && isMobile ? '16px' : '20px', borderBottom: '1px solid #f3f4f6' }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between', 
+                        marginBottom: isClient && isMobile ? '8px' : '12px',
+                        flexWrap: isClient && isMobile ? 'wrap' : 'nowrap',
+                        gap: isClient && isMobile ? '8px' : '0'
+                      }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{kot.id}</h3>
+                          <h3 style={{ 
+                            fontSize: isClient && isMobile ? '18px' : '20px', 
+                            fontWeight: 'bold', 
+                            color: '#1f2937', 
+                            margin: 0 
+                          }}>{kot.id}</h3>
                           <div style={{
-                            padding: '4px 12px',
+                            padding: isClient && isMobile ? '3px 8px' : '4px 12px',
                             borderRadius: '20px',
-                            fontSize: '11px',
+                            fontSize: isClient && isMobile ? '10px' : '11px',
                             fontWeight: '700',
                             backgroundColor: priorityInfo.bg,
                             color: priorityInfo.text,
@@ -600,9 +754,9 @@ const KitchenOrderTicket = () => {
                           </div>
                         </div>
                         <div style={{
-                          padding: '6px 12px',
+                          padding: isClient && isMobile ? '4px 8px' : '6px 12px',
                           borderRadius: '20px',
-                          fontSize: '11px',
+                          fontSize: isClient && isMobile ? '10px' : '11px',
                           fontWeight: '600',
                           backgroundColor: statusInfo.bg,
                           color: statusInfo.text,
@@ -611,12 +765,17 @@ const KitchenOrderTicket = () => {
                           alignItems: 'center',
                           gap: '4px'
                         }}>
-                          <StatusIcon size={10} />
+                          <StatusIcon size={isClient && isMobile ? 8 : 10} />
                           {statusInfo.label}
                         </div>
                       </div>
                       
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '14px' }}>
+                      <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: isClient && isMobile ? '1fr' : '1fr 1fr', 
+                        gap: isClient && isMobile ? '8px' : '16px', 
+                        fontSize: isClient && isMobile ? '13px' : '14px' 
+                      }}>
                         <div>
                           <div style={{ marginBottom: '4px' }}>
                             <span style={{ color: '#6b7280' }}>Order:</span>
@@ -685,8 +844,13 @@ const KitchenOrderTicket = () => {
                     </div>
                     
                     {/* Items List */}
-                    <div style={{ padding: '20px' }}>
-                      <h4 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '16px', fontSize: '15px' }}>
+                    <div style={{ padding: isClient && isMobile ? '16px' : '20px' }}>
+                      <h4 style={{ 
+                        fontWeight: '600', 
+                        color: '#1f2937', 
+                        marginBottom: isClient && isMobile ? '12px' : '16px', 
+                        fontSize: isClient && isMobile ? '14px' : '15px' 
+                      }}>
                         Items ({kot.items.length})
                       </h4>
                       <div style={{ marginBottom: '16px' }}>
@@ -760,22 +924,23 @@ const KitchenOrderTicket = () => {
                     
                     {/* Actions */}
                     <div style={{ 
-                      padding: '16px 20px', 
+                      padding: isClient && isMobile ? '12px 16px' : '16px 20px', 
                       backgroundColor: '#fef7f0', 
                       borderTop: '1px solid #fed7aa',
                       display: 'flex',
-                      gap: '8px'
+                      gap: isClient && isMobile ? '6px' : '8px',
+                      flexWrap: isClient && isMobile ? 'wrap' : 'nowrap'
                     }}>
                       <button
                         onClick={() => setSelectedKot(kot)}
                         style={{
-                          flex: 1,
+                          flex: isClient && isMobile ? '1 1 100%' : 1,
                           backgroundColor: '#3b82f6',
                           color: 'white',
-                          padding: '10px 16px',
+                          padding: isClient && isMobile ? '8px 12px' : '10px 16px',
                           borderRadius: '10px',
                           fontWeight: '600',
-                          fontSize: '13px',
+                          fontSize: isClient && isMobile ? '12px' : '13px',
                           border: 'none',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
@@ -785,21 +950,21 @@ const KitchenOrderTicket = () => {
                           gap: '6px'
                         }}
                       >
-                        <FaEye size={12} />
-                        View
+                        <FaEye size={isClient && isMobile ? 10 : 12} />
+                        View Details
                       </button>
                       
                       {kot.status === 'confirmed' && (
                         <button
                           onClick={() => startCooking(kot.kotId, kot.id)}
                           style={{
-                            flex: 1,
+                            flex: isClient && isMobile ? '1 1 48%' : 1,
                             backgroundColor: '#f59e0b',
                             color: 'white',
-                            padding: '10px 16px',
+                            padding: isClient && isMobile ? '8px 12px' : '10px 16px',
                             borderRadius: '10px',
                             fontWeight: '600',
-                            fontSize: '13px',
+                            fontSize: isClient && isMobile ? '12px' : '13px',
                             border: 'none',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
@@ -809,7 +974,7 @@ const KitchenOrderTicket = () => {
                             gap: '6px'
                           }}
                         >
-                          <FaPlay size={12} />
+                          <FaPlay size={isClient && isMobile ? 10 : 12} />
                           Start Cooking
                         </button>
                       )}
@@ -817,32 +982,32 @@ const KitchenOrderTicket = () => {
                       {kot.status === 'preparing' && (
                         <>
                           <div style={{
-                            flex: 1,
+                            flex: isClient && isMobile ? '1 1 48%' : 1,
                             backgroundColor: '#dbeafe',
                             color: '#1e40af',
-                            padding: '10px 16px',
+                            padding: isClient && isMobile ? '8px 12px' : '10px 16px',
                             borderRadius: '10px',
                             fontWeight: '600',
-                            fontSize: '13px',
+                            fontSize: isClient && isMobile ? '12px' : '13px',
                             border: '1px solid #3b82f6',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '6px'
                           }}>
-                            <FaStopwatch size={12} />
+                            <FaStopwatch size={isClient && isMobile ? 10 : 12} />
                             {formatCookingTime(timers[kot.id] || 0)}
                           </div>
                           <button
                             onClick={() => markReady(kot.kotId, kot.id)}
                             style={{
-                              flex: 1,
+                              flex: isClient && isMobile ? '1 1 48%' : 1,
                               backgroundColor: '#10b981',
                               color: 'white',
-                              padding: '10px 16px',
+                              padding: isClient && isMobile ? '8px 12px' : '10px 16px',
                               borderRadius: '10px',
                               fontWeight: '600',
-                              fontSize: '13px',
+                              fontSize: isClient && isMobile ? '12px' : '13px',
                               border: 'none',
                               cursor: 'pointer',
                               transition: 'all 0.2s',
@@ -852,7 +1017,7 @@ const KitchenOrderTicket = () => {
                               gap: '6px'
                             }}
                           >
-                            <FaCheck size={12} />
+                            <FaCheck size={isClient && isMobile ? 10 : 12} />
                             Mark Ready
                           </button>
                         </>
@@ -862,13 +1027,13 @@ const KitchenOrderTicket = () => {
                         <button
                           onClick={() => markServed(kot.kotId, kot.id)}
                           style={{
-                            flex: 1,
+                            flex: isClient && isMobile ? '1 1 48%' : 1,
                             backgroundColor: '#8b5cf6',
                             color: 'white',
-                            padding: '10px 16px',
+                            padding: isClient && isMobile ? '8px 12px' : '10px 16px',
                             borderRadius: '10px',
                             fontWeight: '600',
-                            fontSize: '13px',
+                            fontSize: isClient && isMobile ? '12px' : '13px',
                             border: 'none',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
@@ -878,7 +1043,7 @@ const KitchenOrderTicket = () => {
                             gap: '6px'
                           }}
                         >
-                          <FaCheckCircle size={12} />
+                          <FaCheckCircle size={isClient && isMobile ? 10 : 12} />
                           Served
                         </button>
                       )}
@@ -888,7 +1053,7 @@ const KitchenOrderTicket = () => {
                         style={{
                           backgroundColor: '#6b7280',
                           color: 'white',
-                          padding: '10px 12px',
+                          padding: isClient && isMobile ? '8px 10px' : '10px 12px',
                           borderRadius: '10px',
                           fontWeight: '600',
                           border: 'none',
@@ -896,10 +1061,11 @@ const KitchenOrderTicket = () => {
                           transition: 'all 0.2s',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center'
+                          justifyContent: 'center',
+                          minWidth: isClient && isMobile ? '40px' : 'auto'
                         }}
                       >
-                        <FaPrint size={12} />
+                        <FaPrint size={isClient && isMobile ? 10 : 12} />
                       </button>
                     </div>
                   </div>
@@ -961,41 +1127,42 @@ const KitchenOrderTicket = () => {
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.6)',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: isClient && isMobile ? 'flex-end' : 'center',
           justifyContent: 'center',
           zIndex: 50,
-          padding: '16px'
+          padding: isClient && isMobile ? '0' : '16px'
         }}>
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '24px',
+            borderRadius: isClient && isMobile ? '20px 20px 0 0' : '24px',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
             width: '100%',
-            maxWidth: '800px',
-            maxHeight: '90vh',
+            maxWidth: isClient && isMobile ? '100%' : '800px',
+            maxHeight: isClient && isMobile ? '85vh' : '90vh',
             overflowY: 'auto',
-            border: '1px solid #fed7aa'
+            border: '1px solid #fed7aa',
+            animation: isClient && isMobile ? 'slideUp 0.3s ease-out' : 'none'
           }}>
             <div style={{
-              padding: '24px',
+              padding: isClient && isMobile ? '20px 16px' : '24px',
               borderBottom: '1px solid #f3f4f6',
               background: 'linear-gradient(135deg, #fef7f0, #fed7aa)'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: isClient && isMobile ? '8px' : '12px' }}>
                   <div style={{
-                    width: '40px',
-                    height: '40px',
+                    width: isClient && isMobile ? '32px' : '40px',
+                    height: isClient && isMobile ? '32px' : '40px',
                     backgroundColor: '#f97316',
-                    borderRadius: '12px',
+                    borderRadius: isClient && isMobile ? '8px' : '12px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    <GiChefToque color="white" size={18} />
+                    <GiChefToque color="white" size={isClient && isMobile ? 14 : 18} />
                   </div>
                   <h2 style={{
-                    fontSize: '24px',
+                    fontSize: isClient && isMobile ? '18px' : '24px',
                     fontWeight: 'bold',
                     color: '#1f2937',
                     margin: 0
@@ -1007,7 +1174,7 @@ const KitchenOrderTicket = () => {
                   onClick={() => setSelectedKot(null)}
                   style={{
                     color: '#6b7280',
-                    fontSize: '24px',
+                    fontSize: isClient && isMobile ? '20px' : '24px',
                     fontWeight: 'bold',
                     border: 'none',
                     backgroundColor: 'transparent',
@@ -1020,9 +1187,14 @@ const KitchenOrderTicket = () => {
               </div>
             </div>
             
-            <div style={{ padding: '24px' }}>
+            <div style={{ padding: isClient && isMobile ? '16px' : '24px' }}>
               {/* Order Info Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isClient && isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', 
+                gap: isClient && isMobile ? '12px' : '16px', 
+                marginBottom: isClient && isMobile ? '20px' : '24px' 
+              }}>
                 <div style={{ 
                   backgroundColor: '#fef7f0', 
                   padding: '16px', 

@@ -146,6 +146,9 @@ const MenuManagement = () => {
   const [error, setError] = useState('');
   const [currentRestaurant, setCurrentRestaurant] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -159,11 +162,23 @@ const MenuManagement = () => {
     stockQuantity: null
   });
 
+  // Mobile detection with client-side hydration safety
+  useEffect(() => {
+    setIsClient(true);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.dropdown-container')) {
         setShowFilters(false);
+        setShowMobileFilters(false);
       }
     };
     
@@ -392,13 +407,16 @@ const MenuManagement = () => {
           height: 'calc(100vh - 80px)' 
         }}>
           <div style={{ textAlign: 'center' }}>
-            <FaSpinner style={{ 
-              fontSize: '48px', 
-              color: '#ef4444', 
+            <div style={{
+              width: '48px',
+              height: '48px',
+              border: '4px solid #fed7aa',
+              borderTop: '4px solid #f97316',
+              borderRadius: '50%',
               animation: 'spin 1s linear infinite',
-              marginBottom: '16px'
+              margin: '0 auto 16px auto'
             }} />
-            <p style={{ fontSize: '18px', color: '#6b7280' }}>Loading delicious menu...</p>
+            <p style={{ fontSize: '18px', color: '#6b7280', fontWeight: '600' }}>Loading menu management...</p>
           </div>
         </div>
       </div>
@@ -409,14 +427,148 @@ const MenuManagement = () => {
     <div style={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Navigation />
       
-      <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ padding: isClient && isMobile ? '16px' : '20px', maxWidth: '1200px', margin: '0 auto' }}>
         {/* Modern Header Bar */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          marginBottom: '24px'
-        }}>
+        {isClient && isMobile ? (
+          // Mobile Header
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px'
+            }}>
+              <div>
+                <h1 style={{
+                  fontSize: '24px',
+                  fontWeight: '800',
+                  color: '#2d3748',
+                  margin: 0,
+                  background: 'linear-gradient(45deg, #ef4444 0%, #f97316 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>
+                  Menu
+                </h1>
+                <div style={{
+                  backgroundColor: '#e6fffa',
+                  border: '1px solid #81e6d9',
+                  borderRadius: '16px',
+                  padding: '2px 8px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  color: '#234e52',
+                  marginTop: '4px',
+                  display: 'inline-block'
+                }}>
+                  {filteredItems.length} items
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  style={{
+                    background: 'linear-gradient(45deg, #f59e0b 0%, #ef4444 100%)',
+                    color: 'white',
+                    padding: '10px',
+                    borderRadius: '12px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+                    minWidth: '40px'
+                  }}
+                >
+                  <FaUpload size={14} />
+                </button>
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  style={{
+                    background: 'linear-gradient(45deg, #f093fb 0%, #f5576c 100%)',
+                    color: 'white',
+                    padding: '10px',
+                    borderRadius: '12px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(240, 147, 251, 0.3)',
+                    minWidth: '40px'
+                  }}
+                >
+                  <FaPlus size={14} />
+                </button>
+              </div>
+            </div>
+            
+            {/* Mobile Action Bar */}
+            <div style={{
+              display: 'flex',
+              gap: '8px',
+              marginBottom: '16px'
+            }}>
+              <button
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                style={{
+                  background: showMobileFilters
+                    ? 'linear-gradient(45deg, #3b82f6 0%, #1d4ed8 100%)'
+                    : 'white',
+                  color: showMobileFilters ? 'white' : '#374151',
+                  border: showMobileFilters ? 'none' : '1px solid #e5e7eb',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  flex: 1,
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <FaFilter size={12} />
+                Filters
+              </button>
+              <button
+                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                style={{
+                  backgroundColor: 'white',
+                  color: '#374151',
+                  border: '1px solid #e5e7eb',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  minWidth: '48px'
+                }}
+              >
+                {viewMode === 'grid' ? <FaList size={14} /> : <FaTh size={14} />}
+              </button>
+            </div>
+          </div>
+        ) : (
+          // Desktop Header
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            marginBottom: '24px'
+          }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <h1 style={{ 
               fontSize: '28px', 
@@ -503,16 +655,220 @@ const MenuManagement = () => {
             </button>
           </div>
         </div>
+        )}
 
-        {/* Smart Control Bar */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '16px',
-          padding: '16px 20px',
-          marginBottom: '20px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-          border: '1px solid #e2e8f0'
-        }}>
+        {/* Mobile Filter Modal */}
+        {isClient && isMobile && showMobileFilters && (
+          <div style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderTopLeftRadius: '20px',
+            borderTopRightRadius: '20px',
+            boxShadow: '0 -10px 30px rgba(0,0,0,0.2)',
+            zIndex: 1000,
+            maxHeight: '70vh',
+            overflowY: 'auto',
+            animation: 'slideUp 0.3s ease-out'
+          }}>
+            <div style={{
+              padding: '20px',
+              borderBottom: '1px solid #f1f5f9'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '20px'
+              }}>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  color: '#1f2937',
+                  margin: 0
+                }}>
+                  Filter Menu
+                </h3>
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    fontSize: '18px',
+                    color: '#6b7280',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    borderRadius: '6px'
+                  }}
+                >
+                  <FaTimes />
+                </button>
+              </div>
+              
+              {/* Mobile Search */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '8px'
+                }}>
+                  Search Dishes
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <FaSearch style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9ca3af',
+                    fontSize: '14px'
+                  }} />
+                  <input
+                    type="text"
+                    placeholder="Search dishes, codes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                      width: '100%',
+                      paddingLeft: '40px',
+                      paddingRight: '16px',
+                      paddingTop: '12px',
+                      paddingBottom: '12px',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: '#f8fafc'
+                    }}
+                  />
+                </div>
+              </div>
+              
+              {/* Mobile Veg Filter */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '8px'
+                }}>
+                  Food Type
+                </label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {[
+                    { value: 'all', label: 'All Types', icon: '🍽️' },
+                    { value: 'veg', label: 'Veg', icon: '🥬' },
+                    { value: 'non-veg', label: 'Non-Veg', icon: '🍖' }
+                  ].map(option => (
+                    <button
+                      key={option.value}
+                      onClick={() => setSelectedVegFilter(option.value)}
+                      style={{
+                        flex: 1,
+                        padding: '12px 8px',
+                        backgroundColor: selectedVegFilter === option.value ? '#ef4444' : 'white',
+                        color: selectedVegFilter === option.value ? 'white' : '#6b7280',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '4px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <span style={{ fontSize: '16px' }}>{option.icon}</span>
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Mobile Category Filter */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '8px'
+                }}>
+                  Category
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                  <button
+                    onClick={() => {
+                      setSelectedCategory('all');
+                      setShowMobileFilters(false);
+                    }}
+                    style={{
+                      padding: '12px',
+                      backgroundColor: selectedCategory === 'all' ? '#ef4444' : 'white',
+                      color: selectedCategory === 'all' ? 'white' : '#6b7280',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <span>🍽️</span>
+                    All
+                  </button>
+                  {categories.map(category => (
+                    <button
+                      key={category.id}
+                      onClick={() => {
+                        setSelectedCategory(category.id);
+                        setShowMobileFilters(false);
+                      }}
+                      style={{
+                        padding: '12px',
+                        backgroundColor: selectedCategory === category.id ? '#ef4444' : 'white',
+                        color: selectedCategory === category.id ? 'white' : '#6b7280',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <span>{getCategoryEmoji(category.id)}</span>
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Smart Control Bar - Desktop Only */}
+        {(!isClient || !isMobile) && (
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '16px 20px',
+            marginBottom: '20px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+            border: '1px solid #e2e8f0'
+          }}>
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -813,6 +1169,7 @@ const MenuManagement = () => {
             </div>
           </div>
         </div>
+        )}
 
         {error && (
           <div style={{
@@ -839,8 +1196,10 @@ const MenuManagement = () => {
             /* Sleek Card Grid */
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-              gap: '20px'
+              gridTemplateColumns: isClient && isMobile 
+                ? '1fr' 
+                : 'repeat(auto-fill, minmax(320px, 1fr))',
+              gap: isClient && isMobile ? '16px' : '20px'
             }}>
               {filteredItems.map((item) => {
                 const spiceInfo = getSpiceLevel(item.spiceLevel);
@@ -1975,18 +2334,20 @@ const MenuManagement = () => {
           }
         }
         
-        @media (max-width: 768px) {
-          .menu-grid {
-            grid-template-columns: 1fr;
+        @keyframes slideUp {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
           }
         }
         
-        @media (max-width: 640px) {
-          .gradient-header h1 {
-            font-size: 24px !important;
-          }
-          .search-input {
-            min-width: 180px !important;
+        @media (max-width: 768px) {
+          .menu-grid {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
