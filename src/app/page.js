@@ -48,6 +48,10 @@ function RestaurantPOSContent() {
   const [showTableSelector, setShowTableSelector] = useState(false);
   const [manualTableNumber, setManualTableNumber] = useState('');
   
+  // Multi-step ordering workflow
+  const [currentStep, setCurrentStep] = useState('table'); // 'table', 'menu', 'review', 'payment'
+  const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '' });
+  
   // API state
   const [menuItems, setMenuItems] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
@@ -397,8 +401,8 @@ function RestaurantPOSContent() {
           price: item.price
         })),
         customerInfo: {
-          name: 'Walk-in Customer',
-          phone: ''
+          name: orderType === 'takeaway' ? customerInfo.name : 'Walk-in Customer',
+          phone: orderType === 'takeaway' ? customerInfo.phone : ''
         },
         notes: ''
       };
@@ -513,6 +517,41 @@ function RestaurantPOSContent() {
     window.history.replaceState({}, '', window.location.pathname);
   };
 
+  // Multi-step workflow functions
+  const handleTableSelection = (table) => {
+    setSelectedTable(table);
+    setCurrentStep('menu');
+  };
+
+  const proceedToReview = () => {
+    if (cart.length > 0) {
+      setCurrentStep('review');
+    }
+  };
+
+  const proceedToPayment = () => {
+    setCurrentStep('payment');
+  };
+
+  const goBackToStep = (step) => {
+    setCurrentStep(step);
+  };
+
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case 'table': return 'Select Table & Order Type';
+      case 'menu': return 'Choose Items';
+      case 'review': return 'Review Order';
+      case 'payment': return 'Payment & Checkout';
+      default: return 'Place Order';
+    }
+  };
+
+  const getStepProgress = () => {
+    const steps = ['table', 'menu', 'review', 'payment'];
+    return steps.indexOf(currentStep) + 1;
+  };
+
   // Show onboarding if needed
   if (showOnboarding && isFirstTimeUser) {
     return (
@@ -553,1366 +592,1028 @@ function RestaurantPOSContent() {
     );
   }
 
-  // Removed full screen success - using inline success instead
-
   return (
     <div style={{ height: '100vh', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <Header handleLogout={handleLogout} />
       
-      {/* Mobile Top Bar */}
-      {isMobile && (
-        <div style={{
-          backgroundColor: 'white',
-          borderBottom: '1px solid #e5e7eb',
-          padding: '12px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '12px'
-        }}>
-          {/* Search Bar */}
-          <div style={{ flex: 1, position: 'relative' }}>
-            <FaSearch style={{ 
-              position: 'absolute', 
-              left: '12px', 
-              top: '50%', 
-              transform: 'translateY(-50%)', 
-              color: '#9ca3af' 
-            }} size={16} />
-            <input
-              type="text"
-              placeholder="Search menu..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                paddingLeft: '40px',
-                paddingRight: '12px',
-                paddingTop: '12px',
-                paddingBottom: '12px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '12px',
-                backgroundColor: '#f9fafb',
-                fontSize: '14px',
-                outline: 'none'
-              }}
-            />
+      {/* Progress Bar */}
+      <div style={{
+        backgroundColor: 'white',
+        borderBottom: '1px solid #e5e7eb',
+        padding: isMobile ? '12px 16px' : '16px 24px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <h1 style={{ fontSize: isMobile ? '18px' : '24px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+            {getStepTitle()}
+          </h1>
+          <div style={{ 
+            padding: '6px 12px', 
+            backgroundColor: '#ef4444', 
+            color: 'white', 
+            borderRadius: '20px', 
+            fontSize: '12px', 
+            fontWeight: '600' 
+          }}>
+            Step {getStepProgress()} of 4
           </div>
-          
-          {/* Category Filter Button */}
-          <button
-            onClick={() => setShowMobileSidebar(true)}
-            style={{
-              padding: '12px',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontWeight: '600',
-              fontSize: '14px',
-              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
-            }}
-          >
-            <FaBars size={16} />
-            Categories
-          </button>
-          
-          {/* Cart Button */}
-          <button
-            onClick={() => setShowMobileCart(true)}
-            style={{
-              padding: '12px',
-              backgroundColor: cart.length > 0 ? '#10b981' : '#6b7280',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontWeight: '600',
-              fontSize: '14px',
-              position: 'relative',
-              boxShadow: cart.length > 0 ? '0 2px 8px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(107, 114, 128, 0.3)'
-            }}
-          >
-            <FaShoppingCart size={16} />
-            {cart.length > 0 && (
-              <span style={{
-                position: 'absolute',
-                top: '-8px',
-                right: '-8px',
-                backgroundColor: '#ef4444',
-                color: 'white',
-                borderRadius: '50%',
-                width: '20px',
-                height: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '12px',
-                fontWeight: 'bold'
-              }}>
-                {cart.reduce((sum, item) => sum + item.quantity, 0)}
-              </span>
-            )}
-          </button>
         </div>
-      )}
+        
+        {/* Progress Indicators */}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {['table', 'menu', 'review', 'payment'].map((step, index) => {
+            const isActive = ['table', 'menu', 'review', 'payment'].indexOf(currentStep) >= index;
+            const isCurrent = currentStep === step;
+            return (
+              <div
+                key={step}
+                style={{
+                  flex: 1,
+                  height: '4px',
+                  backgroundColor: isActive ? '#ef4444' : '#e5e7eb',
+                  borderRadius: '2px',
+                  transition: 'all 0.3s ease',
+                  position: 'relative'
+                }}
+              >
+                {isCurrent && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-2px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: '#ef4444',
+                    borderRadius: '50%',
+                    border: '2px solid white',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
       
       {/* Main Content */}
       <div style={{ 
-        display: 'flex', 
         flex: 1, 
         overflow: 'hidden',
-        flexDirection: isMobile ? 'column' : 'row'
+        display: 'flex',
+        flexDirection: 'column'
       }}>
-        {/* Desktop Menu Sections Sidebar */}
-        {!isMobile && (
+        {currentStep === 'table' && (
+          // Table Selection Step
           <div style={{ 
-            width: '240px', 
-            backgroundColor: 'white', 
-            borderRight: '2px solid #e5e7eb', 
-            boxShadow: '2px 0 4px rgba(0,0,0,0.1)' 
+            flex: 1, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            padding: isMobile ? '20px' : '40px',
+            backgroundColor: '#f9fafb'
           }}>
-          <div style={{ padding: '16px', borderBottom: '1px solid #f3f4f6' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FaUtensils style={{ fontSize: '14px', color: '#ef4444' }} />
-              Menu Sections
-            </h2>
-            <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 12px 0' }}>Browse by dish type</p>
-            <div style={{ position: 'relative' }}>
-              <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={14} />
-              <input
-                type="text"
-                placeholder="Search items..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '24px', 
+              padding: isMobile ? '32px 24px' : '48px 40px',
+              maxWidth: '600px',
+              width: '100%',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+              border: '1px solid #e5e7eb'
+            }}>
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  backgroundColor: '#ef4444',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px auto',
+                  boxShadow: '0 4px 14px rgba(239, 68, 68, 0.3)'
+                }}>
+                  <FaChair size={32} color="white" />
+                </div>
+                <h2 style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>
+                  Welcome to {selectedRestaurant?.name || 'Restaurant'}
+                </h2>
+                <p style={{ color: '#6b7280', fontSize: isMobile ? '14px' : '16px', margin: 0 }}>
+                  Let's start by setting up your order
+                </p>
+              </div>
+
+              {/* Order Type Selection */}
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px' }}>
+                  Order Type
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
+                  <button
+                    onClick={() => setOrderType('dine-in')}
+                    style={{
+                      padding: '20px',
+                      backgroundColor: orderType === 'dine-in' ? '#fef2f2' : 'white',
+                      border: orderType === 'dine-in' ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                      borderRadius: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        backgroundColor: orderType === 'dine-in' ? '#ef4444' : '#f3f4f6',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <span style={{ fontSize: '20px' }}>🍽️</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '16px' }}>Dine In</div>
+                        <div style={{ color: '#6b7280', fontSize: '14px' }}>Eat at the restaurant</div>
+                      </div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => setOrderType('takeaway')}
+                    style={{
+                      padding: '20px',
+                      backgroundColor: orderType === 'takeaway' ? '#fef2f2' : 'white',
+                      border: orderType === 'takeaway' ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                      borderRadius: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        backgroundColor: orderType === 'takeaway' ? '#ef4444' : '#f3f4f6',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <span style={{ fontSize: '20px' }}>📦</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '16px' }}>Takeaway</div>
+                        <div style={{ color: '#6b7280', fontSize: '14px' }}>Order to go</div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Table Selection for Dine-in */}
+              {orderType === 'dine-in' && (
+                <div style={{ marginBottom: '32px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px' }}>
+                    Table Selection
+                  </h3>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <input
+                      type="text"
+                      value={manualTableNumber}
+                      onChange={(e) => setManualTableNumber(e.target.value)}
+                      placeholder="Enter table number (e.g., T1, Table 5)"
+                      style={{
+                        flex: 1,
+                        padding: '16px',
+                        border: '2px solid #e5e7eb',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        outline: 'none',
+                        backgroundColor: '#f9fafb'
+                      }}
+                    />
+                    <button
+                      onClick={() => {
+                        if (manualTableNumber.trim()) {
+                          handleTableSelection({
+                            name: manualTableNumber.trim(),
+                            floor: 'Manual Entry',
+                            capacity: 'N/A'
+                          });
+                          setManualTableNumber('');
+                        }
+                      }}
+                      disabled={!manualTableNumber.trim()}
+                      style={{
+                        padding: '16px 24px',
+                        backgroundColor: manualTableNumber.trim() ? '#ef4444' : '#d1d5db',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        cursor: manualTableNumber.trim() ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      Select
+                    </button>
+                  </div>
+                  
+                  <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#f0f9ff', borderRadius: '12px', border: '1px solid #bae6fd' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <FaChair size={16} color="#0284c7" />
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#0284c7' }}>
+                        Quick Setup
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: '#075985', margin: 0, lineHeight: '1.4' }}>
+                      For full table management with floor layouts, visit the Tables page to set up your restaurant layout.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Customer Info for Takeaway */}
+              {orderType === 'takeaway' && (
+                <div style={{ marginBottom: '32px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px' }}>
+                    Customer Information
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                    <input
+                      type="text"
+                      value={customerInfo.name}
+                      onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
+                      placeholder="Customer name"
+                      style={{
+                        padding: '16px',
+                        border: '2px solid #e5e7eb',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        outline: 'none',
+                        backgroundColor: '#f9fafb'
+                      }}
+                    />
+                    <input
+                      type="tel"
+                      value={customerInfo.phone}
+                      onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
+                      placeholder="Phone number"
+                      style={{
+                        padding: '16px',
+                        border: '2px solid #e5e7eb',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        outline: 'none',
+                        backgroundColor: '#f9fafb'
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Continue Button */}
+              <button
+                onClick={() => {
+                  if (orderType === 'dine-in' && !selectedTable) {
+                    alert('Please select a table first');
+                    return;
+                  }
+                  if (orderType === 'takeaway' && !customerInfo.name.trim()) {
+                    alert('Please enter customer name');
+                    return;
+                  }
+                  setCurrentStep('menu');
+                }}
+                disabled={
+                  (orderType === 'dine-in' && !selectedTable) ||
+                  (orderType === 'takeaway' && !customerInfo.name.trim())
+                }
                 style={{
                   width: '100%',
-                  paddingLeft: '36px',
-                  paddingRight: '12px',
-                  paddingTop: '8px',
-                  paddingBottom: '8px',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '8px',
-                  backgroundColor: '#f9fafb',
-                  fontSize: '12px',
-                  outline: 'none'
+                  padding: '20px',
+                  backgroundColor: 
+                    (orderType === 'dine-in' && selectedTable) || 
+                    (orderType === 'takeaway' && customerInfo.name.trim()) 
+                      ? '#ef4444' : '#d1d5db',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '16px',
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  cursor: 
+                    (orderType === 'dine-in' && selectedTable) || 
+                    (orderType === 'takeaway' && customerInfo.name.trim())
+                      ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '12px',
+                  boxShadow: 
+                    (orderType === 'dine-in' && selectedTable) || 
+                    (orderType === 'takeaway' && customerInfo.name.trim())
+                      ? '0 4px 14px rgba(239, 68, 68, 0.3)' : 'none'
                 }}
-              />
-            </div>
-          </div>
-          
-          <div style={{ padding: '8px', overflowY: 'auto', height: 'calc(100% - 100px)' }}>
-            
-            {categories.map((category) => {
-              const categoryItems = category.id === 'all-items' 
-                ? menuItems 
-                : menuItems.filter(item => item.category?.toLowerCase() === category.id);
-              const isSelected = selectedCategory === category.id;
+              >
+                <span>Start Ordering</span>
+                <FaUtensils size={20} />
+              </button>
               
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  style={{
-                    width: '100%',
-                    textAlign: 'left',
-                    padding: '12px',
-                    borderRadius: '12px',
-                    fontWeight: '500',
-                    border: isSelected ? '2px solid #ef4444' : '1px solid #f3f4f6',
-                    cursor: 'pointer',
-                    marginBottom: '6px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    backgroundColor: isSelected ? '#fef2f2' : '#fafafa',
-                    color: isSelected ? '#dc2626' : '#374151',
-                    transition: 'all 0.3s ease',
-                    fontSize: '14px',
-                    boxShadow: isSelected ? '0 2px 8px rgba(239, 68, 68, 0.15)' : '0 1px 3px rgba(0,0,0,0.05)'
-                  }}
-                >
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '18px',
-                    backgroundColor: isSelected ? '#ef4444' : '#ffffff',
-                    boxShadow: isSelected ? 'inset 0 2px 4px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.05)',
-                    transition: 'all 0.3s ease'
-                  }}>
-                    {isSelected ? '🍽️' : category.emoji}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '2px' }}>{category.name}</div>
-                    <div style={{ 
-                      fontSize: '11px', 
-                      color: isSelected ? '#dc2626' : '#6b7280',
-                      fontWeight: '500'
-                    }}>{categoryItems.length} dishes available</div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+              {selectedTable && (
+                <div style={{ 
+                  marginTop: '16px', 
+                  padding: '12px 16px', 
+                  backgroundColor: '#dcfce7', 
+                  borderRadius: '12px',
+                  border: '1px solid #22c55e',
+                  textAlign: 'center'
+                }}>
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#166534' }}>
+                    ✓ Table {selectedTable.name} selected
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Menu Items */}
-        <div style={{ flex: 1, backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
-          {/* Show empty menu prompt if no menu items */}
-          {filteredItems.length === 0 && menuItems.length === 0 && !loading ? (
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              height: '100%',
-              width: '100%'
-            }}>
-              <EmptyMenuPrompt 
-                restaurantName={selectedRestaurant?.name} 
-                onAddMenu={() => router.push('/menu')}
-              />
-            </div>
-          ) : (
-          <>
-            {/* Menu Header */}
-          <div style={{ padding: '8px 12px', backgroundColor: 'white', borderBottom: '1px solid #f3f4f6' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-              <div>
-                <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                  {categories.find(c => c.id === selectedCategory)?.name || 'All Items'}
-                </h2>
-                <p style={{ color: '#6b7280', margin: '2px 0 0 0', fontSize: '11px' }}>{filteredItems.length} items</p>
-              </div>
-              
-              {/* Quick Search */}
-              <div style={{ position: 'relative', width: '240px' }}>
-                <FaSearch style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={12} />
-                <input
-                  type="text"
-                  placeholder="Quick add: type name or code..."
-                  value={quickSearch}
-                  onChange={(e) => setQuickSearch(e.target.value)}
-                  onKeyPress={handleQuickSearch}
-                  style={{
-                    width: '100%',
-                    paddingLeft: '28px',
-                    paddingRight: '8px',
-                    paddingTop: '6px',
-                    paddingBottom: '6px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                    backgroundColor: '#f9fafb',
-                    fontSize: '11px',
-                    outline: 'none'
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-          
-          <div style={{ flex: 1, padding: isMobile ? '16px' : '8px', overflowY: 'auto' }}>
+        {currentStep === 'menu' && (
+          // Menu Selection Step  
+          <div style={{ 
+            display: 'flex', 
+            flex: 1, 
+            overflow: 'hidden',
+            flexDirection: 'column',
+            position: 'relative'
+          }}>
+            {/* Back Button */}
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile 
-                ? 'repeat(auto-fill, minmax(160px, 1fr))' 
-                : 'repeat(auto-fill, minmax(140px, 1fr))',
-              gap: isMobile ? '16px' : '8px'
+              position: 'absolute',
+              top: '20px',
+              left: '24px',
+              zIndex: 10
             }}>
-              {filteredItems.map((item) => {
-                const quantityInCart = getItemQuantityInCart(item.id);
+              <button
+                onClick={() => goBackToStep('table')}
+                style={{
+                  padding: '12px 16px',
+                  backgroundColor: 'white',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#6b7280',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.borderColor = '#ef4444';
+                  e.target.style.color = '#ef4444';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.borderColor = '#e5e7eb';
+                  e.target.style.color = '#6b7280';
+                }}
+              >
+                ← Back
+              </button>
+            </div>
+            
+            {/* Continue with menu content */}
+            <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '60px' }}>
+              {/* Cart Preview Bar */}
+              {cart.length > 0 && (
+                <div style={{
+                  position: 'fixed',
+                  bottom: isMobile ? '20px' : '40px',
+                  right: isMobile ? '20px' : '40px',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  padding: '16px 24px',
+                  borderRadius: '50px',
+                  boxShadow: '0 4px 20px rgba(239, 68, 68, 0.3)',
+                  zIndex: 20,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  fontSize: '16px',
+                  fontWeight: '700',
+                  transition: 'all 0.2s'
+                }}
+                onClick={proceedToReview}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.05)';
+                  e.target.style.boxShadow = '0 6px 25px rgba(239, 68, 68, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.boxShadow = '0 4px 20px rgba(239, 68, 68, 0.3)';
+                }}
+                >
+                  <FaShoppingCart size={20} />
+                  <span>{cart.reduce((sum, item) => sum + item.quantity, 0)} items</span>
+                  <span>•</span>
+                  <span>Rs.{getTotalAmount()}</span>
+                  <span>→</span>
+                </div>
+              )}
+              
+              {/* Simple menu display */}
+              <div style={{ padding: isMobile ? '20px' : '40px', textAlign: 'center', flex: 1 }}>
+                <h3 style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
+                  Menu Items
+                </h3>
+                <p style={{ color: '#6b7280', marginBottom: '32px', fontSize: isMobile ? '14px' : '16px' }}>
+                  Browse and add items to your cart
+                </p>
                 
-                return (
-                  <div
-                    key={item.id}
+                {/* Search bar */}
+                <div style={{ 
+                  maxWidth: '400px', 
+                  margin: '0 auto 32px auto',
+                  position: 'relative'
+                }}>
+                  <FaSearch style={{ 
+                    position: 'absolute', 
+                    left: '16px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    color: '#9ca3af' 
+                  }} size={16} />
+                  <input
+                    type="text"
+                    placeholder="Search menu items..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     style={{
-                      backgroundColor: 'white',
-                      borderRadius: isMobile ? '16px' : '6px',
-                      boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.1)' : '0 1px 3px rgba(0,0,0,0.1)',
-                      overflow: 'hidden',
-                      transition: 'all 0.2s',
-                      cursor: 'pointer',
-                      height: isMobile ? '200px' : '160px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      border: quantityInCart > 0 ? '2px solid #e53e3e' : '1px solid #e5e7eb'
+                      width: '100%',
+                      paddingLeft: '48px',
+                      paddingRight: '16px',
+                      paddingTop: '16px',
+                      paddingBottom: '16px',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: '16px',
+                      backgroundColor: '#f9fafb',
+                      fontSize: '16px',
+                      outline: 'none'
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                      e.currentTarget.style.boxShadow = '0 3px 6px rgba(0,0,0,0.15)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-                    }}
-                  >
-                    {/* Item Image */}
-                    <div style={{
-                      height: isMobile ? '80px' : '60px',
-                      background: 'linear-gradient(135deg, #fed7aa, #fecaca)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      position: 'relative'
-                    }}>
-                      <div style={{ fontSize: isMobile ? '32px' : '24px', opacity: 0.3 }}>
-                        {categories.find(c => c.id === item.category)?.emoji || '🍽️'}
-                      </div>
-                      
-                      {/* Badges */}
-                      <div style={{ position: 'absolute', top: '2px', left: '2px' }}>
+                  />
+                </div>
+                
+                {/* Show menu items grid */}
+                {filteredItems.length > 0 ? (
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile 
+                      ? 'repeat(auto-fill, minmax(150px, 1fr))' 
+                      : 'repeat(auto-fill, minmax(250px, 1fr))',
+                    gap: isMobile ? '16px' : '24px',
+                    maxWidth: '1200px',
+                    margin: '0 auto'
+                  }}>
+                    {filteredItems.map((item) => (
+                      <div key={item.id} style={{
+                        backgroundColor: 'white',
+                        borderRadius: isMobile ? '16px' : '20px',
+                        padding: isMobile ? '16px' : '20px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                        border: getItemQuantityInCart(item.id) > 0 ? '2px solid #ef4444' : '1px solid #e5e7eb',
+                        textAlign: 'center',
+                        transition: 'all 0.2s ease',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+                      }}
+                      >
+                        {/* Item image placeholder */}
                         <div style={{
-                          padding: '1px 4px',
-                          borderRadius: '8px',
-                          fontSize: '7px',
-                          fontWeight: 'bold',
-                          backgroundColor: item.isVeg ? '#10b981' : '#ef4444',
-                          color: 'white'
+                          height: isMobile ? '60px' : '80px',
+                          background: 'linear-gradient(135deg, #fed7aa, #fecaca)',
+                          borderRadius: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginBottom: '16px',
+                          position: 'relative'
                         }}>
-                          {item.isVeg ? 'VEG' : 'NON-VEG'}
+                          <span style={{ fontSize: isMobile ? '24px' : '32px', opacity: 0.6 }}>
+                            {getCategoryEmoji(item.category)}
+                          </span>
+                          
+                          {/* Veg/Non-veg indicator */}
+                          <div style={{
+                            position: 'absolute',
+                            top: '8px',
+                            left: '8px',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontSize: '8px',
+                            fontWeight: 'bold',
+                            backgroundColor: item.isVeg ? '#10b981' : '#ef4444',
+                            color: 'white'
+                          }}>
+                            {item.isVeg ? 'VEG' : 'NON-VEG'}
+                          </div>
                         </div>
-                      </div>
-                      
-                      {/* Short Code */}
-                      {item.shortCode && (
-                        <div style={{ position: 'absolute', top: '2px', right: '2px', fontSize: '8px', fontWeight: 'bold', color: '#6b7280', backgroundColor: 'rgba(255,255,255,0.8)', padding: '2px 4px', borderRadius: '4px' }}>
-                          {item.shortCode}
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Item Details */}
-                    <div style={{ padding: isMobile ? '12px' : '8px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                      <h3 style={{ 
-                        fontWeight: 'bold', 
-                        fontSize: isMobile ? '14px' : '12px', 
-                        color: '#1f2937', 
-                        margin: '0 0 4px 0', 
-                        lineHeight: '1.2' 
-                      }}>
-                        {isMobile 
-                          ? (item.name.length > 20 ? item.name.substring(0, 20) + '...' : item.name)
-                          : (item.name.length > 18 ? item.name.substring(0, 18) + '...' : item.name)
-                        }
-                      </h3>
-                      <p style={{ 
-                        color: '#6b7280', 
-                        fontSize: isMobile ? '12px' : '9px', 
-                        margin: '0 0 8px 0', 
-                        lineHeight: '1.3', 
-                        flex: 1, 
-                        overflow: 'hidden' 
-                      }}>
-                        {isMobile 
-                          ? (item.description.length > 40 ? item.description.substring(0, 40) + '...' : item.description)
-                          : (item.description.length > 30 ? item.description.substring(0, 30) + '...' : item.description)
-                        }
-                      </p>
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-                        <div>
+                        
+                        <h4 style={{ 
+                          fontSize: isMobile ? '14px' : '18px', 
+                          fontWeight: '700', 
+                          color: '#1f2937', 
+                          marginBottom: '8px',
+                          lineHeight: '1.2'
+                        }}>
+                          {item.name}
+                        </h4>
+                        
+                        <p style={{ 
+                          fontSize: isMobile ? '12px' : '14px', 
+                          color: '#6b7280', 
+                          marginBottom: '12px',
+                          lineHeight: '1.3',
+                          height: isMobile ? '36px' : '42px',
+                          overflow: 'hidden'
+                        }}>
+                          {isMobile 
+                            ? (item.description?.length > 40 ? item.description.substring(0, 40) + '...' : item.description)
+                            : (item.description?.length > 60 ? item.description.substring(0, 60) + '...' : item.description)
+                          }
+                        </p>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between',
+                          marginBottom: '16px'
+                        }}>
                           <span style={{ 
-                            fontSize: isMobile ? '16px' : '14px', 
+                            fontSize: isMobile ? '16px' : '20px', 
                             fontWeight: 'bold', 
-                            color: '#e53e3e' 
+                            color: '#ef4444' 
                           }}>
                             Rs.{item.price}
                           </span>
                         </div>
                         
-                        {quantityInCart === 0 ? (
+                        {getItemQuantityInCart(item.id) === 0 ? (
                           <button
                             onClick={() => addToCart(item)}
                             style={{
-                              background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
+                              width: '100%',
+                              backgroundColor: '#ef4444',
                               color: 'white',
-                              padding: isMobile ? '8px 12px' : '4px 8px',
-                              borderRadius: isMobile ? '8px' : '4px',
-                              fontWeight: 'bold',
+                              padding: isMobile ? '8px 12px' : '12px 16px',
                               border: 'none',
+                              borderRadius: '12px',
+                              fontSize: isMobile ? '12px' : '14px',
+                              fontWeight: '600',
                               cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: isMobile ? '6px' : '3px',
                               transition: 'all 0.2s',
-                              fontSize: isMobile ? '12px' : '9px',
-                              boxShadow: isMobile ? '0 2px 8px rgba(229, 62, 62, 0.3)' : 'none'
-                            }}
-                          >
-                            <FaPlus size={isMobile ? 12 : 8} />
-                            ADD
-                          </button>
-                        ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#f3f4f6', borderRadius: '4px', border: '1px solid #e5e7eb' }}>
-                            <button
-                              onClick={() => removeFromCart(item.id)}
-                              style={{
-                                width: '20px',
-                                height: '20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: '#e53e3e',
-                                backgroundColor: 'transparent',
-                                border: 'none',
-                                borderRadius: '3px 0 0 3px',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              <FaMinus size={8} />
-                            </button>
-                            <span style={{
-                              width: '24px',
-                              height: '20px',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontWeight: 'bold',
-                              color: '#1f2937',
-                              borderLeft: '1px solid #e5e7eb',
-                              borderRight: '1px solid #e5e7eb',
-                              fontSize: '10px'
+                              gap: '6px'
+                            }}
+                          >
+                            <FaPlus size={isMobile ? 10 : 12} />
+                            Add to Cart
+                          </button>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              backgroundColor: '#f3f4f6', 
+                              borderRadius: '8px', 
+                              border: '1px solid #e5e7eb'
                             }}>
-                              {quantityInCart}
-                            </span>
-                            <button
-                              onClick={() => addToCart(item)}
-                              style={{
-                                width: '20px',
-                                height: '20px',
+                              <button
+                                onClick={() => removeFromCart(item.id)}
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: '#ef4444',
+                                  backgroundColor: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '6px 0 0 6px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <FaMinus size={12} />
+                              </button>
+                              <span style={{
+                                width: '40px',
+                                height: '32px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                color: '#10b981',
-                                backgroundColor: 'transparent',
-                                border: 'none',
-                                borderRadius: '0 3px 3px 0',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              <FaPlus size={8} />
-                            </button>
+                                fontWeight: 'bold',
+                                color: '#1f2937',
+                                borderLeft: '1px solid #e5e7eb',
+                                borderRight: '1px solid #e5e7eb',
+                                fontSize: '14px'
+                              }}>
+                                {getItemQuantityInCart(item.id)}
+                              </span>
+                              <button
+                                onClick={() => addToCart(item)}
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: '#10b981',
+                                  backgroundColor: 'transparent',
+                                  border: 'none',
+                                  borderRadius: '0 6px 6px 0',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <FaPlus size={12} />
+                              </button>
+                            </div>
+                            <div style={{ 
+                              fontSize: '12px', 
+                              fontWeight: '600', 
+                              color: '#ef4444',
+                              textAlign: 'center'
+                            }}>
+                              Rs.{item.price * getItemQuantityInCart(item.id)} total
+                            </div>
                           </div>
                         )}
                       </div>
-                    </div>
+                    ))}
                   </div>
-                );
-              })}
+                ) : (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '40px',
+                    color: '#6b7280'
+                  }}>
+                    <FaUtensils size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                    <p style={{ fontSize: '18px', fontWeight: '600' }}>No menu items found</p>
+                    <p style={{ fontSize: '14px' }}>Try adjusting your search or check back later</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-          </>
-          )}
-        </div>
+        )}
 
-       
-        {/* Order Summary - Only show when there are menu items */}
-        {!(filteredItems.length === 0 && menuItems.length === 0 && !loading) && (
-          <div style={{ width: '30%', minWidth: '320px', backgroundColor: 'white', borderLeft: '2px solid #e5e7eb', display: 'flex', flexDirection: 'column' }}>
-         
+        {currentStep === 'review' && (
+          // Order Review Step
           <div style={{ 
-            background: 'linear-gradient(135deg, #e53e3e, #dc2626)', 
-            padding: '12px 16px', 
-            color: 'white' 
+            flex: 1, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            padding: isMobile ? '20px' : '40px',
+            backgroundColor: '#f9fafb'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FaShoppingCart size={14} />
-                <span style={{ fontSize: '14px', fontWeight: 'bold' }}>Order Summary</span>
-              </div>
-              
-              
-           
-              <button
-                onClick={clearCart}
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.2)',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '4px 8px',
-                  color: 'white',
-                  fontSize: '11px',
-                  cursor: 'pointer',
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '24px', 
+              padding: isMobile ? '32px 24px' : '48px 40px',
+              maxWidth: '600px',
+              width: '100%',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+              border: '1px solid #e5e7eb'
+            }}>
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  backgroundColor: '#10b981',
+                  borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                <FaTimes size={10} />
-                Clear Order
-              </button>
-            </div>
-           
-            {/* Order Type Selector */}
-            <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-              <button
-                onClick={() => setOrderType('dine-in')}
-                style={{
-                  flex: 1,
-                  backgroundColor: orderType === 'dine-in' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '6px',
-                  padding: '6px 8px',
-                  fontSize: '10px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                🍽️ DINE IN
-              </button>
-              <button
-                onClick={() => setOrderType('takeaway')}
-                style={{
-                  flex: 1,
-                  backgroundColor: orderType === 'takeaway' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '6px',
-                  padding: '6px 8px',
-                  fontSize: '10px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                📦 TAKEAWAY
-              </button>
-            </div>
-            
-          </div>
-
-        
-          <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
-            {cart.length === 0 ? (
-              <div style={{ textAlign: 'center', paddingTop: '30px' }}>
-                <div style={{ width: '40px', height: '40px', backgroundColor: '#f3f4f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                  <FaUtensils size={16} color="#9ca3af" />
-                </div>
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#6b7280', margin: '0 0 4px 0' }}>No Items Added</h3>
-                <p style={{ color: '#9ca3af', fontSize: '10px' }}>Add items to create your order</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {cart.map((item) => (
-                  <div key={item.id} style={{ backgroundColor: '#f9fafb', borderRadius: '6px', padding: '8px', border: '1px solid #f0f0f0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <div style={{ flex: 1 }}>
-                        <h4 style={{ fontWeight: 'bold', color: '#1f2937', margin: '0', fontSize: '11px', lineHeight: '1.2' }}>
-                          {item.name.length > 16 ? item.name.substring(0, 16) + '...' : item.name}
-                        </h4>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#e53e3e' }}>Rs.{item.price}</span>
-                          <div style={{
-                            padding: '1px 4px',
-                            borderRadius: '8px',
-                            fontSize: '6px',
-                            fontWeight: 'bold',
-                            backgroundColor: item.isVeg ? '#dcfce7' : '#fee2e2',
-                            color: item.isVeg ? '#166534' : '#dc2626'
-                          }}>
-                            {item.isVeg ? 'V' : 'N'}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', borderRadius: '6px', border: '1px solid #e5e7eb', marginLeft: '8px' }}>
-                        <button
-                          onClick={() => removeFromCart(item.id)}
-                          style={{
-                            width: '24px',
-                            height: '24px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#e53e3e',
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            borderRadius: '4px 0 0 4px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <FaMinus size={8} />
-                        </button>
-                        <span style={{
-                          width: '28px',
-                          height: '24px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 'bold',
-                          color: '#1f2937',
-                          borderLeft: '1px solid #e5e7eb',
-                          borderRight: '1px solid #e5e7eb',
-                          fontSize: '11px'
-                        }}>
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => addToCart(item)}
-                          style={{
-                            width: '24px',
-                            height: '24px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#10b981',
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            borderRadius: '0 4px 4px 0',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <FaPlus size={8} />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div style={{ fontSize: '10px', fontWeight: '600', color: '#374151', textAlign: 'right' }}>
-                      Subtotal: Rs.{item.price * item.quantity}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-         
-          {cart.length > 0 && (
-            <div style={{ borderTop: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
-              {/* Total */}
-              <div style={{ padding: '12px' }}>
-                <div style={{ background: 'linear-gradient(135deg, #1f2937, #111827)', color: 'white', padding: '16px', borderRadius: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 'bold' }}>Grand Total</span>
-                    <span style={{ fontSize: '24px', fontWeight: 'bold' }}>Rs.{getTotalAmount()}</span>
-                  </div>
-                </div>
-              </div>
-
-             
-              {orderSuccess?.show && (
-                <div style={{ 
-                  padding: '16px', 
-                  backgroundColor: '#dcfce7', 
-                  border: '2px solid #22c55e',
-                  borderRadius: '12px',
-                  margin: '12px',
-                  textAlign: 'center'
+                  justifyContent: 'center',
+                  margin: '0 auto 16px auto',
+                  boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <div style={{ 
-                      width: '32px', 
-                      height: '32px', 
-                      backgroundColor: '#22c55e', 
-                      borderRadius: '50%', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center' 
-                    }}>
-                      <FaCheckCircle size={18} style={{ color: 'white' }} />
-                    </div>
-                  </div>
-                  <div style={{ fontWeight: '700', color: '#166534', fontSize: '16px', marginBottom: '4px' }}>Order Complete!</div>
-                  <div style={{ fontSize: '12px', color: '#166534', marginBottom: '12px' }}>
-                    Order #{orderSuccess.orderId} processed successfully
-                  </div>
-                  <button
-                    onClick={() => {
-                      setOrderSuccess(null);
-                      setCart([]);
-                      localStorage.removeItem('dine_cart');
-                    }}
-                    style={{
-                      background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                      color: 'white',
-                      padding: '8px 16px',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      margin: '0 auto'
-                    }}
-                  >
-                    <FaPlus size={10} />
-                    Start New Order
-                  </button>
+                  <FaClipboardList size={32} color="white" />
                 </div>
-              )}
+                <h2 style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>
+                  Review Your Order
+                </h2>
+                <p style={{ color: '#6b7280', fontSize: isMobile ? '14px' : '16px', margin: 0 }}>
+                  {orderType === 'dine-in' ? `Table ${selectedTable?.name}` : `Takeaway for ${customerInfo.name}`}
+                </p>
+              </div>
 
-              {/* Actions Section - Redesigned */}
-              {!orderSuccess?.show && (
-                <div style={{ padding: '16px', borderTop: '1px solid #e5e7eb' }}>
-                  {/* Payment Method Selection */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <div style={{ 
-                      fontSize: '13px', 
-                      fontWeight: '700', 
-                      color: '#1f2937', 
-                      marginBottom: '10px',
+              {/* Order Items */}
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px' }}>
+                  Items ({cart.length})
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {cart.map((item, index) => (
+                    <div key={index} style={{
                       display: 'flex',
+                      justifyContent: 'space-between',
                       alignItems: 'center',
-                      gap: '6px'
-                    }}>
-                      <FaCreditCard size={12} />
-                      Payment Method
-                    </div>
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      {[
-                        { id: 'cash', label: 'Cash', icon: FaMoneyBillWave },
-                        { id: 'upi', label: 'UPI', icon: FaCreditCard },
-                        { id: 'card', label: 'Card', icon: FaCreditCard }
-                      ].map((method) => {
-                        const Icon = method.icon;
-                        const isSelected = paymentMethod === method.id;
-                        return (
-                          <button
-                            key={method.id}
-                            onClick={() => setPaymentMethod(method.id)}
-                            style={{
-                              flex: 1,
-                              padding: '10px 8px',
-                              backgroundColor: isSelected ? '#22c55e' : 'white',
-                              color: isSelected ? 'white' : '#6b7280',
-                              border: isSelected ? '2px solid #22c55e' : '2px solid #e5e7eb',
-                              borderRadius: '8px',
-                              fontWeight: '600',
-                              fontSize: '11px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              gap: '4px',
-                              transition: 'all 0.2s'
-                            }}
-                          >
-                            <Icon size={14} />
-                            {method.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Quick Actions */}
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                    <button 
-                      onClick={saveOrder}
-                      style={{
-                        flex: 1,
-                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                        color: 'white',
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        fontWeight: '700',
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        fontSize: '12px',
-                        transition: 'transform 0.1s'
-                      }}
-                      onMouseDown={(e) => e.target.style.transform = 'scale(0.98)'}
-                      onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
-                      onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-                    >
-                      <FaSave size={11} />
-                      SAVE
-                    </button>
-                    
-                    <button 
-                      onClick={() => {
-                        if (window.confirm('Are you sure you want to clear this order?')) {
-                          clearCart();
-                        }
-                      }}
-                      style={{
-                        background: 'linear-gradient(135deg, #6b7280, #4b5563)',
-                        color: 'white',
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        fontWeight: '700',
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        fontSize: '12px',
-                        minWidth: '80px',
-                        transition: 'transform 0.1s'
-                      }}
-                      onMouseDown={(e) => e.target.style.transform = 'scale(0.98)'}
-                      onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
-                      onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-                    >
-                      <FaTimes size={10} />
-                      CLEAR ORDER
-                    </button>
-                  </div>
-
-                  {/* Complete Order Button */}
-                  <button 
-                    onClick={processOrder}
-                    disabled={processing || cart.length === 0}
-                    style={{
-                      width: '100%',
-                      background: processing || cart.length === 0 
-                        ? 'linear-gradient(135deg, #d1d5db, #9ca3af)' 
-                        : 'linear-gradient(135deg, #22c55e, #16a34a)',
-                      color: 'white',
-                      padding: '16px 20px',
-                      borderRadius: '12px',
-                      fontWeight: '800',
-                      border: 'none',
-                      cursor: processing || cart.length === 0 ? 'not-allowed' : 'pointer',
-                      fontSize: '16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '10px',
-                      boxShadow: processing || cart.length === 0 ? 'none' : '0 4px 12px rgba(34, 197, 94, 0.3)',
-                      transition: 'all 0.2s',
-                      transform: processing || cart.length === 0 ? 'none' : 'translateY(0)',
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }}
-                    onMouseDown={(e) => {
-                      if (!processing && cart.length > 0) {
-                        e.target.style.transform = 'translateY(2px)';
-                        e.target.style.boxShadow = '0 2px 6px rgba(34, 197, 94, 0.3)';
-                      }
-                    }}
-                    onMouseUp={(e) => {
-                      if (!processing && cart.length > 0) {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!processing && cart.length > 0) {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)';
-                      }
-                    }}
-                  >
-                    {processing ? (
-                      <>
-                        <div style={{
-                          width: '16px',
-                          height: '16px',
-                          border: '2px solid rgba(255,255,255,0.3)',
-                          borderTop: '2px solid white',
-                          borderRadius: '50%',
-                          animation: 'spin 1s linear infinite'
-                        }} />
-                        Processing Order...
-                      </>
-                    ) : (
-                      <>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px'
-                        }}>
-                          <FaCheckCircle size={16} />
-                          <span>COMPLETE ORDER</span>
-                        </div>
-                        <div style={{
-                          backgroundColor: 'rgba(255,255,255,0.2)',
-                          padding: '4px 8px',
-                          borderRadius: '6px',
-                          fontSize: '14px',
-                          fontWeight: '800'
-                        }}>
-                          Rs.{getTotalAmount()}
-                        </div>
-                      </>
-                    )}
-                  </button>
-
-                  {/* Error Message */}
-                  {error && (
-                    <div style={{
-                      backgroundColor: '#fee2e2',
-                      border: '1px solid #fecaca',
-                      borderRadius: '6px',
-                      padding: '8px',
-                      fontSize: '11px',
-                      color: '#dc2626',
-                      fontWeight: '600',
-                      marginTop: '8px'
-                    }}>
-                      {error}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        )}
-      </div>
-
-      {/* Mobile Category Sidebar */}
-      {isMobile && showMobileSidebar && (
-        <>
-          <div 
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 998
-            }}
-            onClick={() => setShowMobileSidebar(false)}
-          />
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            height: '100vh',
-            width: '280px',
-            backgroundColor: 'white',
-            zIndex: 999,
-            boxShadow: '4px 0 20px rgba(0, 0, 0, 0.1)',
-            transform: showMobileSidebar ? 'translateX(0)' : 'translateX(-100%)',
-            transition: 'transform 0.3s ease',
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
-            {/* Mobile Sidebar Header */}
-            <div style={{
-              padding: '20px',
-              borderBottom: '1px solid #f1f5f9',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                Menu Categories
-              </h2>
-              <button
-                onClick={() => setShowMobileSidebar(false)}
-                style={{
-                  padding: '8px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  borderRadius: '6px'
-                }}
-              >
-                <FaTimes size={18} color="#6b7280" />
-              </button>
-            </div>
-
-            {/* Mobile Categories */}
-            <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
-              {categories.map((category) => {
-                const isSelected = selectedCategory === category.id;
-                
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => {
-                      setSelectedCategory(category.id);
-                      setShowMobileSidebar(false);
-                    }}
-                    style={{
-                      width: '100%',
-                      textAlign: 'left',
                       padding: '16px',
-                      borderRadius: '16px',
-                      fontWeight: '600',
-                      border: isSelected ? '2px solid #ef4444' : '1px solid #f3f4f6',
-                      cursor: 'pointer',
-                      marginBottom: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '16px',
-                      backgroundColor: isSelected ? '#fef2f2' : '#fafafa',
-                      color: isSelected ? '#dc2626' : '#374151',
-                      transition: 'all 0.3s ease',
-                      fontSize: '16px',
-                      boxShadow: isSelected ? '0 4px 12px rgba(239, 68, 68, 0.15)' : '0 2px 6px rgba(0,0,0,0.05)'
-                    }}
-                  >
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
+                      backgroundColor: '#f9fafb',
                       borderRadius: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '24px',
-                      backgroundColor: isSelected ? '#ef4444' : '#ffffff',
-                      boxShadow: isSelected ? 'inset 0 2px 4px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.05)',
-                      transition: 'all 0.3s ease'
+                      border: '1px solid #e5e7eb'
                     }}>
-                      {isSelected ? '🍽️' : category.emoji}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '16px' }}>{item.name}</div>
+                        <div style={{ color: '#6b7280', fontSize: '14px' }}>Rs.{item.price} each</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '16px' }}>
+                          {item.quantity}x = Rs.{item.price * item.quantity}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: '700', marginBottom: '4px' }}>{category.name}</div>
-                      <div style={{ fontSize: '12px', opacity: 0.7 }}>{category.count} items</div>
-                    </div>
-                  </button>
-                );
-              })}
+                  ))}
+                </div>
+              </div>
+
+              {/* Total */}
+              <div style={{ 
+                padding: '20px', 
+                backgroundColor: '#1f2937', 
+                borderRadius: '16px', 
+                color: 'white',
+                marginBottom: '32px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '18px', fontWeight: '600' }}>Total Amount</span>
+                  <span style={{ fontSize: '24px', fontWeight: 'bold' }}>Rs.{getTotalAmount()}</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <button
+                  onClick={() => goBackToStep('menu')}
+                  style={{
+                    flex: 1,
+                    padding: '16px',
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  ← Back to Menu
+                </button>
+                <button
+                  onClick={proceedToPayment}
+                  style={{
+                    flex: 2,
+                    padding: '16px',
+                    backgroundColor: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    boxShadow: '0 4px 14px rgba(239, 68, 68, 0.3)'
+                  }}
+                >
+                  Proceed to Payment →
+                </button>
+              </div>
             </div>
           </div>
-        </>
-      )}
+        )}
 
-      {/* Mobile Cart Modal */}
-      {isMobile && showMobileCart && (
-        <>
-          <div 
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 998
-            }}
-            onClick={() => setShowMobileCart(false)}
-          />
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            right: 0,
-            height: '100vh',
-            width: '90%',
-            maxWidth: '400px',
-            backgroundColor: 'white',
-            zIndex: 999,
-            boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.1)',
-            transform: showMobileCart ? 'translateX(0)' : 'translateX(100%)',
-            transition: 'transform 0.3s ease',
-            display: 'flex',
-            flexDirection: 'column'
+        {currentStep === 'payment' && (
+          // Payment Step
+          <div style={{ 
+            flex: 1, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            padding: isMobile ? '20px' : '40px',
+            backgroundColor: '#f9fafb'
           }}>
-            {/* Mobile Cart Header */}
-            <div style={{
-              padding: '20px',
-              borderBottom: '1px solid #f1f5f9',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '24px', 
+              padding: isMobile ? '32px 24px' : '48px 40px',
+              maxWidth: '600px',
+              width: '100%',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+              border: '1px solid #e5e7eb'
             }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                Your Order ({cart.reduce((sum, item) => sum + item.quantity, 0)} items)
-              </h2>
-              <button
-                onClick={() => setShowMobileCart(false)}
-                style={{
-                  padding: '8px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  borderRadius: '6px'
-                }}
-              >
-                <FaTimes size={18} color="#6b7280" />
-              </button>
-            </div>
-
-            {/* Mobile Cart Content */}
-            <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
-              {cart.length === 0 ? (
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{
-                  textAlign: 'center',
-                  padding: '40px 20px',
-                  color: '#6b7280'
+                  width: '80px',
+                  height: '80px',
+                  backgroundColor: '#8b5cf6',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px auto',
+                  boxShadow: '0 4px 14px rgba(139, 92, 246, 0.3)'
                 }}>
-                  <FaShoppingCart size={48} style={{ marginBottom: '16px', color: '#d1d5db' }} />
-                  <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Your cart is empty</p>
-                  <p style={{ fontSize: '14px' }}>Add some delicious items to get started!</p>
+                  <FaCreditCard size={32} color="white" />
                 </div>
-              ) : (
-                cart.map((item, index) => (
-                  <div key={index} style={{
-                    padding: '16px',
-                    backgroundColor: '#fef7f0',
-                    borderRadius: '16px',
-                    marginBottom: '12px',
-                    border: '1px solid #fed7aa'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                      <div style={{ flex: 1 }}>
-                        <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#1f2937', margin: '0 0 4px 0' }}>
-                          {item.name}
-                        </h4>
-                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 8px 0' }}>
-                          Rs.{item.price} each
-                        </p>
-                      </div>
+                <h2 style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>
+                  Payment & Checkout
+                </h2>
+                <p style={{ color: '#6b7280', fontSize: isMobile ? '14px' : '16px', margin: 0 }}>
+                  Choose payment method and complete order
+                </p>
+              </div>
+
+              {/* Payment Methods */}
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px' }}>
+                  Payment Method
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: '12px' }}>
+                  {[
+                    { id: 'cash', label: 'Cash', icon: FaMoneyBillWave, color: '#10b981' },
+                    { id: 'upi', label: 'UPI', icon: FaCreditCard, color: '#3b82f6' },
+                    { id: 'card', label: 'Card', icon: FaCreditCard, color: '#8b5cf6' }
+                  ].map((method) => {
+                    const Icon = method.icon;
+                    const isSelected = paymentMethod === method.id;
+                    return (
                       <button
-                        onClick={() => removeFromCart(index)}
+                        key={method.id}
+                        onClick={() => setPaymentMethod(method.id)}
                         style={{
-                          padding: '6px',
-                          backgroundColor: '#fee2e2',
-                          color: '#dc2626',
-                          border: 'none',
-                          borderRadius: '8px',
+                          padding: '20px',
+                          backgroundColor: isSelected ? '#fef2f2' : 'white',
+                          border: isSelected ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                          borderRadius: '16px',
                           cursor: 'pointer',
-                          marginLeft: '8px'
+                          transition: 'all 0.2s',
+                          textAlign: 'center'
                         }}
                       >
-                        <FaTimes size={12} />
-                      </button>
-                    </div>
-                    
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        backgroundColor: 'white',
-                        borderRadius: '8px',
-                        border: '1px solid #e5e7eb'
-                      }}>
-                        <button
-                          onClick={() => updateCartQuantity(index, Math.max(0, item.quantity - 1))}
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#ef4444',
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            borderRadius: '8px 0 0 8px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <FaMinus size={12} />
-                        </button>
-                        <span style={{
+                        <div style={{
                           width: '40px',
-                          height: '32px',
+                          height: '40px',
+                          backgroundColor: isSelected ? '#ef4444' : '#f3f4f6',
+                          borderRadius: '50%',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontWeight: 'bold',
-                          color: '#1f2937',
-                          borderLeft: '1px solid #e5e7eb',
-                          borderRight: '1px solid #e5e7eb',
-                          fontSize: '14px'
+                          margin: '0 auto 12px auto'
                         }}>
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => addToCart(item)}
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#10b981',
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            borderRadius: '0 8px 8px 0',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <FaPlus size={12} />
-                        </button>
-                      </div>
-                      
-                      <div style={{ fontSize: '16px', fontWeight: '700', color: '#374151' }}>
-                        Rs.{item.price * item.quantity}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+                          <Icon size={20} color={isSelected ? 'white' : '#6b7280'} />
+                        </div>
+                        <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '16px' }}>{method.label}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-            {cart.length > 0 && (
-              <div style={{ borderTop: '1px solid #e5e7eb', backgroundColor: '#f9fafb', padding: '20px' }}>
-                <div style={{ 
-                  background: 'linear-gradient(135deg, #1f2937, #111827)', 
-                  color: 'white', 
-                  padding: '16px', 
-                  borderRadius: '12px',
-                  marginBottom: '16px'
-                }}>
+              {/* Order Summary */}
+              <div style={{ 
+                padding: '20px', 
+                backgroundColor: '#1f2937', 
+                borderRadius: '16px', 
+                color: 'white',
+                marginBottom: '32px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '16px' }}>Items ({cart.reduce((sum, item) => sum + item.quantity, 0)})</span>
+                  <span style={{ fontSize: '16px' }}>Rs.{getTotalAmount()}</span>
+                </div>
+                <div style={{ borderTop: '1px solid #374151', paddingTop: '12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 'bold' }}>Grand Total</span>
+                    <span style={{ fontSize: '18px', fontWeight: '600' }}>Total Amount</span>
                     <span style={{ fontSize: '24px', fontWeight: 'bold' }}>Rs.{getTotalAmount()}</span>
                   </div>
                 </div>
+              </div>
 
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '16px' }}>
                 <button
-                  onClick={() => {
-                    setShowMobileCart(false);
-                    processOrder();
+                  onClick={() => goBackToStep('review')}
+                  style={{
+                    flex: 1,
+                    padding: '16px',
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
                   }}
+                >
+                  ← Back
+                </button>
+                <button
+                  onClick={processOrder}
                   disabled={processing}
                   style={{
-                    width: '100%',
-                    background: processing 
-                      ? 'linear-gradient(135deg, #9ca3af, #6b7280)' 
-                      : 'linear-gradient(135deg, #10b981, #059669)',
-                    color: 'white',
+                    flex: 2,
                     padding: '16px',
-                    borderRadius: '12px',
-                    fontWeight: '700',
-                    fontSize: '16px',
+                    backgroundColor: processing ? '#d1d5db' : '#22c55e',
+                    color: 'white',
                     border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '700',
                     cursor: processing ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s',
+                    boxShadow: processing ? 'none' : '0 4px 14px rgba(34, 197, 94, 0.3)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '12px',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)'
+                    gap: '8px'
                   }}
                 >
                   {processing ? (
                     <>
                       <FaSpinner style={{ animation: 'spin 1s linear infinite' }} size={16} />
-                      Processing Order...
+                      Processing...
                     </>
                   ) : (
                     <>
                       <FaCheckCircle size={16} />
-                      COMPLETE ORDER • Rs.{getTotalAmount()}
+                      Complete Order
                     </>
                   )}
                 </button>
               </div>
-            )}
-          </div>
-        </>
-      )}
 
-      {/* Table Selector Modal */}
-      {showTableSelector && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 50,
-          padding: '16px'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-            width: '100%',
-            maxWidth: '400px'
-          }}>
-            <div style={{ padding: '24px', borderBottom: '1px solid #e5e7eb' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Select Table</h2>
-              <p style={{ color: '#6b7280', margin: '4px 0 0 0', fontSize: '14px' }}>Choose a table for this order</p>
-            </div>
-            
-            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                  Enter Table Number/Name
-                </label>
-                <input
-                  type="text"
-                  value={manualTableNumber}
-                  onChange={(e) => setManualTableNumber(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleManualTableSelection()}
-                  placeholder="e.g., T1, Table 5, VIP1"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    backgroundColor: '#f9fafb'
-                  }}
-                />
-              </div>
-
-              <div style={{ padding: '16px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <FaChair size={16} color="#0284c7" />
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#0284c7' }}>
-                    Need to manage tables?
-                  </span>
+              {orderSuccess?.show && (
+                <div style={{ 
+                  marginTop: '20px',
+                  padding: '20px', 
+                  backgroundColor: '#dcfce7', 
+                  border: '2px solid #22c55e',
+                  borderRadius: '16px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <FaCheckCircle size={24} style={{ color: '#22c55e' }} />
+                    <span style={{ fontSize: '18px', fontWeight: '700', color: '#166534' }}>Order Complete!</span>
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#166534', marginBottom: '16px' }}>
+                    Order #{orderSuccess.orderId} sent to kitchen
+                  </div>
+                  <button
+                    onClick={() => {
+                      setOrderSuccess(null);
+                      setCart([]);
+                      setCurrentStep('table');
+                      setSelectedTable(null);
+                      setCustomerInfo({ name: '', phone: '' });
+                    }}
+                    style={{
+                      backgroundColor: '#22c55e',
+                      color: 'white',
+                      padding: '12px 24px',
+                      borderRadius: '12px',
+                      fontWeight: '600',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Start New Order
+                  </button>
                 </div>
-                <p style={{ fontSize: '12px', color: '#075985', margin: 0, lineHeight: '1.4' }}>
-                  Visit the Table Management page to set up floor layouts, add tables, and track table status.
-                </p>
-              </div>
-            </div>
-            
-            <div style={{ padding: '24px', backgroundColor: '#f9fafb', display: 'flex', gap: '12px' }}>
-              <button
-                onClick={() => setShowTableSelector(false)}
-                style={{
-                  flex: 1,
-                  backgroundColor: '#6b7280',
-                  color: 'white',
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleManualTableSelection}
-                disabled={!manualTableNumber.trim()}
-                style={{
-                  flex: 1,
-                  backgroundColor: manualTableNumber.trim() ? '#e53e3e' : '#d1d5db',
-                  color: 'white',
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  border: 'none',
-                  cursor: manualTableNumber.trim() ? 'pointer' : 'not-allowed',
-                  fontSize: '14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px'
-                }}
-              >
-                <FaChair size={14} />
-                Select Table
-              </button>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

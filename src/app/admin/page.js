@@ -601,51 +601,51 @@ const Admin = () => {
           {isClient && isMobile ? (
             // Mobile Header Layout
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                 <div style={{ 
-                  width: '40px', 
-                  height: '40px', 
+                  width: '32px', 
+                  height: '32px', 
                   background: 'linear-gradient(135deg, #ec4899, #db2777)', 
-                  borderRadius: '12px', 
+                  borderRadius: '8px', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  boxShadow: '0 4px 12px rgba(236, 72, 153, 0.3)'
+                  boxShadow: '0 2px 8px rgba(236, 72, 153, 0.3)'
                 }}>
-                  <FaShieldAlt color="white" size={18} />
+                  <FaShieldAlt color="white" size={14} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>
+                  <h1 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>
                     Admin Dashboard
                   </h1>
-                  <p style={{ color: '#6b7280', margin: 0, fontSize: '12px' }}>
+                  <p style={{ color: '#6b7280', margin: 0, fontSize: '10px' }}>
                     {restaurants.length} restaurants • {staff.length} staff
                   </p>
                 </div>
               </div>
               
               {/* Mobile Tab Navigation */}
-              <div style={{ display: 'flex', gap: '4px' }}>
+              <div style={{ display: 'flex', gap: '3px' }}>
                 <button
                   onClick={() => setActiveTab('restaurants')}
                   style={{
                     flex: 1,
                     backgroundColor: activeTab === 'restaurants' ? '#ec4899' : 'transparent',
                     color: activeTab === 'restaurants' ? 'white' : '#6b7280',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
                     fontWeight: '600',
-                    fontSize: '12px',
+                    fontSize: '10px',
                     border: activeTab === 'restaurants' ? 'none' : '1px solid #e5e7eb',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '4px'
+                    gap: '3px'
                   }}
                 >
-                  <FaStore size={10} />
+                  <FaStore size={8} />
                   Restaurants
                 </button>
                 <button
@@ -654,20 +654,20 @@ const Admin = () => {
                     flex: 1,
                     backgroundColor: activeTab === 'staff' ? '#ec4899' : 'transparent',
                     color: activeTab === 'staff' ? 'white' : '#6b7280',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
                     fontWeight: '600',
-                    fontSize: '12px',
+                    fontSize: '10px',
                     border: activeTab === 'staff' ? 'none' : '1px solid #e5e7eb',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '4px'
+                    gap: '3px'
                   }}
                 >
-                  <FaUsers size={10} />
+                  <FaUsers size={8} />
                   Staff
                 </button>
                 <button
@@ -676,20 +676,20 @@ const Admin = () => {
                     flex: 1,
                     backgroundColor: activeTab === 'menu' ? '#ec4899' : 'transparent',
                     color: activeTab === 'menu' ? 'white' : '#6b7280',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
                     fontWeight: '600',
-                    fontSize: '12px',
+                    fontSize: '10px',
                     border: activeTab === 'menu' ? 'none' : '1px solid #e5e7eb',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '4px'
+                    gap: '3px'
                   }}
                 >
-                  <FaUtensils size={10} />
+                  <FaUtensils size={8} />
                   Menu
                 </button>
               </div>
