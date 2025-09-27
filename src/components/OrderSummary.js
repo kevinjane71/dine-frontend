@@ -32,6 +32,8 @@ const OrderSummary = ({
   error, 
   getTotalAmount 
 }) => {
+  // Debug logging
+  console.log('OrderSummary orderSuccess:', orderSuccess);
   return (
     <div style={{ 
       width: '100%', 
@@ -367,6 +369,80 @@ const OrderSummary = ({
         )}
       </div>
 
+      {/* Success Message - Show regardless of cart state */}
+      {orderSuccess?.show && (
+        <div style={{ 
+          padding: '16px', 
+          backgroundColor: '#dcfce7', 
+          border: '2px solid #22c55e',
+          borderRadius: '12px',
+          margin: '12px',
+          textAlign: 'center',
+          boxShadow: '0 4px 12px rgba(34, 197, 94, 0.2)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ 
+              width: '32px', 
+              height: '32px', 
+              backgroundColor: '#22c55e', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              animation: 'bounce 1s infinite'
+            }}>
+              <FaCheckCircle size={16} style={{ color: 'white' }} />
+            </div>
+            <div style={{ fontWeight: '800', color: '#166534', fontSize: '16px' }}>
+              {orderSuccess.message || 'Order Complete! ✅'}
+            </div>
+          </div>
+          <div style={{ fontSize: '14px', color: '#166534', marginBottom: '12px', fontWeight: '600' }}>
+            Order #{orderSuccess.orderId} {orderSuccess.message?.includes('placed') ? 'sent to kitchen' : 'billing completed'}
+          </div>
+          <div style={{ fontSize: '12px', color: '#166534', marginBottom: '16px' }}>
+            {orderSuccess.message?.includes('placed') 
+              ? 'Your order has been sent to the kitchen for preparation' 
+              : 'Payment processed successfully. Thank you for your order!'
+            }
+          </div>
+          <button
+            onClick={() => {
+              setOrderSuccess(null);
+              onClearCart();
+            }}
+            style={{
+              background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+              color: 'white',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              fontWeight: '700',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              margin: '0 auto',
+              boxShadow: '0 4px 12px rgba(34, 197, 94, 0.4)',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'translateY(-2px)';
+              e.target.style.boxShadow = '0 6px 16px rgba(34, 197, 94, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.4)';
+            }}
+          >
+            <FaPlus size={10} />
+            Start New Order
+          </button>
+        </div>
+      )}
+
       {/* Footer */}
       {cart.length > 0 && (
         <div style={{ borderTop: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
@@ -385,63 +461,6 @@ const OrderSummary = ({
               </div>
             </div>
           </div>
-
-          {/* Success Message */}
-          {orderSuccess?.show && (
-            <div style={{ 
-              padding: '12px', 
-              backgroundColor: '#dcfce7', 
-              border: '1px solid #22c55e',
-              borderRadius: '8px',
-              margin: '0 8px 8px 8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
-                <div style={{ 
-                  width: '24px', 
-                  height: '24px', 
-                  backgroundColor: '#22c55e', 
-                  borderRadius: '50%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
-                }}>
-                  <FaCheckCircle size={12} style={{ color: 'white' }} />
-                </div>
-                <div style={{ fontWeight: '700', color: '#166534', fontSize: '14px' }}>
-                  Billing Complete! ✅
-                </div>
-              </div>
-              <div style={{ fontSize: '12px', color: '#166534', marginBottom: '8px' }}>
-                Order #{orderSuccess.orderId} processed successfully
-              </div>
-              <button
-                onClick={() => {
-                  setOrderSuccess(null);
-                  onClearCart();
-                }}
-                style={{
-                  background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                  color: 'white',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  fontWeight: '600',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '4px',
-                  margin: '0 auto',
-                  boxShadow: '0 2px 6px rgba(34, 197, 94, 0.3)'
-                }}
-              >
-                <FaPlus size={8} />
-                New Order
-              </button>
-            </div>
-          )}
 
           {/* Actions Section */}
           {!orderSuccess?.show && (

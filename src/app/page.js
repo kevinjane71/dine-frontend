@@ -446,7 +446,13 @@ function RestaurantPOSContent() {
       // Clear cart and show inline success
       setCart([]);
       localStorage.removeItem('dine_cart');
-      setOrderSuccess({ orderId, show: true });
+      const successData = { 
+        orderId, 
+        show: true, 
+        message: 'Billing Complete! 💳' 
+      };
+      console.log('Setting order success:', successData);
+      setOrderSuccess(successData);
       
       // Auto-hide success message after 5 seconds
       setTimeout(() => {
@@ -501,7 +507,7 @@ function RestaurantPOSContent() {
         setOrderSuccess({
           orderId: response.data.order.id,
           show: true,
-          message: 'Order saved successfully!'
+          message: 'Order Saved Successfully! 💾'
         });
         // Don't clear cart for saved orders
       }
@@ -553,7 +559,7 @@ function RestaurantPOSContent() {
         setOrderSuccess({
           orderId: response.data.order.id,
           show: true,
-          message: 'Order placed to kitchen successfully!'
+          message: 'Order Placed to Kitchen! 👨‍🍳'
         });
         clearCart();
       }
