@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navigation from '../../components/Navigation';
+import BulkMenuUpload from '../../components/BulkMenuUpload';
 import apiClient from '../../lib/api';
 import { 
   FaPlus, 
@@ -140,6 +141,7 @@ const MenuManagement = () => {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [showAddForm, setShowAddForm] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -396,6 +398,13 @@ const MenuManagement = () => {
     }
   };
 
+  const handleMenuItemsAdded = async () => {
+    // Reload menu data when new items are added
+    if (currentRestaurant) {
+      await loadMenuData(currentRestaurant.id);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
@@ -467,7 +476,7 @@ const MenuManagement = () => {
               
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
-                  onClick={() => setShowUploadModal(true)}
+                  onClick={() => setShowBulkUpload(true)}
                   style={{
                     background: 'linear-gradient(45deg, #f59e0b 0%, #ef4444 100%)',
                     color: 'white',
@@ -483,6 +492,7 @@ const MenuManagement = () => {
                     boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
                     minWidth: '40px'
                   }}
+                  title="Bulk Upload with AI"
                 >
                   <FaUpload size={14} />
                 </button>
@@ -596,7 +606,7 @@ const MenuManagement = () => {
           
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
-              onClick={() => setShowUploadModal(true)}
+              onClick={() => setShowBulkUpload(true)}
               style={{
                 background: 'linear-gradient(45deg, #f59e0b 0%, #ef4444 100%)',
                 color: 'white',
@@ -622,7 +632,7 @@ const MenuManagement = () => {
               }}
             >
               <FaUpload size={12} />
-              Upload
+              Bulk Upload
             </button>
             <button
               onClick={() => setShowAddForm(true)}
@@ -2295,6 +2305,15 @@ const MenuManagement = () => {
           </div>
         </div>
       )}
+
+      {/* Bulk Upload Modal */}
+      <BulkMenuUpload
+        isOpen={showBulkUpload}
+        onClose={() => setShowBulkUpload(false)}
+        restaurantId={currentRestaurant?.id}
+        onMenuItemsAdded={handleMenuItemsAdded}
+        currentMenuItems={menuItems}
+      />
 
       <style jsx>{`
         @keyframes float {

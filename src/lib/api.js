@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dine-backend-lake.vercel.app';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
 
 class ApiClient {
   constructor() {
@@ -166,6 +166,46 @@ class ApiClient {
     return this.request(`/api/menus/item/${itemId}`, {
       method: 'DELETE',
     });
+  }
+
+  // Bulk menu upload endpoints
+  async bulkUploadMenu(restaurantId, formData) {
+    const url = `${this.baseURL}/api/menus/bulk-upload/${restaurantId}`;
+    const token = this.getToken();
+
+    const config = {
+      method: 'POST',
+      body: formData,
+      headers: {
+        // Don't set Content-Type, let the browser set it for FormData
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    };
+
+    try {
+      const response = await fetch(url, config);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'API request failed');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  }
+
+  async bulkSaveMenuItems(restaurantId, menuItems) {
+    return this.request(`/api/menus/bulk-save/${restaurantId}`, {
+      method: 'POST',
+      body: { menuItems },
+    });
+  }
+
+  async getUploadStatus(restaurantId) {
+    return this.request(`/api/menus/upload-status/${restaurantId}`);
   }
 
   // Order endpoints
