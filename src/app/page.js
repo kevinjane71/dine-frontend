@@ -67,6 +67,7 @@ function RestaurantPOSContent() {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(null); // { orderId: 'ORD-123', show: true }
+  const [tableNumber, setTableNumber] = useState('');
   
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false);
@@ -465,15 +466,103 @@ function RestaurantPOSContent() {
     }
   };
 
-  const saveOrder = () => {
-    // Save current cart state
-    localStorage.setItem('dine_saved_order', JSON.stringify({
-      cart,
+  const saveOrder = async () => {
+    if (cart.length === 0) {
+      setError('Cart is empty');
+      return;
+    }
+
+    try {
+      setProcessing(true);
+      setError(null);
+
+      const orderData = {
+        restaurantId: selectedRestaurantId,
+        tableNumber: tableNumber || selectedTable?.number || null,
+        items: cart.map(item => ({
+          menuItemId: item.id,
+          quantity: item.quantity,
+          notes: ''
+        })),
+        customerInfo: {},
       orderType,
-      selectedTable,
-      timestamp: new Date().toISOString()
-    }));
-    alert('Order saved successfully!');
+        paymentMethod,
+        staffInfo: {
+          name: 'Staff Member',
+          id: 'staff-001'
+        },
+        notes: '',
+        status: 'pending' // Save as draft
+      };
+
+      const response = await apiClient.post('/orders', orderData);
+      
+      if (response.data) {
+        setOrderSuccess({
+          orderId: response.data.order.id,
+          show: true,
+          message: 'Order saved successfully!'
+        });
+        // Don't clear cart for saved orders
+      }
+    } catch (error) {
+      console.error('Save order error:', error);
+      setError('Failed to save order. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const placeOrder = async () => {
+    if (cart.length === 0) {
+      setError('Cart is empty');
+      return;
+    }
+
+    try {
+      setProcessing(true);
+      setError(null);
+
+      const orderData = {
+        restaurantId: selectedRestaurantId,
+        tableNumber: tableNumber || selectedTable?.number || null,
+        items: cart.map(item => ({
+          menuItemId: item.id,
+          quantity: item.quantity,
+          notes: ''
+        })),
+        customerInfo: {},
+        orderType,
+        paymentMethod,
+        staffInfo: {
+          name: 'Staff Member',
+          id: 'staff-001'
+        },
+        notes: '',
+        status: 'confirmed' // Place order to kitchen
+      };
+
+      const response = await apiClient.post('/orders', orderData);
+      
+      if (response.data) {
+        // Update order status to confirmed (sent to kitchen)
+        await apiClient.patch(`/orders/${response.data.order.id}/status`, {
+          status: 'confirmed'
+        });
+
+        setOrderSuccess({
+          orderId: response.data.order.id,
+          show: true,
+          message: 'Order placed to kitchen successfully!'
+        });
+        clearCart();
+      }
+    } catch (error) {
+      console.error('Place order error:', error);
+      setError('Failed to place order. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const clearCart = () => {
@@ -837,23 +926,25 @@ function RestaurantPOSContent() {
         {/* Order Summary - Only show when there are menu items */}
         {!(filteredItems.length === 0 && menuItems.length === 0 && !loading) && (
           <div style={{ width: '30%', minWidth: '320px' }}>
-            <OrderSummary
-              cart={cart}
-              orderType={orderType}
-              setOrderType={setOrderType}
-              paymentMethod={paymentMethod}
-              setPaymentMethod={setPaymentMethod}
-              onClearCart={clearCart}
-              onProcessOrder={processOrder}
-              onSaveOrder={saveOrder}
-              onRemoveFromCart={removeFromCart}
-              onAddToCart={addToCart}
-              processing={processing}
-              orderSuccess={orderSuccess}
-              setOrderSuccess={setOrderSuccess}
-              error={error}
-              getTotalAmount={getTotalAmount}
-            />
+          <OrderSummary
+            cart={cart}
+            orderType={orderType}
+            setOrderType={setOrderType}
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+            onClearCart={clearCart}
+            onProcessOrder={processOrder}
+            onSaveOrder={saveOrder}
+            onPlaceOrder={placeOrder}
+            onRemoveFromCart={removeFromCart}
+            onAddToCart={addToCart}
+            onTableNumberChange={setTableNumber}
+            processing={processing}
+            orderSuccess={orderSuccess}
+            setOrderSuccess={setOrderSuccess}
+            error={error}
+            getTotalAmount={getTotalAmount}
+          />
         </div>
         )}
       </div>
