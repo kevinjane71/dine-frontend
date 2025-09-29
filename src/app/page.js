@@ -8,6 +8,7 @@ import EmptyMenuPrompt from '../components/EmptyMenuPrompt';
 import MenuItemCard from '../components/MenuItemCard';
 import CategoryButton from '../components/CategoryButton';
 import OrderSummary from '../components/OrderSummary';
+import Notification from '../components/Notification';
 import { 
   FaSearch, 
   FaShoppingCart, 
@@ -33,7 +34,8 @@ import {
   FaUsers,
   FaCog,
   FaSignOutAlt,
-  FaBars
+  FaBars,
+  FaTable
 } from 'react-icons/fa';
 import apiClient from '../lib/api';
 
@@ -57,6 +59,7 @@ function RestaurantPOSContent() {
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState('');
   
   // Onboarding state
@@ -67,7 +70,10 @@ function RestaurantPOSContent() {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(null); // { orderId: 'ORD-123', show: true }
+  const [notification, setNotification] = useState(null); // For top-right corner notifications
   const [tableNumber, setTableNumber] = useState('');
+  const [orderLookup, setOrderLookup] = useState(''); // For table number or order ID lookup
+  const [currentOrder, setCurrentOrder] = useState(null); // Current order being viewed/updated
   
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false);
@@ -372,6 +378,73 @@ function RestaurantPOSContent() {
     }
   };
 
+  const handleOrderLookup = async (e) => {
+    if (e.key === 'Enter' && orderLookup.trim()) {
+      try {
+        setLoading(true);
+        setError('');
+        
+        const searchValue = orderLookup.trim();
+        
+        console.log('🔍 Order lookup - Restaurant ID:', selectedRestaurant?.id);
+        console.log('🔍 Order lookup - Search value:', searchValue);
+        
+        if (!selectedRestaurant?.id) {
+          setError('No restaurant selected');
+          setLoading(false);
+          return;
+        }
+        
+        // Try to find order by table number or order ID
+        const response = await apiClient.getOrders(selectedRestaurant.id, {
+          search: searchValue
+          // Don't filter by status - let backend handle filtering out completed orders
+        });
+        
+        console.log('🔍 Order lookup response:', response);
+        
+        if (response.orders && response.orders.length > 0) {
+          const order = response.orders[0]; // Get the first matching order
+          setCurrentOrder(order);
+          
+          // Load the order items into cart for editing
+          const orderItems = order.items.map(item => ({
+            id: item.menuItemId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            category: item.category || 'main'
+          }));
+          
+          setCart(orderItems);
+          setTableNumber(order.tableNumber || '');
+          setOrderType(order.orderType || 'dine-in');
+          setPaymentMethod(order.paymentMethod || 'cash');
+          
+          // Show notification
+          setOrderSuccess({
+            orderId: order.id,
+            show: true,
+            message: `Found Order for ${searchValue} - Ready to Edit! ✏️`
+          });
+          
+          // Clear search after 3 seconds
+          setTimeout(() => {
+            setOrderSuccess(null);
+          }, 3000);
+          
+        } else {
+          setError(`No active order found for "${searchValue}"`);
+        }
+      } catch (error) {
+        console.error('Order lookup error:', error);
+        setError('Failed to search for order. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   const processOrder = async () => {
     if (cart.length === 0 || !selectedRestaurant) return;
 
@@ -445,6 +518,14 @@ function RestaurantPOSContent() {
 
       // Mark order as completed after successful payment
       await apiClient.completeOrder(orderId);
+
+      // Show notification for billing completion
+      setNotification({
+        type: 'success',
+        title: 'Billing Complete! 💳',
+        message: `Order #${orderId} has been successfully completed and payment processed.`,
+        show: true
+      });
 
       // Clear cart and show inline success
       setCart([]);
@@ -529,52 +610,122 @@ function RestaurantPOSContent() {
     }
 
     try {
-      setProcessing(true);
+      setPlacingOrder(true);
       setError(null);
 
-      const orderData = {
-        restaurantId: selectedRestaurant?.id,
-        tableNumber: tableNumber || selectedTable?.number || null,
-        items: cart.map(item => ({
-          menuItemId: item.id,
-          quantity: item.quantity,
-          notes: ''
-        })),
-        customerInfo: {},
-        orderType,
-        paymentMethod,
-        staffInfo: {
-          name: 'Staff Member',
-          id: 'staff-001'
-        },
-        notes: '',
-        status: 'confirmed' // Place order to kitchen
-      };
+      // Check if we're updating an existing order or creating a new one
+      if (currentOrder) {
+        // Update existing order
+        const updateData = {
+          items: cart.map(item => ({
+            menuItemId: item.id,
+            quantity: item.quantity,
+            notes: ''
+          })),
+          tableNumber: tableNumber || currentOrder.tableNumber,
+          orderType,
+          paymentMethod,
+          updatedAt: new Date().toISOString(),
+          lastUpdatedBy: {
+            name: 'Staff Member',
+            id: 'staff-001'
+          }
+        };
 
+        const response = await apiClient.updateOrder(currentOrder.id, updateData);
+        
+        if (response.data) {
+          // Show notification for order update
+          setNotification({
+            type: 'success',
+            title: 'Order Updated! ✏️👨‍🍳',
+            message: `Order #${currentOrder.id} has been updated and sent to kitchen with new items.`,
+            show: true
+          });
+
+          setOrderSuccess({
+            orderId: currentOrder.id,
+            show: true,
+            message: 'Order Updated! ✏️'
+          });
+          
+          // Clear current order and cart
+          setCurrentOrder(null);
+          clearCart();
+        }
+      } else {
+        // Create new order
+        const orderData = {
+          restaurantId: selectedRestaurant?.id,
+          tableNumber: tableNumber || selectedTable?.number || null,
+          items: cart.map(item => ({
+            menuItemId: item.id,
+            quantity: item.quantity,
+            notes: ''
+          })),
+          customerInfo: {},
+          orderType,
+          paymentMethod,
+          staffInfo: {
+            name: 'Staff Member',
+            id: 'staff-001'
+          },
+          notes: '',
+          status: 'confirmed' // Place order to kitchen
+        };
+
+        console.log('Creating order with data:', orderData);
       const response = await apiClient.createOrder(orderData);
-      
-      if (response.data) {
-        // Update order status to confirmed (sent to kitchen)
-        await apiClient.updateOrderStatus(response.data.order.id, 'confirmed');
+      console.log('Create order response:', response);
+        
+        if (response.order) {
+          console.log('Updating order status to confirmed...');
+          // Update order status to confirmed (sent to kitchen)
+          await apiClient.updateOrderStatus(response.order.id, 'confirmed');
 
-        setOrderSuccess({
-          orderId: response.data.order.id,
-          show: true,
-          message: 'Order Placed to Kitchen! 👨‍🍳'
-        });
-        clearCart();
+          // Show notification in top-right corner
+          setNotification({
+            type: 'success',
+            title: 'Order Sent to Chef! 👨‍🍳',
+            message: `Order #${response.order.id.slice(-6)} has been placed and sent to the kitchen for preparation.`,
+            show: true
+          });
+
+          // Show order success in the cart area
+          setOrderSuccess({
+            orderId: response.order.id,
+            show: true,
+            message: 'Order Placed to Kitchen! 👨‍🍳'
+          });
+          
+          // Clear cart after showing success
+          clearCart();
+          
+          // Hide notification after 4 seconds
+          setTimeout(() => {
+            setNotification(null);
+          }, 4000);
+        }
       }
     } catch (error) {
       console.error('Place order error:', error);
       setError('Failed to place order. Please try again.');
     } finally {
-      setProcessing(false);
+      setPlacingOrder(false);
     }
   };
 
   const clearCart = () => {
     setCart([]);
+    setTableNumber('');
+    setCurrentOrder(null);
+    setOrderLookup('');
     localStorage.removeItem('dine_cart');
+    
+    // Clear success message after 3 seconds
+    setTimeout(() => {
+      setOrderSuccess(null);
+    }, 3000);
   };
 
   const handleLogout = () => {
@@ -865,7 +1016,7 @@ function RestaurantPOSContent() {
           <>
             {/* Menu Header */}
           <div style={{ padding: '8px 12px', backgroundColor: 'white', borderBottom: '1px solid #f3f4f6' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
               <div>
                 <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
                   {categories.find(c => c.id === selectedCategory)?.name || 'All Items'}
@@ -896,6 +1047,75 @@ function RestaurantPOSContent() {
                   }}
                 />
               </div>
+            </div>
+            
+            {/* Order Management Row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' }}>
+              {/* Table Number Input */}
+              <div style={{ position: 'relative', width: '120px' }}>
+                <FaTable style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={12} />
+                <input
+                  type="text"
+                  placeholder="Table No."
+                  value={tableNumber}
+                  onChange={(e) => setTableNumber(e.target.value)}
+                  style={{
+                    width: '100%',
+                    paddingLeft: '28px',
+                    paddingRight: '8px',
+                    paddingTop: '6px',
+                    paddingBottom: '6px',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                    backgroundColor: '#f9fafb',
+                    fontSize: '11px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              {/* Order Lookup Input */}
+              <div style={{ position: 'relative', flex: 1, maxWidth: '200px' }}>
+                <FaSearch style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={12} />
+                <input
+                  type="text"
+                  placeholder="Search by Table No. or Order ID..."
+                  value={orderLookup}
+                  onChange={(e) => setOrderLookup(e.target.value)}
+                  onKeyPress={handleOrderLookup}
+                  style={{
+                    width: '100%',
+                    paddingLeft: '28px',
+                    paddingRight: '8px',
+                    paddingTop: '6px',
+                    paddingBottom: '6px',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                    backgroundColor: '#f9fafb',
+                    fontSize: '11px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              {/* Current Order Status */}
+              {currentOrder && (
+                <div style={{ 
+                  padding: '4px 8px', 
+                  backgroundColor: '#dbeafe', 
+                  border: '1px solid #3b82f6',
+                  borderRadius: '6px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  color: '#1e40af',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  <FaEdit size={10} />
+                  Editing Order {currentOrder.id.slice(-6)}
+                </div>
+              )}
             </div>
           </div>
           
@@ -947,10 +1167,16 @@ function RestaurantPOSContent() {
             onAddToCart={addToCart}
             onTableNumberChange={setTableNumber}
             processing={processing}
+            placingOrder={placingOrder}
             orderSuccess={orderSuccess}
             setOrderSuccess={setOrderSuccess}
             error={error}
             getTotalAmount={getTotalAmount}
+            tableNumber={tableNumber}
+            orderLookup={orderLookup}
+            setOrderLookup={setOrderLookup}
+            currentOrder={currentOrder}
+            setCurrentOrder={setCurrentOrder}
           />
         </div>
         )}
@@ -1370,6 +1596,16 @@ function RestaurantPOSContent() {
           </div>
         </div>
       )}
+
+      {/* Notification Component */}
+      <Notification
+        show={notification?.show || false}
+        type={notification?.type || 'success'}
+        title={notification?.title}
+        message={notification?.message}
+        onClose={() => setNotification(null)}
+        duration={5000}
+      />
     </div>
   );
 }

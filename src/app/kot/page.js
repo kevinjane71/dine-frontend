@@ -761,16 +761,31 @@ const KitchenOrderTicket = () => {
                             color: '#1f2937', 
                             margin: 0 
                           }}>{kot.id}</h3>
-                          <div style={{
-                            padding: isClient && isMobile ? '3px 8px' : '4px 12px',
-                            borderRadius: '20px',
-                            fontSize: isClient && isMobile ? '10px' : '11px',
-                            fontWeight: '700',
-                            backgroundColor: priorityInfo.bg,
-                            color: priorityInfo.text,
-                            border: `1px solid ${priorityInfo.border}`
-                          }}>
-                            {priorityInfo.label}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{
+                              padding: isClient && isMobile ? '3px 8px' : '4px 12px',
+                              borderRadius: '20px',
+                              fontSize: isClient && isMobile ? '10px' : '11px',
+                              fontWeight: '700',
+                              backgroundColor: priorityInfo.bg,
+                              color: priorityInfo.text,
+                              border: `1px solid ${priorityInfo.border}`
+                            }}>
+                              {priorityInfo.label}
+                            </div>
+                            {kot.updateHistory && kot.updateHistory.length > 0 && (
+                              <div style={{
+                                padding: isClient && isMobile ? '3px 6px' : '4px 8px',
+                                borderRadius: '16px',
+                                fontSize: isClient && isMobile ? '8px' : '9px',
+                                fontWeight: '700',
+                                backgroundColor: '#dbeafe',
+                                color: '#1e40af',
+                                border: '1px solid #3b82f6'
+                              }}>
+                                UPDATED
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div style={{
@@ -874,19 +889,41 @@ const KitchenOrderTicket = () => {
                         Items ({kot.items.length})
                       </h4>
                       <div style={{ marginBottom: '16px' }}>
-                        {kot.items.map((item, index) => (
+                        {kot.items.map((item, index) => {
+                          // Check if this is an updated item
+                          const isUpdatedItem = kot.updateHistory && kot.updateHistory.length > 0 && item.isUpdated;
+                          const isNewItem = kot.updateHistory && kot.updateHistory.length > 0 && item.isNew;
+                          
+                          return (
                           <div key={index} style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'space-between', 
                             padding: '10px 12px', 
-                            backgroundColor: '#fef7f0', 
+                            backgroundColor: isNewItem ? '#dcfce7' : isUpdatedItem ? '#fef3c7' : '#fef7f0', 
                             borderRadius: '10px',
                             marginBottom: '8px',
-                            border: '1px solid #fed7aa'
+                            border: isNewItem ? '2px solid #22c55e' : isUpdatedItem ? '2px solid #f59e0b' : '1px solid #fed7aa',
+                            position: 'relative'
                           }}>
                             <div style={{ flex: 1 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                {(isNewItem || isUpdatedItem) && (
+                                  <span style={{
+                                    position: 'absolute',
+                                    top: '-5px',
+                                    right: '-5px',
+                                    backgroundColor: isNewItem ? '#22c55e' : '#f59e0b',
+                                    color: 'white',
+                                    fontSize: '8px',
+                                    fontWeight: 'bold',
+                                    padding: '2px 4px',
+                                    borderRadius: '4px',
+                                    textTransform: 'uppercase'
+                                  }}>
+                                    {isNewItem ? 'NEW' : 'UPD'}
+                                  </span>
+                                )}
                                 <span style={{ 
                                   fontWeight: 'bold', 
                                   color: '#1f2937',
@@ -924,7 +961,7 @@ const KitchenOrderTicket = () => {
                               <div style={{ fontSize: '10px', color: '#9ca3af' }}>prep time</div>
                             </div>
                           </div>
-                        ))}
+                        )})}
                       </div>
                       
                       {kot.specialInstructions && (

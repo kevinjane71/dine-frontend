@@ -27,10 +27,16 @@ const OrderSummary = ({
   onAddToCart, 
   onTableNumberChange,
   processing, 
+  placingOrder,
   orderSuccess, 
   setOrderSuccess, 
   error, 
-  getTotalAmount 
+  getTotalAmount,
+  tableNumber,
+  orderLookup,
+  setOrderLookup,
+  currentOrder,
+  setCurrentOrder
 }) => {
   // Debug logging
   console.log('OrderSummary orderSuccess:', orderSuccess);
@@ -466,37 +472,34 @@ const OrderSummary = ({
           {!orderSuccess?.show && (
             <div style={{ padding: '20px' }}>
               {/* Table Number Input */}
-              <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '12px' }}>
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
-                  gap: '8px',
-                  marginBottom: '8px'
+                  gap: '6px'
                 }}>
                   <label style={{ 
-                    fontSize: '12px', 
+                    fontSize: '11px', 
                     fontWeight: '600', 
                     color: '#374151',
-                    minWidth: '80px'
+                    minWidth: '50px'
                   }}>
-                    Table No:
+                    Table:
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     placeholder="Optional"
-                    min="1"
-                    max="999"
+                    value={tableNumber || ''}
                     style={{
-                      flex: 1,
-                      padding: '6px 8px',
+                      width: '80px',
+                      padding: '4px 6px',
                       border: '1px solid #d1d5db',
-                      borderRadius: '6px',
-                      fontSize: '12px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
                       outline: 'none',
                       backgroundColor: '#f9fafb'
                     }}
                     onChange={(e) => {
-                      // This will be handled by parent component
                       if (typeof onTableNumberChange === 'function') {
                         onTableNumberChange(e.target.value);
                       }
@@ -591,26 +594,38 @@ const OrderSummary = ({
                         onPlaceOrder();
                       }
                     }}
+                    disabled={placingOrder || cart.length === 0}
                     style={{
                       flex: 1,
-                      background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                      background: placingOrder || cart.length === 0
+                        ? 'linear-gradient(135deg, #d1d5db, #9ca3af)' 
+                        : 'linear-gradient(135deg, #3b82f6, #2563eb)',
                       color: 'white',
                       padding: '8px 12px',
                       borderRadius: '8px',
                       fontWeight: '600',
                       border: 'none',
-                      cursor: 'pointer',
+                      cursor: placingOrder || cart.length === 0 ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '6px',
                       fontSize: '11px',
                       transition: 'all 0.2s',
-                      boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)'
+                      boxShadow: placingOrder || cart.length === 0 ? 'none' : '0 2px 8px rgba(59, 130, 246, 0.3)'
                     }}
                   >
-                    <FaUtensils size={10} />
-                    PLACE ORDER
+                    {placingOrder ? (
+                      <>
+                        <FaSpinner size={10} style={{ animation: 'spin 1s linear infinite' }} />
+                        PLACING...
+                      </>
+                    ) : (
+                      <>
+                        <FaUtensils size={10} />
+                        PLACE ORDER
+                      </>
+                    )}
                   </button>
                 </div>
 

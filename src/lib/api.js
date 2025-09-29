@@ -229,6 +229,13 @@ class ApiClient {
     });
   }
 
+  async updateOrder(orderId, updateData) {
+    return this.request(`/api/orders/${orderId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
   // Payment endpoints
   async createPayment(orderData) {
     return this.request('/api/payments/create', {
