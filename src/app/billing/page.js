@@ -160,77 +160,77 @@ export default function BillingPage() {
           
           setUser(parsedUser);
           
-          // First ensure user exists in billing database, then fetch subscription
+          // Fetch subscription data from backend (only for owners/admins)
           if (parsedUser.uid || parsedUser.id) {
             try {
               const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
-              
-              // First, try to create/ensure user exists (this will return existing user if already exists)
-              console.log('Ensuring billing user exists for owner:', parsedUser.uid || parsedUser.id);
               showNotification('info', 'Loading billing information...');
               
-              const createUserResponse = await fetch(`${API_BASE_URL}/api/payments/create-user`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  userId: parsedUser.uid || parsedUser.id,
-                  email: parsedUser.email || parsedUser.phoneNumber || '',
-                  phone: parsedUser.phoneNumber || parsedUser.phone || '',
-                  role: parsedUser.role,
-                  planId: 'starter',
-                  restaurantInfo: {
-                    name: parsedUser.restaurantName || 'My Restaurant',
-                    id: parsedUser.restaurantId || null
-                  }
-                })
-              });
+              // First try to get existing subscription
+              console.log('Fetching subscription for user:', parsedUser.uid || parsedUser.id);
+              const response = await fetch(`${API_BASE_URL}/api/payments/subscription/${parsedUser.uid || parsedUser.id}`);
               
-              if (createUserResponse.ok) {
-                const createResult = await createUserResponse.json();
-                console.log('User creation/check result:', createResult);
-                
-                if (createResult.success && createResult.data.subscription) {
-                  // Use the subscription data from create-user response
+              if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.subscription) {
                   setCurrentSubscription({
-                    plan: createResult.data.subscription.planName || 'Starter',
-                    status: createResult.data.subscription.status || 'active',
-                    nextBillingDate: createResult.data.subscription.endDate || null,
-                    lastPaymentDate: createResult.data.subscription.startDate || null,
-                    amount: 999,
+                    plan: data.subscription.planName || 'Starter',
+                    status: data.subscription.status || 'active',
+                    nextBillingDate: data.subscription.endDate || null,
+                    lastPaymentDate: data.subscription.startDate || null,
+                    amount: 999, // Default amount
                     currency: 'INR'
                   });
+                  showNotification('success', 'Billing information loaded!');
+                } else {
+                  throw new Error('No subscription data');
+                }
+              } else if (response.status === 404) {
+                // User doesn't exist in billing DB - create them once
+                console.log('User not found in billing DB, creating new billing user');
+                showNotification('info', 'Setting up your billing account...');
+                
+                const createUserResponse = await fetch(`${API_BASE_URL}/api/payments/create-user`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    userId: parsedUser.uid || parsedUser.id,
+                    email: parsedUser.email || parsedUser.phoneNumber || '',
+                    phone: parsedUser.phoneNumber || parsedUser.phone || '',
+                    role: parsedUser.role,
+                    planId: 'starter',
+                    restaurantInfo: {
+                      name: parsedUser.restaurantName || 'My Restaurant',
+                      id: parsedUser.restaurantId || null
+                    }
+                  })
+                });
+                
+                if (createUserResponse.ok) {
+                  const createResult = await createUserResponse.json();
+                  console.log('New billing user created:', createResult);
                   
-                  if (createResult.message === 'Billing user created successfully') {
-                    showNotification('success', 'Billing account set up successfully!');
-                  } else {
-                    showNotification('success', 'Billing information loaded!');
+                  if (createResult.success && createResult.data.subscription) {
+                    setCurrentSubscription({
+                      plan: createResult.data.subscription.planName || 'Starter',
+                      status: createResult.data.subscription.status || 'active',
+                      nextBillingDate: createResult.data.subscription.endDate || null,
+                      lastPaymentDate: createResult.data.subscription.startDate || null,
+                      amount: 999,
+                      currency: 'INR'
+                    });
+                    showNotification('success', 'Billing account created successfully!');
                   }
                 } else {
-                  // Fallback to default
-                  setCurrentSubscription({
-                    plan: 'Starter',
-                    status: 'active',
-                    nextBillingDate: null,
-                    lastPaymentDate: null,
-                    amount: 999,
-                    currency: 'INR'
-                  });
+                  throw new Error('Failed to create billing user');
                 }
               } else {
-                console.error('Failed to create/check billing user');
-                showNotification('error', 'Failed to load billing information');
-                setCurrentSubscription({
-                  plan: 'Starter',
-                  status: 'active',
-                  nextBillingDate: null,
-                  lastPaymentDate: null,
-                  amount: 999,
-                  currency: 'INR'
-                });
+                throw new Error('Failed to fetch subscription');
               }
             } catch (error) {
-              console.error('Error setting up billing user:', error);
+              console.error('Error loading billing information:', error);
               showNotification('error', 'Error loading billing information');
+              // Set default subscription as fallback
               setCurrentSubscription({
                 plan: 'Starter',
                 status: 'active',
