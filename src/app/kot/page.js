@@ -25,10 +25,12 @@ import {
   FaShoppingBag,
   FaSpinner,
   FaTable,
-  FaFilter
+  FaFilter,
+  FaTrash
 } from 'react-icons/fa';
 import { GiChefToque } from "react-icons/gi";
 import apiClient from '../../lib/api';
+import Notification from '../../components/Notification';
 
 const KitchenOrderTicket = () => {
   const router = useRouter();
@@ -44,6 +46,8 @@ const KitchenOrderTicket = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  const [notification, setNotification] = useState({ show: false });
 
   // Load restaurant and KOT data
   const loadKotData = useCallback(async (showSpinner = true) => {
@@ -126,11 +130,23 @@ const KitchenOrderTicket = () => {
     return () => clearInterval(interval);
   }, [kotOrders]);
 
-  // Handle authentication check
+  // Handle authentication check and user role
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
       router.push('/auth');
+      return;
+    }
+    
+    // Get user role
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        setUserRole(user.role);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
     }
   }, [router]);
 
@@ -163,6 +179,13 @@ const KitchenOrderTicket = () => {
         label: 'Served',
         icon: FaCheck,
         border: '#6b7280'
+      },
+      completed: { 
+        bg: '#dcfce7', 
+        text: '#166534', 
+        label: 'Completed',
+        icon: FaCheckCircle,
+        border: '#22c55e'
       }
     };
     return statusMap[status] || statusMap.confirmed;
@@ -310,6 +333,27 @@ const KitchenOrderTicket = () => {
     } catch (error) {
       console.error('Error marking served:', error);
       setError('Failed to mark order as served');
+    }
+  };
+
+  const deleteOrder = async (orderId, kotId) => {
+    if (!window.confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      await apiClient.deleteOrder(orderId);
+      
+      // Remove from local state
+      setKotOrders(prev => prev.filter(order => order.id !== kotId));
+      
+      // Close modal if this order was selected
+      if (selectedKot && selectedKot.id === kotId) {
+        setSelectedKot(null);
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      setError(error.message || 'Failed to delete order');
     }
   };
 
@@ -550,7 +594,8 @@ const KitchenOrderTicket = () => {
                   { key: 'all', label: 'All', count: kotOrders.length },
                   { key: 'confirmed', label: 'New', count: kotOrders.filter(o => o.status === 'confirmed').length },
                   { key: 'preparing', label: 'Cooking', count: kotOrders.filter(o => o.status === 'preparing').length },
-                  { key: 'ready', label: 'Ready', count: kotOrders.filter(o => o.status === 'ready').length }
+                  { key: 'ready', label: 'Ready', count: kotOrders.filter(o => o.status === 'ready').length },
+                  { key: 'completed', label: 'Done', count: kotOrders.filter(o => o.status === 'completed').length }
                 ].map((status) => (
                   <button
                     key={status.key}
@@ -631,7 +676,8 @@ const KitchenOrderTicket = () => {
                     { key: 'all', label: 'All Orders', count: kotOrders.length },
                     { key: 'confirmed', label: 'Confirmed', count: kotOrders.filter(o => o.status === 'confirmed').length },
                     { key: 'preparing', label: 'Preparing', count: kotOrders.filter(o => o.status === 'preparing').length },
-                    { key: 'ready', label: 'Ready', count: kotOrders.filter(o => o.status === 'ready').length }
+                    { key: 'ready', label: 'Ready', count: kotOrders.filter(o => o.status === 'ready').length },
+                    { key: 'completed', label: 'Completed', count: kotOrders.filter(o => o.status === 'completed').length }
                   ].map((status) => (
                     <button
                       key={status.key}
@@ -705,8 +751,8 @@ const KitchenOrderTicket = () => {
               display: 'grid',
               gridTemplateColumns: isClient && isMobile 
                 ? '1fr' 
-                : 'repeat(auto-fill, minmax(400px, 1fr))',
-              gap: isClient && isMobile ? '16px' : '20px'
+                : 'repeat(auto-fill, minmax(340px, 1fr))',
+              gap: isClient && isMobile ? '12px' : '16px'
             }}>
               {filteredOrders.map((kot) => {
                 const timeElapsed = getTimeElapsed(kot.kotTime);
@@ -744,224 +790,178 @@ const KitchenOrderTicket = () => {
                         : '0 4px 12px rgba(0,0,0,0.08)';
                     }}
                   >
-                    {/* KOT Header */}
-                    <div style={{ padding: isClient && isMobile ? '16px' : '20px', borderBottom: '1px solid #f3f4f6' }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between', 
-                        marginBottom: isClient && isMobile ? '8px' : '12px',
-                        flexWrap: isClient && isMobile ? 'wrap' : 'nowrap',
-                        gap: isClient && isMobile ? '8px' : '0'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <h3 style={{ 
-                            fontSize: isClient && isMobile ? '18px' : '20px', 
-                            fontWeight: 'bold', 
-                            color: '#1f2937', 
-                            margin: 0 
-                          }}>{kot.id}</h3>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{
-                              padding: isClient && isMobile ? '3px 8px' : '4px 12px',
-                              borderRadius: '20px',
-                              fontSize: isClient && isMobile ? '10px' : '11px',
-                              fontWeight: '700',
-                              backgroundColor: priorityInfo.bg,
-                              color: priorityInfo.text,
-                              border: `1px solid ${priorityInfo.border}`
-                            }}>
-                              {priorityInfo.label}
-                            </div>
-                            {kot.updateHistory && kot.updateHistory.length > 0 && (
-                              <div style={{
-                                padding: isClient && isMobile ? '3px 6px' : '4px 8px',
-                                borderRadius: '16px',
-                                fontSize: isClient && isMobile ? '8px' : '9px',
-                                fontWeight: '700',
-                                backgroundColor: '#dbeafe',
-                                color: '#1e40af',
-                                border: '1px solid #3b82f6'
-                              }}>
-                                UPDATED
-                              </div>
-                            )}
+                    {/* Compact Header */}
+                    <div style={{ 
+                      padding: '8px 12px', 
+                      backgroundColor: '#fef7f0', 
+                      borderBottom: '1px solid #fed7aa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '6px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(kot.id);
+                            // Show copy notification
+                            setNotification && setNotification({
+                              type: 'success',
+                              title: 'Copied! 📋',
+                              message: `Order ID ${kot.id} copied to clipboard`,
+                              show: true
+                            });
+                          }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#1f2937',
+                            fontSize: isClient && isMobile ? '14px' : '16px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            padding: '2px 4px',
+                            borderRadius: '4px',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#fed7aa';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'transparent';
+                          }}
+                          title="Click to copy Order ID"
+                        >
+                          #{kot.id.slice(-6)}
+                        </button>
+                        
+                        {kot.tableNumber && (
+                          <div style={{ fontSize: '12px', color: '#f97316', fontWeight: '600' }}>
+                            Table {kot.tableNumber}
                           </div>
-                        </div>
+                        )}
+                        
+                        {(kot.waiterName || kot.waiter) && (
+                          <div style={{ fontSize: '11px', color: '#6b7280' }}>
+                            {kot.waiterName || kot.waiter}
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <div style={{
-                          padding: isClient && isMobile ? '4px 8px' : '6px 12px',
-                          borderRadius: '20px',
-                          fontSize: isClient && isMobile ? '10px' : '11px',
-                          fontWeight: '600',
+                          padding: '2px 6px',
+                          borderRadius: '12px',
+                          fontSize: '9px',
+                          fontWeight: '700',
                           backgroundColor: statusInfo.bg,
                           color: statusInfo.text,
-                          border: `1px solid ${statusInfo.border}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
+                          border: `1px solid ${statusInfo.border}`
                         }}>
-                          <StatusIcon size={isClient && isMobile ? 8 : 10} />
                           {statusInfo.label}
                         </div>
-                      </div>
-                      
-                      <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: isClient && isMobile ? '1fr' : '1fr 1fr', 
-                        gap: isClient && isMobile ? '8px' : '16px', 
-                        fontSize: isClient && isMobile ? '13px' : '14px' 
-                      }}>
-                        <div>
-                          <div style={{ marginBottom: '4px' }}>
-                            <span style={{ color: '#6b7280' }}>Order:</span>
-                            <span style={{ fontWeight: '600', color: '#1f2937', marginLeft: '6px' }}>{kot.orderId}</span>
-                          </div>
-                          <div style={{ marginBottom: '4px' }}>
-                            <span style={{ color: '#6b7280' }}>Customer:</span>
-                            <span style={{ fontWeight: '600', color: '#1f2937', marginLeft: '6px' }}>{kot.customerName}</span>
-                          </div>
-                        </div>
-                        <div>
-                          {kot.tableInfo ? (
-                            <div style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <FaTable size={12} style={{ color: '#10b981' }} />
-                              <span style={{ color: '#6b7280' }}>Table:</span>
-                              <span style={{ fontWeight: '600', color: '#1f2937' }}>
-                                {kot.tableInfo.floorName} - {kot.tableInfo.number}
-                                {kot.tableInfo.capacity && ` (${kot.tableInfo.capacity} seats)`}
-                              </span>
-                            </div>
-                          ) : kot.tableNumber ? (
-                            <div style={{ marginBottom: '4px' }}>
-                              <span style={{ color: '#6b7280' }}>Table:</span>
-                              <span style={{ fontWeight: '600', color: '#1f2937', marginLeft: '6px' }}>{kot.tableNumber}</span>
-                            </div>
-                          ) : (
-                            <div style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <TypeIcon size={12} style={{ color: typeInfo.color }} />
-                              <span style={{ fontWeight: '600', color: '#1f2937' }}>{typeInfo.label}</span>
-                            </div>
-                          )}
-                          <div style={{ marginBottom: '4px' }}>
-                            <span style={{ color: '#6b7280' }}>Waiter:</span>
-                            <span style={{ fontWeight: '600', color: '#1f2937', marginLeft: '6px' }}>{kot.waiterName || kot.waiter}</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between', 
-                        marginTop: '12px', 
-                        paddingTop: '12px', 
-                        borderTop: '1px solid #f3f4f6'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <FaClock style={{ color: '#9ca3af', fontSize: '12px' }} />
-                          <span style={{ fontSize: '13px', color: '#6b7280' }}>
-                            KOT: {formatTime(kot.kotTime)}
-                          </span>
-                        </div>
+                        
                         <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          fontSize: '13px',
+                          fontSize: '11px',
                           fontWeight: '600',
                           color: isOverdue ? '#ef4444' : timeElapsed > kot.estimatedTime * 0.8 ? '#f59e0b' : '#10b981'
                         }}>
-                          <FaStopwatch size={12} />
-                          {timeElapsed}m / {kot.estimatedTime}m
-                          {isOverdue && <FaExclamationTriangle size={12} />}
+                          {timeElapsed}m
+                          {isOverdue && <span style={{ marginLeft: '2px' }}>⚠️</span>}
                         </div>
                       </div>
                     </div>
                     
-                    {/* Items List */}
-                    <div style={{ padding: isClient && isMobile ? '16px' : '20px' }}>
-                      <h4 style={{ 
-                        fontWeight: '600', 
-                        color: '#1f2937', 
-                        marginBottom: isClient && isMobile ? '12px' : '16px', 
-                        fontSize: isClient && isMobile ? '14px' : '15px' 
-                      }}>
-                        Items ({kot.items.length})
-                      </h4>
-                      <div style={{ marginBottom: '16px' }}>
+                    {/* Items List - Compact Menu Style */}
+                    <div style={{ padding: '12px', backgroundColor: 'white' }}>
+                      <div style={{ marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#6b7280', textAlign: 'center' }}>
+                        {kot.items.length} ITEM{kot.items.length > 1 ? 'S' : ''} TO PREPARE
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         {kot.items.map((item, index) => {
                           // Check if this is an updated item
                           const isUpdatedItem = kot.updateHistory && kot.updateHistory.length > 0 && item.isUpdated;
                           const isNewItem = kot.updateHistory && kot.updateHistory.length > 0 && item.isNew;
                           
                           return (
-                          <div key={index} style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'space-between', 
-                            padding: '10px 12px', 
-                            backgroundColor: isNewItem ? '#dcfce7' : isUpdatedItem ? '#fef3c7' : '#fef7f0', 
-                            borderRadius: '10px',
-                            marginBottom: '8px',
-                            border: isNewItem ? '2px solid #22c55e' : isUpdatedItem ? '2px solid #f59e0b' : '1px solid #fed7aa',
-                            position: 'relative'
-                          }}>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                {(isNewItem || isUpdatedItem) && (
-                                  <span style={{
-                                    position: 'absolute',
-                                    top: '-5px',
-                                    right: '-5px',
-                                    backgroundColor: isNewItem ? '#22c55e' : '#f59e0b',
-                                    color: 'white',
-                                    fontSize: '8px',
-                                    fontWeight: 'bold',
-                                    padding: '2px 4px',
-                                    borderRadius: '4px',
-                                    textTransform: 'uppercase'
-                                  }}>
-                                    {isNewItem ? 'NEW' : 'UPD'}
-                                  </span>
-                                )}
-                                <span style={{ 
-                                  fontWeight: 'bold', 
-                                  color: '#1f2937',
-                                  backgroundColor: 'white',
-                                  padding: '2px 6px',
-                                  borderRadius: '6px',
-                                  fontSize: '12px'
+                            <div key={index} style={{ 
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '8px 10px',
+                              backgroundColor: isNewItem ? '#f0fdf4' : isUpdatedItem ? '#fefce8' : '#f8fafc',
+                              borderRadius: '6px',
+                              borderLeft: isNewItem ? '3px solid #22c55e' : isUpdatedItem ? '3px solid #f59e0b' : '3px solid #e2e8f0',
+                              position: 'relative'
+                            }}>
+                              {(isNewItem || isUpdatedItem) && (
+                                <span style={{
+                                  position: 'absolute',
+                                  top: '2px',
+                                  right: '2px',
+                                  backgroundColor: isNewItem ? '#22c55e' : '#f59e0b',
+                                  color: 'white',
+                                  fontSize: '7px',
+                                  fontWeight: 'bold',
+                                  padding: '1px 3px',
+                                  borderRadius: '3px'
                                 }}>
-                                  {item.quantity}x
+                                  {isNewItem ? 'NEW' : 'UPD'}
                                 </span>
-                                <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>{item.name}</span>
-                                {getSpiceIcon(item.spiceLevel)}
-                              </div>
-                              {item.notes && (
-                                <p style={{ fontSize: '12px', color: '#f59e0b', fontWeight: '500', margin: '0 0 2px 0' }}>
-                                  📝 {item.notes}
-                                </p>
                               )}
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ 
-                                  fontSize: '10px', 
-                                  color: '#6b7280', 
-                                  textTransform: 'uppercase', 
-                                  letterSpacing: '0.5px',
-                                  backgroundColor: '#e5e7eb',
-                                  padding: '2px 6px',
-                                  borderRadius: '4px'
+                              
+                              {/* Quantity */}
+                              <div style={{
+                                fontSize: '16px',
+                                fontWeight: 'bold',
+                                color: '#f97316',
+                                backgroundColor: 'white',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                minWidth: '32px',
+                                textAlign: 'center',
+                                border: '1px solid #fed7aa'
+                              }}>
+                                {item.quantity}
+                              </div>
+                              
+                              {/* Item Name & Details */}
+                              <div style={{ flex: 1, marginLeft: '10px' }}>
+                                <div style={{
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  color: '#1f2937',
+                                  marginBottom: '2px'
                                 }}>
-                                  {item.category}
-                                </span>
+                                  {item.name}
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  {getSpiceIcon(item.spiceLevel)}
+                                  {item.notes && (
+                                    <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: '500' }}>
+                                      📝 {item.notes}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* Prep Time */}
+                              <div style={{
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                color: '#ef4444',
+                                backgroundColor: '#fef2f2',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                border: '1px solid #fecaca',
+                                minWidth: '28px',
+                                textAlign: 'center'
+                              }}>
+                                {item.estimatedTime}m
                               </div>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151' }}>{item.estimatedTime}m</div>
-                              <div style={{ fontSize: '10px', color: '#9ca3af' }}>prep time</div>
-                            </div>
-                          </div>
-                        )})}
+                          );
+                        })}
                       </div>
                       
                       {kot.specialInstructions && (
@@ -979,60 +979,60 @@ const KitchenOrderTicket = () => {
                       )}
                     </div>
                     
-                    {/* Actions */}
+                    {/* Compact Actions */}
                     <div style={{ 
-                      padding: isClient && isMobile ? '12px 16px' : '16px 20px', 
-                      backgroundColor: '#fef7f0', 
-                      borderTop: '1px solid #fed7aa',
+                      padding: '8px 12px', 
+                      backgroundColor: '#f8fafc', 
+                      borderTop: '1px solid #e2e8f0',
                       display: 'flex',
-                      gap: isClient && isMobile ? '6px' : '8px',
-                      flexWrap: isClient && isMobile ? 'wrap' : 'nowrap'
+                      gap: '6px',
+                      flexWrap: 'wrap',
+                      justifyContent: 'center'
                     }}>
                       <button
                         onClick={() => setSelectedKot(kot)}
                         style={{
-                          flex: isClient && isMobile ? '1 1 100%' : 1,
-                          backgroundColor: '#3b82f6',
+                          backgroundColor: '#64748b',
                           color: 'white',
-                          padding: isClient && isMobile ? '8px 12px' : '10px 16px',
-                          borderRadius: '10px',
-                          fontWeight: '600',
-                          fontSize: isClient && isMobile ? '12px' : '13px',
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          fontWeight: '500',
+                          fontSize: '11px',
                           border: 'none',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '6px'
+                          gap: '4px'
                         }}
                       >
-                        <FaEye size={isClient && isMobile ? 10 : 12} />
-                        View Details
+                        <FaEye size={10} />
+                        View
                       </button>
                       
                       {kot.status === 'confirmed' && (
                         <button
                           onClick={() => startCooking(kot.kotId, kot.id)}
                           style={{
-                            flex: isClient && isMobile ? '1 1 48%' : 1,
                             backgroundColor: '#f59e0b',
                             color: 'white',
-                            padding: isClient && isMobile ? '8px 12px' : '10px 16px',
-                            borderRadius: '10px',
-                            fontWeight: '600',
-                            fontSize: isClient && isMobile ? '12px' : '13px',
+                            padding: '10px 16px',
+                            borderRadius: '8px',
+                            fontWeight: '700',
+                            fontSize: '13px',
                             border: 'none',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '6px'
+                            gap: '6px',
+                            boxShadow: '0 2px 4px rgba(245, 158, 11, 0.3)'
                           }}
                         >
-                          <FaPlay size={isClient && isMobile ? 10 : 12} />
-                          Start Cooking
+                          <FaPlay size={12} />
+                          START COOKING
                         </button>
                       )}
                       
@@ -1058,24 +1058,24 @@ const KitchenOrderTicket = () => {
                           <button
                             onClick={() => markReady(kot.kotId, kot.id)}
                             style={{
-                              flex: isClient && isMobile ? '1 1 48%' : 1,
                               backgroundColor: '#10b981',
                               color: 'white',
-                              padding: isClient && isMobile ? '8px 12px' : '10px 16px',
-                              borderRadius: '10px',
-                              fontWeight: '600',
-                              fontSize: isClient && isMobile ? '12px' : '13px',
+                              padding: '10px 16px',
+                              borderRadius: '8px',
+                              fontWeight: '700',
+                              fontSize: '13px',
                               border: 'none',
                               cursor: 'pointer',
                               transition: 'all 0.2s',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: '6px'
+                              gap: '6px',
+                              boxShadow: '0 2px 4px rgba(16, 185, 129, 0.3)'
                             }}
                           >
-                            <FaCheck size={isClient && isMobile ? 10 : 12} />
-                            Mark Ready
+                            <FaCheck size={12} />
+                            READY
                           </button>
                         </>
                       )}
@@ -1133,22 +1133,51 @@ const KitchenOrderTicket = () => {
                       <button
                         onClick={() => printKot(kot)}
                         style={{
-                          backgroundColor: '#6b7280',
+                          backgroundColor: '#9ca3af',
                           color: 'white',
-                          padding: isClient && isMobile ? '8px 10px' : '10px 12px',
-                          borderRadius: '10px',
-                          fontWeight: '600',
+                          padding: '6px 8px',
+                          borderRadius: '6px',
+                          fontWeight: '500',
                           border: 'none',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          minWidth: isClient && isMobile ? '40px' : 'auto'
+                          fontSize: '11px'
                         }}
                       >
-                        <FaPrint size={isClient && isMobile ? 10 : 12} />
+                        <FaPrint size={10} />
                       </button>
+
+                      {/* Delete button - only for admin/owner */}
+                      {(userRole === 'admin' || userRole === 'owner') && (
+                        <button
+                          onClick={() => deleteOrder(kot.id, kot.id)}
+                          style={{
+                            backgroundColor: '#dc2626',
+                            color: 'white',
+                            padding: '6px 8px',
+                            borderRadius: '6px',
+                            fontWeight: '500',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '11px'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#b91c1c';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#dc2626';
+                          }}
+                        >
+                          <FaTrash size={10} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -1489,6 +1518,15 @@ const KitchenOrderTicket = () => {
           </div>
         </div>
       )}
+      
+      {/* Notification for copy feedback */}
+      <Notification
+        show={notification.show}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        onClose={() => setNotification({ show: false })}
+      />
     </div>
   );
 };

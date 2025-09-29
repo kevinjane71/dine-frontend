@@ -441,6 +441,12 @@ class ApiClient {
       body: { status: 'completed' },
     });
   }
+
+  async deleteOrder(orderId) {
+    return this.request(`/api/orders/${orderId}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 const apiClient = new ApiClient();
