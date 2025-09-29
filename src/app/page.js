@@ -57,6 +57,8 @@ function RestaurantPOSContent() {
   const [menuItems, setMenuItems] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [tables, setTables] = useState([]);
+  const [floors, setFloors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
@@ -226,8 +228,13 @@ function RestaurantPOSContent() {
       
       if (restaurant) {
         setSelectedRestaurant(restaurant);
-        // Load menu for selected restaurant
-        await loadMenu(restaurant.id);
+        console.log('🏠 Loading data for restaurant:', restaurant.name, restaurant.id);
+        // Load menu and floors/tables for selected restaurant
+        await Promise.all([
+          loadMenu(restaurant.id),
+          loadFloors(restaurant.id)
+        ]);
+        console.log('✅ Restaurant data loaded successfully');
       } else {
         // Check if user should see onboarding or create sample restaurant
         if (isFirstTimeUser && !localStorage.getItem('onboarding_skipped')) {
@@ -267,7 +274,10 @@ function RestaurantPOSContent() {
       
       // Seed sample menu data
       await apiClient.seedData(restaurant.id);
-      await loadMenu(restaurant.id);
+      await Promise.all([
+        loadMenu(restaurant.id),
+        loadFloors(restaurant.id)
+      ]);
       
     } catch (error) {
       console.error('Error creating sample restaurant:', error);
@@ -285,8 +295,11 @@ function RestaurantPOSContent() {
     setSelectedRestaurant(restaurant);
     setRestaurants(prev => [...prev, restaurant]);
     
-    // Load menu for the new restaurant
-    await loadMenu(restaurant.id);
+    // Load menu and floors/tables for the new restaurant
+    await Promise.all([
+      loadMenu(restaurant.id),
+      loadFloors(restaurant.id)
+    ]);
   };
   
   // Handle onboarding skip
@@ -306,6 +319,142 @@ function RestaurantPOSContent() {
     } catch (error) {
       console.error('Error loading menu:', error);
       setError('Failed to load menu');
+    }
+  };
+
+  const loadFloors = async (restaurantId) => {
+    try {
+      console.log('🏢 Loading floors and tables for restaurant:', restaurantId);
+      
+      // Check cache first
+      const cacheKey = `floors_${restaurantId}`;
+      const cachedFloors = localStorage.getItem(cacheKey);
+      
+      if (cachedFloors) {
+        const floorsData = JSON.parse(cachedFloors);
+        const cacheAge = Date.now() - floorsData.timestamp;
+        
+        // Use cache if less than 5 minutes old
+        if (cacheAge < 5 * 60 * 1000) {
+          console.log('🏢 Using cached floors data');
+          setFloors(floorsData.floors);
+          // Extract all tables from floors for validation
+          const allTables = floorsData.floors.flatMap(floor => floor.tables);
+          setTables(allTables);
+          return floorsData.floors;
+        }
+      }
+      
+      // Fetch fresh data from floors API
+      const response = await apiClient.getFloors(restaurantId);
+      const floorsData = response.floors || [];
+      
+      // Cache the data
+      localStorage.setItem(cacheKey, JSON.stringify({
+        floors: floorsData,
+        timestamp: Date.now()
+      }));
+      
+      console.log('🏢 Loaded floors:', floorsData.length);
+      console.log('🪑 Total tables across all floors:', floorsData.reduce((sum, floor) => sum + floor.tables.length, 0));
+      console.log('🏢 Floors cached in localStorage with key:', cacheKey);
+      
+      setFloors(floorsData);
+      // Extract all tables from floors for validation
+      const allTables = floorsData.flatMap(floor => floor.tables);
+      setTables(allTables);
+      return floorsData;
+      
+    } catch (error) {
+      console.error('Error loading floors:', error);
+      // Return empty array on error, don't set error state
+      return [];
+    }
+  };
+
+  const validateTableNumber = async (tableNumber) => {
+    if (!tableNumber || !tableNumber.trim()) {
+      return { valid: true, table: null }; // Optional table number
+    }
+
+    const tableNum = tableNumber.trim().toLowerCase();
+    console.log('🔍 Validating table number:', tableNum);
+
+    // Check in current tables state first (check both name and number fields)
+    let foundTable = tables.find(table => {
+      const tableName = table.name && table.name.toString().toLowerCase();
+      const tableNumber = table.number && table.number.toString().toLowerCase();
+      return tableName === tableNum || tableNumber === tableNum;
+    });
+
+    if (foundTable) {
+      console.log('✅ Table found in cache:', foundTable);
+      console.log('📝 Table details - ID:', foundTable.id, 'Name:', foundTable.name, 'Status:', foundTable.status);
+      return { valid: true, table: foundTable };
+    }
+
+    // If not found in cache, refresh from API
+    console.log('🔄 Table not in cache, refreshing from API...');
+    const freshFloors = await loadFloors(selectedRestaurant?.id);
+    const freshTables = freshFloors.flatMap(floor => floor.tables);
+    
+    foundTable = freshTables.find(table => {
+      const tableName = table.name && table.name.toString().toLowerCase();
+      const tableNumber = table.number && table.number.toString().toLowerCase();
+      return tableName === tableNum || tableNumber === tableNum;
+    });
+
+    if (foundTable) {
+      console.log('✅ Table found after refresh:', foundTable);
+      return { valid: true, table: foundTable };
+    }
+
+    console.log('❌ Table not found:', tableNum);
+    return { 
+      valid: false, 
+      table: null, 
+      error: `Table number "${tableNumber}" not found. Please check the table number and try again.` 
+    };
+  };
+
+  const updateTableStatus = async (tableId, status, orderId = null) => {
+    try {
+      console.log(`🪑 Updating table ${tableId} status to ${status} with orderId: ${orderId}`);
+      const result = await apiClient.updateTableStatus(tableId, status, orderId);
+      console.log('✅ Table status update successful:', result);
+      
+      // Update local tables state
+      setTables(prevTables => 
+        prevTables.map(table => 
+          table.id === tableId 
+            ? { ...table, status, currentOrderId: orderId }
+            : table
+        )
+      );
+      
+      // Update floors cache
+      if (selectedRestaurant?.id) {
+        const cacheKey = `floors_${selectedRestaurant.id}`;
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+          const cache = JSON.parse(cachedData);
+          // Update table in floors structure
+          cache.floors = cache.floors.map(floor => ({
+            ...floor,
+            tables: floor.tables.map(table => 
+              table.id === tableId 
+                ? { ...table, status, currentOrderId: orderId }
+                : table
+            )
+          }));
+          localStorage.setItem(cacheKey, JSON.stringify(cache));
+          console.log(`🏢 Updated table ${tableId} status in floors cache`);
+        }
+      }
+      
+    } catch (error) {
+      console.error('❌ Error updating table status:', error);
+      console.error('Table ID:', tableId, 'Status:', status, 'Order ID:', orderId);
     }
   };
 
@@ -519,6 +668,15 @@ function RestaurantPOSContent() {
       // Mark order as completed after successful payment
       await apiClient.completeOrder(orderId);
 
+      // Free up table if this order was assigned to a table
+      if (tableNumber) {
+        const validation = await validateTableNumber(tableNumber);
+        if (validation.valid && validation.table) {
+          await updateTableStatus(validation.table.id, 'available', null);
+          console.log(`🪑 Table ${tableNumber} freed up after order completion`);
+        }
+      }
+
       // Show notification for billing completion
       setNotification({
         type: 'success',
@@ -613,6 +771,21 @@ function RestaurantPOSContent() {
       setPlacingOrder(true);
       setError(null);
 
+      // Validate table number if provided
+      const tableToUse = tableNumber || selectedTable?.number;
+      let validatedTable = null;
+      
+      if (tableToUse) {
+        const validation = await validateTableNumber(tableToUse);
+        if (!validation.valid) {
+          setError(validation.error);
+          setPlacingOrder(false);
+          return;
+        }
+        validatedTable = validation.table;
+        console.log('✅ Table validated:', validatedTable);
+      }
+
       // Check if we're updating an existing order or creating a new one
       if (currentOrder) {
         // Update existing order
@@ -682,6 +855,15 @@ function RestaurantPOSContent() {
           console.log('Updating order status to confirmed...');
           // Update order status to confirmed (sent to kitchen)
           await apiClient.updateOrderStatus(response.order.id, 'confirmed');
+
+          // Update table status to 'serving' if table is assigned
+          if (validatedTable) {
+            console.log('🍽️ About to update table status for:', validatedTable);
+            await updateTableStatus(validatedTable.id, 'serving', response.order.id);
+            console.log('🍽️ Table status update completed');
+          } else {
+            console.log('⚠️ No validated table found for status update');
+          }
 
           // Show notification in top-right corner
           setNotification({

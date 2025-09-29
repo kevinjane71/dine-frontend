@@ -89,6 +89,31 @@ const TableManagement = () => {
     loadInitialData();
   }, []);
 
+  // Refresh data when page becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && selectedRestaurant?.id) {
+        console.log('🔄 Tables page visible, refreshing data...');
+        loadFloorsAndTables(selectedRestaurant.id, true); // Force refresh
+      }
+    };
+
+    const handleFocus = () => {
+      if (selectedRestaurant?.id) {
+        console.log('🔄 Tables page focused, refreshing data...');
+        loadFloorsAndTables(selectedRestaurant.id, true); // Force refresh
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [selectedRestaurant?.id]);
+
   const loadInitialData = async () => {
     try {
       setLoading(true);
@@ -127,8 +152,14 @@ const TableManagement = () => {
     }
   };
 
-  const loadFloorsAndTables = async (restaurantId) => {
+  const loadFloorsAndTables = async (restaurantId, forceRefresh = false) => {
     try {
+      // Clear cache if force refresh
+      if (forceRefresh) {
+        localStorage.removeItem(`floors_${restaurantId}`);
+        console.log('🗑️ Cleared floors cache for fresh data');
+      }
+      
       // Try to get floors first
       const floorsResponse = await apiClient.getFloors(restaurantId);
       if (floorsResponse.floors && floorsResponse.floors.length > 0) {
@@ -169,6 +200,13 @@ const TableManagement = () => {
         label: 'Occupied',
         icon: FaUsers,
         border: '#dc2626'
+      },
+      serving: { 
+        bg: '#fef3c7', 
+        text: '#92400e', 
+        label: 'Serving',
+        icon: FaUtensils,
+        border: '#d97706'
       },
       reserved: { 
         bg: '#fed7aa', 
