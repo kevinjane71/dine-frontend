@@ -427,6 +427,13 @@ class ApiClient {
       body: { status: 'served' },
     });
   }
+
+  async completeOrder(orderId) {
+    return this.request(`/api/orders/${orderId}/status`, {
+      method: 'PATCH',
+      body: { status: 'completed' },
+    });
+  }
 }
 
 const apiClient = new ApiClient();

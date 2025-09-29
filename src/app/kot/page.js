@@ -313,6 +313,24 @@ const KitchenOrderTicket = () => {
     }
   };
 
+  const markCompleted = async (kotId, orderId) => {
+    try {
+      await apiClient.completeOrder(orderId);
+      
+      // Remove from local state since completed orders don't show in KOT
+      setKotOrders(orders => orders.filter(order => order.kotId !== kotId));
+
+      // Refresh to get server state
+      setTimeout(() => {
+        loadKotData(false);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error marking completed:', error);
+      setError('Failed to mark order as completed');
+    }
+  };
+
   const filteredOrders = kotOrders.filter(order => {
     return selectedStatus === 'all' || order.status === selectedStatus;
   });
@@ -1047,6 +1065,31 @@ const KitchenOrderTicket = () => {
                         >
                           <FaCheckCircle size={isClient && isMobile ? 10 : 12} />
                           Served
+                        </button>
+                      )}
+                      
+                      {kot.status === 'served' && (
+                        <button
+                          onClick={() => markCompleted(kot.kotId, kot.id)}
+                          style={{
+                            flex: isClient && isMobile ? '1 1 48%' : 1,
+                            backgroundColor: '#059669',
+                            color: 'white',
+                            padding: isClient && isMobile ? '8px 12px' : '10px 16px',
+                            borderRadius: '10px',
+                            fontWeight: '600',
+                            fontSize: isClient && isMobile ? '12px' : '13px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <FaClipboardCheck size={isClient && isMobile ? 10 : 12} />
+                          Complete Order
                         </button>
                       )}
                       

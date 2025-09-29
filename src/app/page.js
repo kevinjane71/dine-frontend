@@ -443,6 +443,9 @@ function RestaurantPOSContent() {
         });
       }
 
+      // Mark order as completed after successful payment
+      await apiClient.completeOrder(orderId);
+
       // Clear cart and show inline success
       setCart([]);
       localStorage.removeItem('dine_cart');
@@ -483,7 +486,7 @@ function RestaurantPOSContent() {
       setError(null);
 
       const orderData = {
-        restaurantId: selectedRestaurantId,
+        restaurantId: selectedRestaurant?.id,
         tableNumber: tableNumber || selectedTable?.number || null,
         items: cart.map(item => ({
           menuItemId: item.id,
@@ -501,7 +504,7 @@ function RestaurantPOSContent() {
         status: 'pending' // Save as draft
       };
 
-      const response = await apiClient.post('/orders', orderData);
+      const response = await apiClient.createOrder(orderData);
       
       if (response.data) {
         setOrderSuccess({
@@ -530,7 +533,7 @@ function RestaurantPOSContent() {
       setError(null);
 
       const orderData = {
-        restaurantId: selectedRestaurantId,
+        restaurantId: selectedRestaurant?.id,
         tableNumber: tableNumber || selectedTable?.number || null,
         items: cart.map(item => ({
           menuItemId: item.id,
@@ -548,13 +551,11 @@ function RestaurantPOSContent() {
         status: 'confirmed' // Place order to kitchen
       };
 
-      const response = await apiClient.post('/orders', orderData);
+      const response = await apiClient.createOrder(orderData);
       
       if (response.data) {
         // Update order status to confirmed (sent to kitchen)
-        await apiClient.patch(`/orders/${response.data.order.id}/status`, {
-          status: 'confirmed'
-        });
+        await apiClient.updateOrderStatus(response.data.order.id, 'confirmed');
 
         setOrderSuccess({
           orderId: response.data.order.id,
