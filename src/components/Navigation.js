@@ -15,7 +15,8 @@ import {
   FaPrint,
   FaChevronDown,
   FaBars,
-  FaTimes
+  FaTimes,
+  FaCreditCard
 } from 'react-icons/fa';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -148,11 +149,12 @@ function NavigationContent() {
   };
   
   const getAllNavItems = () => [
-    { id: 'pos', name: 'Orders', icon: FaHome, href: '/', color: '#ef4444', roles: ['owner', 'manager', 'waiter'] },
+    { id: 'pos', name: 'Orders', icon: FaHome, href: '/dashboard', color: '#ef4444', roles: ['owner', 'manager', 'waiter'] },
     { id: 'orders', name: 'History', icon: FaClipboardList, href: '/orders', color: '#f59e0b', roles: ['owner', 'manager', 'waiter'] },
     { id: 'tables', name: 'Tables', icon: FaChair, href: '/tables', color: '#3b82f6', roles: ['owner', 'manager', 'waiter'] },
     { id: 'menu', name: 'Menu', icon: FaUtensils, href: '/menu', color: '#10b981', roles: ['owner', 'manager'] },
     { id: 'analytics', name: 'Analytics', icon: FaChartBar, href: '/analytics', color: '#8b5cf6', roles: ['owner', 'manager'] },
+    { id: 'billing', name: 'Billing', icon: FaCreditCard, href: '/billing', color: '#06b6d4', roles: ['owner'] },
     { id: 'admin', name: 'Admin', icon: FaUsers, href: '/admin', color: '#ec4899', roles: ['owner'] },
     { id: 'kot', name: 'KOT', icon: FaPrint, href: '/kot', color: '#f97316', roles: ['owner', 'manager', 'waiter'] },
   ];

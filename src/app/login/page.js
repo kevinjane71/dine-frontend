@@ -90,7 +90,7 @@ const Login = () => {
         if (data.redirectTo) {
           router.push(data.redirectTo);
         } else {
-          router.push('/admin'); // Default for owners
+          router.push('/dashboard'); // Default for owners
         }
       } else {
         setError(data.message || 'Invalid OTP');
@@ -150,7 +150,7 @@ const Login = () => {
         localStorage.setItem('user', JSON.stringify(data.user));
         
         // Staff goes to main POS page
-        router.push('/');
+        router.push('/dashboard');
       } else {
         setError(data.error || 'Login failed');
       }
