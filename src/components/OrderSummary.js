@@ -170,7 +170,13 @@ const OrderSummary = ({
       </div>
 
       {/* Cart Items */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto', 
+        padding: '8px',
+        scrollbarWidth: 'thin',
+        scrollbarColor: '#cbd5e1 transparent'
+      }}>
         {cart.length === 0 ? (
           <div style={{ 
             textAlign: 'center', 

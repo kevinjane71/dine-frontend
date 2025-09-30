@@ -986,11 +986,12 @@ function RestaurantPOSContent() {
 
   return (
     <div style={{ 
-      height: '100vh', 
+      height: 'calc(100vh - 80px)', // Subtract navigation height
       backgroundColor: '#f8fafc', 
       display: 'flex', 
       flexDirection: 'column',
-      background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
+      background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+      overflow: 'hidden' // Hide overall page scroll
     }}>
       {/* Header */}
       
@@ -1104,7 +1105,8 @@ function RestaurantPOSContent() {
         display: 'flex', 
         flex: 1, 
         overflow: 'hidden',
-        flexDirection: isMobile ? 'column' : 'row'
+        flexDirection: isMobile ? 'column' : 'row',
+        height: '100%' // Ensure full height usage
       }}>
         {/* Desktop Menu Sections Sidebar */}
         {!isMobile && (
@@ -1145,7 +1147,13 @@ function RestaurantPOSContent() {
             </div>
           </div>
           
-          <div style={{ padding: '8px', overflowY: 'auto', height: 'calc(100% - 100px)' }}>
+          <div style={{ 
+            padding: '8px', 
+            overflowY: 'auto', 
+            height: 'calc(100% - 100px)',
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#cbd5e1 transparent'
+          }}>
             
             {categories.map((category) => {
               const categoryItems = category.id === 'all-items' 
@@ -1297,7 +1305,14 @@ function RestaurantPOSContent() {
             </div>
           </div>
           
-          <div style={{ flex: 1, padding: isMobile ? '16px' : '8px', overflowY: 'auto' }}>
+          <div style={{ 
+            flex: 1, 
+            padding: isMobile ? '16px' : '8px', 
+            overflowY: 'auto',
+            height: '100%',
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#cbd5e1 transparent'
+          }}>
             <div style={{
               display: 'grid',
               gridTemplateColumns: isMobile 
@@ -1415,7 +1430,13 @@ function RestaurantPOSContent() {
             </div>
 
             {/* Mobile Categories */}
-            <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
+            <div style={{ 
+              flex: 1, 
+              padding: '16px', 
+              overflowY: 'auto',
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#cbd5e1 transparent'
+            }}>
               {categories.map((category) => {
                 const categoryItems = category.id === 'all-items' 
                   ? menuItems 
@@ -1500,7 +1521,13 @@ function RestaurantPOSContent() {
             </div>
 
             {/* Mobile Cart Content */}
-            <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
+            <div style={{ 
+              flex: 1, 
+              padding: '16px', 
+              overflowY: 'auto',
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#cbd5e1 transparent'
+            }}>
               {cart.length === 0 ? (
                 <div style={{
                   textAlign: 'center',

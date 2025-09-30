@@ -5,9 +5,15 @@ import Navigation from '../../components/Navigation';
 
 function DashboardLayoutContent({ children }) {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+    <div style={{ 
+      height: '100vh', 
+      backgroundColor: '#f9fafb',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       <Navigation />
-      <main>
+      <main style={{ flex: 1, overflow: 'hidden' }}>
         {children}
       </main>
     </div>
@@ -16,7 +22,13 @@ function DashboardLayoutContent({ children }) {
 
 function DashboardLayoutFallback({ children }) {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+    <div style={{ 
+      height: '100vh', 
+      backgroundColor: '#f9fafb',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       <nav style={{
         backgroundColor: '#ffffff',
         borderBottom: '1px solid #f1f5f9',
@@ -32,7 +44,7 @@ function DashboardLayoutFallback({ children }) {
           animation: 'spin 1s linear infinite'
         }} />
       </nav>
-      <main>
+      <main style={{ flex: 1, overflow: 'hidden' }}>
         {children}
       </main>
     </div>
