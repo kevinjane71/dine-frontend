@@ -124,7 +124,7 @@ const Login = () => {
     setError('');
     
     if (!staffCredentials.loginId || !staffCredentials.password) {
-      setError('Please enter both login ID and password');
+      setError('Please enter both User ID and password');
       return;
     }
 
@@ -147,7 +147,14 @@ const Login = () => {
       
       if (response.ok) {
         localStorage.setItem('authToken', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Store user data with restaurant and owner info
+        const userData = {
+          ...data.user,
+          restaurant: data.restaurant,
+          owner: data.owner
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
         
         // Staff goes to main POS page
         router.push('/dashboard');
@@ -589,10 +596,10 @@ const Login = () => {
                     color: "#374151",
                     marginBottom: "8px"
                   }}>
-                    Login ID (Email)
+                    User ID
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     value={staffCredentials.loginId}
                     onChange={(e) => setStaffCredentials({
                       ...staffCredentials,
@@ -609,7 +616,7 @@ const Login = () => {
                       transition: "all 0.2s",
                       boxSizing: "border-box"
                     }}
-                    placeholder="your.email@restaurant.com"
+                    placeholder="12345"
                     required
                   />
                 </div>

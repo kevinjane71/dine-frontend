@@ -33,6 +33,7 @@ import { HiSwitchHorizontal } from 'react-icons/hi';
 import { BiRestaurant } from 'react-icons/bi';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import apiClient from '../lib/api';
 
 function NavigationContent() {
   const pathname = usePathname();
@@ -45,6 +46,7 @@ function NavigationContent() {
   const [isMobile, setIsMobile] = useState(false);
   const [user, setUser] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [pageAccess, setPageAccess] = useState(null);
   
   // Check for mobile screen size
   useEffect(() => {
@@ -88,26 +90,52 @@ function NavigationContent() {
           const parsedUser = JSON.parse(userData);
           setUser(parsedUser);
           
-          // Fetch restaurant data from API for staff and owners
-          if (parsedUser.restaurantId) {
-            // For staff, get their specific restaurant
+          // Fetch page access for staff users
+          if (parsedUser.role === 'employee' || parsedUser.role === 'manager') {
             try {
-              const token = localStorage.getItem('authToken');
-              const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003'}/api/restaurants`, {
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
-                }
-              });
-              if (response.ok) {
-                const data = await response.json();
-                const userRestaurant = data.restaurants.find(r => r.id === parsedUser.restaurantId);
-                if (userRestaurant) {
-                  setSelectedRestaurant(userRestaurant);
-                }
-              }
+              const accessData = await apiClient.getUserPageAccess();
+              setPageAccess(accessData.pageAccess);
             } catch (error) {
-              console.error('Error fetching restaurant data:', error);
+              console.error('Error fetching page access:', error);
+              // Set default access for staff
+              setPageAccess({
+                dashboard: true,
+                history: true,
+                tables: true,
+                menu: true,
+                analytics: false,
+                inventory: false,
+                kot: false,
+                admin: false
+              });
+            }
+          }
+          
+          // Set restaurant data for staff and owners
+          if (parsedUser.restaurantId) {
+            // First try to use restaurant data from login response
+            if (parsedUser.restaurant) {
+              setSelectedRestaurant(parsedUser.restaurant);
+            } else {
+              // Fallback: fetch restaurant data from API
+              try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003'}/api/restaurants`, {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  }
+                });
+                if (response.ok) {
+                  const data = await response.json();
+                  const userRestaurant = data.restaurants.find(r => r.id === parsedUser.restaurantId);
+                  if (userRestaurant) {
+                    setSelectedRestaurant(userRestaurant);
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching restaurant data:', error);
+              }
             }
           } else if (parsedUser.role === 'owner' || parsedUser.role === 'customer') {
             // For owners, get all their restaurants
@@ -179,14 +207,37 @@ function NavigationContent() {
     { id: 'kot', name: 'KOT', icon: FaPrint, href: '/kot', color: '#f97316', gradient: 'from-orange-500 to-orange-600', roles: ['owner', 'manager', 'waiter'] },
   ];
 
-  // Filter navigation items based on user role
+  // Filter navigation items based on user role and page access
   const navItems = getAllNavItems().filter(item => {
     if (!user || !user.role) {
       return true;
     }
+    
+    // For staff users, check page access
+    if (user.role === 'employee' || user.role === 'manager') {
+      if (!pageAccess) return false;
+      
+      // Map navigation IDs to page access keys
+      const accessMap = {
+        'pos': 'dashboard',
+        'orders': 'history',
+        'tables': 'tables',
+        'menu': 'menu',
+        'inventory': 'inventory',
+        'analytics': 'analytics',
+        'kot': 'kot',
+        'admin': 'admin'
+      };
+      
+      const accessKey = accessMap[item.id];
+      return accessKey ? pageAccess[accessKey] : false;
+    }
+    
+    // For owners, use role-based filtering
     if (['owner', 'manager', 'waiter'].includes(user.role)) {
       return item.roles.includes(user.role);
     }
+    
     return true;
   });
 

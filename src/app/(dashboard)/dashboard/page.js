@@ -211,7 +211,13 @@ function RestaurantPOSContent() {
       
       // For staff members, use their assigned restaurant
       if (user?.restaurantId) {
-        restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
+        // First try to use restaurant data from login response
+        if (user.restaurant) {
+          restaurant = user.restaurant;
+        } else {
+          // Fallback to finding restaurant in the list
+          restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
+        }
       }
       // For owners or customers (legacy), use selected restaurant from localStorage or first restaurant
       else if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {

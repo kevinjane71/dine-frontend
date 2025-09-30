@@ -27,7 +27,9 @@ import {
   FaKey,
   FaIdBadge,
   FaCopy,
-  FaUserCog
+  FaUserCog,
+  FaCheck,
+  FaTimes
 } from 'react-icons/fa';
 
 const Admin = () => {
@@ -57,7 +59,17 @@ const Admin = () => {
     email: '',
     address: '',
     role: 'employee',
-    startDate: new Date().toISOString().split('T')[0]
+    startDate: new Date().toISOString().split('T')[0],
+    pageAccess: {
+      dashboard: true,
+      history: true,
+      tables: true,
+      menu: true,
+      analytics: false,
+      inventory: false,
+      kot: false,
+      admin: false
+    }
   });
   const [showPassword, setShowPassword] = useState({});
   const [customRoles, setCustomRoles] = useState(['employee', 'manager', 'admin']);
@@ -351,14 +363,10 @@ const Admin = () => {
     try {
       setLoading(true);
       
-      // Generate unique credentials
-      const credentials = generateCredentials();
-      
       const staffData = {
         ...newStaff,
-        loginId: credentials.userId,
-        password: credentials.password,
-        restaurantId: selectedRestaurant.id
+        restaurantId: selectedRestaurant.id,
+        pageAccess: newStaff.pageAccess
       };
       
       const response = await apiClient.addStaff(selectedRestaurant.id, staffData);
@@ -366,8 +374,8 @@ const Admin = () => {
       // Add the new staff member with credentials to local state
       const newStaffMember = {
         ...response.staff,
-        loginId: credentials.userId,
-        tempPassword: credentials.password // Store temporarily for display
+        loginId: response.credentials.loginId,
+        tempPassword: response.credentials.password // Store temporarily for display
       };
       setStaff([...staff, newStaffMember]);
       
@@ -377,11 +385,21 @@ const Admin = () => {
         email: '',
         address: '',
         role: 'employee',
-        startDate: new Date().toISOString().split('T')[0]
+        startDate: new Date().toISOString().split('T')[0],
+        pageAccess: {
+          dashboard: true,
+          history: true,
+          tables: true,
+          menu: true,
+          analytics: false,
+          inventory: false,
+          kot: false,
+          admin: false
+        }
       });
       setShowAddStaffModal(false);
       
-      alert(`Staff member added successfully!\n\nLogin Credentials:\nUser ID: ${credentials.userId}\nPassword: ${credentials.password}\n\nPlease save these credentials securely.`);
+      alert(`Staff member added successfully!\n\nLogin Credentials:\nUser ID: ${response.credentials.loginId}\nPassword: ${response.credentials.password}\n\nPlease save these credentials securely.`);
     } catch (error) {
       console.error('Error adding staff:', error);
       alert(`Failed to add staff member: ${error.message}`);
@@ -1328,6 +1346,70 @@ const Admin = () => {
                       </div>
                     )}
 
+                    {/* Page Access Display */}
+                    {member.pageAccess && (
+                      <div style={{ 
+                        backgroundColor: '#f0fdf4', 
+                        padding: isClient && isMobile ? '12px' : '16px', 
+                        borderRadius: '12px',
+                        marginBottom: isClient && isMobile ? '12px' : '16px',
+                        border: '1px solid #22c55e'
+                      }}>
+                        <h4 style={{ 
+                          fontSize: '14px', 
+                          fontWeight: '600', 
+                          color: '#166534', 
+                          marginBottom: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}>
+                          <FaShieldAlt size={12} />
+                          Page Access Permissions
+                        </h4>
+                        <div style={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: 'repeat(2, 1fr)', 
+                          gap: '8px'
+                        }}>
+                          {[
+                            { key: 'dashboard', label: 'Dashboard', icon: '🏠' },
+                            { key: 'history', label: 'History', icon: '📋' },
+                            { key: 'tables', label: 'Tables', icon: '🪑' },
+                            { key: 'menu', label: 'Menu', icon: '🍽️' },
+                            { key: 'analytics', label: 'Analytics', icon: '📊' },
+                            { key: 'inventory', label: 'Inventory', icon: '📦' },
+                            { key: 'kot', label: 'KOT', icon: '👨‍🍳' },
+                            { key: 'admin', label: 'Admin', icon: '⚙️' }
+                          ].map(({ key, label, icon }) => (
+                            <div key={key} style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: '6px',
+                              padding: '6px 8px',
+                              borderRadius: '6px',
+                              backgroundColor: member.pageAccess[key] ? '#dcfce7' : '#fef2f2',
+                              border: `1px solid ${member.pageAccess[key] ? '#22c55e' : '#fca5a5'}`
+                            }}>
+                              <span style={{ fontSize: '12px' }}>{icon}</span>
+                              <span style={{ 
+                                fontSize: '11px', 
+                                fontWeight: '500',
+                                color: member.pageAccess[key] ? '#166534' : '#dc2626'
+                              }}>
+                                {label}
+                              </span>
+                              {member.pageAccess[key] ? (
+                                <FaCheck size={8} style={{ color: '#22c55e' }} />
+                              ) : (
+                                <FaTimes size={8} style={{ color: '#dc2626' }} />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div style={{ display: 'grid', gridTemplateColumns: isClient && isMobile ? '1fr' : '1fr 1fr', gap: isClient && isMobile ? '12px' : '16px', marginBottom: isClient && isMobile ? '12px' : '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaCalendarAlt style={{ color: '#9ca3af', fontSize: '12px' }} />
@@ -1620,11 +1702,11 @@ const Admin = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box'
                   }}
@@ -1648,11 +1730,11 @@ const Admin = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
                     minHeight: '80px',
@@ -1679,11 +1761,11 @@ const Admin = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box'
                   }}
@@ -1708,11 +1790,11 @@ const Admin = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box'
                   }}
@@ -1737,11 +1819,11 @@ const Admin = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box'
                   }}
@@ -1766,11 +1848,11 @@ const Admin = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box'
                   }}
@@ -1794,11 +1876,11 @@ const Admin = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
                     minHeight: '80px',
@@ -1869,8 +1951,12 @@ const Admin = () => {
             borderRadius: '24px',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
             width: '100%',
-            maxWidth: '500px',
-            border: '1px solid #fce7f3'
+            maxWidth: '800px',
+            maxHeight: '90vh',
+            border: '1px solid #fce7f3',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
           }}>
             <div style={{
               padding: '24px',
@@ -1903,17 +1989,32 @@ const Admin = () => {
               </div>
             </div>
             
-            <form onSubmit={handleAddStaff} style={{ padding: '24px' }}>
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '14px', 
-                  fontWeight: '600', 
-                  color: '#374151', 
-                  marginBottom: '8px' 
-                }}>
-                  Full Name *
-                </label>
+            <form onSubmit={handleAddStaff} style={{ 
+              padding: '24px',
+              overflowY: 'auto',
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              {/* Form Fields in Two Columns */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: '1fr 1fr', 
+                gap: '20px',
+                marginBottom: '20px'
+              }}>
+                {/* Left Column */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      color: '#374151', 
+                      marginBottom: '8px' 
+                    }}>
+                      Full Name *
+                    </label>
                 <input
                   type="text"
                   required
@@ -1922,28 +2023,28 @@ const Admin = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box'
                   }}
                   placeholder="Enter staff member full name"
                 />
-              </div>
+                  </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '14px', 
-                  fontWeight: '600', 
-                  color: '#374151', 
-                  marginBottom: '8px' 
-                }}>
-                  Phone Number *
-                </label>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      color: '#374151', 
+                      marginBottom: '8px' 
+                    }}>
+                      Phone Number *
+                    </label>
                 <input
                   type="tel"
                   required
@@ -1952,11 +2053,11 @@ const Admin = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box'
                   }}
@@ -1972,49 +2073,48 @@ const Admin = () => {
                   color: '#374151', 
                   marginBottom: '8px' 
                 }}>
-                  Email *
+                  Email
                 </label>
                 <input
                   type="email"
-                  required
                   value={newStaff.email}
                   onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box'
                   }}
                   placeholder="staff@restaurant.com (used for login)"
                 />
-              </div>
+                  </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '14px', 
-                  fontWeight: '600', 
-                  color: '#374151', 
-                  marginBottom: '8px' 
-                }}>
-                  Address
-                </label>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      color: '#374151', 
+                      marginBottom: '8px' 
+                    }}>
+                      Address
+                    </label>
                 <textarea
                   value={newStaff.address}
                   onChange={(e) => setNewStaff({ ...newStaff, address: e.target.value })}
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box',
                     minHeight: '80px',
@@ -2022,8 +2122,11 @@ const Admin = () => {
                   }}
                   placeholder="Staff residential address"
                 />
+                  </div>
+                </div>
               </div>
 
+              {/* Full Width Fields */}
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ 
                   display: 'block', 
@@ -2040,11 +2143,11 @@ const Admin = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box'
                   }}
@@ -2089,7 +2192,7 @@ const Admin = () => {
                       style={{
                         flex: 1,
                         padding: '12px 16px',
-                        border: '2px solid #e5e7eb',
+                        border: 'none',
                         borderRadius: '12px',
                         fontSize: '14px',
                         outline: 'none',
@@ -2128,6 +2231,77 @@ const Admin = () => {
                 </div>
               )}
 
+              {/* Page Access Controls */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ 
+                  display: 'block', 
+                  fontSize: '14px', 
+                  fontWeight: '600', 
+                  color: '#374151', 
+                  marginBottom: '12px' 
+                }}>
+                  Page Access Permissions
+                </label>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(2, 1fr)', 
+                  gap: '12px',
+                  padding: '16px',
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '12px',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  {[
+                    { key: 'dashboard', label: 'Dashboard', icon: '🏠' },
+                    { key: 'history', label: 'Order History', icon: '📋' },
+                    { key: 'tables', label: 'Tables', icon: '🪑' },
+                    { key: 'menu', label: 'Menu Management', icon: '🍽️' },
+                    { key: 'analytics', label: 'Analytics', icon: '📊' },
+                    { key: 'inventory', label: 'Inventory', icon: '📦' },
+                    { key: 'kot', label: 'KOT (Kitchen)', icon: '👨‍🍳' },
+                    { key: 'admin', label: 'Admin Panel', icon: '⚙️' }
+                  ].map(({ key, label, icon }) => (
+                    <label key={key} style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px',
+                      cursor: 'pointer',
+                      padding: '8px',
+                      borderRadius: '8px',
+                      backgroundColor: newStaff.pageAccess[key] ? '#dcfce7' : 'white',
+                      border: `1px solid ${newStaff.pageAccess[key] ? '#10b981' : '#e5e7eb'}`,
+                      transition: 'all 0.2s'
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={newStaff.pageAccess[key]}
+                        onChange={(e) => {
+                          setNewStaff({
+                            ...newStaff,
+                            pageAccess: {
+                              ...newStaff.pageAccess,
+                              [key]: e.target.checked
+                            }
+                          });
+                        }}
+                        style={{ margin: 0 }}
+                      />
+                      <span style={{ fontSize: '16px' }}>{icon}</span>
+                      <span style={{ 
+                        fontSize: '13px', 
+                        fontWeight: '500',
+                        color: newStaff.pageAccess[key] ? '#059669' : '#374151'
+                      }}>
+                        {label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <p style={{ fontSize: '12px', color: '#6b7280', margin: '8px 0 0 0' }}>
+                  Select which pages this staff member can access. Default access includes Dashboard, History, Tables, and Menu.
+                </p>
+              </div>
+
               <div style={{ marginBottom: '24px' }}>
                 <label style={{ 
                   display: 'block', 
@@ -2146,18 +2320,24 @@ const Admin = () => {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: '#fef7f0',
+                    backgroundColor: '#f8fafc',
                     transition: 'all 0.2s',
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ 
+                display: 'flex', 
+                gap: '12px', 
+                marginTop: 'auto',
+                paddingTop: '20px',
+                borderTop: '1px solid #f3f4f6'
+              }}>
                 <button
                   type="button"
                   onClick={() => setShowAddStaffModal(false)}

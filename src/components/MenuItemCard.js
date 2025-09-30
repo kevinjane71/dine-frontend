@@ -32,7 +32,7 @@ const MenuItemCard = ({
     >
       
       {/* Veg/Non-Veg Indicator */}
-      <div style={{
+      {/* <div style={{
         position: 'absolute',
         top: '6px',
         left: '6px',
@@ -50,7 +50,7 @@ const MenuItemCard = ({
         ) : (
           <FaDrumstickBite size={7} color="white" />
         )}
-      </div>
+      </div> */}
 
       {/* Main Content Area */}
       <div style={{ 

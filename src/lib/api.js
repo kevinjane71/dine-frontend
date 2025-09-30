@@ -179,7 +179,7 @@ class ApiClient {
       headers: {
         // Don't set Content-Type, let the browser set it for FormData
         ...(token && { Authorization: `Bearer ${token}` }),
-      },
+      }
     };
 
     try {
@@ -378,6 +378,16 @@ class ApiClient {
     });
   }
 
+  // User Page Access
+  async getUserPageAccess() {
+    return this.request('/api/user/page-access');
+  }
+
+  // User Profile
+  async getUserProfile() {
+    return this.request('/api/user/profile');
+  }
+
   async staffLogin(loginId, password) {
     const response = await this.request('/api/auth/staff/login', {
       method: 'POST',
@@ -414,7 +424,7 @@ class ApiClient {
       body: { 
         status: 'preparing',
         cookingStartTime: new Date().toISOString()
-      },
+      }
     });
   }
 
@@ -424,7 +434,7 @@ class ApiClient {
       body: { 
         status: 'ready',
         cookingEndTime: new Date().toISOString()
-      },
+      }
     });
   }
 
