@@ -1203,66 +1203,25 @@ function RestaurantPOSContent() {
             {/* Menu Header */}
           <div style={{ padding: '8px 12px', backgroundColor: 'white', borderBottom: '1px solid #f3f4f6' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
-              <div>
+              {/* <div>
                 <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
                   {categories.find(c => c.id === selectedCategory)?.name || 'All Items'}
                 </h2>
                 <p style={{ color: '#6b7280', margin: '2px 0 0 0', fontSize: '11px' }}>{filteredItems.length} items</p>
-              </div>
+              </div> */}
               
               {/* Quick Search */}
-              <div style={{ position: 'relative', width: '240px' }}>
-                <FaSearch style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={12} />
-                <input
-                  type="text"
-                  placeholder="Quick add: type name or code..."
-                  value={quickSearch}
-                  onChange={(e) => setQuickSearch(e.target.value)}
-                  onKeyPress={handleQuickSearch}
-                  style={{
-                    width: '100%',
-                    paddingLeft: '28px',
-                    paddingRight: '8px',
-                    paddingTop: '6px',
-                    paddingBottom: '6px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                    backgroundColor: '#f9fafb',
-                    fontSize: '11px',
-                    outline: 'none'
-                  }}
-                />
-              </div>
+              
             </div>
             
             {/* Order Management Row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' }}>
               {/* Table Number Input */}
-              <div style={{ position: 'relative', width: '120px' }}>
-                <FaTable style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={12} />
-                <input
-                  type="text"
-                  placeholder="Table No."
-                  value={tableNumber}
-                  onChange={(e) => setTableNumber(e.target.value)}
-                  style={{
-                    width: '100%',
-                    paddingLeft: '28px',
-                    paddingRight: '8px',
-                    paddingTop: '6px',
-                    paddingBottom: '6px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                    backgroundColor: '#f9fafb',
-                    fontSize: '11px',
-                    outline: 'none'
-                  }}
-                />
-              </div>
+              
 
               {/* Order Lookup Input */}
               <div style={{ position: 'relative', flex: 1, maxWidth: '200px' }}>
-                <FaSearch style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={12} />
+                <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#000000', opacity: 0.6 }} size={14} />
                 <input
                   type="text"
                   placeholder="Search by Table No. or Order ID..."
@@ -1271,15 +1230,55 @@ function RestaurantPOSContent() {
                   onKeyPress={handleOrderLookup}
                   style={{
                     width: '100%',
-                    paddingLeft: '28px',
-                    paddingRight: '8px',
-                    paddingTop: '6px',
-                    paddingBottom: '6px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                    backgroundColor: '#f9fafb',
-                    fontSize: '11px',
-                    outline: 'none'
+                    paddingLeft: '36px',
+                    paddingRight: '12px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px',
+                    border: 'none',
+                    borderRadius: '0px',
+                    backgroundColor: '#f3f3f3',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    outline: 'none',
+                    color: '#000000',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.backgroundColor = '#f3f3f3';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.backgroundColor = '#f3f3f3';
+                  }}
+                />
+              </div>
+              <div style={{ position: 'relative', width: '240px' }}>
+                <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#000000', opacity: 0.6 }} size={14} />
+                <input
+                  type="text"
+                  placeholder="Quick add: type name or code..."
+                  value={quickSearch}
+                  onChange={(e) => setQuickSearch(e.target.value)}
+                  onKeyPress={handleQuickSearch}
+                  style={{
+                    width: '100%',
+                    paddingLeft: '36px',
+                    paddingRight: '12px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px',
+                    border: 'none',
+                    borderRadius: '0px',
+                    backgroundColor: '#f3f3f3',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    outline: 'none',
+                    color: '#000000',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.backgroundColor = '#f3f3f3';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.backgroundColor = '#f3f3f3';
                   }}
                 />
               </div>

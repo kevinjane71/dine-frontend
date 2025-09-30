@@ -9,7 +9,7 @@ const MenuItemCard = ({
   onRemoveFromCart, 
   isMobile = false 
 }) => {
-  const isVeg = item.category === 'veg';
+  const isVeg = item.isVeg === true || item.category === 'veg';
   
   return (
     <div

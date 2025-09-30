@@ -252,10 +252,10 @@ const OrderSummary = ({
                           borderRadius: '4px',
                           fontSize: '6px',
                           fontWeight: 'bold',
-                          backgroundColor: item.category === 'veg' ? '#dcfce7' : '#fee2e2',
-                          color: item.category === 'veg' ? '#166534' : '#dc2626'
+                          backgroundColor: (item.isVeg === true || item.category === 'veg') ? '#dcfce7' : '#fee2e2',
+                          color: (item.isVeg === true || item.category === 'veg') ? '#166534' : '#dc2626'
                         }}>
-                          {item.category === 'veg' ? 'V' : 'N'}
+                          {(item.isVeg === true || item.category === 'veg') ? 'V' : 'N'}
                         </div>
                       </div>
                     </div>
