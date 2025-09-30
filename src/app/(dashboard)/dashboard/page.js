@@ -995,16 +995,15 @@ function RestaurantPOSContent() {
     }}>
       {/* Header */}
       
-      {/* Mobile Top Bar */}
+      {/* Flat Crisp Mobile Top Bar */}
       {isMobile && (
         <div style={{
           backgroundColor: 'white',
-          borderBottom: '1px solid #e5e7eb',
-          padding: '12px 16px',
+          padding: '20px 24px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px'
+          gap: '20px'
         }}>
           {/* Search Bar */}
           <div style={{ flex: 1, position: 'relative' }}>
@@ -1013,24 +1012,35 @@ function RestaurantPOSContent() {
               left: '12px', 
               top: '50%', 
               transform: 'translateY(-50%)', 
-              color: '#9ca3af' 
-            }} size={16} />
+              color: '#000000',
+              fontSize: '14px',
+              opacity: 0.4
+            }} />
             <input
               type="text"
-              placeholder="Search menu..."
+              placeholder="Search menu items..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 width: '100%',
-                paddingLeft: '40px',
+                paddingLeft: '36px',
                 paddingRight: '12px',
-                paddingTop: '12px',
-                paddingBottom: '12px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '12px',
-                backgroundColor: '#f9fafb',
+                paddingTop: '10px',
+                paddingBottom: '10px',
+                border: 'none',
+                borderRadius: '0px',
+                backgroundColor: '#ffffff',
                 fontSize: '14px',
-                outline: 'none'
+                fontWeight: '500',
+                outline: 'none',
+                color: '#000000',
+                transition: 'all 0.2s ease'
+              }}
+              onFocus={(e) => {
+                e.target.style.backgroundColor = '#f8f8f8';
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = '#ffffff';
               }}
             />
           </div>
@@ -1039,54 +1049,68 @@ function RestaurantPOSContent() {
           <button
             onClick={() => setShowMobileSidebar(true)}
             style={{
-              padding: '12px',
-              backgroundColor: '#ef4444',
+              padding: '18px 20px',
+              backgroundColor: '#000000',
               color: 'white',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '0px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              fontWeight: '600',
-              fontSize: '14px',
-              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
+              gap: '10px',
+              fontWeight: '800',
+              fontSize: '16px',
+              transition: 'all 0.2s ease',
+              letterSpacing: '0.5px'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#333333';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#000000';
             }}
           >
-            <FaBars size={16} />
-            Categories
+            <FaBars size={18} />
+            MENU
           </button>
           
           {/* Cart Button */}
           <button
             onClick={() => setShowMobileCart(true)}
             style={{
-              padding: '12px',
-              backgroundColor: cart.length > 0 ? '#10b981' : '#6b7280',
+              padding: '18px 20px',
+              backgroundColor: cart.length > 0 ? '#000000' : '#000000',
               color: 'white',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '0px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              fontWeight: '600',
-              fontSize: '14px',
+              gap: '10px',
+              fontWeight: '800',
+              fontSize: '16px',
               position: 'relative',
-              boxShadow: cart.length > 0 ? '0 2px 8px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(107, 114, 128, 0.3)'
+              transition: 'all 0.2s ease',
+              letterSpacing: '0.5px'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#333333';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#000000';
             }}
           >
-            <FaShoppingCart size={16} />
+            <FaShoppingCart size={18} />
             {cart.length > 0 && (
               <span style={{
                 position: 'absolute',
                 top: '-8px',
                 right: '-8px',
-                backgroundColor: '#ef4444',
-                color: 'white',
-                borderRadius: '50%',
-                width: '20px',
-                height: '20px',
+                backgroundColor: '#ffffff',
+                color: '#000000',
+                borderRadius: '0px',
+                width: '24px',
+                height: '24px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1200,69 +1224,49 @@ function RestaurantPOSContent() {
             </div>
           ) : (
           <>
-            {/* Menu Header */}
-          <div style={{ padding: '8px 12px', backgroundColor: 'white', borderBottom: '1px solid #f3f4f6' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
-              <div>
-                <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+            {/* Flat Crisp Header */}
+          <div style={{ 
+            padding: '20px 24px', 
+            backgroundColor: 'white'
+          }}>
+            {/* Title and Count */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              marginBottom: '20px' 
+            }}>
+              {/* <div>
+                <h2 style={{ 
+                  fontSize: '28px', 
+                  fontWeight: '800', 
+                  color: '#000000', 
+                  margin: 0,
+                  letterSpacing: '-0.5px'
+                }}>
                   {categories.find(c => c.id === selectedCategory)?.name || 'All Items'}
                 </h2>
-                <p style={{ color: '#6b7280', margin: '2px 0 0 0', fontSize: '11px' }}>{filteredItems.length} items</p>
-              </div>
-              
-              {/* Quick Search */}
-              <div style={{ position: 'relative', width: '240px' }}>
-                <FaSearch style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={12} />
-                <input
-                  type="text"
-                  placeholder="Quick add: type name or code..."
-                  value={quickSearch}
-                  onChange={(e) => setQuickSearch(e.target.value)}
-                  onKeyPress={handleQuickSearch}
-                  style={{
-                    width: '100%',
-                    paddingLeft: '28px',
-                    paddingRight: '8px',
-                    paddingTop: '6px',
-                    paddingBottom: '6px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                    backgroundColor: '#f9fafb',
-                    fontSize: '11px',
-                    outline: 'none'
-                  }}
-                />
-              </div>
+              </div> */}
             </div>
             
-            {/* Order Management Row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' }}>
-              {/* Table Number Input */}
-              <div style={{ position: 'relative', width: '120px' }}>
-                <FaTable style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={12} />
-                <input
-                  type="text"
-                  placeholder="Table No."
-                  value={tableNumber}
-                  onChange={(e) => setTableNumber(e.target.value)}
-                  style={{
-                    width: '100%',
-                    paddingLeft: '28px',
-                    paddingRight: '8px',
-                    paddingTop: '6px',
-                    paddingBottom: '6px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                    backgroundColor: '#f9fafb',
-                    fontSize: '11px',
-                    outline: 'none'
-                  }}
-                />
-              </div>
-
-              {/* Order Lookup Input */}
-              <div style={{ position: 'relative', flex: 1, maxWidth: '200px' }}>
-                <FaSearch style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={12} />
+            {/* Search Controls Row */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '20px',
+              justifyContent: 'space-between'
+            }}>
+              {/* Order Lookup - Left Aligned */}
+              <div style={{ position: 'relative', flex: 1, maxWidth: '240px' }}>
+                <FaSearch style={{ 
+                  position: 'absolute', 
+                  left: '12px', 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  color: '#000000',
+                  fontSize: '14px',
+                  opacity: 0.4
+                }} />
                 <input
                   type="text"
                   placeholder="Search by Table No. or Order ID..."
@@ -1271,56 +1275,107 @@ function RestaurantPOSContent() {
                   onKeyPress={handleOrderLookup}
                   style={{
                     width: '100%',
-                    paddingLeft: '28px',
-                    paddingRight: '8px',
-                    paddingTop: '6px',
-                    paddingBottom: '6px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                    backgroundColor: '#f9fafb',
-                    fontSize: '11px',
-                    outline: 'none'
+                    paddingLeft: '36px',
+                    paddingRight: '12px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px',
+                    border: 'none',
+                    borderRadius: '0px',
+                    backgroundColor: '#f8f8f8',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    outline: 'none',
+                    color: '#000000',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.backgroundColor = '#ffffff';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.backgroundColor = '#f8f8f8';
                   }}
                 />
               </div>
 
-              {/* Current Order Status */}
-              {currentOrder && (
-                <div style={{ 
-                  padding: '4px 8px', 
-                  backgroundColor: '#dbeafe', 
-                  border: '1px solid #3b82f6',
-                  borderRadius: '6px',
-                  fontSize: '10px',
-                  fontWeight: '600',
-                  color: '#1e40af',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  <FaEdit size={10} />
-                  Editing Order {currentOrder.id.slice(-6)}
-                </div>
-              )}
+              {/* Quick Search - Right Aligned */}
+              <div style={{ position: 'relative', width: '220px' }}>
+                <FaSearch style={{ 
+                  position: 'absolute', 
+                  left: '12px', 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  color: '#000000',
+                  fontSize: '14px',
+                  opacity: 0.4
+                }} />
+                <input
+                  type="text"
+                  placeholder="Quick add: type name or code..."
+                  value={quickSearch}
+                  onChange={(e) => setQuickSearch(e.target.value)}
+                  onKeyPress={handleQuickSearch}
+                  style={{
+                    width: '100%',
+                    paddingLeft: '36px',
+                    paddingRight: '12px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px',
+                    border: 'none',
+                    borderRadius: '0px',
+                    backgroundColor: '#f8f8f8',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    outline: 'none',
+                    color: '#000000',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.backgroundColor = '#ffffff';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.backgroundColor = '#f8f8f8';
+                  }}
+                />
+              </div>
             </div>
+
+            {/* Current Order Status */}
+            {currentOrder && (
+              <div style={{ 
+                marginTop: '16px',
+                padding: '12px 20px', 
+                backgroundColor: '#000000', 
+                borderRadius: '0px',
+                fontSize: '14px',
+                fontWeight: '700',
+                color: '#ffffff',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <FaEdit size={14} />
+                Editing Order {currentOrder.id.slice(-6)}
+              </div>
+            )}
           </div>
           
           <div style={{ 
             flex: 1, 
-            padding: isMobile ? '16px' : '8px', 
+            padding: isMobile ? '20px' : '24px', 
             overflowY: 'auto',
             height: '100%',
             scrollbarWidth: 'thin',
-            scrollbarColor: '#cbd5e1 transparent'
+            scrollbarColor: '#cbd5e1 transparent',
+            backgroundColor: 'white'
           }}>
             <div style={{
               display: 'grid',
               gridTemplateColumns: isMobile 
-                ? 'repeat(auto-fill, minmax(140px, 1fr))' 
-                : 'repeat(auto-fill, minmax(150px, 1fr))',
-              gap: isMobile ? '8px' : '10px',
+                ? 'repeat(auto-fill, minmax(160px, 1fr))' 
+                : 'repeat(auto-fill, minmax(200px, 1fr))',
+              gap: isMobile ? '16px' : '20px',
               justifyContent: 'center',
-              padding: '0 4px'
+              padding: '0'
             }}>
               {filteredItems.map((item) => {
                 const quantityInCart = getItemQuantityInCart(item.id);
