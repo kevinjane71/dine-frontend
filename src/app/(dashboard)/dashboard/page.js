@@ -616,8 +616,9 @@ function RestaurantPOSContent() {
         orderType,
         paymentMethod,
         staffInfo: {
-          id: currentUser.id,
+          userId: currentUser.id,
           name: currentUser.name || 'Staff',
+          loginId: currentUser.loginId || currentUser.id,
           role: currentUser.role || 'waiter'
         },
         items: cart.map(item => ({
@@ -992,7 +993,7 @@ function RestaurantPOSContent() {
 
   return (
     <div style={{ 
-      height: 'calc(100vh - 80px)', // Subtract navigation height
+      height: '100%', // Use full height available from layout
       backgroundColor: '#f8fafc', 
       display: 'flex', 
       flexDirection: 'column',
@@ -1157,9 +1158,9 @@ function RestaurantPOSContent() {
             padding: '8px', 
             overflowY: 'auto', 
             height: 'calc(100% - 100px)',
-            scrollbarWidth: 'thin',
-            scrollbarColor: '#cbd5e1 transparent'
-          }}>
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }} className="hide-scrollbar">
             
             {categories.map((category) => {
               const categoryItems = category.id === 'all-items' 
@@ -1315,9 +1316,9 @@ function RestaurantPOSContent() {
             padding: isMobile ? '16px' : '8px', 
             overflowY: 'auto',
             height: '100%',
-            scrollbarWidth: 'thin',
-            scrollbarColor: '#cbd5e1 transparent'
-          }}>
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }} className="hide-scrollbar">
             <div style={{
               display: 'grid',
               gridTemplateColumns: isMobile 
@@ -1439,9 +1440,9 @@ function RestaurantPOSContent() {
               flex: 1, 
               padding: '16px', 
               overflowY: 'auto',
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#cbd5e1 transparent'
-            }}>
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }} className="hide-scrollbar">
               {categories.map((category) => {
                 const categoryItems = category.id === 'all-items' 
                   ? menuItems 
@@ -1530,9 +1531,9 @@ function RestaurantPOSContent() {
               flex: 1, 
               padding: '16px', 
               overflowY: 'auto',
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#cbd5e1 transparent'
-            }}>
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }} className="hide-scrollbar">
               {cart.length === 0 ? (
                 <div style={{
                   textAlign: 'center',

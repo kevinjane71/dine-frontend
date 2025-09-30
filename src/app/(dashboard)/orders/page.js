@@ -24,6 +24,8 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
+  const [selectedWaiter, setSelectedWaiter] = useState('all');
+  const [waiters, setWaiters] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -129,7 +131,16 @@ const Orders = () => {
         }
         
         console.log('Orders page: Making API call with restaurant ID:', restaurantId);
-        const response = await apiClient.getOrders(restaurantId);
+        
+        // Fetch waiters for filtering
+        const waitersResponse = await apiClient.getWaiters(restaurantId);
+        setWaiters(waitersResponse.waiters || []);
+        
+        // Fetch orders with waiter filter
+        const response = await apiClient.getOrders(restaurantId, {
+          waiterId: selectedWaiter !== 'all' ? selectedWaiter : undefined,
+          search: searchTerm || undefined
+        });
         console.log('Orders page: API response:', response);
         
         // Transform backend order data to match frontend format
@@ -167,7 +178,7 @@ const Orders = () => {
       setError('Unexpected error occurred');
       setLoading(false);
     });
-  }, []);
+  }, [selectedWaiter, searchTerm]);
 
   const getStatusInfo = (status) => {
     const statusMap = {
@@ -259,9 +270,8 @@ const Orders = () => {
   const filteredOrders = orders.filter(order => {
     const matchesStatus = selectedStatus === 'all' || order.status === selectedStatus;
     const matchesType = selectedType === 'all' || order.type === selectedType;
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customerName.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesType && matchesSearch;
+    // Search is now handled by the backend API
+    return matchesStatus && matchesType;
   });
 
   const getTimeAgo = (orderTime) => {
@@ -518,6 +528,33 @@ const Orders = () => {
                   </select>
                 </div>
                 
+                {/* Mobile Waiter Filter */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                    Waiter
+                  </label>
+                  <select
+                    value={selectedWaiter}
+                    onChange={(e) => setSelectedWaiter(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      backgroundColor: 'white',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="all">All Waiters</option>
+                    {waiters.map(waiter => (
+                      <option key={waiter.id} value={waiter.id}>
+                        {waiter.name} ({waiter.loginId})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
                 <button
                   onClick={() => setShowMobileFilters(false)}
                   style={{
@@ -620,6 +657,28 @@ const Orders = () => {
             <option value="delivery">Delivery</option>
             <option value="pickup">Pickup</option>
           </select>
+
+          {/* Waiter Filter */}
+          <select
+            value={selectedWaiter}
+            onChange={(e) => setSelectedWaiter(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+              fontSize: '14px',
+              backgroundColor: 'white',
+              outline: 'none',
+              minWidth: '120px'
+            }}
+          >
+            <option value="all">All Waiters</option>
+            {waiters.map(waiter => (
+              <option key={waiter.id} value={waiter.id}>
+                {waiter.name} ({waiter.loginId})
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Orders List */}
@@ -702,6 +761,11 @@ const Orders = () => {
                         <div style={{ fontSize: '12px', color: '#6b7280' }}>
                           {order.tableNumber ? `Table ${order.tableNumber}` : order.phone}
                         </div>
+                        {order.staffInfo && (
+                          <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>
+                            Waiter: {order.staffInfo.name} ({order.staffInfo.loginId})
+                          </div>
+                        )}
                       </div>
                       <div style={{
                         display: 'flex',
@@ -793,7 +857,7 @@ const Orders = () => {
                       {order.staffInfo?.name || 'Staff'}
                     </div>
                     <div style={{ fontSize: '11px', color: '#6b7280' }}>
-                      {order.paymentMethod || 'cash'} • {order.staffInfo?.role || 'waiter'}
+                      {order.paymentMethod || 'cash'} • {order.staffInfo?.loginId || order.staffInfo?.role || 'waiter'}
                     </div>
                   </div>
 

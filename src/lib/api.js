@@ -353,6 +353,10 @@ class ApiClient {
     });
   }
 
+  async getWaiters(restaurantId) {
+    return this.request(`/api/waiters/${restaurantId}`);
+  }
+
   // Staff Management endpoints
   async getStaff(restaurantId) {
     return this.request(`/api/staff/${restaurantId}`);

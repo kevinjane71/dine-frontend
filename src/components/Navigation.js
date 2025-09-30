@@ -118,23 +118,23 @@ function NavigationContent() {
               setSelectedRestaurant(parsedUser.restaurant);
             } else {
               // Fallback: fetch restaurant data from API
-              try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003'}/api/restaurants`, {
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                  }
-                });
-                if (response.ok) {
-                  const data = await response.json();
-                  const userRestaurant = data.restaurants.find(r => r.id === parsedUser.restaurantId);
-                  if (userRestaurant) {
-                    setSelectedRestaurant(userRestaurant);
-                  }
+            try {
+              const token = localStorage.getItem('authToken');
+              const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003'}/api/restaurants`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
                 }
-              } catch (error) {
-                console.error('Error fetching restaurant data:', error);
+              });
+              if (response.ok) {
+                const data = await response.json();
+                const userRestaurant = data.restaurants.find(r => r.id === parsedUser.restaurantId);
+                if (userRestaurant) {
+                  setSelectedRestaurant(userRestaurant);
+                }
+              }
+            } catch (error) {
+              console.error('Error fetching restaurant data:', error);
               }
             }
           } else if (parsedUser.role === 'owner' || parsedUser.role === 'customer') {
@@ -472,8 +472,8 @@ function NavigationContent() {
             {!isMobile && (user?.role === 'owner' || user?.role === 'customer') && allRestaurants.length > 1 && (
               <div style={{ position: 'relative' }} data-restaurant-dropdown>
                 <button
-                  onClick={() => setShowRestaurantDropdown(!showRestaurantDropdown)}
-                  style={{ 
+                    onClick={() => setShowRestaurantDropdown(!showRestaurantDropdown)}
+                    style={{ 
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
@@ -484,7 +484,7 @@ function NavigationContent() {
                     backdropFilter: 'blur(12px)',
                     border: '1px solid rgba(0, 0, 0, 0.05)',
                     borderRadius: '12px',
-                    cursor: 'pointer',
+                      cursor: 'pointer',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     boxShadow: showRestaurantDropdown 
                       ? '0 8px 25px rgba(239, 68, 68, 0.15)' 
@@ -492,15 +492,15 @@ function NavigationContent() {
                     fontSize: '13px',
                     fontWeight: '600',
                     color: '#374151'
-                  }}
-                  onMouseEnter={(e) => {
+                    }}
+                    onMouseEnter={(e) => {
                     if (!showRestaurantDropdown) {
                       e.currentTarget.style.background = 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)';
                       e.currentTarget.style.transform = 'translateY(-1px)';
                       e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.08)';
                     }
-                  }}
-                  onMouseLeave={(e) => {
+                    }}
+                    onMouseLeave={(e) => {
                     if (!showRestaurantDropdown) {
                       e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
                       e.currentTarget.style.transform = 'translateY(0)';
@@ -523,8 +523,8 @@ function NavigationContent() {
                   
                   <div style={{ textAlign: 'left', minWidth: '120px' }}>
                     <div style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
-                      {selectedRestaurant?.name || 'Select Restaurant'}
-                    </div>
+                          {selectedRestaurant?.name || 'Select Restaurant'}
+                      </div>
                     <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '1px' }}>
                       Switch Location
                     </div>
@@ -564,40 +564,40 @@ function NavigationContent() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <HiSwitchHorizontal style={{ color: '#ef4444', fontSize: '16px' }} />
                         <h4 style={{ fontSize: '14px', fontWeight: '700', color: '#1f2937', margin: 0 }}>
-                          Switch Restaurant
-                        </h4>
-                      </div>
+                        Switch Restaurant
+                      </h4>
+                    </div>
                       <p style={{ fontSize: '11px', color: '#6b7280', margin: '4px 0 0 0' }}>
                         Choose your active location
                       </p>
                     </div>
                     
                     <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                      {allRestaurants.map((restaurant) => (
-                        <div
-                          key={restaurant.id}
-                          onClick={() => handleRestaurantChange(restaurant)}
-                          style={{
+                    {allRestaurants.map((restaurant) => (
+                      <div
+                        key={restaurant.id}
+                        onClick={() => handleRestaurantChange(restaurant)}
+                        style={{
                             padding: '16px 20px',
-                            cursor: 'pointer',
+                          cursor: 'pointer',
                             backgroundColor: selectedRestaurant?.id === restaurant.id ? 'rgba(239, 68, 68, 0.08)' : 'transparent',
                             borderLeft: selectedRestaurant?.id === restaurant.id ? '3px solid #ef4444' : '3px solid transparent',
                             transition: 'all 0.2s ease',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between'
-                          }}
-                          onMouseEnter={(e) => {
-                            if (selectedRestaurant?.id !== restaurant.id) {
+                        }}
+                        onMouseEnter={(e) => {
+                          if (selectedRestaurant?.id !== restaurant.id) {
                               e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.02)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (selectedRestaurant?.id !== restaurant.id) {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                            }
-                          }}
-                        >
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedRestaurant?.id !== restaurant.id) {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }
+                        }}
+                      >
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{
                               width: '32px',
@@ -618,21 +618,21 @@ function NavigationContent() {
                                 size={14} 
                               />
                             </div>
-                            <div>
+                          <div>
                               <p style={{ 
                                 fontSize: '14px', 
                                 fontWeight: '600', 
                                 color: selectedRestaurant?.id === restaurant.id ? '#ef4444' : '#1f2937', 
                                 margin: 0 
                               }}>
-                                {restaurant.name}
-                              </p>
-                              {restaurant.phone && (
+                              {restaurant.name}
+                            </p>
+                            {restaurant.phone && (
                                 <p style={{ fontSize: '11px', color: '#6b7280', margin: '2px 0 0 0' }}>
-                                  📞 {restaurant.phone}
-                                </p>
-                              )}
-                            </div>
+                                📞 {restaurant.phone}
+                              </p>
+                            )}
+                          </div>
                           </div>
                           
                           {selectedRestaurant?.id === restaurant.id && (
@@ -649,11 +649,52 @@ function NavigationContent() {
                               <FaCheck color="white" size={10} />
                             </div>
                           )}
-                        </div>
-                      ))}
+                      </div>
+                    ))}
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Staff Restaurant Chip - Non-clickable display */}
+            {!isMobile && (user?.role === 'waiter' || user?.role === 'manager' || user?.role === 'employee') && selectedRestaurant && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                background: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(0, 0, 0, 0.05)',
+                borderRadius: '12px',
+                fontSize: '13px',
+                fontWeight: '600',
+                color: '#374151',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                cursor: 'default'
+                }}>
+                  <div style={{
+                    width: '24px',
+                    height: '24px',
+                  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                  borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                  }}>
+                  <BiRestaurant color="white" size={12} />
+                  </div>
+                
+                <div style={{ textAlign: 'left', minWidth: '120px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
+                    {selectedRestaurant.name}
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '1px' }}>
+                    Current Location
+                  </div>
+                </div>
               </div>
             )}
 
@@ -730,7 +771,7 @@ function NavigationContent() {
                       lineHeight: '1.2'
                     }}>
                       {user?.role || 'Staff'}
-                    </span>
+                  </span>
                   </div>
                   
                   <FaChevronDown 
@@ -790,47 +831,89 @@ function NavigationContent() {
                           </p>
                         </div>
                       </div>
-                    </div>
-                    
-                    {/* Logout Button */}
+                </div>
+
+                {/* Logout Button */}
                     <div style={{ padding: '12px' }}>
-                      <button
-                        onClick={handleLogout}
-                        style={{
+                <button
+                  onClick={handleLogout}
+                  style={{
                           width: '100%',
                           padding: '12px 16px',
                           background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
-                          color: '#dc2626',
+                    color: '#dc2626',
                           border: '1px solid rgba(220, 38, 38, 0.2)',
                           borderRadius: '12px',
-                          fontWeight: '600',
+                    fontWeight: '600',
                           fontSize: '13px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
                           justifyContent: 'center',
                           gap: '8px',
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                        }}
-                        onMouseEnter={(e) => {
+                  }}
+                  onMouseEnter={(e) => {
                           e.currentTarget.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
                           e.currentTarget.style.color = 'white';
                           e.currentTarget.style.transform = 'translateY(-1px)';
                           e.currentTarget.style.boxShadow = '0 8px 25px rgba(220, 38, 38, 0.3)';
-                        }}
-                        onMouseLeave={(e) => {
+                  }}
+                  onMouseLeave={(e) => {
                           e.currentTarget.style.background = 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
                           e.currentTarget.style.color = '#dc2626';
                           e.currentTarget.style.transform = 'translateY(0)';
                           e.currentTarget.style.boxShadow = 'none';
-                        }}
-                      >
-                        <FaSignOutAlt size={12} />
+                  }}
+                >
+                  <FaSignOutAlt size={12} />
                         Sign Out
-                      </button>
+                </button>
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Mobile Staff Restaurant Chip */}
+            {isMobile && (user?.role === 'waiter' || user?.role === 'manager' || user?.role === 'employee') && selectedRestaurant && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                background: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(0, 0, 0, 0.05)',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: '600',
+                color: '#374151',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                cursor: 'default',
+                maxWidth: '200px'
+              }}>
+                <div style={{
+                  width: '20px',
+                  height: '20px',
+                  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
+                }}>
+                  <BiRestaurant color="white" size={10} />
+                </div>
+                
+                <div style={{ textAlign: 'left', overflow: 'hidden' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#1f2937', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {selectedRestaurant.name}
+                  </div>
+                  <div style={{ fontSize: '9px', color: '#6b7280', marginTop: '1px' }}>
+                    Current Location
+                  </div>
+                </div>
               </div>
             )}
 
@@ -909,8 +992,8 @@ function NavigationContent() {
                 </div>
                 <div>
                   <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1f2937', margin: 0 }}>
-                    Dine
-                  </h2>
+                  Dine
+                </h2>
                   <p style={{ fontSize: '10px', color: '#9ca3af', margin: 0, fontWeight: '500', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                     Restaurant OS
                   </p>
