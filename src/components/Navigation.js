@@ -16,7 +16,9 @@ import {
   FaChevronDown,
   FaBars,
   FaTimes,
-  FaCreditCard
+  FaCreditCard,
+  FaBoxes,
+  FaWarehouse
 } from 'react-icons/fa';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -153,6 +155,7 @@ function NavigationContent() {
     { id: 'orders', name: 'History', icon: FaClipboardList, href: '/orders', color: '#f59e0b', roles: ['owner', 'manager', 'waiter'] },
     { id: 'tables', name: 'Tables', icon: FaChair, href: '/tables', color: '#3b82f6', roles: ['owner', 'manager', 'waiter'] },
     { id: 'menu', name: 'Menu', icon: FaUtensils, href: '/menu', color: '#10b981', roles: ['owner', 'manager'] },
+    { id: 'inventory', name: 'Inventory', icon: FaBoxes, href: '/inventory', color: '#059669', roles: ['owner', 'manager'] },
     { id: 'analytics', name: 'Analytics', icon: FaChartBar, href: '/analytics', color: '#8b5cf6', roles: ['owner', 'manager'] },
     { id: 'billing', name: 'Billing', icon: FaCreditCard, href: '/billing', color: '#06b6d4', roles: ['owner'] },
     { id: 'admin', name: 'Admin', icon: FaUsers, href: '/admin', color: '#ec4899', roles: ['owner'] },
@@ -218,8 +221,27 @@ function NavigationContent() {
         zIndex: 100
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Logo - Clickable to go to dashboard */}
+          <div 
+            onClick={() => router.push('/dashboard')}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px',
+              cursor: 'pointer',
+              padding: '4px 8px',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#f9fafb';
+              e.currentTarget.style.transform = 'scale(1.02)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
             <div style={{ 
               width: '36px', 
               height: '36px', 
@@ -228,7 +250,8 @@ function NavigationContent() {
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+              transition: 'all 0.2s ease'
             }}>
               <FaUtensils color="white" size={18} />
             </div>
@@ -514,7 +537,27 @@ function NavigationContent() {
               alignItems: 'center',
               justifyContent: 'space-between'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div 
+                onClick={() => {
+                  router.push('/dashboard');
+                  setShowMobileMenu(false); // Close mobile menu when navigating
+                }}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  borderRadius: '6px',
+                  transition: 'all 0.2s ease'
+                }}
+                onTouchStart={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f3f4f6';
+                }}
+                onTouchEnd={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
                 <div style={{ 
                   width: '32px', 
                   height: '32px', 

@@ -447,6 +447,70 @@ class ApiClient {
       method: 'DELETE',
     });
   }
+
+  // Inventory Management endpoints
+  async getInventoryItems(restaurantId, filters = {}) {
+    const query = new URLSearchParams(filters).toString();
+    const queryString = query ? `?${query}` : '';
+    return this.request(`/api/inventory/${restaurantId}${queryString}`);
+  }
+
+  async getInventoryItem(restaurantId, itemId) {
+    return this.request(`/api/inventory/${restaurantId}/${itemId}`);
+  }
+
+  async createInventoryItem(restaurantId, itemData) {
+    return this.request(`/api/inventory/${restaurantId}`, {
+      method: 'POST',
+      body: itemData,
+    });
+  }
+
+  async updateInventoryItem(restaurantId, itemId, updateData) {
+    return this.request(`/api/inventory/${restaurantId}/${itemId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
+  async deleteInventoryItem(restaurantId, itemId) {
+    return this.request(`/api/inventory/${restaurantId}/${itemId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getInventoryCategories(restaurantId) {
+    return this.request(`/api/inventory/${restaurantId}/categories`);
+  }
+
+  async getInventoryDashboard(restaurantId) {
+    return this.request(`/api/inventory/${restaurantId}/dashboard`);
+  }
+
+  // Supplier Management endpoints
+  async getSuppliers(restaurantId) {
+    return this.request(`/api/suppliers/${restaurantId}`);
+  }
+
+  async createSupplier(restaurantId, supplierData) {
+    return this.request(`/api/suppliers/${restaurantId}`, {
+      method: 'POST',
+      body: supplierData,
+    });
+  }
+
+  async updateSupplier(restaurantId, supplierId, updateData) {
+    return this.request(`/api/suppliers/${restaurantId}/${supplierId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
+  async deleteSupplier(restaurantId, supplierId) {
+    return this.request(`/api/suppliers/${restaurantId}/${supplierId}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 const apiClient = new ApiClient();
