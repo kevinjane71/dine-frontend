@@ -116,7 +116,7 @@ export default function PrivacyPolicy() {
               Introduction
             </h2>
             <p style={{ marginBottom: '16px' }}>
-              DineFlow ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our restaurant management platform and services.
+              DineFlow (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our restaurant management platform and services.
             </p>
           </section>
 
@@ -308,7 +308,7 @@ export default function PrivacyPolicy() {
               Changes to This Policy
             </h2>
             <p style={{ marginBottom: '16px' }}>
-              We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+              We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date.
             </p>
           </section>
         </div>

@@ -116,7 +116,7 @@ export default function TermsOfService() {
               Agreement to Terms
             </h2>
             <p style={{ marginBottom: '16px' }}>
-              By accessing and using DineFlow ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, then you may not access the Service.
+              By accessing and using DineFlow (&quot;Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you disagree with any part of these terms, then you may not access the Service.
             </p>
           </section>
 
