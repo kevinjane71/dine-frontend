@@ -358,7 +358,7 @@ export default function LandingPage() {
             marginBottom: '40px',
             lineHeight: '1.6'
           }}>
-            Streamline your restaurant operations with our all-in-one platform. From digital menus to kitchen management, we've got you covered.
+            Streamline your restaurant operations with our all-in-one platform. From digital menus to kitchen management, we haveve got you covered.
           </p>
           <div style={{
             display: 'flex',
