@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '../../components/Navigation';
-import apiClient from '../../lib/api';
+import apiClient from '../../../lib/api';
 import { 
   FaEye, 
   FaCheck, 
@@ -278,7 +277,6 @@ const Orders = () => {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-        <Header handleLogout={handleLogout} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ 
@@ -301,7 +299,6 @@ const Orders = () => {
   if (error) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-        <Header handleLogout={handleLogout} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
           <div style={{ textAlign: 'center' }}>
             <FaExclamationTriangle size={48} style={{ color: '#ef4444', marginBottom: '16px' }} />
@@ -331,7 +328,6 @@ const Orders = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      <Header handleLogout={handleLogout} />
       
       <div style={{ padding: isMobile ? '12px' : '16px' }}>
         {/* Mobile Header */}

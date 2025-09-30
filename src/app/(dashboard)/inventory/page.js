@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navigation from '../../components/Navigation';
-import apiClient from '../../lib/api';
+import apiClient from '../../../lib/api';
 import { 
   FaBoxes, 
   FaPlus, 
@@ -449,8 +448,7 @@ export default function InventoryManagement() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-        <Navigation />
-        <div style={{ 
+                <div style={{ 
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'center', 
@@ -471,8 +469,7 @@ export default function InventoryManagement() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      <Navigation />
-      
+            
       <div style={{ padding: isClient && window.innerWidth <= 768 ? '16px' : '24px' }}>
         {/* Header */}
         <div style={{ 

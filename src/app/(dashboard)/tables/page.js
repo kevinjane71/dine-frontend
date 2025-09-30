@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Navigation from '../../components/Navigation';
-import apiClient from '../../lib/api';
+import apiClient from '../../../lib/api';
 import { 
   FaPlus, 
   FaTrash,
@@ -457,8 +456,7 @@ const TableManagement = () => {
   if (loading) {
     return (
       <div style={{ height: '100vh', backgroundColor: '#fef7f0', display: 'flex', flexDirection: 'column' }}>
-        <Navigation />
-        <div style={{ 
+                <div style={{ 
           flex: 1,
           display: 'flex', 
           alignItems: 'center', 
@@ -485,8 +483,7 @@ const TableManagement = () => {
   if (error) {
     return (
       <div style={{ height: '100vh', backgroundColor: '#fef7f0', display: 'flex', flexDirection: 'column' }}>
-        <Navigation />
-        <div style={{ 
+                <div style={{ 
           flex: 1,
           display: 'flex', 
           alignItems: 'center', 
@@ -540,8 +537,7 @@ const TableManagement = () => {
 
   return (
     <div style={{ height: '100vh', backgroundColor: '#fef7f0', overflow: 'hidden' }}>
-      <Navigation />
-      
+            
       <div style={{ height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
         {/* Mobile Top Bar */}
         <div style={{

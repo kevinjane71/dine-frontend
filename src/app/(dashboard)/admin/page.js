@@ -2,8 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import Navigation from '../../components/Navigation';
-import apiClient from '../../lib/api';
+import apiClient from '../../../lib/api';
 import { 
   FaStore, 
   FaUsers, 
@@ -586,7 +585,6 @@ const Admin = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
-      <Navigation />
       
       <div style={{ padding: isClient && isMobile ? '16px' : '24px' }}>
         {/* Header */}

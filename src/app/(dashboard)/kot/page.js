@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Navigation from '../../components/Navigation';
 import { 
   FaPrint, 
   FaClock, 
@@ -29,8 +28,8 @@ import {
   FaTrash
 } from 'react-icons/fa';
 import { GiChefToque } from "react-icons/gi";
-import apiClient from '../../lib/api';
-import Notification from '../../components/Notification';
+import apiClient from '../../../lib/api';
+import Notification from '../../../components/Notification';
 
 const KitchenOrderTicket = () => {
   const router = useRouter();
@@ -429,8 +428,7 @@ const KitchenOrderTicket = () => {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
-        <Navigation />
-        <div style={{ 
+                <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
@@ -457,8 +455,7 @@ const KitchenOrderTicket = () => {
   if (error && kotOrders.length === 0) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
-        <Navigation />
-        <div style={{ 
+                <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
@@ -504,8 +501,7 @@ const KitchenOrderTicket = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
-      <Navigation />
-      
+            
       <div style={{ height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
         <div style={{

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navigation from '../../components/Navigation';
 import { 
   FaChartLine, 
   FaMoneyBillWave, 
@@ -201,7 +200,6 @@ const Analytics = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
       
       <div className="p-6">
         {/* Header */}

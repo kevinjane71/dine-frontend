@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Navigation from '../../components/Navigation';
-import BulkMenuUpload from '../../components/BulkMenuUpload';
-import apiClient from '../../lib/api';
+import BulkMenuUpload from '../../../components/BulkMenuUpload';
+import apiClient from '../../../lib/api';
 import { 
   FaPlus, 
   FaEdit, 
@@ -664,7 +663,6 @@ const MenuManagement = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navigation />
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
@@ -677,7 +675,6 @@ const MenuManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}

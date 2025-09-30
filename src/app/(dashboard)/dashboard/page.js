@@ -2,13 +2,12 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Header from '../../components/Navigation';
-import Onboarding from '../../components/Onboarding';
-import EmptyMenuPrompt from '../../components/EmptyMenuPrompt';
-import MenuItemCard from '../../components/MenuItemCard';
-import CategoryButton from '../../components/CategoryButton';
-import OrderSummary from '../../components/OrderSummary';
-import Notification from '../../components/Notification';
+import Onboarding from '../../../components/Onboarding';
+import EmptyMenuPrompt from '../../../components/EmptyMenuPrompt';
+import MenuItemCard from '../../../components/MenuItemCard';
+import CategoryButton from '../../../components/CategoryButton';
+import OrderSummary from '../../../components/OrderSummary';
+import Notification from '../../../components/Notification';
 import { 
   FaSearch, 
   FaShoppingCart, 
@@ -37,7 +36,7 @@ import {
   FaBars,
   FaTable
 } from 'react-icons/fa';
-import apiClient from '../../lib/api';
+import apiClient from '../../../lib/api';
 
 function RestaurantPOSContent() {
   const searchParams = useSearchParams();
@@ -950,7 +949,6 @@ function RestaurantPOSContent() {
     return (
       <>
         <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-          <Header handleLogout={handleLogout} />
         </div>
         <Onboarding 
           onComplete={handleOnboardingComplete}
@@ -964,7 +962,6 @@ function RestaurantPOSContent() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-        <Header handleLogout={handleLogout} />
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -996,7 +993,6 @@ function RestaurantPOSContent() {
       background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
     }}>
       {/* Header */}
-      <Header handleLogout={handleLogout} />
       
       {/* Mobile Top Bar */}
       {isMobile && (

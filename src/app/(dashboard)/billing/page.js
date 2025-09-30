@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '../../components/Navigation';
 import { 
   FaCreditCard, 
   FaCheckCircle, 
@@ -431,7 +430,6 @@ export default function BillingPage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-        <Header />
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -446,7 +444,6 @@ export default function BillingPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      <Header />
       
       {/* Notification */}
       {notification && (
