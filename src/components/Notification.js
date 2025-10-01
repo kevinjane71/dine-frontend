@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { FaCheckCircle, FaInfoCircle, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 
 const Notification = ({ 
@@ -27,16 +27,16 @@ const Notification = ({
         return () => clearTimeout(timer);
       }
     }
-  }, [show, duration]);
+  }, [show, duration, handleClose]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsExiting(true);
     setTimeout(() => {
       setIsVisible(false);
       setIsExiting(false);
       if (onClose) onClose();
     }, 300);
-  };
+  }, [onClose]);
 
   const getTypeConfig = () => {
     switch (type) {

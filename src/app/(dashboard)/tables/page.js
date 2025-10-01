@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '../../../lib/api';
 import { 
@@ -113,7 +113,7 @@ const TableManagement = () => {
     };
   }, [selectedRestaurant?.id]);
 
-  const loadInitialData = async () => {
+  const loadInitialData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -149,7 +149,7 @@ const TableManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const loadFloorsAndTables = async (restaurantId, forceRefresh = false) => {
     try {

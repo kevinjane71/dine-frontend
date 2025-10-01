@@ -847,7 +847,7 @@ export default function LandingPage() {
                   lineHeight: '1.5',
                   marginBottom: '16px'
                 }}>
-                  Discover how our AI-powered POS system is revolutionizing restaurant operations and why it's outperforming traditional competitors.
+                  Discover how our AI-powered POS system is revolutionizing restaurant operations and why it&apos;s outperforming traditional competitors.
                 </p>
                 <div style={{
                             display: 'flex',
@@ -1167,14 +1167,14 @@ export default function LandingPage() {
                   marginBottom: '8px',
                   lineHeight: '1.3'
                 }}>
-                  How Bella's Kitchen Increased Revenue by 35%
+                  How Bella&apos;s Kitchen Increased Revenue by 35%
                 </h3>
                 <p style={{
                   fontSize: '14px',
                   opacity: '0.9',
                   lineHeight: '1.5'
                 }}>
-                  Real customer success story: How DineFlow transformed a local restaurant's operations.
+                  Real customer success story: How DineFlow transformed a local restaurant&apos;s operations.
                 </p>
                     </div>
                     

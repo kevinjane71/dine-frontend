@@ -316,7 +316,7 @@ export default function BlogDetail() {
       setBlogPost(post);
     }
     setLoading(false);
-  }, [params.slug]);
+  }, [params.slug, blogPosts]);
 
   const handleBack = () => {
     router.push('/#blog');
@@ -371,7 +371,7 @@ export default function BlogDetail() {
             Blog Post Not Found
           </h1>
           <p style={{ fontSize: '18px', color: '#6b7280', marginBottom: '32px' }}>
-            The blog post you're looking for doesn't exist or has been moved.
+            The blog post you&apos;re looking for doesn&apos;t exist or has been moved.
           </p>
           <button
             onClick={handleBack}
