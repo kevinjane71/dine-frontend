@@ -277,8 +277,8 @@ function RestaurantPOSContent() {
       setSelectedRestaurant(restaurant);
       setRestaurants([restaurant]);
       
-      // Seed sample menu data
-      await apiClient.seedData(restaurant.id);
+      // Seed sample menu data - COMMENTED OUT
+      // await apiClient.seedData(restaurant.id);
       await Promise.all([
         loadMenu(restaurant.id),
         loadFloors(restaurant.id)
@@ -320,10 +320,19 @@ function RestaurantPOSContent() {
   const loadMenu = async (restaurantId) => {
     try {
       const response = await apiClient.getMenu(restaurantId);
-      setMenuItems(response.menuItems || []);
+      const menuItems = response.menuItems || [];
+      setMenuItems(menuItems);
+      
+      if (menuItems.length === 0) {
+        console.log('📋 No menu items found for restaurant:', restaurantId);
+        // Don't set error, just log - empty menu is valid
+      } else {
+        console.log('📋 Loaded menu items:', menuItems.length);
+      }
     } catch (error) {
       console.error('Error loading menu:', error);
-      setError('Failed to load menu');
+      setMenuItems([]); // Set empty array instead of leaving undefined
+      // Don't set error for menu loading failures - let user continue
     }
   };
 
@@ -479,7 +488,7 @@ function RestaurantPOSContent() {
     }
   }, [searchParams]);
 
-  const filteredItems = menuItems.filter(item => {
+  const filteredItems = (menuItems || []).filter(item => {
     const matchesCategory = selectedCategory === 'all-items' || item.category?.toLowerCase() === selectedCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
@@ -520,7 +529,7 @@ function RestaurantPOSContent() {
   const handleQuickSearch = (e) => {
     if (e.key === 'Enter' && quickSearch.trim()) {
       const searchValue = quickSearch.trim().toLowerCase();
-      const foundItem = menuItems.find(item => 
+      const foundItem = (menuItems || []).find(item => 
         item.shortCode?.toLowerCase() === searchValue || 
         item.name.toLowerCase().includes(searchValue)
       );
@@ -1219,8 +1228,8 @@ function RestaurantPOSContent() {
             
             {categories.map((category) => {
               const categoryItems = category.id === 'all-items' 
-                ? menuItems 
-                : menuItems.filter(item => item.category?.toLowerCase() === category.id);
+                ? (menuItems || [])
+                : (menuItems || []).filter(item => item.category?.toLowerCase() === category.id);
               const isSelected = selectedCategory === category.id;
               
               return (
@@ -1247,7 +1256,7 @@ function RestaurantPOSContent() {
           overflow: 'hidden'
         }}>
           {/* Show empty menu prompt if no menu items */}
-          {filteredItems.length === 0 && menuItems.length === 0 && !loading ? (
+          {filteredItems.length === 0 && (menuItems || []).length === 0 && !loading ? (
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -1405,7 +1414,7 @@ function RestaurantPOSContent() {
 
        
         {/* Order Summary - Only show when there are menu items */}
-        {!(filteredItems.length === 0 && menuItems.length === 0 && !loading) && (
+        {!(filteredItems.length === 0 && (menuItems || []).length === 0 && !loading) && (
           <div style={{ width: '30%', minWidth: '320px' }}>
           <OrderSummary
             cart={cart}
@@ -1500,8 +1509,8 @@ function RestaurantPOSContent() {
             }} className="hide-scrollbar">
               {categories.map((category) => {
                 const categoryItems = category.id === 'all-items' 
-                  ? menuItems 
-                  : menuItems.filter(item => item.category?.toLowerCase() === category.id);
+                  ? (menuItems || [])
+                  : (menuItems || []).filter(item => item.category?.toLowerCase() === category.id);
                 const isSelected = selectedCategory === category.id;
                 
                 return (
