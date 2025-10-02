@@ -585,7 +585,7 @@ function RestaurantPOSContent() {
   };
 
   const processOrder = async () => {
-    if (cart.length === 0 || !selectedRestaurant) return;
+    if (cart.length === 0 || !selectedRestaurant?.id) return;
 
     try {
       setProcessing(true);
@@ -717,6 +717,12 @@ function RestaurantPOSContent() {
       return;
     }
 
+    // Check if restaurant is selected
+    if (!selectedRestaurant?.id) {
+      setError('No restaurant selected. Please set up a restaurant first.');
+      return;
+    }
+
     try {
       setProcessing(true);
       setError(null);
@@ -761,6 +767,12 @@ function RestaurantPOSContent() {
   const placeOrder = async () => {
     if (cart.length === 0) {
       setError('Cart is empty');
+      return;
+    }
+
+    // Check if restaurant is selected
+    if (!selectedRestaurant?.id) {
+      setError('No restaurant selected. Please set up a restaurant first.');
       return;
     }
 
