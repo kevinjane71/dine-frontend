@@ -550,6 +550,11 @@ function RestaurantPOSContent() {
         }
         
         // Try to find order by table number or order ID
+        if (!selectedRestaurant?.id) {
+          setError('No restaurant selected');
+          return;
+        }
+        
         const response = await apiClient.getOrders(selectedRestaurant.id, {
           search: searchValue
           // Don't filter by status - let backend handle filtering out completed orders
@@ -608,6 +613,12 @@ function RestaurantPOSContent() {
 
       // Get current user/staff info
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      // Check if restaurant is selected
+      if (!selectedRestaurant?.id) {
+        setError('No restaurant selected');
+        return;
+      }
       
       // Prepare order data
       const orderData = {
@@ -983,6 +994,50 @@ function RestaurantPOSContent() {
               marginBottom: '16px'
             }} />
             <p style={{ fontSize: '18px', color: '#6b7280' }}>Loading your restaurant...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show onboarding if no restaurant is selected and user hasn't completed onboarding
+  if (!selectedRestaurant && !showOnboarding) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: 'calc(100vh - 80px)' 
+        }}>
+          <div style={{ textAlign: 'center', maxWidth: '500px', padding: '40px' }}>
+            <FaUtensils style={{ 
+              fontSize: '64px', 
+              color: '#ef4444', 
+              marginBottom: '24px'
+            }} />
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>
+              No Restaurant Found
+            </h1>
+            <p style={{ fontSize: '16px', color: '#6b7280', marginBottom: '24px' }}>
+              You need to set up a restaurant before using the POS system.
+            </p>
+            <button
+              onClick={() => setShowOnboarding(true)}
+              style={{
+                padding: '12px 24px',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '16px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              Set Up Restaurant
+            </button>
           </div>
         </div>
       </div>
