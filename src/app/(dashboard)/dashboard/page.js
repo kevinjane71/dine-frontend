@@ -241,12 +241,13 @@ function RestaurantPOSContent() {
         ]);
         console.log('✅ Restaurant data loaded successfully');
       } else {
-        // Check if user should see onboarding or create sample restaurant
+        // No restaurant found - show onboarding or empty state
         if (isFirstTimeUser && !localStorage.getItem('onboarding_skipped')) {
           setShowOnboarding(true);
         } else {
-          // Create a sample restaurant for users who skipped onboarding
-          await createSampleRestaurant();
+          // User skipped onboarding but has no restaurant - show empty state
+          console.log('📋 No restaurant found for user');
+          // Don't create sample restaurant - let user manually create one
         }
       }
       
@@ -258,37 +259,7 @@ function RestaurantPOSContent() {
     }
   };
  
-  const createSampleRestaurant = async () => {
-    try {
-      const restaurantData = {
-        name: 'Sample Restaurant',
-        address: '123 Food Street, City',
-        phone: '+91 9876543210',
-        cuisine: ['Indian', 'Continental'],
-        description: 'A sample restaurant for demo',
-        operatingHours: {
-          open: '09:00',
-          close: '23:00'
-        }
-      };
-      
-      const response = await apiClient.createRestaurant(restaurantData);
-      const restaurant = response.restaurant;
-      setSelectedRestaurant(restaurant);
-      setRestaurants([restaurant]);
-      
-      // Seed sample menu data - COMMENTED OUT
-      // await apiClient.seedData(restaurant.id);
-      await Promise.all([
-        loadMenu(restaurant.id),
-        loadFloors(restaurant.id)
-      ]);
-      
-    } catch (error) {
-      console.error('Error creating sample restaurant:', error);
-      setError('Failed to create sample restaurant');
-    }
-  };
+  // REMOVED - createSampleRestaurant function no longer needed
   
   // Handle onboarding completion
   const handleOnboardingComplete = async (restaurant) => {
