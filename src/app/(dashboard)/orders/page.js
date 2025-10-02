@@ -124,8 +124,9 @@ const Orders = () => {
             return;
           }
         } else {
-          console.log('Orders page: Unknown user role - redirecting to dashboard');
-          router.push('/dashboard');
+          console.log('Orders page: Unknown user role - showing empty state');
+          setError('No restaurant found. Please set up a restaurant first.');
+          setLoading(false);
           return;
         }
         

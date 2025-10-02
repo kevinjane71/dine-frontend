@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Onboarding from '../../../components/Onboarding';
 import EmptyMenuPrompt from '../../../components/EmptyMenuPrompt';
@@ -190,12 +190,7 @@ function RestaurantPOSContent() {
     localStorage.setItem('dine_cart', JSON.stringify(cart));
   }, [cart]);
 
-  // Load initial data
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  const loadInitialData = async () => {
+  const loadInitialData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -257,7 +252,12 @@ function RestaurantPOSContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Load initial data
+  useEffect(() => {
+    loadInitialData();
+  }, [loadInitialData]);
  
   // REMOVED - createSampleRestaurant function no longer needed
   
@@ -955,7 +955,7 @@ function RestaurantPOSContent() {
   };
 
   // Show onboarding if needed
-  if (showOnboarding && isFirstTimeUser) {
+  if (showOnboarding) {
     return (
       <>
         <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
@@ -1000,38 +1000,148 @@ function RestaurantPOSContent() {
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
-          height: 'calc(100vh - 80px)' 
+          height: 'calc(100vh - 80px)',
+          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+          position: 'relative',
+          overflow: 'hidden'
         }}>
-          <div style={{ textAlign: 'center', maxWidth: '500px', padding: '40px' }}>
-            <FaUtensils style={{ 
-              fontSize: '64px', 
-              color: '#ef4444', 
-              marginBottom: '24px'
-            }} />
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>
-              No Restaurant Found
+          {/* Background Animation */}
+          <div style={{
+            position: 'absolute',
+            top: '10%',
+            left: '10%',
+            width: '200px',
+            height: '200px',
+            background: 'linear-gradient(45deg, #fef3c7, #fde68a)',
+            borderRadius: '50%',
+            opacity: 0.3,
+            animation: 'float 6s ease-in-out infinite'
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: '15%',
+            right: '15%',
+            width: '150px',
+            height: '150px',
+            background: 'linear-gradient(45deg, #dbeafe, #bfdbfe)',
+            borderRadius: '50%',
+            opacity: 0.3,
+            animation: 'float 8s ease-in-out infinite reverse'
+          }} />
+          
+          <div style={{ 
+            textAlign: 'center', 
+            maxWidth: '600px', 
+            padding: '40px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '16px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+            backdropFilter: 'blur(20px)',
+            position: 'relative',
+            zIndex: 1
+          }}>
+            {/* Animated Icon */}
+            <div style={{
+              fontSize: '80px',
+              marginBottom: '24px',
+              animation: 'bounce 2s infinite'
+            }}>
+              🍽️
+            </div>
+            
+            <h1 style={{ 
+              fontSize: '36px', 
+              fontWeight: 'bold', 
+              color: '#1f2937', 
+              marginBottom: '16px',
+              background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>
+              AI-Powered Restaurant Revolution 🚀
             </h1>
-            <p style={{ fontSize: '16px', color: '#6b7280', marginBottom: '24px' }}>
-              You need to set up a restaurant before using the POS system.
+            
+            <p style={{ 
+              fontSize: '20px', 
+              color: '#374151', 
+              marginBottom: '8px',
+              lineHeight: '1.6',
+              fontWeight: '500'
+            }}>
+              The Future of Restaurant Management is Here
             </p>
-            <button
-              onClick={() => setShowOnboarding(true)}
-              style={{
-                padding: '12px 24px',
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '600',
-                fontSize: '16px',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              Set Up Restaurant
-            </button>
+            
+            <p style={{ 
+              fontSize: '18px', 
+              color: '#6b7280', 
+              marginBottom: '8px',
+              lineHeight: '1.5'
+            }}>
+              Join 1000+ restaurants already using AI-driven POS technology
+            </p>
+            
+            <p style={{ 
+              fontSize: '16px', 
+              color: '#9ca3af', 
+              marginBottom: '32px',
+              fontStyle: 'italic',
+              fontWeight: '500'
+            }}>
+              "Where Artificial Intelligence Meets Culinary Excellence" ✨
+            </p>
+            
+            <div style={{
+              display: 'flex',
+              gap: '16px',
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+              <button
+                onClick={() => setShowOnboarding(true)}
+                style={{
+                  padding: '18px 36px',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: '600',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                  transform: 'translateY(0)',
+                  ':hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(239, 68, 68, 0.4)'
+                  }
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                }}
+              >
+                Launch AI Restaurant System
+              </button>
+            </div>
           </div>
         </div>
+        
+        <style jsx>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+          }
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+          }
+        `}</style>
       </div>
     );
   }

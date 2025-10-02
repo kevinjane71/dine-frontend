@@ -430,9 +430,9 @@ const MenuManagement = () => {
           console.log('Restaurant ID found:', restaurantId);
           await loadMenuData(restaurantId);
         } else {
-          console.log('No restaurant found - redirecting to dashboard');
-          // Redirect to dashboard where user can create a restaurant
-          router.push('/dashboard');
+          console.log('No restaurant found - showing empty state');
+          setError('No restaurant found. Please set up a restaurant first.');
+          setLoading(false);
         }
       } catch (error) {
         console.error('Error loading restaurant context:', error);
