@@ -124,9 +124,8 @@ const Orders = () => {
             return;
           }
         } else {
-          console.log('Orders page: Unknown user role');
-          setError('Unable to determine restaurant context');
-          setLoading(false);
+          console.log('Orders page: Unknown user role - redirecting to dashboard');
+          router.push('/dashboard');
           return;
         }
         

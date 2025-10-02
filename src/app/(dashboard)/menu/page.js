@@ -332,41 +332,7 @@ const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability
 
 const MenuManagement = () => {
   const router = useRouter();
-  const [menuItems, setMenuItems] = useState([
-    {
-      id: '1',
-      name: 'Taka Tak Tikki Masala',
-      description: 'This is an inspired has been refined by Punjab family for over mix of generations with release including mix of cardamom, cassia, ginger, clove and green coriander seed then made with shack mint leaves, fresh sugarcane juice, lime juice, aromatic bitter.',
-      price: 595,
-      category: 'beverages',
-      isVeg: true,
-      spiceLevel: 'medium',
-      shortCode: 'TAK',
-      isAvailable: true
-    },
-    {
-      id: '2',
-      name: 'Cocomotion',
-      description: 'We discovered the BEST drink at Coco Motion. It was the perfect drink for laying on the beach. Now that we are home...it is the perfect drink for sitting by the pool. Nice combination and made with tequila, coffee liquor fresh coconut water, pineapple juice fresh lime juice.',
-      price: 12,
-      category: 'beverages',
-      isVeg: false,
-      spiceLevel: 'mild',
-      shortCode: 'COC',
-      isAvailable: true
-    },
-    {
-      id: '3',
-      name: 'Samosha',
-      description: 'Delicious samosa with crispy outer layer and flavorful filling.',
-      price: 12,
-      category: 'appetizer',
-      isVeg: true,
-      spiceLevel: 'medium',
-      shortCode: '22',
-      isAvailable: true
-    }
-  ]);
+  const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([
     { id: 'appetizer', name: 'Appetizers', emoji: '🥗' },
     { id: 'main-course', name: 'Main Course', emoji: '🍽️' },
@@ -464,9 +430,9 @@ const MenuManagement = () => {
           console.log('Restaurant ID found:', restaurantId);
           await loadMenuData(restaurantId);
         } else {
-          console.log('No restaurant context found');
-          setError('No restaurant context found');
-          setLoading(false);
+          console.log('No restaurant found - redirecting to dashboard');
+          // Redirect to dashboard where user can create a restaurant
+          router.push('/dashboard');
         }
       } catch (error) {
         console.error('Error loading restaurant context:', error);
