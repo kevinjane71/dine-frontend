@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaArrowLeft, FaPhone, FaChair, FaUtensils, FaLeaf, FaDrumstickBite, FaSpinner } from 'react-icons/fa';
 import apiClient from '../../lib/api.js';
 
-const PlaceOrderPage = () => {
+const PlaceOrderContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -823,6 +823,34 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity }) => 
         </div>
       </div>
     </div>
+  );
+};
+
+const PlaceOrderPage = () => {
+  return (
+    <Suspense fallback={
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fef7f0',
+        flexDirection: 'column',
+        gap: '20px'
+      }}>
+        <FaSpinner size={40} color="#e53e3e" style={{ animation: 'spin 1s linear infinite' }} />
+        <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading...</p>
+        
+        <style jsx>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    }>
+      <PlaceOrderContent />
+    </Suspense>
   );
 };
 
