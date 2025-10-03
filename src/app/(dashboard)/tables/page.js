@@ -38,9 +38,11 @@ const TableManagement = () => {
   // Modal states
   const [showAddTable, setShowAddTable] = useState(false);
   const [showAddFloor, setShowAddFloor] = useState(false);
+  const [showEditFloor, setShowEditFloor] = useState(false);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
   const [selectedFloorForTable, setSelectedFloorForTable] = useState(null);
+  const [editingFloor, setEditingFloor] = useState(null);
   
   // Dropdown state
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -187,46 +189,52 @@ const TableManagement = () => {
   const getTableStatusInfo = (status) => {
     const statusMap = {
       available: { 
-        bg: '#a7f3d0', 
-        text: '#065f46', 
+        bg: '#f0fdf4', 
+        text: '#166534', 
         label: 'Available',
         icon: FaCheck,
-        border: '#059669'
+        border: '#22c55e',
+        pulse: false
       },
       occupied: { 
-        bg: '#fecaca', 
-        text: '#991b1b', 
+        bg: '#fef2f2', 
+        text: '#dc2626', 
         label: 'Occupied',
         icon: FaUsers,
-        border: '#dc2626'
+        border: '#ef4444',
+        pulse: false
       },
       serving: { 
-        bg: '#fef3c7', 
-        text: '#92400e', 
+        bg: '#fefce8', 
+        text: '#ca8a04', 
         label: 'Serving',
         icon: FaUtensils,
-        border: '#d97706'
+        border: '#eab308',
+        pulse: true
       },
       reserved: { 
-        bg: '#fed7aa', 
-        text: '#9a3412', 
+        bg: '#f0f9ff', 
+        text: '#0369a1', 
         label: 'Reserved',
         icon: FaClock,
-        border: '#d97706'
+        border: '#0ea5e9',
+        pulse: false
       },
       cleaning: { 
-        bg: '#d1d5db', 
-        text: '#374151', 
+        bg: '#f8fafc', 
+        text: '#475569', 
         label: 'Cleaning',
         icon: FaUtensils,
-        border: '#4b5563'
+        border: '#64748b',
+        pulse: false
       },
       'out-of-service': { 
-        bg: '#ddd6fe', 
-        text: '#5b21b6', 
+        bg: '#faf5ff', 
+        text: '#7c3aed', 
         label: 'Out of Service',
         icon: FaBan,
-        border: '#7c3aed'
+        border: '#a855f7',
+        pulse: false
       }
     };
     return statusMap[status] || statusMap.available;
@@ -264,6 +272,52 @@ const TableManagement = () => {
       console.error('Error adding floor:', err);
       alert(`Failed to add floor: ${err.message}`);
     }
+  };
+
+  const editFloor = async () => {
+    if (!editingFloor || !newFloor.name.trim() || !selectedRestaurant) return;
+    
+    try {
+      const floorData = {
+        name: newFloor.name.trim(),
+        description: newFloor.description.trim() || null,
+        restaurantId: selectedRestaurant.id
+      };
+      
+      await apiClient.updateFloor(editingFloor.id, floorData);
+      
+      setFloors(prev => prev.map(floor => 
+        floor.id === editingFloor.id 
+          ? { ...floor, name: newFloor.name.trim(), description: newFloor.description.trim() || null }
+          : floor
+      ));
+      
+      setNewFloor({ name: '', description: '' });
+      setEditingFloor(null);
+      setShowEditFloor(false);
+      
+    } catch (err) {
+      console.error('Error editing floor:', err);
+      alert(`Failed to edit floor: ${err.message}`);
+    }
+  };
+
+  const deleteFloor = async (floorId) => {
+    if (!confirm('Are you sure you want to delete this floor and all its tables?')) return;
+    
+    try {
+      await apiClient.deleteFloor(floorId, { restaurantId: selectedRestaurant.id });
+      setFloors(prev => prev.filter(floor => floor.id !== floorId));
+    } catch (err) {
+      console.error('Error deleting floor:', err);
+      alert(`Failed to delete floor: ${err.message}`);
+    }
+  };
+
+  const startEditFloor = (floor) => {
+    setEditingFloor(floor);
+    setNewFloor({ name: floor.name, description: floor.description || '' });
+    setShowEditFloor(true);
   };
 
   const addTable = async () => {
@@ -1019,17 +1073,72 @@ const TableManagement = () => {
                   marginBottom: isMobile ? '20px' : '30px',
                   padding: isMobile ? '0 4px' : '0 20px'
                 }}>
-                  {/* Floor Label */}
+                  {/* Floor Label with Actions */}
                   <div style={{
-                    backgroundColor: '#e53e3e',
-                    color: 'white',
-                    padding: isMobile ? '6px 12px' : '8px 16px',
-                    borderRadius: isMobile ? '6px' : '8px',
-                    fontSize: isMobile ? '12px' : '14px',
-                    fontWeight: 'bold',
-                    boxShadow: '0 2px 8px rgba(229, 62, 62, 0.3)'
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
                   }}>
-                    {floor.name}
+                    <div style={{
+                      backgroundColor: '#e53e3e',
+                      color: 'white',
+                      padding: isMobile ? '6px 12px' : '8px 16px',
+                      borderRadius: isMobile ? '6px' : '8px',
+                      fontSize: isMobile ? '12px' : '14px',
+                      fontWeight: 'bold',
+                      boxShadow: '0 2px 8px rgba(229, 62, 62, 0.3)'
+                    }}>
+                      {floor.name}
+                    </div>
+                    
+                    {/* Floor Actions */}
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button
+                        onClick={() => startEditFloor(floor)}
+                        style={{
+                          padding: isMobile ? '4px 6px' : '6px 8px',
+                          backgroundColor: '#f3f4f6',
+                          border: 'none',
+                          borderRadius: isMobile ? '4px' : '6px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#e5e7eb';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = '#f3f4f6';
+                        }}
+                      >
+                        <FaEdit size={isMobile ? 10 : 12} color="#6b7280" />
+                      </button>
+                      
+                      <button
+                        onClick={() => deleteFloor(floor.id)}
+                        style={{
+                          padding: isMobile ? '4px 6px' : '6px 8px',
+                          backgroundColor: '#fef2f2',
+                          border: 'none',
+                          borderRadius: isMobile ? '4px' : '6px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#fee2e2';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = '#fef2f2';
+                        }}
+                      >
+                        <FaTrash size={isMobile ? 10 : 12} color="#dc2626" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Compact Stats */}
@@ -1107,13 +1216,14 @@ const TableManagement = () => {
                             backgroundColor: statusInfo.bg,
                             borderRadius: isMobile ? '12px' : '8px',
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease',
+                            transition: 'all 0.3s ease',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             position: 'relative',
                             border: `2px solid ${statusInfo.border}`,
-                            boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)'
+                            boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                            animation: statusInfo.pulse ? 'pulse 2s infinite' : 'none'
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
@@ -1472,6 +1582,122 @@ const TableManagement = () => {
                 }}
               >
                 Add Floor
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Floor Modal */}
+      {showEditFloor && editingFloor && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: isMobile ? 'flex-end' : 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+          padding: isMobile ? '0' : '16px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: isMobile ? '16px 16px 0 0' : '16px',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+            width: '100%',
+            maxWidth: isMobile ? '100%' : '400px',
+            maxHeight: isMobile ? '80vh' : 'auto',
+            overflowY: isMobile ? 'auto' : 'visible'
+          }}>
+            <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Edit Floor</h2>
+            </div>
+            
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                  Floor Name *
+                </label>
+                <input
+                  type="text"
+                  value={newFloor.name}
+                  onChange={(e) => setNewFloor({...newFloor, name: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    backgroundColor: '#fef7f0',
+                    boxSizing: 'border-box'
+                  }}
+                  placeholder="e.g., Ground Floor, Terrace"
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                  Description
+                </label>
+                <input
+                  type="text"
+                  value={newFloor.description}
+                  onChange={(e) => setNewFloor({...newFloor, description: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    backgroundColor: '#fef7f0',
+                    boxSizing: 'border-box'
+                  }}
+                  placeholder="e.g., Main dining area"
+                />
+              </div>
+            </div>
+            
+            <div style={{ padding: '20px', backgroundColor: '#fef7f0', display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  setShowEditFloor(false);
+                  setEditingFloor(null);
+                  setNewFloor({ name: '', description: '' });
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: '#6b7280',
+                  color: 'white',
+                  padding: '10px 16px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={editFloor}
+                disabled={!newFloor.name.trim()}
+                style={{
+                  flex: 1,
+                  background: newFloor.name.trim() 
+                    ? 'linear-gradient(135deg, #e53e3e, #dc2626)'
+                    : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
+                  color: 'white',
+                  padding: '10px 16px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: newFloor.name.trim() ? 'pointer' : 'not-allowed',
+                  fontSize: '14px'
+                }}
+              >
+                Update Floor
               </button>
             </div>
           </div>
@@ -1873,6 +2099,45 @@ const TableManagement = () => {
           </div>
         </div>
       )}
+
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          50% {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(234, 179, 8, 0.4);
+          }
+        }
+        
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        
+        @keyframes bounce {
+          0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+          }
+          40% {
+            transform: translateY(-10px);
+          }
+          60% {
+            transform: translateY(-5px);
+          }
+        }
+        
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
