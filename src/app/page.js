@@ -138,13 +138,15 @@ export default function LandingPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'white' }}>
       {/* Navigation */}
       <nav style={{
-        backgroundColor: 'white',
-        borderBottom: '1px solid #e5e7eb',
-        padding: '16px 0',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(239, 68, 68, 0.1)',
+        padding: '12px 0',
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        boxShadow: '0 4px 20px rgba(239, 68, 68, 0.1)',
+        transition: 'all 0.3s ease'
       }}>
         <div style={{ 
           maxWidth: '1200px',
@@ -155,286 +157,578 @@ export default function LandingPage() {
           justifyContent: 'space-between'
         }}>
           {/* Logo */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-            gap: '12px',
-            cursor: 'pointer'
-          }}>
             <div style={{
-              width: '40px',
-              height: '40px',
-              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                borderRadius: '12px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <FaUtensils color="white" size={20} />
+              gap: '12px',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                borderRadius: '12px',
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%)',
+                  animation: 'shimmer 2s ease-in-out infinite'
+                }} />
+                <FaUtensils color="white" size={20} style={{ position: 'relative', zIndex: 1 }} />
           </div>
-            <span style={{
-              fontSize: '24px',
-              fontWeight: 'bold',
-              color: '#1f2937'
-            }}>
-              DineFlow
-            </span>
+              <span style={{
+                fontSize: '24px',
+                fontWeight: '900',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                letterSpacing: '-0.5px'
+              }}>
+                DineFlow
+              </span>
         </div>
           
           {/* Desktop Navigation */}
           {!isMobile ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-              <a href="#features" style={{
-                color: '#6b7280',
-                textDecoration: 'none',
-                fontWeight: '500',
-                fontSize: '16px',
-                transition: 'color 0.2s'
-              }} onMouseEnter={(e) => e.target.style.color = '#ef4444'}
-                 onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
-                Features
-              </a>
-              <a href="#blog" style={{
-                color: '#6b7280',
-                textDecoration: 'none',
-                fontWeight: '500',
-                fontSize: '16px',
-                transition: 'color 0.2s'
-              }} onMouseEnter={(e) => e.target.style.color = '#ef4444'}
-                 onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
-                Blog
-              </a>
-              <a href="#pricing" style={{
-                color: '#6b7280',
-                textDecoration: 'none',
-                fontWeight: '500',
-                fontSize: '16px',
-                transition: 'color 0.2s'
-              }} onMouseEnter={(e) => e.target.style.color = '#ef4444'}
-                 onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
-                Pricing
-              </a>
-          <button
-                onClick={handleLogin}
-            style={{
-                  padding: '10px 20px',
-                  backgroundColor: 'transparent',
+              <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                <a href="#features" style={{
                   color: '#374151',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-              fontWeight: '600',
-              fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  fontSize: '15px',
+                  transition: 'all 0.3s ease',
+                  position: 'relative',
+                  padding: '6px 0'
+                }} 
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#f3f4f6';
+                  e.target.style.color = '#ef4444';
+                  e.target.style.transform = 'translateY(-1px)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#374151';
+                  e.target.style.transform = 'translateY(0)';
+                }}>
+                  Features
+                </a>
+                <a href="#blog" style={{
+                  color: '#374151',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  fontSize: '15px',
+                  transition: 'all 0.3s ease',
+                  position: 'relative',
+                  padding: '6px 0'
+                }} 
+                onMouseEnter={(e) => {
+                  e.target.style.color = '#ef4444';
+                  e.target.style.transform = 'translateY(-1px)';
                 }}
-              >
-                Sign In
+                onMouseLeave={(e) => {
+                  e.target.style.color = '#374151';
+                  e.target.style.transform = 'translateY(0)';
+                }}>
+                  Blog
+                </a>
+                <a href="#pricing" style={{
+                  color: '#374151',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  fontSize: '15px',
+                  transition: 'all 0.3s ease',
+                  position: 'relative',
+                  padding: '6px 0'
+                }} 
+                onMouseEnter={(e) => {
+                  e.target.style.color = '#ef4444';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = '#374151';
+                  e.target.style.transform = 'translateY(0)';
+                }}>
+                  Pricing
+                </a>
+          </div>
+          
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+                  onClick={handleLogin}
+            style={{
+                    padding: '8px 16px',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    color: '#ef4444',
+                    border: '2px solid rgba(239, 68, 68, 0.2)',
+                    borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    backdropFilter: 'blur(10px)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                    e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                    e.target.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  Sign In
           </button>
           <button
-                onClick={handleGetStarted}
+                  onClick={handleGetStarted}
             style={{
-                  padding: '10px 20px',
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    padding: '8px 16px',
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
               color: 'white',
               border: 'none',
-                  borderRadius: '8px',
-              fontWeight: '600',
+                    borderRadius: '8px',
+                    fontWeight: '700',
               fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+              position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3)';
+                  }}
+                >
+                  <span style={{ position: 'relative', zIndex: 1 }}>Get Started Free</span>
+                  <div style={{
+                position: 'absolute',
+                    top: 0,
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                    transition: 'left 0.5s ease'
+                  }} />
+          </button>
+        </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                style={{
+                  padding: '8px',
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  border: '2px solid rgba(239, 68, 68, 0.2)',
+                  borderRadius: '8px',
                   cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)'
+                  color: '#ef4444',
+                  fontSize: '16px',
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.4)';
+                  e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                  e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.3)';
+                  e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                  e.target.style.borderColor = 'rgba(239, 68, 68, 0.2)';
                 }}
               >
-                Get Started Free
-          </button>
-      </div>
-          ) : (
-            <button
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-              style={{
-                padding: '8px',
-                backgroundColor: 'transparent',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              {showMobileMenu ? <FaTimes size={24} color="#374151" /> : <FaBars size={24} color="#374151" />}
-            </button>
-          )}
-        </div>
-
+                {showMobileMenu ? <FaTimes size={18} /> : <FaBars size={18} />}
+              </button>
+            </div>
+        )}
+          </div>
+          
         {/* Mobile Menu */}
         {isMobile && showMobileMenu && (
-        <div style={{
+            <div style={{ 
             position: 'absolute',
             top: '100%',
             left: 0,
             right: 0,
-          backgroundColor: 'white',
-          borderBottom: '1px solid #e5e7eb',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            padding: '20px',
-          display: 'flex',
-            flexDirection: 'column',
-            gap: '16px'
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
+            backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(239, 68, 68, 0.1)',
+            boxShadow: '0 8px 32px rgba(239, 68, 68, 0.15)',
+            zIndex: 40,
+            padding: '16px 20px',
+            animation: 'slideDown 0.3s ease-out'
           }}>
-            <a href="#features" style={{
-              color: '#374151',
-              textDecoration: 'none',
-              fontWeight: '500',
-              fontSize: '16px',
-              padding: '8px 0',
-              borderBottom: '1px solid #f3f4f6'
-            }}>
-              Features
-            </a>
-            <a href="#pricing" style={{
-              color: '#374151',
-              textDecoration: 'none',
-              fontWeight: '500',
-              fontSize: '16px',
-              padding: '8px 0',
-              borderBottom: '1px solid #f3f4f6'
-            }}>
-              Pricing
-            </a>
-            <button
-              onClick={handleLogin}
-              style={{
-                padding: '12px 20px',
-                backgroundColor: 'transparent',
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <a href="#features" style={{
                 color: '#374151',
-                border: '1px solid #d1d5db',
-                  borderRadius: '8px',
+                textDecoration: 'none',
                 fontWeight: '600',
                 fontSize: '16px',
-                cursor: 'pointer'
-              }}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={handleGetStarted}
-              style={{
-                padding: '12px 20px',
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
+                padding: '8px 0',
+                borderBottom: '1px solid rgba(239, 68, 68, 0.1)',
+                transition: 'color 0.3s ease'
+              }} 
+              onClick={() => setShowMobileMenu(false)}
+              onMouseEnter={(e) => e.target.style.color = '#ef4444'}
+              onMouseLeave={(e) => e.target.style.color = '#374151'}>
+                Features
+              </a>
+              <a href="#blog" style={{
+                color: '#374151',
+                textDecoration: 'none',
                 fontWeight: '600',
                 fontSize: '16px',
-                cursor: 'pointer'
-              }}
-            >
-              Get Started Free
-            </button>
-          </div>
-        )}
+                padding: '8px 0',
+                borderBottom: '1px solid rgba(239, 68, 68, 0.1)',
+                transition: 'color 0.3s ease'
+              }} 
+              onClick={() => setShowMobileMenu(false)}
+              onMouseEnter={(e) => e.target.style.color = '#ef4444'}
+              onMouseLeave={(e) => e.target.style.color = '#374151'}>
+                Blog
+              </a>
+              <a href="#pricing" style={{
+                color: '#374151',
+                textDecoration: 'none',
+                fontWeight: '600',
+                fontSize: '16px',
+                padding: '8px 0',
+                borderBottom: '1px solid rgba(239, 68, 68, 0.1)',
+                transition: 'color 0.3s ease'
+              }} 
+              onClick={() => setShowMobileMenu(false)}
+              onMouseEnter={(e) => e.target.style.color = '#ef4444'}
+              onMouseLeave={(e) => e.target.style.color = '#374151'}>
+                Pricing
+              </a>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }}>
+                <button
+                  onClick={() => {
+                    handleLogin();
+                    setShowMobileMenu(false);
+                  }}
+                  style={{
+                    padding: '12px 20px',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    color: '#ef4444',
+                    border: '2px solid rgba(239, 68, 68, 0.2)',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '15px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    backdropFilter: 'blur(10px)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                    e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                    e.target.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+                  }}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => {
+                    handleGetStarted();
+                    setShowMobileMenu(false);
+                  }}
+                  style={{
+                    padding: '12px 20px',
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: '700',
+                    fontSize: '15px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3)';
+                  }}
+                >
+                  Get Started Free
+                </button>
+              </div>
+            </div>
+                      </div>
+                    )}
       </nav>
 
       {/* Hero Section */}
       <section style={{
-        background: 'linear-gradient(135deg, #fef7f0 0%, #fef2f2 100%)',
-        padding: isMobile ? '60px 20px' : '100px 20px',
-        textAlign: 'center'
+        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)',
+        padding: isMobile ? '80px 20px' : '120px 20px',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+        minHeight: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+        justifyContent: 'center'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{
-            fontSize: isMobile ? '32px' : '56px',
-            fontWeight: 'bold',
-            color: '#1f2937',
-            marginBottom: '24px',
-            lineHeight: '1.1'
-          }}>
-            Modern Restaurant Management Made <span style={{ color: '#ef4444' }}>Simple</span>
-          </h1>
-          <p style={{
-            fontSize: isMobile ? '18px' : '20px',
-            color: '#6b7280',
-            marginBottom: '40px',
-            lineHeight: '1.6'
-          }}>
-            Streamline your restaurant operations with our all-in-one platform. From digital menus to kitchen management, we haveve got you covered.
-          </p>
+        {/* Background Pattern */}
+                    <div style={{ 
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%)
+          `,
+          zIndex: 0
+        }} />
+        
+        {/* Floating Elements */}
+        <div style={{
+          position: 'absolute',
+          top: '15%',
+          left: '10%',
+          width: '120px',
+          height: '120px',
+          background: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '50%',
+          animation: 'float 6s ease-in-out infinite'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '20%',
+          right: '15%',
+          width: '80px',
+          height: '80px',
+          background: 'rgba(255, 255, 255, 0.08)',
+          borderRadius: '50%',
+          animation: 'float 8s ease-in-out infinite reverse'
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '5%',
+          width: '60px',
+          height: '60px',
+          background: 'rgba(255, 255, 255, 0.06)',
+          borderRadius: '50%',
+          animation: 'float 10s ease-in-out infinite'
+        }} />
+        
+        <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          {/* Hero Icon */}
           <div style={{
+            fontSize: '120px',
+            marginBottom: '32px',
+            animation: 'pulse 2s ease-in-out infinite',
+            filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2))'
+          }}>
+            🍽️
+                  </div>
+                    
+          {/* Main Heading */}
+          <h1 style={{
+            fontSize: isMobile ? '36px' : '56px',
+            fontWeight: '900',
+            color: 'white',
+            marginBottom: '24px',
+            textShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+            lineHeight: '1.2'
+          }}>
+            Restaurant Management
+            <br />
+                      <span style={{
+              background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              display: 'block',
+              marginTop: '8px'
+            }}>
+              Revolution 🚀
+                      </span>
+          </h1>
+          
+          {/* Subtitle */}
+          <p style={{
+            fontSize: isMobile ? '20px' : '24px',
+            color: 'rgba(255, 255, 255, 0.9)',
+            marginBottom: '16px',
+            fontWeight: '600',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+          }}>
+            The Future of Dining is Here
+          </p>
+          
+          {/* Description */}
+          <p style={{
+            fontSize: isMobile ? '16px' : '18px',
+            color: 'rgba(255, 255, 255, 0.8)',
+            marginBottom: '40px',
+            lineHeight: '1.6',
+            maxWidth: '600px',
+            margin: '0 auto 40px auto'
+          }}>
+            Join thousands of restaurants already using our AI-powered POS system. 
+            Transform your business with intelligent order management, real-time analytics, 
+            and seamless customer experiences.
+          </p>
+          
+          {/* Stats */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+            gap: isMobile ? '20px' : '40px',
+            marginBottom: '40px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
+                1000+
+            </div>
+              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                Restaurants
+              </div>
+              </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
+                30%
+            </div>
+              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                More Savings
+          </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
+                24/7
+              </div>
+              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                Support
+              </div>
+            </div>
+          </div>
+          
+          {/* CTA Buttons */}
+            <div style={{
             display: 'flex',
             flexDirection: isMobile ? 'column' : 'row',
-            gap: '16px',
+            gap: '20px',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+            flexWrap: 'wrap'
           }}>
-          <button
+              <button
               onClick={handleGetStarted}
-            style={{
-                padding: '16px 32px',
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-                fontWeight: 'bold',
-                fontSize: '18px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-                    transition: 'all 0.3s ease',
-                boxShadow: '0 4px 16px rgba(239, 68, 68, 0.3)',
+                    style={{
+                padding: '20px 40px',
+                background: 'rgba(255, 255, 255, 0.95)',
+                color: '#dc2626',
+                  border: 'none',
+                borderRadius: '16px',
+                fontWeight: '700',
+                fontSize: isMobile ? '18px' : '20px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
+                transform: 'translateY(0)',
+                backdropFilter: 'blur(10px)',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                      display: 'flex',
+                  alignItems: 'center',
+                gap: '8px',
                 width: isMobile ? '100%' : 'auto'
               }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.4)';
-              }}
-              onMouseLeave={(e) => {
+                    onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-4px)';
+                e.target.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.3)';
+                e.target.style.background = 'white';
+                    }}
+                    onMouseLeave={(e) => {
                 e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.3)';
+                e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
+                e.target.style.background = 'rgba(255, 255, 255, 0.95)';
               }}
             >
               <FaRocket size={20} />
-              Start Free Trial
-          </button>
-          <button
-            style={{
-                padding: '16px 32px',
-                backgroundColor: 'transparent',
-                color: '#374151',
-                border: '2px solid #d1d5db',
-              borderRadius: '12px',
-                fontWeight: '600',
-                fontSize: '18px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
+              🚀 Start Free Trial
+              </button>
+              <button
+                style={{
+                padding: '20px 40px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  color: 'white',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '16px',
+                  fontWeight: '600',
+                fontSize: isMobile ? '18px' : '20px',
+                cursor: 'pointer',
                 transition: 'all 0.3s ease',
+                backdropFilter: 'blur(10px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                gap: '8px',
                 width: isMobile ? '100%' : 'auto'
               }}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#f9fafb';
-                e.target.style.borderColor = '#9ca3af';
+                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.borderColor = '#d1d5db';
+                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
               }}
             >
               <FaPlay size={16} />
               Watch Demo
-                </button>
+              </button>
+                      </div>
+                    
+          {/* Trust Indicators */}
+                    <div style={{ 
+            marginTop: '40px',
+            padding: '20px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '12px',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <p style={{
+              fontSize: isMobile ? '12px' : '14px',
+              color: 'rgba(255, 255, 255, 0.8)',
+              margin: 0,
+              fontWeight: '500'
+            }}>
+              ✨ Bank-Level Security • 🛡️ GDPR Compliant • ⚡ Lightning Fast
+            </p>
           </div>
           </div>
       </section>
@@ -443,15 +737,15 @@ export default function LandingPage() {
       <section style={{
         background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
         padding: isMobile ? '30px 20px' : '40px 20px',
-        color: '#1f2937',
-        textAlign: 'center',
+                        color: '#1f2937',
+                        textAlign: 'center',
         position: 'relative',
-        overflow: 'hidden',
+                        overflow: 'hidden',
         borderTop: '1px solid #f3f4f6',
         borderBottom: '1px solid #f3f4f6'
       }}>
         {/* Background Pattern */}
-        <div style={{
+                          <div style={{
                 position: 'absolute',
           top: 0,
           left: 0,
@@ -462,23 +756,23 @@ export default function LandingPage() {
         }}></div>
         
         <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <div style={{
-                display: 'flex',
+                    <div style={{
+                      display: 'flex',
             flexDirection: isMobile ? 'column' : 'row',
-                alignItems: 'center',
+                      alignItems: 'center',
             justifyContent: 'space-around',
             gap: isMobile ? '20px' : '40px'
           }}>
             {/* Statistic 1 */}
-      <div style={{ 
-        display: 'flex', 
+                      <div style={{
+                        display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
+                        alignItems: 'center',
               gap: '6px'
-            }}>
-          <div style={{ 
+                      }}>
+                        <div style={{
                 fontSize: isMobile ? '32px' : '42px',
-                fontWeight: 'bold',
+                            fontWeight: 'bold',
                 background: 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -486,23 +780,23 @@ export default function LandingPage() {
                 lineHeight: '1'
               }}>
                 1000+
-              </div>
+                      </div>
               <div style={{
                 fontSize: isMobile ? '14px' : '16px',
                 fontWeight: '600',
                 color: '#374151'
               }}>
                 Restaurants Using
-              </div>
+                    </div>
               <div style={{
                 fontSize: isMobile ? '12px' : '14px',
                 color: '#6b7280',
                 fontWeight: '500'
               }}>
                 DineFlow
-            </div>
-          </div>
-          
+                  </div>
+        </div>
+
             {/* Divider */}
             <div style={{
               width: isMobile ? '40px' : '2px',
@@ -513,15 +807,15 @@ export default function LandingPage() {
             }}></div>
 
             {/* Statistic 2 */}
-                  <div style={{
-                    display: 'flex',
+          <div style={{ 
+                            display: 'flex',
               flexDirection: 'column',
-                    alignItems: 'center',
+                            alignItems: 'center',
               gap: '6px'
             }}>
               <div style={{
                 fontSize: isMobile ? '32px' : '42px',
-                fontWeight: 'bold',
+                          fontWeight: 'bold',
                 background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -529,23 +823,23 @@ export default function LandingPage() {
                 lineHeight: '1'
               }}>
                 30%
-                  </div>
+                      </div>
                     <div style={{ 
                 fontSize: isMobile ? '14px' : '16px',
                 fontWeight: '600',
                 color: '#374151'
               }}>
                 More Savings
-              </div>
+                    </div>
               <div style={{
                 fontSize: isMobile ? '12px' : '14px',
                 color: '#6b7280',
                       fontWeight: '500'
               }}>
                 vs Traditional Software
-                  </div>
-          </div>
-
+                    </div>
+              </div>
+              
             {/* Divider */}
             <div style={{
               width: isMobile ? '40px' : '2px',
@@ -557,9 +851,9 @@ export default function LandingPage() {
 
             {/* Statistic 3 */}
             <div style={{ 
-              display: 'flex', 
+                  display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center', 
+                  alignItems: 'center',
               gap: '6px'
             }}>
               <div style={{
@@ -575,28 +869,28 @@ export default function LandingPage() {
             </div>
               <div style={{
                 fontSize: isMobile ? '14px' : '16px',
-                fontWeight: '600',
+                  fontWeight: '600',
                 color: '#374151'
               }}>
                 Faster Processing
-              </div>
+            </div>
               <div style={{
                 fontSize: isMobile ? '12px' : '14px',
                 color: '#6b7280',
                 fontWeight: '500'
               }}>
                 Average Improvement
-              </div>
-            </div>
           </div>
-          
+                </div>
+              </div>
+
           {/* Trust Indicators */}
-            <div style={{
+                          <div style={{
             marginTop: '25px',
             paddingTop: '20px',
             borderTop: '1px solid rgba(239, 68, 68, 0.1)'
           }}>
-                      <div style={{
+                    <div style={{ 
                         display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
                         alignItems: 'center',
@@ -616,21 +910,21 @@ export default function LandingPage() {
                   width: '14px',
                   height: '14px',
                   background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
+                      borderRadius: '50%', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center' 
+                    }}>
                   <FaCheckCircle color="white" size={8} />
-                </div>
+                          </div>
                 <span>Trusted by 1000+ Restaurants</span>
-                    </div>
+                        </div>
                     
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
-                gap: '6px',
-                        fontSize: '13px',
+                      gap: '6px',
+                      fontSize: '13px', 
                 color: '#6b7280',
                 fontWeight: '500'
               }}>
@@ -639,19 +933,19 @@ export default function LandingPage() {
                   height: '14px',
                   background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                   borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
                   justifyContent: 'center'
-                }}>
+                    }}>
                   <FaShieldAlt color="white" size={8} />
-                </div>
+                    </div>
                 <span>Bank-Level Security</span>
-              </div>
+                      </div>
                       
                       <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                gap: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                        gap: '6px',
                 fontSize: '13px',
                 color: '#6b7280',
                 fontWeight: '500'
@@ -661,12 +955,12 @@ export default function LandingPage() {
                   height: '14px',
                   background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                           borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
+                          display: 'flex',
+                          alignItems: 'center',
                   justifyContent: 'center'
                 }}>
                   <FaHeadset color="white" size={8} />
-                      </div>
+                  </div>
                 <span>24/7 Customer Support</span>
                     </div>
                   </div>
@@ -683,8 +977,8 @@ export default function LandingPage() {
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
             <h2 style={{
               fontSize: isMobile ? '28px' : '36px',
-              fontWeight: 'bold',
-              color: '#1f2937',
+                          fontWeight: 'bold',
+                          color: '#1f2937',
               marginBottom: '16px'
             }}>
               Everything You Need to Run Your Restaurant
@@ -707,7 +1001,7 @@ export default function LandingPage() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                style={{
+                          style={{
                   padding: '32px 24px',
                   backgroundColor: '#f8fafc',
                   borderRadius: '16px',
@@ -721,24 +1015,24 @@ export default function LandingPage() {
                   e.target.style.borderColor = '#ef4444';
                     }}
                     onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
+                        e.target.style.transform = 'translateY(0)';
                   e.target.style.boxShadow = 'none';
                   e.target.style.borderColor = '#e5e7eb';
-                }}
-              >
-                      <div style={{
+                    }}
+                  >
+                        <div style={{
                   width: '60px',
                   height: '60px',
                   background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                   borderRadius: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                   margin: '0 auto 20px',
                   color: 'white'
-                }}>
+                        }}>
                   {feature.icon}
-            </div>
+                      </div>
                 <h3 style={{
                   fontSize: '20px',
                         fontWeight: 'bold',
@@ -753,10 +1047,10 @@ export default function LandingPage() {
                 }}>
                   {feature.description}
                 </p>
-          </div>
-            ))}
-                </div>
+                  </div>
+                ))}
               </div>
+          </div>
       </section>
 
       {/* Blog Section */}
@@ -782,8 +1076,8 @@ export default function LandingPage() {
             }}>
               Stay updated with restaurant industry trends, product updates, and success stories.
             </p>
-                      </div>
-                      
+      </div>
+
                     <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(350px, 1fr))',
@@ -793,7 +1087,7 @@ export default function LandingPage() {
             {/* Featured Blog Post */}
             <div 
               onClick={() => router.push('/blog/why-dineflow-future-restaurant-management')}
-                          style={{
+            style={{
                 backgroundColor: 'white',
                 borderRadius: '16px',
                 overflow: 'hidden',
@@ -812,13 +1106,13 @@ export default function LandingPage() {
                 e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
                 e.currentTarget.style.borderColor = 'transparent';
               }}>
-              <div style={{
+          <div style={{
                 background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                 padding: '24px',
                 color: 'white'
               }}>
                       <div style={{
-                          display: 'flex',
+            display: 'flex',
                           alignItems: 'center',
                   gap: '8px',
                   marginBottom: '12px'
@@ -832,7 +1126,7 @@ export default function LandingPage() {
                         }}>
                     Featured
                         </span>
-                      </div>
+                  </div>
                 <h3 style={{
                   fontSize: '24px',
                   fontWeight: 'bold',
@@ -849,9 +1143,9 @@ export default function LandingPage() {
                 }}>
                   Discover how our AI-powered POS system is revolutionizing restaurant operations and why it&apos;s outperforming traditional competitors.
                 </p>
-                <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
                   gap: '12px',
                   fontSize: '14px',
                   opacity: '0.8'
@@ -859,13 +1153,13 @@ export default function LandingPage() {
                   <span>December 15, 2024</span>
                   <span>•</span>
                   <span>8 min read</span>
-                      </div>
-                    </div>
-                    
+                </div>
+              </div>
+
               <div style={{ padding: '24px' }}>
                 <div style={{ 
-                  display: 'flex',
-                  alignItems: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
                   gap: '12px',
                   marginBottom: '20px'
                 }}>
@@ -926,7 +1220,7 @@ export default function LandingPage() {
                         <strong>AI-Powered Menu Management:</strong> Automatically extract menu items from photos/PDFs
                       </span>
                     </div>
-                    <div style={{
+            <div style={{
                               display: 'flex',
                               alignItems: 'center',
                       gap: '8px',
@@ -937,7 +1231,7 @@ export default function LandingPage() {
                         <strong>Multi-Staff Support:</strong> Unlimited staff members with individual tracking
                       </span>
                     </div>
-                    <div style={{
+                <div style={{
                         display: 'flex',
                         alignItems: 'center',
                       gap: '8px',
@@ -947,7 +1241,7 @@ export default function LandingPage() {
                       <span style={{ fontSize: '15px', color: '#4b5563' }}>
                         <strong>Real-Time Kitchen Integration:</strong> Instant order updates to KOT system
                         </span>
-                    </div>
+                </div>
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1003,7 +1297,7 @@ export default function LandingPage() {
                     marginBottom: '12px'
                   }}>
                     🎯 Why Restaurants Choose DineFlow
-                  </h4>
+                        </h4>
                   <p style={{
                     fontSize: '15px',
                     color: '#4b5563',
@@ -1011,7 +1305,7 @@ export default function LandingPage() {
                     marginBottom: '16px'
                   }}>
                     Our customers report 40% faster order processing, 60% reduction in menu management time, and 25% increase in staff efficiency. The AI-powered features that competitors charge extra for are included in our base plans.
-                  </p>
+                        </p>
                         </div>
 
                     <div style={{
@@ -1086,15 +1380,15 @@ export default function LandingPage() {
             </div>
 
               <div style={{ padding: '20px' }}>
-                <div style={{
+                      <div style={{
                       display: 'flex',
                       alignItems: 'center',
                   gap: '12px',
                   marginBottom: '16px'
-                }}>
+                      }}>
                     <div style={{
-                    width: '32px',
-                    height: '32px',
+                            width: '32px',
+                            height: '32px',
                     background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
                           borderRadius: '50%',
                       display: 'flex',
@@ -1130,8 +1424,8 @@ export default function LandingPage() {
                 overflow: 'hidden',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                cursor: 'pointer'
-              }}
+                            cursor: 'pointer'
+                          }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-4px)';
                 e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.12)';
@@ -1159,7 +1453,7 @@ export default function LandingPage() {
                     letterSpacing: '0.5px'
                   }}>
                     Success Story
-                  </span>
+                        </span>
                 </div>
                 <h3 style={{
                   fontSize: '20px',
@@ -1195,13 +1489,13 @@ export default function LandingPage() {
                     justifyContent: 'center'
                   }}>
                     <FaUsers color="#6b7280" size={14} />
-                    </div>
+                      </div>
                   <div>
                     <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>Customer Success</div>
                     <div style={{ fontSize: '12px', color: '#6b7280' }}>December 5, 2024</div>
+                      </div>
                     </div>
-            </div>
-          <div style={{
+                <div style={{ 
                           display: 'flex',
                           alignItems: 'center',
                   gap: '8px',
@@ -1213,8 +1507,8 @@ export default function LandingPage() {
                   <FaArrowRight size={12} />
                 </div>
               </div>
-            </div>
-          </div>
+                  </div>
+                </div>
 
           <div style={{ textAlign: 'center' }}>
             <button style={{
@@ -1224,7 +1518,7 @@ export default function LandingPage() {
               border: '2px solid #ef4444',
               borderRadius: '8px',
               fontWeight: '600',
-              fontSize: '16px',
+                    fontSize: '16px',
                   cursor: 'pointer',
               transition: 'all 0.3s ease',
                             display: 'flex',
@@ -1326,12 +1620,12 @@ export default function LandingPage() {
                       color: '#1f2937'
                     }}>
                       {plan.price}
-                        </span>
+                  </span>
                     <span style={{ color: '#6b7280' }}>/{plan.period}</span>
-                  </div>
+                </div>
                   <p style={{ color: '#6b7280', fontSize: '14px' }}>
                     {plan.description}
-                  </p>
+                </p>
             </div>
             
                 <ul style={{
@@ -1358,9 +1652,9 @@ export default function LandingPage() {
                   ))}
                 </ul>
 
-                <button
+              <button
                   onClick={handleGetStarted}
-                  style={{
+                style={{
                     width: '100%',
                     padding: '14px 24px',
                     background: plan.popular 
@@ -1371,7 +1665,7 @@ export default function LandingPage() {
                     borderRadius: '12px',
                     fontWeight: 'bold',
                     fontSize: '16px',
-                    cursor: 'pointer',
+                  cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
@@ -1394,7 +1688,7 @@ export default function LandingPage() {
                   }}
                 >
                   {plan.buttonText}
-                        </button>
+              </button>
                 </div>
             ))}
               </div>
@@ -1435,7 +1729,7 @@ export default function LandingPage() {
               fontSize: '18px',
                   cursor: 'pointer',
               display: 'inline-flex',
-                    alignItems: 'center',
+                  alignItems: 'center',
               gap: '8px',
                     transition: 'all 0.3s ease',
               boxShadow: '0 4px 16px rgba(239, 68, 68, 0.3)'
@@ -1452,7 +1746,7 @@ export default function LandingPage() {
             Get Started Today
             <FaArrowRight size={16} />
               </button>
-              </div>
+            </div>
       </section>
 
       {/* Footer */}
@@ -1462,7 +1756,7 @@ export default function LandingPage() {
         padding: isMobile ? '40px 20px' : '60px 20px'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{
+    <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
             gap: '40px',
@@ -1470,12 +1764,12 @@ export default function LandingPage() {
           }}>
             <div>
               <div style={{
-          display: 'flex',
-          alignItems: 'center',
+      display: 'flex',
+      alignItems: 'center',
                 gap: '12px',
                 marginBottom: '16px'
-        }}>
-          <div style={{
+    }}>
+      <div style={{
                   width: '32px',
                   height: '32px',
                   background: 'linear-gradient(135deg, #ef4444, #dc2626)',
@@ -1582,8 +1876,33 @@ export default function LandingPage() {
               © 2024 DineFlow. All rights reserved.
             </p>
       </div>
-        </div>
+    </div>
       </footer>
+      
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+      `}</style>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Head from 'next/head';
 import apiClient from '../../../lib/api';
 import { 
   FaEye, 
@@ -308,36 +309,148 @@ const Orders = () => {
 
   if (error) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-          <div style={{ textAlign: 'center' }}>
-            <FaExclamationTriangle size={48} style={{ color: '#ef4444', marginBottom: '16px' }} />
-            <div style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
-              Unable to load orders
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background Pattern */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 50%)
+          `,
+          zIndex: 0
+        }} />
+        
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: '100vh',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <div style={{ 
+            textAlign: 'center', 
+            maxWidth: '500px', 
+            padding: '40px 20px',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '24px',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ 
+              width: '100px', 
+              height: '100px', 
+              backgroundColor: '#fef2f2',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px auto',
+              animation: 'bounce 2s infinite'
+            }}>
+              <FaUtensils size={40} style={{ color: '#ef4444' }} />
             </div>
-            <div style={{ fontSize: '14px', color: '#6b7280' }}>{error}</div>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                marginTop: '16px',
-                padding: '8px 16px',
-                backgroundColor: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              Retry
-            </button>
+            
+            <h1 style={{ 
+              fontSize: '32px', 
+              fontWeight: 'bold', 
+              color: '#1f2937', 
+              marginBottom: '16px',
+              background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>
+              Order History Ready! 📋
+            </h1>
+            
+            <p style={{ 
+              fontSize: '18px', 
+              color: '#374151', 
+              marginBottom: '8px',
+              fontWeight: '500'
+            }}>
+              View Your Order History
+            </p>
+            
+            <p style={{ 
+              fontSize: '16px', 
+              color: '#6b7280', 
+              marginBottom: '32px',
+              lineHeight: '1.6'
+            }}>
+              Set up your restaurant first, then start taking orders from customers. All order history will appear here with complete transaction details.
+            </p>
+            
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+              <button
+                onClick={() => router.push('/dashboard')}
+                style={{
+                  padding: '16px 32px',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: '600',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                  transform: 'translateY(0)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                }}
+              >
+                Set Up Restaurant First
+              </button>
+            </div>
           </div>
         </div>
+        
+        <style jsx>{`
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+              transform: translateY(0);
+            }
+            40% {
+              transform: translateY(-10px);
+            }
+            60% {
+              transform: translateY(-5px);
+            }
+          }
+        `}</style>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+    <>
+      <Head>
+        <title>Order History - DineFlow</title>
+      </Head>
+      <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
       
       <div style={{ padding: isMobile ? '12px' : '16px' }}>
         {/* Mobile Header */}
@@ -352,9 +465,9 @@ const Orders = () => {
             justifyContent: 'space-between'
           }}>
             <div>
-              <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: 0 }}>Orders</h1>
+              <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: 0 }}>Order History</h1>
               <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0 0' }}>
-                {filteredOrders.length} orders
+                {filteredOrders.length} orders in history
               </p>
             </div>
             <button
@@ -389,10 +502,10 @@ const Orders = () => {
           }}>
             <div>
               <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: 0 }}>
-                Orders
+                Order History
               </h1>
               <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 0 0' }}>
-                {filteredOrders.length} orders found
+                {filteredOrders.length} orders in history
               </p>
             </div>
           </div>
@@ -935,20 +1048,163 @@ const Orders = () => {
         {filteredOrders.length === 0 && !loading && !error && (
           <div style={{
             textAlign: 'center',
-            padding: '60px 20px',
-            backgroundColor: 'white',
-            borderRadius: '8px',
-            border: '1px solid #e5e7eb'
+            padding: '80px 20px',
+            background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
+            borderRadius: '24px',
+            border: '1px solid rgba(239, 68, 68, 0.1)',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            <FaUtensils size={48} style={{ color: '#d1d5db', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: '0 0 8px 0' }}>
-              No orders found
-            </h3>
-            <p style={{ color: '#6b7280', margin: 0, fontSize: '14px' }}>
-              {searchTerm || selectedStatus !== 'all' || selectedType !== 'all' 
-                ? 'Try adjusting your filters.' 
-                : 'Orders will appear here once customers place them.'}
-            </p>
+            {/* Background Pattern */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `
+                radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 50%)
+              `,
+              zIndex: 0
+            }} />
+            
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{
+                width: '100px',
+                height: '100px',
+                backgroundColor: '#fef2f2',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 24px auto',
+                animation: 'bounce 2s infinite'
+              }}>
+                <FaUtensils size={40} style={{ color: '#ef4444' }} />
+              </div>
+              
+              <h3 style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                marginBottom: '16px',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                {searchTerm || selectedStatus !== 'all' || selectedType !== 'all' 
+                  ? 'No orders found' 
+                  : 'Order History Ready! 📋'}
+              </h3>
+              
+              <p style={{
+                fontSize: '18px',
+                color: '#374151',
+                marginBottom: '8px',
+                fontWeight: '500'
+              }}>
+                {searchTerm || selectedStatus !== 'all' || selectedType !== 'all' 
+                  ? 'Try adjusting your filters' 
+                  : 'View Your Order History'}
+              </p>
+              
+              <p style={{
+                color: '#6b7280',
+                marginBottom: '32px',
+                maxWidth: '500px',
+                margin: '0 auto 32px auto',
+                fontSize: '16px',
+                lineHeight: '1.6'
+              }}>
+                {searchTerm || selectedStatus !== 'all' || selectedType !== 'all' 
+                  ? 'Try adjusting your filters or clear them to see all orders.' 
+                  : 'Set up your restaurant first, then start taking orders from customers. All order history will appear here with complete transaction details.'
+                }
+              </p>
+              
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+              }}>
+                {searchTerm || selectedStatus !== 'all' || selectedType !== 'all' ? (
+                  <button
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSelectedStatus('all');
+                      setSelectedType('all');
+                      setSelectedWaiter('all');
+                    }}
+                    style={{
+                      padding: '16px 32px',
+                      background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontWeight: '600',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                      transform: 'translateY(0)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                    }}
+                  >
+                    Clear Filters
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => router.push('/dashboard')}
+                    style={{
+                      padding: '16px 32px',
+                      background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontWeight: '600',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                      transform: 'translateY(0)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                    }}
+                  >
+                    Set Up Restaurant First
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            <style jsx>{`
+              @keyframes bounce {
+                0%, 20%, 50%, 80%, 100% {
+                  transform: translateY(0);
+                }
+                40% {
+                  transform: translateY(-10px);
+                }
+                60% {
+                  transform: translateY(-5px);
+                }
+              }
+            `}</style>
           </div>
         )}
       </div>
@@ -1109,6 +1365,7 @@ const Orders = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 

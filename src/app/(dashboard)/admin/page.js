@@ -1558,37 +1558,144 @@ const Admin = () => {
           <div style={{
             textAlign: 'center',
             padding: '80px 20px',
-            backgroundColor: 'white',
-            borderRadius: '20px',
-            border: '1px solid #fce7f3'
+            background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
+            borderRadius: '24px',
+            border: '1px solid rgba(239, 68, 68, 0.1)',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
+            {/* Background Pattern */}
             <div style={{
-              width: '80px',
-              height: '80px',
-              backgroundColor: '#fef7f0',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 16px'
-            }}>
-              <FaStore size={32} style={{ color: '#d1d5db' }} />
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `
+                radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 50%)
+              `,
+              zIndex: 0
+            }} />
+            
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{
+                width: '100px',
+                height: '100px',
+                backgroundColor: '#fef2f2',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 24px auto',
+                animation: 'bounce 2s infinite'
+              }}>
+                <FaStore size={40} style={{ color: '#ef4444' }} />
+              </div>
+              
+              <h3 style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                marginBottom: '16px',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                Restaurant Management Ready! 🏪
+              </h3>
+              
+              <p style={{
+                fontSize: '18px',
+                color: '#374151',
+                marginBottom: '8px',
+                fontWeight: '500'
+              }}>
+                {searchTerm ? 'Try different search terms' : 'Create Your First Restaurant'}
+              </p>
+              
+              <p style={{
+                color: '#6b7280',
+                marginBottom: '32px',
+                maxWidth: '500px',
+                margin: '0 auto 32px auto',
+                fontSize: '16px',
+                lineHeight: '1.6'
+              }}>
+                {searchTerm 
+                  ? 'Try adjusting your search criteria or clear the search to see all restaurants.' 
+                  : 'Set up your restaurant profile with details, location, and business information to start managing your operations.'
+                }
+              </p>
+              
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+              }}>
+                {searchTerm ? (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    style={{
+                      padding: '16px 32px',
+                      background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontWeight: '600',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                      transform: 'translateY(0)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                    }}
+                  >
+                    Clear Search
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowAddRestaurantModal(true)}
+                    style={{
+                      padding: '16px 32px',
+                      background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontWeight: '600',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                      transform: 'translateY(0)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                    }}
+                  >
+                    <FaPlus size={16} />
+                    Add Restaurant
+                  </button>
+                )}
+              </div>
             </div>
-            <h3 style={{
-              fontSize: '20px',
-              fontWeight: '600',
-              color: '#374151',
-              margin: '0 0 8px 0'
-            }}>
-              No restaurants found
-            </h3>
-            <p style={{
-              color: '#6b7280',
-              margin: 0,
-              fontSize: '14px'
-            }}>
-              {searchTerm ? 'Try adjusting your search criteria.' : 'Add your first restaurant to get started.'}
-            </p>
+            
           </div>
         )}
 
@@ -2673,6 +2780,18 @@ const Admin = () => {
       )}
       
       <style jsx>{`
+        @keyframes bounce {
+          0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+          }
+          40% {
+            transform: translateY(-10px);
+          }
+          60% {
+            transform: translateY(-5px);
+          }
+        }
+        
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }

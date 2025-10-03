@@ -815,23 +815,158 @@ const MenuManagement = () => {
             </div>
           )
         ) : (
-          <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
-            <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FaUtensils size={32} className="text-orange-500" />
+          <div style={{
+            textAlign: 'center',
+            padding: '80px 20px',
+            background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
+            borderRadius: '24px',
+            border: '1px solid rgba(239, 68, 68, 0.1)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Background Pattern */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `
+                radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 50%)
+              `,
+              zIndex: 0
+            }} />
+            
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{
+                width: '100px',
+                height: '100px',
+                backgroundColor: '#fef2f2',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 24px auto',
+                animation: 'bounce 2s infinite'
+              }}>
+                <FaUtensils size={40} style={{ color: '#ef4444' }} />
+              </div>
+              
+              <h3 style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                marginBottom: '16px',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                {searchTerm ? 'No dishes found' : 'Menu Management Ready! 🍽️'}
+              </h3>
+              
+              <p style={{
+                fontSize: '18px',
+                color: '#374151',
+                marginBottom: '8px',
+                fontWeight: '500'
+              }}>
+                {searchTerm ? 'Try different search terms' : 'Create Your Restaurant Menu'}
+              </p>
+              
+              <p style={{
+                color: '#6b7280',
+                marginBottom: '32px',
+                maxWidth: '500px',
+                margin: '0 auto 32px auto',
+                fontSize: '16px',
+                lineHeight: '1.6'
+              }}>
+                {searchTerm 
+                  ? 'Try searching for something else or check out all our delicious categories.' 
+                  : 'Set up your restaurant first, then start building your amazing menu with delicious dishes, categories, and pricing.'
+                }
+              </p>
+              
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+              }}>
+                {searchTerm ? (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    style={{
+                      padding: '16px 32px',
+                      background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontWeight: '600',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                      transform: 'translateY(0)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                    }}
+                  >
+                    Clear Search
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => router.push('/dashboard')}
+                      style={{
+                        padding: '16px 32px',
+                        background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontWeight: '600',
+                        fontSize: '16px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                        transform: 'translateY(0)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                      }}
+                    >
+                      Set Up Restaurant First
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              {searchTerm ? 'No dishes found' : 'Your menu awaits!'}
-            </h3>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              {searchTerm ? 'Try searching for something else or check out all our delicious categories.' : 'Start building your amazing menu by adding your first delicious dish.'}
-            </p>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-3 rounded-lg font-medium hover:from-red-600 hover:to-orange-600 transition-all duration-200 flex items-center gap-2 mx-auto shadow-lg hover:shadow-xl"
-            >
-              <FaPlus size={16} />
-              Add Your First Dish
-            </button>
+            
+            <style jsx>{`
+              @keyframes bounce {
+                0%, 20%, 50%, 80%, 100% {
+                  transform: translateY(0);
+                }
+                40% {
+                  transform: translateY(-10px);
+                }
+                60% {
+                  transform: translateY(-5px);
+                }
+              }
+            `}</style>
           </div>
         )}
       </div>

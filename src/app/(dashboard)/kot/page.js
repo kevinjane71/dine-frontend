@@ -25,7 +25,8 @@ import {
   FaSpinner,
   FaTable,
   FaFilter,
-  FaTrash
+  FaTrash,
+  FaReceipt
 } from 'react-icons/fa';
 import { GiChefToque } from "react-icons/gi";
 import apiClient from '../../../lib/api';
@@ -61,7 +62,10 @@ const KitchenOrderTicket = () => {
       // Get current restaurant from auth or localStorage
       const restaurants = await apiClient.getRestaurants();
       if (!restaurants.restaurants || restaurants.restaurants.length === 0) {
-        throw new Error('No restaurants found');
+        setError('No restaurants found');
+        setCurrentRestaurant(null);
+        setKotOrders([]);
+        return;
       }
       
       const restaurant = restaurants.restaurants[0]; // Use first restaurant for now
@@ -454,47 +458,138 @@ const KitchenOrderTicket = () => {
   // Error state
   if (error && kotOrders.length === 0) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#fef7f0' }}>
-                <div style={{ 
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background Pattern */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 50%)
+          `,
+          zIndex: 0
+        }} />
+        
+        <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
-          height: 'calc(100vh - 80px)' 
+          height: '100vh',
+          position: 'relative',
+          zIndex: 1
         }}>
-          <div style={{ textAlign: 'center', maxWidth: '400px' }}>
-            <FaExclamationTriangle style={{ 
-              fontSize: '48px', 
-              color: '#ef4444', 
-              marginBottom: '16px'
-            }} />
-            <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
-              Error Loading Orders
-            </h3>
-            <p style={{ fontSize: '16px', color: '#6b7280', marginBottom: '24px' }}>
-              {error}
+          <div style={{ 
+            textAlign: 'center', 
+            maxWidth: '500px', 
+            padding: '40px 20px',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '24px',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ 
+              width: '100px', 
+              height: '100px', 
+              backgroundColor: '#fef2f2',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px auto',
+              animation: 'bounce 2s infinite'
+            }}>
+              <FaReceipt size={40} style={{ color: '#ef4444' }} />
+            </div>
+            
+            <h1 style={{ 
+              fontSize: '32px', 
+              fontWeight: 'bold', 
+              color: '#1f2937', 
+              marginBottom: '16px',
+              background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>
+              Kitchen Order Tickets Ready! 🧾
+            </h1>
+            
+            <p style={{ 
+              fontSize: '18px', 
+              color: '#374151', 
+              marginBottom: '8px',
+              fontWeight: '500'
+            }}>
+              Manage Your Kitchen Orders
             </p>
-            <button
-              onClick={() => loadKotData()}
-              style={{
-                backgroundColor: '#f97316',
-                color: 'white',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                border: 'none',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: '0 auto'
-              }}
-            >
-              <FaSync />
-              Try Again
-            </button>
+            
+            <p style={{ 
+              fontSize: '16px', 
+              color: '#6b7280', 
+              marginBottom: '32px',
+              lineHeight: '1.6'
+            }}>
+              Set up your restaurant first, then start taking orders. Kitchen Order Tickets will appear here for your kitchen staff to prepare meals.
+            </p>
+            
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+              <button
+                onClick={() => router.push('/dashboard')}
+                style={{
+                  padding: '16px 32px',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: '600',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                  transform: 'translateY(0)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                }}
+              >
+                Set Up Restaurant First
+              </button>
+            </div>
           </div>
         </div>
+        
+        <style jsx>{`
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+              transform: translateY(0);
+            }
+            40% {
+              transform: translateY(-10px);
+            }
+            60% {
+              transform: translateY(-5px);
+            }
+          }
+        `}</style>
       </div>
     );
   }
@@ -1181,47 +1276,161 @@ const KitchenOrderTicket = () => {
             </div>
           ) : (
             <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: isClient && isMobile ? '40px 20px' : '80px 20px',
-              backgroundColor: 'white',
-              borderRadius: isClient && isMobile ? '16px' : '20px',
-              border: '1px solid #fed7aa'
+              textAlign: 'center',
+              padding: '80px 20px',
+              background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
+              borderRadius: '24px',
+              border: '1px solid rgba(239, 68, 68, 0.1)',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
+              {/* Background Pattern */}
               <div style={{
-                width: isClient && isMobile ? '60px' : '80px',
-                height: isClient && isMobile ? '60px' : '80px',
-                backgroundColor: '#fef7f0',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: isClient && isMobile ? '12px' : '16px'
-              }}>
-                <FaUtensils size={isClient && isMobile ? 24 : 32} style={{ color: '#d1d5db' }} />
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: `
+                  radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 50%)
+                `,
+                zIndex: 0
+              }} />
+              
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{
+                  width: '100px',
+                  height: '100px',
+                  backgroundColor: '#fef2f2',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px auto',
+                  animation: 'bounce 2s infinite'
+                }}>
+                  <FaReceipt size={40} style={{ color: '#ef4444' }} />
+                </div>
+                
+                <h3 style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  marginBottom: '16px',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}>
+                  {selectedStatus === 'all' 
+                    ? 'Kitchen Order Tickets Ready! 🧾'
+                    : 'No KOTs found'
+                  }
+                </h3>
+                
+                <p style={{
+                  fontSize: '18px',
+                  color: '#374151',
+                  marginBottom: '8px',
+                  fontWeight: '500'
+                }}>
+                  {selectedStatus === 'all' 
+                    ? 'Manage Your Kitchen Orders'
+                    : 'Try adjusting your filters'
+                  }
+                </p>
+                
+                <p style={{
+                  color: '#6b7280',
+                  marginBottom: '32px',
+                  maxWidth: '500px',
+                  margin: '0 auto 32px auto',
+                  fontSize: '16px',
+                  lineHeight: '1.6'
+                }}>
+                  {selectedStatus === 'all' 
+                    ? 'Set up your restaurant first, then start taking orders. Kitchen Order Tickets will appear here for your kitchen staff to prepare meals.'
+                    : 'Try adjusting your filters or clear them to see all KOTs.'
+                  }
+                </p>
+                
+                <div style={{
+                  display: 'flex',
+                  gap: '12px',
+                  justifyContent: 'center',
+                  flexWrap: 'wrap'
+                }}>
+                  {selectedStatus === 'all' ? (
+                    <button
+                      onClick={() => router.push('/dashboard')}
+                      style={{
+                        padding: '16px 32px',
+                        background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontWeight: '600',
+                        fontSize: '16px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                        transform: 'translateY(0)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                      }}
+                    >
+                      Set Up Restaurant First
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setSelectedStatus('all')}
+                      style={{
+                        padding: '16px 32px',
+                        background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontWeight: '600',
+                        fontSize: '16px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                        transform: 'translateY(0)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                      }}
+                    >
+                      Clear Filters
+                    </button>
+                  )}
+                </div>
               </div>
-              <h3 style={{
-                fontSize: isClient && isMobile ? '16px' : '20px',
-                fontWeight: '600',
-                color: '#374151',
-                margin: '0 0 6px 0'
-              }}>
-                No orders in kitchen
-              </h3>
-              <p style={{
-                color: '#6b7280',
-                margin: 0,
-                textAlign: 'center',
-                maxWidth: '400px',
-                fontSize: isClient && isMobile ? '12px' : '14px'
-              }}>
-                {selectedStatus === 'all' 
-                  ? 'Kitchen orders will appear here when customers place orders.'
-                  : `No orders with ${selectedStatus} status found.`
+              
+              <style jsx>{`
+                @keyframes bounce {
+                  0%, 20%, 50%, 80%, 100% {
+                    transform: translateY(0);
+                  }
+                  40% {
+                    transform: translateY(-10px);
+                  }
+                  60% {
+                    transform: translateY(-5px);
+                  }
                 }
-              </p>
+              `}</style>
             </div>
           )}
         </div>

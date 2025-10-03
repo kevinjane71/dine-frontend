@@ -1001,132 +1001,211 @@ function RestaurantPOSContent() {
           alignItems: 'center', 
           justifyContent: 'center', 
           height: 'calc(100vh - 80px)',
-          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)',
           position: 'relative',
           overflow: 'hidden'
         }}>
-          {/* Background Animation */}
+          {/* Background Pattern */}
           <div style={{
             position: 'absolute',
-            top: '10%',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `
+              radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%)
+            `,
+            zIndex: 0
+          }} />
+          
+          {/* Floating Elements */}
+          <div style={{
+            position: 'absolute',
+            top: '15%',
             left: '10%',
-            width: '200px',
-            height: '200px',
-            background: 'linear-gradient(45deg, #fef3c7, #fde68a)',
+            width: '120px',
+            height: '120px',
+            background: 'rgba(255, 255, 255, 0.1)',
             borderRadius: '50%',
-            opacity: 0.3,
             animation: 'float 6s ease-in-out infinite'
           }} />
           <div style={{
             position: 'absolute',
-            bottom: '15%',
+            bottom: '20%',
             right: '15%',
-            width: '150px',
-            height: '150px',
-            background: 'linear-gradient(45deg, #dbeafe, #bfdbfe)',
+            width: '80px',
+            height: '80px',
+            background: 'rgba(255, 255, 255, 0.08)',
             borderRadius: '50%',
-            opacity: 0.3,
             animation: 'float 8s ease-in-out infinite reverse'
+          }} />
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '5%',
+            width: '60px',
+            height: '60px',
+            background: 'rgba(255, 255, 255, 0.06)',
+            borderRadius: '50%',
+            animation: 'float 10s ease-in-out infinite'
           }} />
           
           <div style={{ 
             textAlign: 'center', 
-            maxWidth: '600px', 
-            padding: '40px',
-            background: 'rgba(255, 255, 255, 0.95)',
-            borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-            backdropFilter: 'blur(20px)',
+            maxWidth: '800px',
             position: 'relative',
             zIndex: 1
           }}>
-            {/* Animated Icon */}
+            {/* Hero Icon */}
             <div style={{
-              fontSize: '80px',
-              marginBottom: '24px',
-              animation: 'bounce 2s infinite'
+              fontSize: '120px',
+              marginBottom: '32px',
+              animation: 'pulse 2s ease-in-out infinite',
+              filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2))'
             }}>
               🍽️
             </div>
             
+            {/* Main Heading */}
             <h1 style={{ 
-              fontSize: '36px', 
-              fontWeight: 'bold', 
-              color: '#1f2937', 
-              marginBottom: '16px',
-              background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              fontSize: '48px', 
+              fontWeight: '900', 
+              color: 'white', 
+              marginBottom: '24px',
+              textShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+              lineHeight: '1.2'
             }}>
-              AI-Powered Restaurant Revolution 🚀
+              Restaurant Management
+              <br />
+              <span style={{
+                background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                display: 'block',
+                marginTop: '8px'
+              }}>
+                Revolution 🚀
+              </span>
             </h1>
             
+            {/* Subtitle */}
             <p style={{ 
-              fontSize: '20px', 
-              color: '#374151', 
-              marginBottom: '8px',
-              lineHeight: '1.6',
-              fontWeight: '500'
+              fontSize: '24px', 
+              color: 'rgba(255, 255, 255, 0.9)', 
+              marginBottom: '16px',
+              fontWeight: '600',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
             }}>
-              The Future of Restaurant Management is Here
+              The Future of Dining is Here
             </p>
             
+            {/* Description */}
             <p style={{ 
               fontSize: '18px', 
-              color: '#6b7280', 
-              marginBottom: '8px',
-              lineHeight: '1.5'
-            }}>
-              Join 1000+ restaurants already using AI-driven POS technology
-            </p>
-            
-            <p style={{ 
-              fontSize: '16px', 
-              color: '#9ca3af', 
+              color: 'rgba(255, 255, 255, 0.8)', 
               marginBottom: '32px',
-              fontStyle: 'italic',
-              fontWeight: '500'
+              lineHeight: '1.6',
+              maxWidth: '600px',
+              margin: '0 auto 32px auto'
             }}>
-              "Where Artificial Intelligence Meets Culinary Excellence" ✨
+              Join thousands of restaurants already using our AI-powered POS system. 
+              Transform your business with intelligent order management, real-time analytics, 
+              and seamless customer experiences.
             </p>
             
+            {/* Stats */}
             <div style={{
               display: 'flex',
-              gap: '16px',
               justifyContent: 'center',
+              gap: '40px',
+              marginBottom: '40px',
+              flexWrap: 'wrap'
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
+                  1000+
+                </div>
+                <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                  Restaurants
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
+                  30%
+                </div>
+                <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                  More Savings
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
+                  24/7
+                </div>
+                <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                  Support
+                </div>
+              </div>
+            </div>
+            
+            {/* CTA Button */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '20px',
               flexWrap: 'wrap'
             }}>
               <button
                 onClick={() => setShowOnboarding(true)}
                 style={{
-                  padding: '18px 36px',
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  color: 'white',
+                  padding: '20px 40px',
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  color: '#dc2626',
                   border: 'none',
-                  borderRadius: '12px',
-                  fontWeight: '600',
-                  fontSize: '18px',
+                  borderRadius: '16px',
+                  fontWeight: '700',
+                  fontSize: '20px',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
                   transform: 'translateY(0)',
-                  ':hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 25px rgba(239, 68, 68, 0.4)'
-                  }
+                  backdropFilter: 'blur(10px)',
+                  border: '2px solid rgba(255, 255, 255, 0.3)'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                  e.target.style.transform = 'translateY(-4px)';
+                  e.target.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.3)';
+                  e.target.style.background = 'white';
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                  e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.95)';
                 }}
               >
-                Launch AI Restaurant System
+                🚀 Launch Restaurant System
               </button>
+            </div>
+            
+            {/* Trust Indicators */}
+            <div style={{
+              marginTop: '40px',
+              padding: '20px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <p style={{
+                fontSize: '14px',
+                color: 'rgba(255, 255, 255, 0.8)',
+                margin: 0,
+                fontWeight: '500'
+              }}>
+                ✨ Bank-Level Security • 🛡️ GDPR Compliant • ⚡ Lightning Fast
+              </p>
             </div>
           </div>
         </div>
@@ -1136,10 +1215,9 @@ function RestaurantPOSContent() {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-20px) rotate(180deg); }
           }
-          @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
           }
         `}</style>
       </div>

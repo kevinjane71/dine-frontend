@@ -482,55 +482,140 @@ const TableManagement = () => {
 
   if (error) {
     return (
-      <div style={{ height: '100vh', backgroundColor: '#fef7f0', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ 
+      <div style={{ 
+        height: '100vh', 
+        background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
+        display: 'flex', 
+        flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background Pattern */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(239, 68, 68, 0.05) 0%, transparent 50%)
+          `,
+          zIndex: 0
+        }} />
+        
+        <div style={{ 
           flex: 1,
           display: 'flex', 
           alignItems: 'center', 
-          justifyContent: 'center'
+          justifyContent: 'center',
+          position: 'relative',
+          zIndex: 1
         }}>
-          <div style={{ textAlign: 'center', maxWidth: '400px', padding: '20px' }}>
+          <div style={{ 
+            textAlign: 'center', 
+            maxWidth: '500px', 
+            padding: '40px 20px',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '24px',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)'
+          }}>
             <div style={{ 
-              width: '64px', 
-              height: '64px', 
-              backgroundColor: '#fee2e2',
+              width: '80px', 
+              height: '80px', 
+              backgroundColor: '#fef2f2',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 16px auto'
+              margin: '0 auto 24px auto',
+              animation: 'bounce 2s infinite'
             }}>
-              <FaBan size={32} style={{ color: '#dc2626' }} />
+              <FaChair size={40} style={{ color: '#ef4444' }} />
             </div>
-            <div style={{ fontSize: '18px', color: '#dc2626', marginBottom: '8px', fontWeight: '600' }}>Failed to Load Tables</div>
-            <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '16px' }}>{error}</div>
-            <button
-              onClick={() => loadInitialData()}
-              style={{
-                background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
-                color: 'white',
-                padding: '12px 24px',
-                borderRadius: '12px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: '600',
-                fontSize: '14px',
-                boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 16px rgba(220, 38, 38, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3)';
-              }}
-            >
-              Try Again
-            </button>
+            
+            <h1 style={{ 
+              fontSize: '32px', 
+              fontWeight: 'bold', 
+              color: '#1f2937', 
+              marginBottom: '16px',
+              background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>
+              Table Management Ready! 🪑
+            </h1>
+            
+            <p style={{ 
+              fontSize: '18px', 
+              color: '#374151', 
+              marginBottom: '8px',
+              fontWeight: '500'
+            }}>
+              Organize Your Restaurant Layout
+            </p>
+            <p style={{ 
+              fontSize: '16px', 
+              color: '#6b7280', 
+              marginBottom: '24px',
+              lineHeight: '1.6'
+            }}>
+              Set up floors and tables to manage your restaurant seating efficiently. Create different sections and track table availability in real-time.
+            </p>
+            
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+              <button
+                onClick={() => router.push('/dashboard')}
+                style={{
+                  padding: '16px 32px',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: '600',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                  transform: 'translateY(0)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+                }}
+              >
+                Set Up Restaurant First
+              </button>
+            </div>
           </div>
         </div>
+        
+        <style jsx>{`
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+              transform: translateY(0);
+            }
+            40% {
+              transform: translateY(-10px);
+            }
+            60% {
+              transform: translateY(-5px);
+            }
+          }
+        `}</style>
       </div>
     );
   }
