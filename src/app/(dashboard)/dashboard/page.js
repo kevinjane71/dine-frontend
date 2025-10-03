@@ -1398,6 +1398,10 @@ function RestaurantPOSContent() {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
           }
+          @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
         `}</style>
       </div>
     );
@@ -1529,49 +1533,73 @@ function RestaurantPOSContent() {
         flexDirection: isMobile ? 'column' : 'row',
         height: '100%' // Ensure full height usage
       }}>
-        {/* Desktop Menu Sections Sidebar */}
+        {/* Desktop Menu Sections Sidebar - Redesigned */}
         {!isMobile && (
           <div style={{ 
             width: '280px', 
-            backgroundColor: 'white', 
-            borderRight: '2px solid #e5e7eb', 
-            boxShadow: '4px 0 20px rgba(0,0,0,0.08)',
+            backgroundColor: '#ffffff', 
+            borderRight: '1px solid #f3f4f6', 
+            boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
             position: 'relative',
             overflow: 'hidden'
           }}>
-          <div style={{ padding: '16px', borderBottom: '1px solid #f3f4f6' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FaUtensils style={{ fontSize: '14px', color: '#ef4444' }} />
-              Menu Sections
+          <div style={{ 
+            padding: '20px 16px', 
+            borderBottom: '1px solid #f3f4f6',
+            background: 'linear-gradient(135deg, #fef7f0 0%, #fed7aa 100%)'
+          }}>
+            <h2 style={{ 
+              fontSize: '18px', 
+              fontWeight: '700', 
+              color: '#1f2937', 
+              marginBottom: '6px',
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px'
+            }}>
+              Menu Categories
             </h2>
-            <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 12px 0' }}>Browse by dish type</p>
+            <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px 0', fontWeight: '500' }}>
+              Quick access for waiters
+            </p>
             <div style={{ position: 'relative' }}>
               <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={14} />
               <input
                 type="text"
-                placeholder="Search items..."
+                placeholder="Search menu items..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{
                   width: '100%',
                   paddingLeft: '36px',
                   paddingRight: '12px',
-                  paddingTop: '8px',
-                  paddingBottom: '8px',
-                  border: '2px solid #e5e7eb',
+                  paddingTop: '10px',
+                  paddingBottom: '10px',
+                  border: 'none',
                   borderRadius: '8px',
-                  backgroundColor: '#f9fafb',
-                  fontSize: '12px',
-                  outline: 'none'
+                  backgroundColor: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  outline: 'none',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  transition: 'all 0.2s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.2)';
+                  e.target.style.border = '1px solid #ef4444';
+                }}
+                onBlur={(e) => {
+                  e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                  e.target.style.border = 'none';
                 }}
               />
             </div>
           </div>
           
           <div style={{ 
-            padding: '8px', 
+            padding: '12px 8px', 
             overflowY: 'auto', 
-            height: 'calc(100% - 100px)',
+            height: 'calc(100% - 120px)',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none'
           }} className="hide-scrollbar">
@@ -1583,13 +1611,84 @@ function RestaurantPOSContent() {
               const isSelected = selectedCategory === category.id;
               
               return (
-                <CategoryButton
+                <div
                   key={category.id}
-                  category={category}
-                  isSelected={isSelected}
                   onClick={() => setSelectedCategory(category.id)}
-                  itemCount={categoryItems.length}
-                />
+                  style={{
+                    padding: '12px 16px',
+                    margin: '4px 0',
+                    backgroundColor: isSelected ? '#ef4444' : 'transparent',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    border: isSelected ? 'none' : '1px solid #f3f4f6',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.backgroundColor = '#f9fafb';
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                      e.currentTarget.style.transform = 'translateX(2px)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.borderColor = '#f3f4f6';
+                      e.currentTarget.style.transform = 'translateX(0)';
+                    }
+                  }}
+                >
+                  {isSelected && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent)',
+                      animation: 'shimmer 2s infinite'
+                    }} />
+                  )}
+                  
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    position: 'relative',
+                    zIndex: 1
+                  }}>
+                    <div>
+                      <div style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: isSelected ? 'white' : '#1f2937',
+                        marginBottom: '2px',
+                        lineHeight: '1.3'
+                      }}>
+                        {category.name}
+                      </div>
+                      <div style={{
+                        fontSize: '11px',
+                        color: isSelected ? 'rgba(255,255,255,0.8)' : '#6b7280',
+                        fontWeight: '500'
+                      }}>
+                        {categoryItems.length} items
+                      </div>
+                    </div>
+                    
+                    {isSelected && (
+                      <div style={{
+                        width: '6px',
+                        height: '6px',
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                        boxShadow: '0 0 8px rgba(255,255,255,0.5)'
+                      }} />
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>

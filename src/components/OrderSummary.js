@@ -52,11 +52,12 @@ const OrderSummary = ({
     }}>
       {/* Header */}
       <div style={{ 
-        background: 'linear-gradient(135deg, #1f2937, #111827)', 
-        padding: '12px', 
+        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)', 
+        padding: '16px', 
         color: 'white',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        boxShadow: '0 4px 20px rgba(239, 68, 68, 0.3)'
       }}>
         {/* Background Pattern */}
         <div style={{
@@ -461,11 +462,11 @@ const OrderSummary = ({
           {/* Total */}
           <div style={{ padding: '12px' }}>
             <div style={{ 
-              background: 'linear-gradient(135deg, #1f2937, #111827)', 
+              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)', 
               color: 'white', 
               padding: '12px', 
               borderRadius: '8px',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Grand Total</span>
@@ -543,9 +544,9 @@ const OrderSummary = ({
                         style={{
                           flex: 1,
                           padding: '8px 6px',
-                          backgroundColor: isSelected ? '#22c55e' : 'white',
+                          backgroundColor: isSelected ? '#ef4444' : 'white',
                           color: isSelected ? 'white' : '#6b7280',
-                          border: isSelected ? '1px solid #22c55e' : '1px solid #e5e7eb',
+                          border: isSelected ? '1px solid #ef4444' : '1px solid #e5e7eb',
                           borderRadius: '6px',
                           fontWeight: '600',
                           fontSize: '10px',
@@ -555,7 +556,7 @@ const OrderSummary = ({
                           alignItems: 'center',
                           gap: '4px',
                           transition: 'all 0.2s',
-                          boxShadow: isSelected ? '0 2px 6px rgba(34, 197, 94, 0.3)' : '0 1px 2px rgba(0, 0, 0, 0.05)'
+                          boxShadow: isSelected ? '0 2px 6px rgba(239, 68, 68, 0.3)' : '0 1px 2px rgba(0, 0, 0, 0.05)'
                         }}
                       >
                         <Icon size={12} />
@@ -574,7 +575,7 @@ const OrderSummary = ({
                     onClick={onSaveOrder}
                     style={{
                       flex: 1,
-                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      background: 'linear-gradient(135deg, #f97316, #ea580c)',
                       color: 'white',
                       padding: '8px 12px',
                       borderRadius: '8px',
@@ -587,7 +588,7 @@ const OrderSummary = ({
                       gap: '6px',
                       fontSize: '11px',
                       transition: 'all 0.2s',
-                      boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)'
+                      boxShadow: '0 2px 8px rgba(249, 115, 22, 0.3)'
                     }}
                   >
                     <FaSave size={10} />
@@ -605,7 +606,7 @@ const OrderSummary = ({
                       flex: 1,
                       background: placingOrder || cart.length === 0
                         ? 'linear-gradient(135deg, #d1d5db, #9ca3af)' 
-                        : 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                        : 'linear-gradient(135deg, #ef4444, #dc2626)',
                       color: 'white',
                       padding: '8px 12px',
                       borderRadius: '8px',
@@ -618,7 +619,7 @@ const OrderSummary = ({
                       gap: '6px',
                       fontSize: '11px',
                       transition: 'all 0.2s',
-                      boxShadow: placingOrder || cart.length === 0 ? 'none' : '0 2px 8px rgba(59, 130, 246, 0.3)'
+                      boxShadow: placingOrder || cart.length === 0 ? 'none' : '0 2px 8px rgba(239, 68, 68, 0.3)'
                     }}
                   >
                     {placingOrder ? (
@@ -644,7 +645,7 @@ const OrderSummary = ({
                       flex: 1,
                       background: processing || cart.length === 0 
                         ? 'linear-gradient(135deg, #d1d5db, #9ca3af)' 
-                        : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                        : 'linear-gradient(135deg, #10b981, #059669)',
                       color: 'white',
                       padding: '8px 12px',
                       borderRadius: '8px',
