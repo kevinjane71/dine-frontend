@@ -326,11 +326,18 @@ const TableManagement = () => {
     if (!newTable.name.trim() || !selectedFloorForTable || !selectedRestaurant) return;
     
     try {
+      // Find the selected floor to get its name
+      const selectedFloor = floors.find(floor => floor.id === selectedFloorForTable);
+      if (!selectedFloor) {
+        alert('Selected floor not found');
+        return;
+      }
+
       const tableData = {
         name: newTable.name.trim(),
         capacity: parseInt(newTable.capacity),
         type: newTable.type,
-        floorId: selectedFloorForTable,
+        floor: selectedFloor.name, // Send floor name instead of floorId
         status: 'available'
       };
       

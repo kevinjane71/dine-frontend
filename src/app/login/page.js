@@ -133,8 +133,8 @@ const Login = () => {
     e.preventDefault();
     setError('');
     
-    if (!otp || otp.length !== 6) {
-      setError('Please enter a valid 6-digit OTP');
+    if (!otp || (isFirebaseOTP ? otp.length !== 6 : otp.length !== 4)) {
+      setError(`Please enter a valid ${isFirebaseOTP ? '6' : '4'}-digit OTP`);
       return;
     }
 
@@ -226,7 +226,8 @@ const Login = () => {
   };
 
   const handleOtpChange = (e) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    const maxLength = isFirebaseOTP ? 6 : 4;
+    const value = e.target.value.replace(/\D/g, '').slice(0, maxLength);
     setOtp(value);
   };
 
@@ -734,7 +735,7 @@ const Login = () => {
                     value={otp}
                     onChange={handleOtpChange}
                     placeholder={isFirebaseOTP ? "123456" : "1234"}
-                    maxLength="6"
+                    maxLength={isFirebaseOTP ? 6 : 4}
                     style={{
                       width: "100%",
                       padding: "16px",
