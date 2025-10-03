@@ -448,7 +448,7 @@ const Orders = () => {
   return (
     <>
       <Head>
-        <title>Order History - DineFlow</title>
+        <title>Order History - DineOpen</title>
       </Head>
       <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
       

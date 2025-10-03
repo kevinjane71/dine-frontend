@@ -374,7 +374,7 @@ function NavigationContent() {
                 margin: 0,
                 letterSpacing: '-0.02em'
               }}>
-                Dine
+                DineOpen
               </h1>
               <p style={{ 
                 fontSize: '10px', 
@@ -992,7 +992,7 @@ function NavigationContent() {
                 </div>
                 <div>
                   <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1f2937', margin: 0 }}>
-                  Dine
+                  DineOpen
                 </h2>
                   <p style={{ fontSize: '10px', color: '#9ca3af', margin: 0, fontWeight: '500', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                     Restaurant OS

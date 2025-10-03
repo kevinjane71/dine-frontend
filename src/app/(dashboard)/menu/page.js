@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BulkMenuUpload from '../../../components/BulkMenuUpload';
 import apiClient from '../../../lib/api';
@@ -159,94 +159,392 @@ const EnhancedDropdown = ({
   );
 };
 
-// Compact Menu Item Card Component
-const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability, getSpiceLevel, getCategoryEmoji }) => {
+// Custom Dropdown Component
+const CustomDropdown = ({ value, onChange, options, placeholder, style = {} }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const selectedOption = options.find(opt => opt.value === value) || null;
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+  
+  return (
+    <div ref={dropdownRef} style={{ position: 'relative', ...style }}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          padding: '10px 12px',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '14px',
+          backgroundColor: '#f9fafb',
+          color: '#374151',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          outline: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          minWidth: '120px',
+          width: '100%'
+        }}
+        onFocus={(e) => {
+          e.target.style.backgroundColor = '#ffffff';
+          e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+        }}
+        onBlur={(e) => {
+          e.target.style.backgroundColor = '#f9fafb';
+          e.target.style.boxShadow = 'none';
+        }}
+      >
+        <span>{selectedOption ? selectedOption.label : placeholder}</span>
+        <FaChevronDown 
+          size={12} 
+          style={{ 
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s ease',
+            color: '#9ca3af'
+          }} 
+        />
+      </button>
+      
+      {isOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          right: 0,
+          backgroundColor: '#ffffff',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          border: '1px solid #e5e7eb',
+          zIndex: 50,
+          marginTop: '4px',
+          overflow: 'hidden'
+        }}>
+          {options.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                border: 'none',
+                backgroundColor: value === option.value ? '#f3f4f6' : 'transparent',
+                color: '#374151',
+                fontSize: '14px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+              onMouseEnter={(e) => {
+                if (value !== option.value) {
+                  e.target.style.backgroundColor = '#f9fafb';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (value !== option.value) {
+                  e.target.style.backgroundColor = 'transparent';
+                }
+              }}
+            >
+              {option.icon && <span style={{ fontSize: '12px' }}>{option.icon}</span>}
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Ultra Compact Menu Item Card Component
+const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability, getSpiceLevel, getCategoryEmoji, onItemClick }) => {
   const spiceInfo = getSpiceLevel(item.spiceLevel);
   
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1 group">
-      {/* Header with gradient background */}
-      <div className={`h-20 ${item.isVeg ? 'bg-gradient-to-r from-green-100 to-emerald-100' : 'bg-gradient-to-r from-orange-100 to-red-100'} relative overflow-hidden`}>
-        {/* Floating shapes */}
-        <div className="absolute -top-2 -right-2 w-16 h-16 bg-white bg-opacity-20 rounded-full animate-pulse"></div>
-        <div className="absolute -bottom-3 -left-3 w-12 h-12 bg-white bg-opacity-15 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-        
-        <div className="relative z-10 flex items-center justify-between p-4 h-full">
-          <div className="flex items-center gap-3">
-            <div className="text-2xl filter drop-shadow-sm">
+    <div 
+      style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '8px',
+        border: '1px solid #e5e7eb',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        overflow: 'hidden',
+        transition: 'all 0.2s ease',
+        opacity: !item.isAvailable ? 0.6 : 1,
+        position: 'relative',
+        height: '140px',
+        cursor: 'pointer'
+      }}
+      onClick={() => onItemClick(item)}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+      }}>
+      {/* Main Card Content */}
+      <div style={{
+        height: '100px',
+        background: '#ffffff',
+        padding: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'relative',
+        transition: 'all 0.3s ease',
+        borderBottom: '1px solid #f3f4f6'
+      }}>
+        {/* Left Side - Icon and Info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+          <div style={{ fontSize: '16px' }}>
               {getCategoryEmoji(item.category)}
             </div>
-            <div className={`w-5 h-5 rounded-full border-2 ${item.isVeg ? 'border-green-500' : 'border-red-500'} flex items-center justify-center`}>
-              <div className={`w-2 h-2 ${item.isVeg ? 'bg-green-500 rounded-sm' : 'bg-red-500 rounded-full'}`}></div>
+          <div style={{
+            width: '12px',
+            height: '12px',
+            borderRadius: '50%',
+            border: `2px solid ${item.isVeg ? '#22c55e' : '#ef4444'}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#ffffff'
+          }}>
+            <div style={{
+              width: '4px',
+              height: '4px',
+              backgroundColor: item.isVeg ? '#22c55e' : '#ef4444',
+              borderRadius: item.isVeg ? '1px' : '50%'
+            }} />
             </div>
+          <div style={{ flex: 1 }}>
+            <h3 style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#1f2937',
+              margin: 0,
+              marginBottom: '2px',
+              lineHeight: '1.2'
+            }}>
+              {item.name}
+            </h3>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              <span style={{
+                fontSize: '10px',
+                color: spiceInfo.color
+              }}>
+                {spiceInfo.icon}
+              </span>
+              <span style={{
+                backgroundColor: '#f3f4f6',
+                color: '#6b7280',
+                padding: '1px 4px',
+                borderRadius: '4px',
+                fontSize: '9px',
+                fontWeight: '500'
+              }}>
+                {categories.find(c => c.id === item.category)?.name || 'Main Course'}
+              </span>
           </div>
-          
-          <div className="bg-white bg-opacity-90 backdrop-blur-sm px-3 py-1 rounded-full">
-            <span className="text-lg font-bold text-gray-800">₹{item.price}</span>
           </div>
         </div>
         
+        {/* Right Side - Price */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          padding: '4px 8px',
+          borderRadius: '6px',
+          border: '1px solid #e5e7eb',
+          marginLeft: '8px'
+        }}>
+          <span style={{
+            fontSize: '14px',
+            fontWeight: '700',
+            color: '#ef4444'
+          }}>
+            ₹{item.price}
+          </span>
+        </div>
+        
         {/* Short code badge */}
-        <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+        <div style={{
+          position: 'absolute',
+          top: '6px',
+          left: '6px',
+          background: '#ef4444',
+          color: 'white',
+          padding: '1px 4px',
+          borderRadius: '4px',
+          fontSize: '8px',
+          fontWeight: '600'
+        }}>
           {item.shortCode}
         </div>
         
         {/* Availability badge */}
         {!item.isAvailable && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+          <div style={{
+            position: 'absolute',
+            top: '6px',
+            right: '6px',
+            background: '#dc2626',
+            color: 'white',
+            padding: '1px 4px',
+            borderRadius: '4px',
+            fontSize: '8px',
+            fontWeight: '600'
+          }}>
             OUT
           </div>
         )}
       </div>
       
-      {/* Content */}
-      <div className="p-4">
-        <div className="mb-3">
-          <h3 className="font-bold text-gray-900 text-base mb-2 line-clamp-1">
-            {item.name}
-          </h3>
-          
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm" style={{ color: spiceInfo.color }}>
-              {spiceInfo.icon}
-            </span>
-            <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-medium">
-              {categories.find(c => c.id === item.category)?.name || 'Main Course'}
-            </span>
-          </div>
-        </div>
-        
-        <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-          {item.description || 'Delicious dish prepared with finest ingredients'}
-        </p>
-        
-        {/* Action buttons */}
-        <div className="flex gap-2">
+      {/* Action buttons - Always visible */}
+      <div style={{
+        padding: '8px 12px',
+        backgroundColor: '#ffffff',
+        borderTop: '1px solid #f3f4f6',
+        display: 'flex',
+        gap: '6px'
+      }}>
           <button
-            onClick={() => onEdit(item)}
-            className="flex-1 bg-blue-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center gap-1"
-          >
-            <FaEdit size={12} />
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(item);
+            }}
+          style={{
+            flex: 1,
+            padding: '6px 8px',
+            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            fontWeight: '600',
+            fontSize: '10px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px',
+            boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-1px)';
+            e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
+          }}
+        >
+          <FaEdit size={10} />
             Edit
           </button>
           <button
-            onClick={() => onToggleAvailability(item.id, item.isAvailable)}
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center ${
-              item.isAvailable 
-                ? 'bg-orange-500 text-white hover:bg-orange-600' 
-                : 'bg-green-500 text-white hover:bg-green-600'
-            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleAvailability(item.id, item.isAvailable);
+            }}
+          style={{
+            padding: '6px 8px',
+            background: item.isAvailable 
+              ? 'linear-gradient(135deg, #f97316, #ea580c)' 
+              : 'linear-gradient(135deg, #22c55e, #16a34a)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            fontWeight: '600',
+            fontSize: '10px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minWidth: '32px',
+            boxShadow: item.isAvailable 
+              ? '0 2px 4px rgba(249, 115, 22, 0.2)' 
+              : '0 2px 4px rgba(34, 197, 94, 0.2)'
+          }}
             title={item.isAvailable ? 'Mark as Out of Stock' : 'Mark as Available'}
-          >
-            {item.isAvailable ? <FaMinus size={12} /> : <FaCheck size={12} />}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-1px)';
+            if (item.isAvailable) {
+              e.target.style.boxShadow = '0 4px 8px rgba(249, 115, 22, 0.3)';
+            } else {
+              e.target.style.boxShadow = '0 4px 8px rgba(34, 197, 94, 0.3)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            if (item.isAvailable) {
+              e.target.style.boxShadow = '0 2px 4px rgba(249, 115, 22, 0.2)';
+            } else {
+              e.target.style.boxShadow = '0 2px 4px rgba(34, 197, 94, 0.2)';
+            }
+          }}
+        >
+          {item.isAvailable ? <FaMinus size={10} /> : <FaCheck size={10} />}
           </button>
           <button
-            onClick={() => onDelete(item.id)}
-            className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
-          >
-            <FaTrash size={12} />
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(item.id);
+            }}
+          style={{
+            padding: '6px 8px',
+            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            fontWeight: '600',
+            fontSize: '10px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minWidth: '32px',
+            boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-1px)';
+            e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
+          }}
+        >
+          <FaTrash size={10} />
           </button>
-        </div>
       </div>
     </div>
   );
@@ -330,6 +628,371 @@ const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability
   );
 };
 
+// Item Detail Modal Component
+const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, onToggleAvailability, getSpiceLevel, getCategoryEmoji }) => {
+  if (!isOpen || !item) return null;
+
+  const spiceInfo = getSpiceLevel(item.spiceLevel);
+  const category = categories.find(c => c.id === item.category);
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}
+        onClick={onClose}
+      >
+        {/* Modal Content */}
+        <div 
+          style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            position: 'relative',
+            animation: 'slideInFromRight 0.3s ease-out'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div style={{
+            padding: '24px 24px 16px 24px',
+            borderBottom: '1px solid #e5e7eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ fontSize: '24px' }}>
+                {getCategoryEmoji(item.category)}
+              </div>
+              <div>
+                <h2 style={{
+                  fontSize: '20px',
+                  fontWeight: '700',
+                  color: '#1f2937',
+                  margin: 0,
+                  marginBottom: '4px'
+                }}>
+                  {item.name}
+                </h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    border: `2px solid ${item.isVeg ? '#22c55e' : '#ef4444'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#ffffff'
+                  }}>
+                    <div style={{
+                      width: '6px',
+                      height: '6px',
+                      backgroundColor: item.isVeg ? '#22c55e' : '#ef4444',
+                      borderRadius: item.isVeg ? '1px' : '50%'
+                    }} />
+                  </div>
+                  <span style={{
+                    fontSize: '14px',
+                    color: '#6b7280',
+                    fontWeight: '500'
+                  }}>
+                    {item.isVeg ? 'Vegetarian' : 'Non-Vegetarian'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                color: '#9ca3af',
+                cursor: 'pointer',
+                padding: '4px',
+                borderRadius: '6px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#f3f4f6';
+                e.target.style.color = '#374151';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.color = '#9ca3af';
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Content */}
+          <div style={{ padding: '24px' }}>
+            {/* Price */}
+            <div style={{
+              backgroundColor: '#f9fafb',
+              padding: '16px',
+              borderRadius: '12px',
+              marginBottom: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '32px',
+                fontWeight: '800',
+                color: '#ef4444',
+                marginBottom: '4px'
+              }}>
+                ₹{item.price}
+              </div>
+              <div style={{
+                fontSize: '14px',
+                color: '#6b7280',
+                fontWeight: '500'
+              }}>
+                Price per serving
+              </div>
+            </div>
+
+            {/* Description */}
+            <div style={{ marginBottom: '20px' }}>
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#1f2937',
+                margin: 0,
+                marginBottom: '8px'
+              }}>
+                Description
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: '#6b7280',
+                lineHeight: '1.6',
+                margin: 0
+              }}>
+                {item.description || 'Delicious dish prepared with finest ingredients and authentic flavors.'}
+              </p>
+            </div>
+
+            {/* Details */}
+            <div style={{ marginBottom: '20px' }}>
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#1f2937',
+                margin: 0,
+                marginBottom: '12px'
+              }}>
+                Details
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '14px', color: '#6b7280' }}>Category</span>
+                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>
+                    {category?.name || 'Main Course'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '14px', color: '#6b7280' }}>Spice Level</span>
+                  <span style={{ fontSize: '14px', fontWeight: '500', color: spiceInfo.color }}>
+                    {spiceInfo.icon} {spiceInfo.label}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '14px', color: '#6b7280' }}>Short Code</span>
+                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>
+                    {item.shortCode}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '14px', color: '#6b7280' }}>Status</span>
+                  <span style={{
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: item.isAvailable ? '#22c55e' : '#ef4444',
+                    backgroundColor: item.isAvailable ? '#dcfce7' : '#fef2f2',
+                    padding: '2px 8px',
+                    borderRadius: '6px'
+                  }}>
+                    {item.isAvailable ? 'Available' : 'Out of Stock'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div style={{
+            padding: '16px 24px 24px 24px',
+            borderTop: '1px solid #e5e7eb',
+            display: 'flex',
+            gap: '12px'
+          }}>
+            <button
+              onClick={() => {
+                onEdit(item);
+                onClose();
+              }}
+              style={{
+                flex: 1,
+                padding: '12px 16px',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
+              }}
+            >
+              <FaEdit size={14} />
+              Edit Item
+            </button>
+            <button
+              onClick={() => {
+                onToggleAvailability(item.id, item.isAvailable);
+                onClose();
+              }}
+              style={{
+                padding: '12px 16px',
+                background: item.isAvailable 
+                  ? 'linear-gradient(135deg, #f97316, #ea580c)'
+                  : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                minWidth: '120px',
+                boxShadow: item.isAvailable 
+                  ? '0 2px 4px rgba(249, 115, 22, 0.2)' 
+                  : '0 2px 4px rgba(34, 197, 94, 0.2)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                if (item.isAvailable) {
+                  e.target.style.boxShadow = '0 4px 8px rgba(249, 115, 22, 0.3)';
+                } else {
+                  e.target.style.boxShadow = '0 4px 8px rgba(34, 197, 94, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                if (item.isAvailable) {
+                  e.target.style.boxShadow = '0 2px 4px rgba(249, 115, 22, 0.2)';
+                } else {
+                  e.target.style.boxShadow = '0 2px 4px rgba(34, 197, 94, 0.2)';
+                }
+              }}
+            >
+              {item.isAvailable ? <FaMinus size={14} /> : <FaCheck size={14} />}
+              {item.isAvailable ? 'Mark Out' : 'Mark Available'}
+            </button>
+            <button
+              onClick={() => {
+                onDelete(item.id);
+                onClose();
+              }}
+              style={{
+                padding: '12px 16px',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                minWidth: '100px',
+                boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
+              }}
+            >
+              <FaTrash size={14} />
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes slideInFromRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          @keyframes slideInFromRight {
+            from {
+              transform: translateY(100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+        }
+      `}</style>
+    </>
+  );
+};
+
 const MenuManagement = () => {
   const router = useRouter();
   const [menuItems, setMenuItems] = useState([]);
@@ -356,6 +1019,8 @@ const MenuManagement = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showItemModal, setShowItemModal] = useState(false);
   const [error, setError] = useState('');
   const [currentRestaurant, setCurrentRestaurant] = useState({ id: 'test-restaurant', name: 'Test Restaurant' });
   const [isClient, setIsClient] = useState(false);
@@ -570,6 +1235,16 @@ const MenuManagement = () => {
     }
   };
 
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+    setShowItemModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowItemModal(false);
+    setSelectedItem(null);
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -640,104 +1315,240 @@ const MenuManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#ffffff',
+      position: 'relative',
+      overflow: 'auto'
+    }}>
+      <div style={{ 
+        maxWidth: '1400px', 
+        margin: '0 auto', 
+        padding: '20px', 
+        position: 'relative',
+        paddingBottom: '40px'
+      }}>
+        {/* Compact Header */}
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '16px'
+          }}>
               <div>
-              <h1 className="text-3xl font-bold text-gray-900 bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+              <h1 style={{
+                fontSize: '24px',
+                fontWeight: '700',
+                color: '#1f2937',
+                margin: 0,
+                marginBottom: '4px'
+              }}>
                 Menu Management
                 </h1>
-              <p className="text-gray-600 mt-1">
+              <p style={{
+                fontSize: '14px',
+                color: '#6b7280',
+                margin: 0
+              }}>
               {filteredItems.length} items • {currentRestaurant?.name}
               </p>
           </div>
           
-            <div className="flex gap-3">
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '8px'
+            }}>
             <button
                 onClick={() => setShowBulkUpload(true)}
-                className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
-                >
-                  <FaCloudUploadAlt size={14} />
+                style={{
+                  padding: '8px 16px',
+                  background: 'linear-gradient(135deg, #f97316, #ef4444)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                <FaCloudUploadAlt size={12} />
                 Bulk Upload
             </button>
             <button
               onClick={() => setShowAddForm(true)}
-                className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-4 py-2 rounded-lg font-medium hover:from-pink-600 hover:to-red-600 transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
-                >
-                  <FaPlus size={14} />
+                style={{
+                  padding: '8px 16px',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                <FaPlus size={12} />
               New Item
             </button>
           </div>
         </div>
               </div>
-        {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1">
-              <div className="relative">
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+        {/* Compact Filters */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          border: '1px solid #e5e7eb',
+          padding: '16px',
+          marginBottom: '20px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: '12px',
+            alignItems: 'center',
+            flexWrap: 'wrap'
+          }}>
+            {/* Search Bar */}
+            <div style={{ flex: 1, minWidth: '250px' }}>
+              <div style={{ position: 'relative' }}>
+                <FaSearch style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9ca3af',
+                  fontSize: '14px'
+                }} />
                   <input
                     type="text"
-                  placeholder="Search dishes, codes, descriptions..."
+                  placeholder="Search dishes..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px 10px 36px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    backgroundColor: '#f9fafb',
+                    transition: 'all 0.2s ease',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.backgroundColor = '#ffffff';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.backgroundColor = '#f9fafb';
+                    e.target.style.boxShadow = 'none';
+                  }}
                   />
                 </div>
               </div>
               
-            {/* Filters */}
-            <div className="flex gap-3">
+            {/* Filter Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '8px',
+              flexWrap: 'wrap'
+            }}>
               {/* Veg Filter */}
-              <select
+              <CustomDropdown
                 value={selectedVegFilter}
-                onChange={(e) => setSelectedVegFilter(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-              >
-                <option value="all">🍽️ All Types</option>
-                <option value="veg">🥬 Vegetarian</option>
-                <option value="non-veg">🍖 Non-Vegetarian</option>
-              </select>
+                onChange={setSelectedVegFilter}
+                options={[
+                  { value: 'all', label: 'All Types', icon: '🍽️' },
+                  { value: 'veg', label: 'Vegetarian', icon: '🥬' },
+                  { value: 'non-veg', label: 'Non-Vegetarian', icon: '🍖' }
+                ]}
+                placeholder="All Types"
+                style={{ minWidth: '120px' }}
+              />
 
               {/* Category Filter */}
-              <select
+              <CustomDropdown
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-              >
-                <option value="all">🍽️ All Categories</option>
-                    {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.emoji} {category.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedCategory}
+                options={[
+                  { value: 'all', label: 'All Categories', icon: '🍽️' },
+                  ...categories.map(category => ({ 
+                    value: category.id, 
+                    label: category.name, 
+                    icon: category.emoji 
+                  }))
+                ]}
+                placeholder="All Categories"
+                style={{ minWidth: '140px' }}
+              />
               
-              {/* View Mode */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              {/* View Toggle */}
+              <div style={{
+                display: 'flex',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '8px',
+                padding: '2px'
+              }}>
               <button
                 onClick={() => setViewMode('grid')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    viewMode === 'grid' 
-                      ? 'bg-white text-red-500 shadow-sm' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    backgroundColor: viewMode === 'grid' ? '#ef4444' : 'transparent',
+                    color: viewMode === 'grid' ? 'white' : '#6b7280',
+                    fontWeight: '500',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
                 >
-                  <FaTh size={14} />
+                  <FaTh size={12} />
+                  Grid
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    viewMode === 'list' 
-                      ? 'bg-white text-red-500 shadow-sm' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    backgroundColor: viewMode === 'list' ? '#ef4444' : 'transparent',
+                    color: viewMode === 'list' ? 'white' : '#6b7280',
+                    fontWeight: '500',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
                 >
-                  <FaList size={14} />
+                  <FaList size={12} />
+                  List
               </button>
             </div>
           </div>
@@ -753,13 +1564,23 @@ const MenuManagement = () => {
           </div>
         )}
 
-        {/* Menu Items */}
+        {/* Ultra Compact Menu Items Grid */}
         {filteredItems.length > 0 ? (
           viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredItems.map((item) => (
-                <MenuItemCard
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+              gap: '12px',
+              padding: '0'
+            }}>
+              {filteredItems.map((item, index) => (
+                <div
                   key={item.id}
+                  style={{
+                    animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`
+                  }}
+                >
+                  <MenuItemCard
                   item={item}
                   categories={categories}
                   onEdit={handleEdit}
@@ -767,7 +1588,9 @@ const MenuManagement = () => {
                   onToggleAvailability={handleToggleAvailability}
                   getSpiceLevel={getSpiceLevel}
                   getCategoryEmoji={getCategoryEmoji}
+                  onItemClick={handleItemClick}
                 />
+                </div>
               ))}
             </div>
           ) : (
@@ -851,7 +1674,7 @@ const MenuManagement = () => {
                 animation: 'bounce 2s infinite'
               }}>
                 <FaUtensils size={40} style={{ color: '#ef4444' }} />
-              </div>
+            </div>
               
               <h3 style={{
                 fontSize: '32px',
@@ -863,7 +1686,7 @@ const MenuManagement = () => {
                 backgroundClip: 'text'
               }}>
                 {searchTerm ? 'No dishes found' : 'Menu Management Ready! 🍽️'}
-              </h3>
+            </h3>
               
               <p style={{
                 fontSize: '18px',
@@ -895,7 +1718,7 @@ const MenuManagement = () => {
                 flexWrap: 'wrap'
               }}>
                 {searchTerm ? (
-                  <button
+            <button
                     onClick={() => setSearchTerm('')}
                     style={{
                       padding: '16px 32px',
@@ -920,7 +1743,7 @@ const MenuManagement = () => {
                     }}
                   >
                     Clear Search
-                  </button>
+            </button>
                 ) : (
                   <>
                     <button
@@ -953,20 +1776,6 @@ const MenuManagement = () => {
                 )}
               </div>
             </div>
-            
-            <style jsx>{`
-              @keyframes bounce {
-                0%, 20%, 50%, 80%, 100% {
-                  transform: translateY(0);
-                }
-                40% {
-                  transform: translateY(-10px);
-                }
-                60% {
-                  transform: translateY(-5px);
-                }
-              }
-            `}</style>
           </div>
         )}
       </div>
@@ -1379,6 +2188,51 @@ const MenuManagement = () => {
         currentMenuItems={menuItems}
       />
 
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes bounce {
+          0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+          }
+          40% {
+            transform: translateY(-10px);
+          }
+          60% {
+            transform: translateY(-5px);
+          }
+        }
+      `}</style>
+      
+      {/* Item Detail Modal */}
+      <ItemDetailModal
+        item={selectedItem}
+        categories={categories}
+        isOpen={showItemModal}
+        onClose={handleCloseModal}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onToggleAvailability={handleToggleAvailability}
+        getSpiceLevel={getSpiceLevel}
+        getCategoryEmoji={getCategoryEmoji}
+      />
     </div>
   );
 };

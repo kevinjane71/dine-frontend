@@ -45,7 +45,7 @@ export default function PrivacyPolicy() {
               fontWeight: 'bold',
               color: '#1f2937'
             }}>
-              DineFlow
+              DineOpen
             </span>
           </div>
 
@@ -116,7 +116,7 @@ export default function PrivacyPolicy() {
               Introduction
             </h2>
             <p style={{ marginBottom: '16px' }}>
-              DineFlow (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our restaurant management platform and services.
+              DineOpen (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our restaurant management platform and services.
             </p>
           </section>
 
@@ -288,10 +288,10 @@ export default function PrivacyPolicy() {
               border: '1px solid #d1d5db'
             }}>
               <p style={{ margin: '0 0 8px 0' }}>
-                <strong>Email:</strong> privacy@dineflow.com
+                <strong>Email:</strong> privacy@dineopen.com
               </p>
               <p style={{ margin: '0 0 8px 0' }}>
-                <strong>Address:</strong> DineFlow Privacy Team<br />
+                <strong>Address:</strong> DineOpen Privacy Team<br />
                 123 Tech Street, Digital City<br />
                 India 110001
               </p>

@@ -1,7 +1,7 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'Dine - Restaurant Management System',
+  title: 'DineOpen - Restaurant Management System',
   description: 'Complete restaurant management solution with QR menus, ordering, and analytics',
 }
 

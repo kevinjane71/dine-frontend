@@ -45,7 +45,7 @@ export default function TermsOfService() {
               fontWeight: 'bold',
               color: '#1f2937'
             }}>
-              DineFlow
+              DineOpen
             </span>
           </div>
 
@@ -116,7 +116,7 @@ export default function TermsOfService() {
               Agreement to Terms
             </h2>
             <p style={{ marginBottom: '16px' }}>
-              By accessing and using DineFlow (&quot;Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you disagree with any part of these terms, then you may not access the Service.
+              By accessing and using DineOpen (&quot;Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you disagree with any part of these terms, then you may not access the Service.
             </p>
           </section>
 
@@ -130,7 +130,7 @@ export default function TermsOfService() {
               Description of Service
             </h2>
             <p style={{ marginBottom: '16px' }}>
-              DineFlow provides a comprehensive restaurant management platform that includes:
+              DineOpen provides a comprehensive restaurant management platform that includes:
             </p>
             <ul style={{ paddingLeft: '20px' }}>
               <li style={{ marginBottom: '8px' }}>Point of Sale (POS) system</li>
@@ -259,7 +259,7 @@ export default function TermsOfService() {
               Intellectual Property
             </h2>
             <p style={{ marginBottom: '16px' }}>
-              The Service and its original content, features, and functionality are owned by DineFlow and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
+              The Service and its original content, features, and functionality are owned by DineOpen and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
             </p>
           </section>
 
@@ -324,10 +324,10 @@ export default function TermsOfService() {
               border: '1px solid #d1d5db'
             }}>
               <p style={{ margin: '0 0 8px 0' }}>
-                <strong>Email:</strong> legal@dineflow.com
+                <strong>Email:</strong> legal@dineopen.com
               </p>
               <p style={{ margin: '0 0 8px 0' }}>
-                <strong>Address:</strong> DineFlow Legal Team<br />
+                <strong>Address:</strong> DineOpen Legal Team<br />
                 123 Tech Street, Digital City<br />
                 India 110001
               </p>

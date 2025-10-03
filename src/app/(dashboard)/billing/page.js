@@ -348,8 +348,8 @@ export default function BillingPage() {
         key: 'rzp_live_lMZVjvewP7tKIL', // Replace with your Razorpay key
         amount: orderData.order.amount,
         currency: orderData.order.currency,
-        name: 'DineFlow',
-        description: `${plan.name} Subscription - DineFlow`,
+        name: 'DineOpen',
+        description: `${plan.name} Subscription - DineOpen`,
         order_id: orderData.order.id,
         prefill: {
           name: user.displayName || '',
@@ -805,7 +805,7 @@ export default function BillingPage() {
           </div>
         </div>
 
-        {/* Why Choose DineFlow */}
+        {/* Why Choose DineOpen */}
         <div style={{
           backgroundColor: 'white',
           borderRadius: '16px',
@@ -820,7 +820,7 @@ export default function BillingPage() {
             textAlign: 'center',
             marginBottom: '32px'
           }}>
-            Why Choose DineFlow?
+            Why Choose DineOpen?
           </h3>
           
           <div style={{ 

@@ -14,6 +14,15 @@ const Notification = ({
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
+  const handleClose = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      setIsExiting(false);
+      if (onClose) onClose();
+    }, 300);
+  }, [onClose]);
+
   useEffect(() => {
     if (show) {
       setIsVisible(true);
@@ -28,15 +37,6 @@ const Notification = ({
       }
     }
   }, [show, duration, handleClose]);
-
-  const handleClose = useCallback(() => {
-    setIsExiting(true);
-    setTimeout(() => {
-      setIsVisible(false);
-      setIsExiting(false);
-      if (onClose) onClose();
-    }, 300);
-  }, [onClose]);
 
   const getTypeConfig = () => {
     switch (type) {

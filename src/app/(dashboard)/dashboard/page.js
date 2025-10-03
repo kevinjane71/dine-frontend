@@ -193,13 +193,17 @@ function RestaurantPOSContent() {
   const loadInitialData = useCallback(async () => {
     try {
       setLoading(true);
+      setError('');
       
       // Get user data to determine restaurant context
       const userData = localStorage.getItem('user');
       const user = userData ? JSON.parse(userData) : null;
+      console.log('👤 Current user:', user?.name, user?.role, 'Restaurant ID:', user?.restaurantId);
       
       // Load restaurants
+      console.log('🏢 Loading restaurants...');
       const restaurantsResponse = await apiClient.getRestaurants();
+      console.log('🏢 Restaurants loaded:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
       setRestaurants(restaurantsResponse.restaurants || []);
       
       let restaurant = null;
@@ -248,7 +252,19 @@ function RestaurantPOSContent() {
       
     } catch (error) {
       console.error('Error loading data:', error);
-      setError('Failed to load restaurant data');
+      
+      // Provide more specific error messages
+      if (error.message?.includes('Network Error') || error.message?.includes('fetch')) {
+        setError('Network connection failed. Please check your internet connection and try again.');
+      } else if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        setError('Your session has expired. Please log in again.');
+      } else if (error.message?.includes('403') || error.message?.includes('Forbidden')) {
+        setError('You do not have permission to access this restaurant data.');
+      } else if (error.message?.includes('404') || error.message?.includes('Not Found')) {
+        setError('Restaurant data not found. Please contact support.');
+      } else {
+        setError(`Failed to load restaurant data: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -988,6 +1004,169 @@ function RestaurantPOSContent() {
             <p style={{ fontSize: '18px', color: '#6b7280' }}>Loading your restaurant...</p>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background Pattern */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 50%)
+          `,
+          zIndex: 0
+        }} />
+        
+        <div style={{ 
+          textAlign: 'center', 
+          maxWidth: '500px', 
+          padding: '40px 20px',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: '24px',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <div style={{ 
+            width: '100px', 
+            height: '100px', 
+            backgroundColor: '#fef2f2',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px auto',
+            animation: 'bounce 2s infinite'
+          }}>
+            <FaUtensils size={40} style={{ color: '#ef4444' }} />
+          </div>
+          
+          <h1 style={{ 
+            fontSize: '32px', 
+            fontWeight: 'bold', 
+            color: '#1f2937', 
+            marginBottom: '16px',
+            background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}>
+            Something Went Wrong! 😔
+          </h1>
+          
+          <p style={{ 
+            fontSize: '18px', 
+            color: '#374151', 
+            marginBottom: '8px',
+            fontWeight: '500'
+          }}>
+            {error}
+          </p>
+          
+          <p style={{ 
+            fontSize: '16px', 
+            color: '#6b7280', 
+            marginBottom: '32px',
+            lineHeight: '1.6'
+          }}>
+            We&apos;re having trouble loading your restaurant data. Please try refreshing the page or contact support if the issue persists.
+          </p>
+          
+          <div style={{
+            display: 'flex',
+            gap: '12px',
+            justifyContent: 'center',
+            flexWrap: 'wrap'
+          }}>
+            <button
+              onClick={() => {
+                setError('');
+                loadInitialData();
+              }}
+              style={{
+                padding: '16px 32px',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: '600',
+                fontSize: '16px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                transform: 'translateY(0)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
+              }}
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => router.push('/login')}
+              style={{
+                padding: '16px 32px',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                color: '#ef4444',
+                border: '2px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: '12px',
+                fontWeight: '600',
+                fontSize: '16px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backdropFilter: 'blur(10px)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                e.target.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+              }}
+            >
+              Back to Login
+            </button>
+          </div>
+        </div>
+        
+        <style jsx>{`
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+              transform: translateY(0);
+            }
+            40% {
+              transform: translateY(-10px);
+            }
+            60% {
+              transform: translateY(-5px);
+            }
+          }
+        `}</style>
       </div>
     );
   }

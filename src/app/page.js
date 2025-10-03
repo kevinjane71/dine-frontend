@@ -198,7 +198,7 @@ export default function LandingPage() {
                 backgroundClip: 'text',
                 letterSpacing: '-0.5px'
               }}>
-                DineFlow
+                DineOpen
               </span>
         </div>
           
@@ -335,17 +335,17 @@ export default function LandingPage() {
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <button
+                <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
-                style={{
+                  style={{
                   padding: '8px',
                   backgroundColor: 'rgba(239, 68, 68, 0.1)',
                   border: '2px solid rgba(239, 68, 68, 0.2)',
                   borderRadius: '8px',
-                  cursor: 'pointer',
+                    cursor: 'pointer',
                   color: '#ef4444',
                   fontSize: '16px',
-                  transition: 'all 0.3s ease',
+                    transition: 'all 0.3s ease',
                   backdropFilter: 'blur(10px)'
                 }}
                 onMouseEnter={(e) => {
@@ -358,8 +358,8 @@ export default function LandingPage() {
                 }}
               >
                 {showMobileMenu ? <FaTimes size={18} /> : <FaBars size={18} />}
-              </button>
-            </div>
+                </button>
+          </div>
         )}
           </div>
           
@@ -428,23 +428,23 @@ export default function LandingPage() {
                     handleLogin();
                     setShowMobileMenu(false);
                   }}
-                  style={{
+                    style={{
                     padding: '12px 20px',
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
                     color: '#ef4444',
                     border: '2px solid rgba(239, 68, 68, 0.2)',
-                    borderRadius: '8px',
+                      borderRadius: '8px',
                     fontWeight: '600',
                     fontSize: '15px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
                     backdropFilter: 'blur(10px)'
                   }}
-                  onMouseEnter={(e) => {
+                    onMouseEnter={(e) => {
                     e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
                     e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                  }}
-                  onMouseLeave={(e) => {
+                    }}
+                    onMouseLeave={(e) => {
                     e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
                     e.target.style.borderColor = 'rgba(239, 68, 68, 0.2)';
                   }}
@@ -459,7 +459,7 @@ export default function LandingPage() {
                   style={{
                     padding: '12px 20px',
                     background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                    color: 'white',
+                        color: 'white',
                     border: 'none',
                     borderRadius: '8px',
                     fontWeight: '700',
@@ -493,8 +493,8 @@ export default function LandingPage() {
         position: 'relative',
         overflow: 'hidden',
         minHeight: '100vh',
-                    display: 'flex',
-                    alignItems: 'center',
+                      display: 'flex', 
+                      alignItems: 'center',
         justifyContent: 'center'
       }}>
         {/* Background Pattern */}
@@ -553,7 +553,7 @@ export default function LandingPage() {
             filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2))'
           }}>
             🍽️
-                  </div>
+                    </div>
                     
           {/* Main Heading */}
           <h1 style={{
@@ -604,8 +604,8 @@ export default function LandingPage() {
           </p>
           
           {/* Stats */}
-            <div style={{ 
-              display: 'flex', 
+                      <div style={{
+                        display: 'flex',
               justifyContent: 'center', 
             gap: isMobile ? '20px' : '40px',
             marginBottom: '40px',
@@ -614,11 +614,11 @@ export default function LandingPage() {
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
                 1000+
-            </div>
+                      </div>
               <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
                 Restaurants
-              </div>
-              </div>
+                    </div>
+                  </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
                 30%
@@ -635,10 +635,10 @@ export default function LandingPage() {
                 Support
               </div>
             </div>
-          </div>
-          
+        </div>
+
           {/* CTA Buttons */}
-            <div style={{
+          <div style={{ 
             display: 'flex',
             flexDirection: isMobile ? 'column' : 'row',
             gap: '20px',
@@ -648,7 +648,7 @@ export default function LandingPage() {
           }}>
               <button
               onClick={handleGetStarted}
-                    style={{
+                style={{
                 padding: '20px 40px',
                 background: 'rgba(255, 255, 255, 0.95)',
                 color: '#dc2626',
@@ -656,13 +656,13 @@ export default function LandingPage() {
                 borderRadius: '16px',
                 fontWeight: '700',
                 fontSize: isMobile ? '18px' : '20px',
-                      cursor: 'pointer',
+                  cursor: 'pointer',
                       transition: 'all 0.3s ease',
                 boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
                 transform: 'translateY(0)',
                 backdropFilter: 'blur(10px)',
                 border: '2px solid rgba(255, 255, 255, 0.3)',
-                      display: 'flex',
+                  display: 'flex',
                   alignItems: 'center',
                 gap: '8px',
                 width: isMobile ? '100%' : 'auto'
@@ -710,8 +710,8 @@ export default function LandingPage() {
               <FaPlay size={16} />
               Watch Demo
               </button>
-                      </div>
-                    
+            </div>
+            
           {/* Trust Indicators */}
                     <div style={{ 
             marginTop: '40px',
@@ -756,7 +756,7 @@ export default function LandingPage() {
         }}></div>
         
         <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-                    <div style={{
+                          <div style={{
                       display: 'flex',
             flexDirection: isMobile ? 'column' : 'row',
                       alignItems: 'center',
@@ -780,7 +780,7 @@ export default function LandingPage() {
                 lineHeight: '1'
               }}>
                 1000+
-                      </div>
+                          </div>
               <div style={{
                 fontSize: isMobile ? '14px' : '16px',
                 fontWeight: '600',
@@ -793,10 +793,10 @@ export default function LandingPage() {
                 color: '#6b7280',
                 fontWeight: '500'
               }}>
-                DineFlow
-                  </div>
-        </div>
-
+                DineOpen
+                        </div>
+                      </div>
+                      
             {/* Divider */}
             <div style={{
               width: isMobile ? '40px' : '2px',
@@ -838,8 +838,8 @@ export default function LandingPage() {
               }}>
                 vs Traditional Software
                     </div>
-              </div>
-              
+          </div>
+
             {/* Divider */}
             <div style={{
               width: isMobile ? '40px' : '2px',
@@ -866,7 +866,7 @@ export default function LandingPage() {
                 lineHeight: '1'
               }}>
                 40%
-            </div>
+                  </div>
               <div style={{
                 fontSize: isMobile ? '14px' : '16px',
                   fontWeight: '600',
@@ -885,7 +885,7 @@ export default function LandingPage() {
               </div>
 
           {/* Trust Indicators */}
-                          <div style={{
+                <div style={{ 
             marginTop: '25px',
             paddingTop: '20px',
             borderTop: '1px solid rgba(239, 68, 68, 0.1)'
@@ -916,9 +916,9 @@ export default function LandingPage() {
                       justifyContent: 'center' 
                     }}>
                   <FaCheckCircle color="white" size={8} />
-                          </div>
+                    </div>
                 <span>Trusted by 1000+ Restaurants</span>
-                        </div>
+                  </div>
                     
                     <div style={{
                       display: 'flex',
@@ -940,11 +940,11 @@ export default function LandingPage() {
                   <FaShieldAlt color="white" size={8} />
                     </div>
                 <span>Bank-Level Security</span>
-                      </div>
-                      
+                  </div>
+
                       <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
                         gap: '6px',
                 fontSize: '13px',
                 color: '#6b7280',
@@ -955,8 +955,8 @@ export default function LandingPage() {
                   height: '14px',
                   background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                           borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
                   justifyContent: 'center'
                 }}>
                   <FaHeadset color="white" size={8} />
@@ -1001,7 +1001,7 @@ export default function LandingPage() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                          style={{
+                    style={{
                   padding: '32px 24px',
                   backgroundColor: '#f8fafc',
                   borderRadius: '16px',
@@ -1025,14 +1025,14 @@ export default function LandingPage() {
                   height: '60px',
                   background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                   borderRadius: '16px',
-                            display: 'flex',
-                            alignItems: 'center',
+                          display: 'flex',
+                          alignItems: 'center',
                             justifyContent: 'center',
                   margin: '0 auto 20px',
                   color: 'white'
                         }}>
                   {feature.icon}
-                      </div>
+                        </div>
                 <h3 style={{
                   fontSize: '20px',
                         fontWeight: 'bold',
@@ -1047,10 +1047,10 @@ export default function LandingPage() {
                 }}>
                   {feature.description}
                 </p>
-                  </div>
+                    </div>
                 ))}
-              </div>
-          </div>
+                </div>
+            </div>
       </section>
 
       {/* Blog Section */}
@@ -1086,7 +1086,7 @@ export default function LandingPage() {
           }}>
             {/* Featured Blog Post */}
             <div 
-              onClick={() => router.push('/blog/why-dineflow-future-restaurant-management')}
+              onClick={() => router.push('/blog/why-dineopen-future-restaurant-management')}
             style={{
                 backgroundColor: 'white',
                 borderRadius: '16px',
@@ -1133,7 +1133,7 @@ export default function LandingPage() {
                   marginBottom: '8px',
                   lineHeight: '1.3'
                 }}>
-                  Why DineFlow is the Future of Restaurant Management
+                  Why DineOpen is the Future of Restaurant Management
                 </h3>
                 <p style={{
                   fontSize: '16px',
@@ -1154,7 +1154,7 @@ export default function LandingPage() {
                   <span>•</span>
                   <span>8 min read</span>
                 </div>
-              </div>
+            </div>
 
               <div style={{ padding: '24px' }}>
                 <div style={{ 
@@ -1163,22 +1163,22 @@ export default function LandingPage() {
                   gap: '12px',
                   marginBottom: '20px'
                 }}>
-                    <div style={{ 
+                    <div style={{
                     width: '40px',
                     height: '40px',
                     background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
                       borderRadius: '50%', 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'center' 
                     }}>
                     <FaUtensils color="#6b7280" size={16} />
                     </div>
                   <div>
-                    <div style={{ fontWeight: '600', color: '#1f2937' }}>DineFlow Team</div>
+                    <div style={{ fontWeight: '600', color: '#1f2937' }}>DineOpen Team</div>
                     <div style={{ fontSize: '14px', color: '#6b7280' }}>Product Team</div>
-                  </div>
-                  </div>
+                    </div>
+            </div>
 
                 <div style={{ marginBottom: '20px' }}>
                   <h4 style={{
@@ -1195,9 +1195,9 @@ export default function LandingPage() {
                     lineHeight: '1.6',
                     marginBottom: '16px'
                   }}>
-                    Traditional POS systems are becoming obsolete. Restaurants need intelligent, cloud-based solutions that adapt to modern business needs. DineFlow delivers exactly that.
+                    Traditional POS systems are becoming obsolete. Restaurants need intelligent, cloud-based solutions that adapt to modern business needs. DineOpen delivers exactly that.
                   </p>
-                </div>
+          </div>
 
                 <div style={{ marginBottom: '20px' }}>
                   <h4 style={{
@@ -1209,8 +1209,8 @@ export default function LandingPage() {
                     💡 Key Advantages Over Competitors
                         </h4>
                   <div style={{ marginBottom: '16px' }}>
-                    <div style={{ 
-                      display: 'flex',
+          <div style={{
+            display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
                       marginBottom: '8px'
@@ -1221,8 +1221,8 @@ export default function LandingPage() {
                       </span>
                     </div>
             <div style={{
-                              display: 'flex',
-                              alignItems: 'center',
+              display: 'flex',
+              alignItems: 'center',
                       gap: '8px',
                       marginBottom: '8px'
                     }}>
@@ -1230,7 +1230,7 @@ export default function LandingPage() {
                       <span style={{ fontSize: '15px', color: '#4b5563' }}>
                         <strong>Multi-Staff Support:</strong> Unlimited staff members with individual tracking
                       </span>
-                    </div>
+            </div>
                 <div style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1284,7 +1284,7 @@ export default function LandingPage() {
                     <div style={{ fontSize: '14px', color: '#4b5563', lineHeight: '1.5' }}>
                       <div>• <strong>Square:</strong> $60-120/month + 2.6% transaction fees</div>
                       <div>• <strong>Toast:</strong> $165-300/month + hardware costs</div>
-                      <div>• <strong>DineFlow:</strong> $29-79/month, no transaction fees, includes AI features</div>
+                      <div>• <strong>DineOpen:</strong> $29-79/month, no transaction fees, includes AI features</div>
                   </div>
                   </div>
                 </div>
@@ -1296,7 +1296,7 @@ export default function LandingPage() {
                     color: '#1f2937',
                     marginBottom: '12px'
                   }}>
-                    🎯 Why Restaurants Choose DineFlow
+                    🎯 Why Restaurants Choose DineOpen
                         </h4>
                   <p style={{
                     fontSize: '15px',
@@ -1306,7 +1306,7 @@ export default function LandingPage() {
                   }}>
                     Our customers report 40% faster order processing, 60% reduction in menu management time, and 25% increase in staff efficiency. The AI-powered features that competitors charge extra for are included in our base plans.
                         </p>
-                        </div>
+                      </div>
 
                     <div style={{
                       display: 'flex',
@@ -1325,7 +1325,7 @@ export default function LandingPage() {
             {/* Additional Blog Posts */}
           <div 
               onClick={() => router.push('/blog/restaurant-analytics-data-driven-success')}
-            style={{
+                        style={{
             backgroundColor: 'white',
                 borderRadius: '16px',
                 overflow: 'hidden',
@@ -1377,12 +1377,12 @@ export default function LandingPage() {
                 }}>
                   Learn how to leverage restaurant analytics to boost revenue and optimize operations.
                 </p>
-            </div>
-
+                    </div>
+                    
               <div style={{ padding: '20px' }}>
                       <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
                   gap: '12px',
                   marginBottom: '16px'
                       }}>
@@ -1391,8 +1391,8 @@ export default function LandingPage() {
                             height: '32px',
                     background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
                           borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
                     justifyContent: 'center'
                         }}>
                     <FaChartBar color="#6b7280" size={14} />
@@ -1440,8 +1440,8 @@ export default function LandingPage() {
                 color: 'white'
               }}>
                 <div style={{
-              display: 'flex',
-              alignItems: 'center',
+                          display: 'flex',
+                          alignItems: 'center',
                   gap: '8px',
                   marginBottom: '12px'
                 }}>
@@ -1468,7 +1468,7 @@ export default function LandingPage() {
                   opacity: '0.9',
                   lineHeight: '1.5'
                 }}>
-                  Real customer success story: How DineFlow transformed a local restaurant&apos;s operations.
+                  Real customer success story: How DineOpen transformed a local restaurant&apos;s operations.
                 </p>
                     </div>
                     
@@ -1521,8 +1521,8 @@ export default function LandingPage() {
                     fontSize: '16px',
                   cursor: 'pointer',
               transition: 'all 0.3s ease',
-                            display: 'flex',
-                            alignItems: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
               gap: '8px',
               margin: '0 auto'
             }}
@@ -1536,9 +1536,9 @@ export default function LandingPage() {
             }}>
               <span>View All Articles</span>
               <FaArrowRight size={14} />
-                        </button>
-                      </div>
-                      </div>
+                </button>
+              </div>
+          </div>
       </section>
 
       {/* Pricing Section */}
@@ -1564,8 +1564,8 @@ export default function LandingPage() {
             }}>
               Start free and scale as you grow. All plans include 14-day free trial.
             </p>
-                </div>
-
+            </div>
+            
                       <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
@@ -1715,7 +1715,7 @@ export default function LandingPage() {
             color: '#d1d5db',
             marginBottom: '40px'
           }}>
-            Join thousands of restaurants already using DineFlow to streamline their operations
+            Join thousands of restaurants already using DineOpen to streamline their operations
           </p>
               <button
             onClick={handleGetStarted}
@@ -1784,7 +1784,7 @@ export default function LandingPage() {
                   fontSize: '20px',
                   fontWeight: 'bold'
                 }}>
-                  DineFlow
+                  DineOpen
                   </span>
           </div>
               <p style={{
@@ -1873,7 +1873,7 @@ export default function LandingPage() {
               fontSize: '14px',
               margin: 0
             }}>
-              © 2024 DineFlow. All rights reserved.
+              © 2024 DineOpen. All rights reserved.
             </p>
       </div>
     </div>

@@ -26,9 +26,9 @@ export default function BlogDetail() {
 
   // Blog posts data
   const blogPosts = {
-    'why-dineflow-future-restaurant-management': {
-      id: 'why-dineflow-future-restaurant-management',
-      title: 'Why DineFlow is the Future of Restaurant Management',
+    'why-dineopen-future-restaurant-management': {
+      id: 'why-dineopen-future-restaurant-management',
+      title: 'Why DineOpen is the Future of Restaurant Management',
       excerpt: 'Discover how our AI-powered POS system is revolutionizing restaurant operations and why it\'s outperforming traditional competitors.',
       content: `
         <div style="text-align: center; margin: 30px 0;">
@@ -38,12 +38,12 @@ export default function BlogDetail() {
 
         <p>The restaurant industry is transforming rapidly. Traditional POS systems struggle to meet modern demands.</p>
         
-        <p>DineFlow represents the next generation of restaurant technology. We combine AI, cloud computing, and intuitive design.</p>
+        <p>DineOpen represents the next generation of restaurant technology. We combine AI, cloud computing, and intuitive design.</p>
 
         <h2>🚀 The Restaurant Industry is Evolving</h2>
         <p>Traditional POS systems are becoming obsolete. Restaurants need intelligent, cloud-based solutions.</p>
 
-        <p>DineFlow delivers exactly what modern restaurants need.</p>
+        <p>DineOpen delivers exactly what modern restaurants need.</p>
 
         <div style="text-align: center; margin: 30px 0;">
           <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Restaurant Staff Taking Orders" style="width: 100%; max-width: 600px; height: 300px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" />
@@ -78,7 +78,7 @@ export default function BlogDetail() {
         </div>
 
         <h3>Multi-Staff Support</h3>
-        <p>Unlike competitors who limit staff accounts, DineFlow offers unlimited staff members.</p>
+        <p>Unlike competitors who limit staff accounts, DineOpen offers unlimited staff members.</p>
         
         <p>Each staff member gets individual tracking with:</p>
         <ul>
@@ -105,7 +105,7 @@ export default function BlogDetail() {
         </div>
 
         <h3>Comprehensive Inventory Management</h3>
-        <p>DineFlow's inventory system goes beyond basic stock tracking.</p>
+        <p>DineOpen's inventory system goes beyond basic stock tracking.</p>
         
         <p>It includes:</p>
         <ul>
@@ -116,7 +116,7 @@ export default function BlogDetail() {
         </ul>
 
         <h2>💰 Competitive Pricing Advantage</h2>
-        <p>When comparing DineFlow to major competitors, the value proposition becomes clear.</p>
+        <p>When comparing DineOpen to major competitors, the value proposition becomes clear.</p>
 
         <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin: 20px 0;">
           <h3 style="color: #1f2937; margin-bottom: 15px;">Cost Comparison</h3>
@@ -124,15 +124,15 @@ export default function BlogDetail() {
             <div><strong>Square:</strong> $60-120/month + 2.6% transaction fees</div>
             <div><strong>Toast:</strong> $165-300/month + hardware costs</div>
             <div><strong>Clover:</strong> $95-200/month + processing fees</div>
-            <div><strong>DineFlow:</strong> $29-79/month, no transaction fees, includes AI features</div>
+            <div><strong>DineOpen:</strong> $29-79/month, no transaction fees, includes AI features</div>
           </div>
         </div>
 
-        <p>DineFlow eliminates transaction fees entirely. This saves restaurants thousands of dollars annually.</p>
+        <p>DineOpen eliminates transaction fees entirely. This saves restaurants thousands of dollars annually.</p>
         
         <p>Our AI-powered features that competitors charge extra for are included in our base plans.</p>
 
-        <h2>🎯 Why Restaurants Choose DineFlow</h2>
+        <h2>🎯 Why Restaurants Choose DineOpen</h2>
         <p>Our customers report impressive results:</p>
         <ul>
           <li><strong>40% faster order processing</strong> - Streamlined workflows reduce wait times</li>
@@ -147,13 +147,13 @@ export default function BlogDetail() {
         </div>
 
         <h2>🔮 The Future is Here</h2>
-        <p>DineFlow isn't just another POS system. It's a complete restaurant management ecosystem.</p>
+        <p>DineOpen isn't just another POS system. It's a complete restaurant management ecosystem.</p>
         
-        <p>As we develop new AI-powered features, restaurants using DineFlow stay ahead of the curve.</p>
+        <p>As we develop new AI-powered features, restaurants using DineOpen stay ahead of the curve.</p>
 
-        <p>The question isn't whether your restaurant needs to modernize. It's whether you'll do it with DineFlow or watch competitors gain the advantage.</p>
+        <p>The question isn't whether your restaurant needs to modernize. It's whether you'll do it with DineOpen or watch competitors gain the advantage.</p>
       `,
-      author: 'DineFlow Team',
+      author: 'DineOpen Team',
       authorRole: 'Product Team',
       publishDate: 'December 15, 2024',
       readTime: '8 min read',
@@ -230,7 +230,7 @@ export default function BlogDetail() {
     'bellas-kitchen-revenue-increase': {
       id: 'bellas-kitchen-revenue-increase',
       title: 'How Bella\'s Kitchen Increased Revenue by 35%',
-      excerpt: 'Real customer success story: How DineFlow transformed a local restaurant\'s operations.',
+      excerpt: 'Real customer success story: How DineOpen transformed a local restaurant\'s operations.',
       content: `
         <div style="text-align: center; margin: 30px 0;">
           <img src="https://images.unsplash.com/photo-1551218808-94e220e084d2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Bella's Kitchen Restaurant" style="width: 100%; max-width: 600px; height: 300px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" />
@@ -239,10 +239,10 @@ export default function BlogDetail() {
 
         <p>Bella's Kitchen, a family-owned Italian restaurant in downtown Chicago, was struggling to keep up with increasing competition.</p>
         
-        <p>After implementing DineFlow, they achieved remarkable results that transformed their business.</p>
+        <p>After implementing DineOpen, they achieved remarkable results that transformed their business.</p>
 
         <h2>🏪 The Challenge</h2>
-        <p>Before DineFlow, Bella's Kitchen faced several challenges:</p>
+        <p>Before DineOpen, Bella's Kitchen faced several challenges:</p>
         <ul>
           <li>Manual order taking was slow and error-prone</li>
           <li>Kitchen communication was inefficient</li>
@@ -253,11 +253,11 @@ export default function BlogDetail() {
 
         <div style="text-align: center; margin: 30px 0;">
           <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Restaurant Staff Taking Orders" style="width: 100%; max-width: 600px; height: 300px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" />
-          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Staff efficiently managing orders with DineFlow's modern system</p>
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Staff efficiently managing orders with DineOpen's modern system</p>
         </div>
 
         <h2>🚀 The Solution</h2>
-        <p>Bella's Kitchen implemented DineFlow's complete restaurant management system.</p>
+        <p>Bella's Kitchen implemented DineOpen's complete restaurant management system.</p>
         
         <p>This included:</p>
         <ul>
@@ -286,7 +286,7 @@ export default function BlogDetail() {
         <h2>💬 Customer Testimonial</h2>
         <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; margin: 20px 0; border-radius: 8px;">
           <p style="font-style: italic; font-size: 18px; color: #1f2937; margin: 0;">
-            "DineFlow didn't just improve our operations - it revolutionized our entire business model. We're now more efficient, profitable, and able to focus on what we do best: creating amazing food experiences for our customers."
+            "DineOpen didn't just improve our operations - it revolutionized our entire business model. We're now more efficient, profitable, and able to focus on what we do best: creating amazing food experiences for our customers."
           </p>
           <p style="font-weight: 600; color: #10b981; margin: 10px 0 0 0;">
             - Maria Rodriguez, Owner, Bella's Kitchen
@@ -625,7 +625,7 @@ export default function BlogDetail() {
             Ready to Transform Your Restaurant?
           </h3>
           <p style={{ fontSize: '18px', color: '#6b7280', marginBottom: '32px' }}>
-            Join thousands of restaurants already using DineFlow to streamline their operations.
+            Join thousands of restaurants already using DineOpen to streamline their operations.
           </p>
           <button
             onClick={() => router.push('/#pricing')}
