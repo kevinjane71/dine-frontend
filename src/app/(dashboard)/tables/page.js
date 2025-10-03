@@ -36,6 +36,7 @@ const TableManagement = () => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
   // Modal states
+  const [showAddModal, setShowAddModal] = useState(false);
   const [showAddTable, setShowAddTable] = useState(false);
   const [showAddFloor, setShowAddFloor] = useState(false);
   const [showEditFloor, setShowEditFloor] = useState(false);
@@ -43,6 +44,7 @@ const TableManagement = () => {
   const [selectedTable, setSelectedTable] = useState(null);
   const [selectedFloorForTable, setSelectedFloorForTable] = useState(null);
   const [editingFloor, setEditingFloor] = useState(null);
+  const [showNewFloorForm, setShowNewFloorForm] = useState(false);
   
   // Dropdown state
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -193,7 +195,7 @@ const TableManagement = () => {
         text: '#166534', 
         label: 'Available',
         icon: FaCheck,
-        border: '#22c55e',
+        border: '#86efac',
         pulse: false
       },
       occupied: { 
@@ -201,7 +203,7 @@ const TableManagement = () => {
         text: '#dc2626', 
         label: 'Occupied',
         icon: FaUsers,
-        border: '#ef4444',
+        border: '#fca5a5',
         pulse: false
       },
       serving: { 
@@ -209,7 +211,7 @@ const TableManagement = () => {
         text: '#ca8a04', 
         label: 'Serving',
         icon: FaUtensils,
-        border: '#eab308',
+        border: '#fde047',
         pulse: true
       },
       reserved: { 
@@ -217,7 +219,7 @@ const TableManagement = () => {
         text: '#0369a1', 
         label: 'Reserved',
         icon: FaClock,
-        border: '#0ea5e9',
+        border: '#7dd3fc',
         pulse: false
       },
       cleaning: { 
@@ -225,7 +227,7 @@ const TableManagement = () => {
         text: '#475569', 
         label: 'Cleaning',
         icon: FaUtensils,
-        border: '#64748b',
+        border: '#cbd5e1',
         pulse: false
       },
       'out-of-service': { 
@@ -233,7 +235,7 @@ const TableManagement = () => {
         text: '#7c3aed', 
         label: 'Out of Service',
         icon: FaBan,
-        border: '#a855f7',
+        border: '#c4b5fd',
         pulse: false
       }
     };
@@ -729,10 +731,7 @@ const TableManagement = () => {
             </button>
             
             <button
-              onClick={() => {
-                setSelectedFloorForTable(floors[0]?.id || null);
-                setShowAddTable(true);
-              }}
+              onClick={() => setShowAddModal(true)}
               style={{
                 padding: '8px 10px',
                 backgroundColor: '#e53e3e',
@@ -990,10 +989,7 @@ const TableManagement = () => {
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button
-                onClick={() => {
-                  setSelectedFloorForTable(floors[0]?.id || null);
-                  setShowAddTable(true);
-                }}
+                onClick={() => setShowAddModal(true)}
                 style={{
                   background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
                   color: 'white',
@@ -1011,7 +1007,7 @@ const TableManagement = () => {
                 }}
               >
                 <FaPlus size={12} />
-                Add Table
+                Add
               </button>
             </div>
           </div>
@@ -1192,9 +1188,9 @@ const TableManagement = () => {
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: isMobile 
-                    ? 'repeat(auto-fill, minmax(80px, 1fr))' 
-                    : 'repeat(auto-fill, minmax(70px, 1fr))',
-                  gap: isMobile ? '16px' : '12px',
+                    ? 'repeat(auto-fill, minmax(120px, 1fr))' 
+                    : 'repeat(auto-fill, minmax(110px, 1fr))',
+                  gap: isMobile ? '20px' : '16px',
                   maxWidth: isMobile ? '100%' : 'calc(100% - 160px)',
                   margin: '0 auto',
                   justifyContent: 'center',
@@ -1211,18 +1207,18 @@ const TableManagement = () => {
                         <div
                           onClick={() => setActiveDropdown(isDropdownOpen ? null : table.id)}
                           style={{
-                            width: isMobile ? '80px' : '70px',
-                            height: isMobile ? '80px' : '70px',
+                            width: isMobile ? '100px' : '90px',
+                            height: isMobile ? '100px' : '90px',
                             backgroundColor: statusInfo.bg,
-                            borderRadius: isMobile ? '12px' : '8px',
+                            borderRadius: isMobile ? '16px' : '12px',
                             cursor: 'pointer',
                             transition: 'all 0.3s ease',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             position: 'relative',
-                            border: `2px solid ${statusInfo.border}`,
-                            boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                            border: `2px dashed ${statusInfo.border}`,
+                            boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.08)',
                             animation: statusInfo.pulse ? 'pulse 2s infinite' : 'none'
                           }}
                           onMouseEnter={(e) => {
@@ -1236,7 +1232,7 @@ const TableManagement = () => {
                         >
                           {/* Table Number */}
                           <div style={{ 
-                            fontSize: isMobile ? '20px' : '18px', 
+                            fontSize: isMobile ? '24px' : '22px', 
                             fontWeight: 'bold', 
                             color: statusInfo.text
                           }}>
@@ -1475,6 +1471,293 @@ const TableManagement = () => {
           ))}
         </div>
       </div>
+
+      {/* Unified Add Modal */}
+      {showAddModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: isMobile ? 'flex-end' : 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+          padding: isMobile ? '0' : '16px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: isMobile ? '16px 16px 0 0' : '16px',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+            width: '100%',
+            maxWidth: isMobile ? '100%' : '500px',
+            maxHeight: isMobile ? '80vh' : 'auto',
+            overflowY: isMobile ? 'auto' : 'visible'
+          }}>
+            <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Add Table or Floor</h2>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 0 0' }}>Choose what you want to add</p>
+            </div>
+            
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Floor Selection */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                  Select Floor *
+                </label>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <select
+                    value={selectedFloorForTable || ''}
+                    onChange={(e) => setSelectedFloorForTable(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '10px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: '#fef7f0',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <option value="">Select a floor</option>
+                    {floors.map(floor => (
+                      <option key={floor.id} value={floor.id}>{floor.name}</option>
+                    ))}
+                  </select>
+                  
+                  <button
+                    onClick={() => setShowNewFloorForm(true)}
+                    style={{
+                      padding: '10px 12px',
+                      backgroundColor: '#f3f4f6',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#e5e7eb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = '#f3f4f6';
+                    }}
+                  >
+                    <FaPlus size={14} color="#6b7280" />
+                  </button>
+                </div>
+              </div>
+
+              {/* New Floor Form */}
+              {showNewFloorForm && (
+                <div style={{
+                  padding: '16px',
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#374151', margin: 0 }}>Add New Floor</h3>
+                    <button
+                      onClick={() => setShowNewFloorForm(false)}
+                      style={{
+                        padding: '4px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      <FaTimes size={12} color="#6b7280" />
+                    </button>
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <input
+                      type="text"
+                      value={newFloor.name}
+                      onChange={(e) => setNewFloor({...newFloor, name: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        backgroundColor: 'white',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="Floor name (e.g., Ground Floor, Terrace)"
+                    />
+                    
+                    <input
+                      type="text"
+                      value={newFloor.description}
+                      onChange={(e) => setNewFloor({...newFloor, description: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        backgroundColor: 'white',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="Description (optional)"
+                    />
+                    
+                    <button
+                      onClick={async () => {
+                        await addFloor();
+                        setShowNewFloorForm(false);
+                      }}
+                      disabled={!newFloor.name.trim()}
+                      style={{
+                        padding: '8px 12px',
+                        background: newFloor.name.trim() 
+                          ? 'linear-gradient(135deg, #e53e3e, #dc2626)'
+                          : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
+                        color: 'white',
+                        borderRadius: '6px',
+                        fontWeight: '600',
+                        border: 'none',
+                        cursor: newFloor.name.trim() ? 'pointer' : 'not-allowed',
+                        fontSize: '12px'
+                      }}
+                    >
+                      Create Floor
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Table Details */}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                    Table Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={newTable.name}
+                    onChange={(e) => setNewTable({...newTable, name: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: '#fef7f0',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="e.g., T1, V1"
+                  />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                    Capacity *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={newTable.capacity}
+                    onChange={(e) => setNewTable({...newTable, capacity: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: '#fef7f0',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                  Table Type
+                </label>
+                <select
+                  value={newTable.type}
+                  onChange={(e) => setNewTable({...newTable, type: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    backgroundColor: '#fef7f0',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="small">Small (1-2 seats)</option>
+                  <option value="regular">Regular (3-4 seats)</option>
+                  <option value="large">Large (5-8 seats)</option>
+                  <option value="vip">VIP</option>
+                  <option value="private">Private Room</option>
+                </select>
+              </div>
+            </div>
+            
+            <div style={{ padding: '20px', backgroundColor: '#fef7f0', display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setSelectedFloorForTable(null);
+                  setNewTable({ name: '', capacity: 4, type: 'regular', floorId: null });
+                  setNewFloor({ name: '', description: '' });
+                  setShowNewFloorForm(false);
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: '#6b7280',
+                  color: 'white',
+                  padding: '10px 16px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await addTable();
+                  setShowAddModal(false);
+                }}
+                disabled={!newTable.name.trim() || !selectedFloorForTable}
+                style={{
+                  flex: 1,
+                  background: (newTable.name.trim() && selectedFloorForTable)
+                    ? 'linear-gradient(135deg, #e53e3e, #dc2626)'
+                    : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
+                  color: 'white',
+                  padding: '10px 16px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: (newTable.name.trim() && selectedFloorForTable) ? 'pointer' : 'not-allowed',
+                  fontSize: '14px'
+                }}
+              >
+                Add Table
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Floor Modal */}
       {showAddFloor && (
