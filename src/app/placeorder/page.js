@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaArrowLeft, FaPhone, FaChair, FaUtensils, FaLeaf, FaDrumstickBite, FaSpinner } from 'react-icons/fa';
+import { FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaArrowLeft, FaPhone, FaChair, FaUtensils, FaLeaf, FaDrumstickBite, FaSpinner, FaLock } from 'react-icons/fa';
 import apiClient from '../../lib/api.js';
+import { auth } from '../../../firebase.js';
+import { signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
 
 const PlaceOrderContent = () => {
   const router = useRouter();
@@ -24,6 +26,11 @@ const PlaceOrderContent = () => {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [verificationId, setVerificationId] = useState(null);
+  const [sendingOtp, setSendingOtp] = useState(false);
   
   const categoryRefs = useRef({});
   const restaurantId = searchParams.get('restaurant') || 'default';
@@ -36,16 +43,13 @@ const PlaceOrderContent = () => {
     try {
       setLoading(true);
       
-      // Load restaurant info
-      const restaurantData = await apiClient.getRestaurant(restaurantId);
-      setRestaurant(restaurantData);
-      
-      // Load menu
-      const menuData = await apiClient.getMenu(restaurantId);
-      setMenu(menuData);
+      // Load restaurant info and menu using public API
+      const response = await apiClient.getPublicMenu(restaurantId);
+      setRestaurant(response.restaurant);
+      setMenu(response.menu);
       
       // Extract categories
-      const uniqueCategories = [...new Set(menuData.map(item => item.category))];
+      const uniqueCategories = [...new Set(response.menu.map(item => item.category))];
       setCategories(['all', ...uniqueCategories]);
       
     } catch (err) {
@@ -106,6 +110,71 @@ const PlaceOrderContent = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
+  const sendOtp = async () => {
+    if (!customerInfo.phone.trim()) {
+      setError('Please enter your phone number');
+      return;
+    }
+
+    try {
+      setSendingOtp(true);
+      setError('');
+
+      // Setup reCAPTCHA
+      const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          console.log('reCAPTCHA solved');
+        },
+        'expired-callback': () => {
+          console.log('reCAPTCHA expired');
+        }
+      });
+
+      // Send OTP
+      const phoneNumber = customerInfo.phone.startsWith('+') ? customerInfo.phone : `+91${customerInfo.phone}`;
+      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
+      
+      setVerificationId(confirmationResult);
+      setOtpSent(true);
+      setShowOtpModal(true);
+      
+    } catch (err) {
+      console.error('Error sending OTP:', err);
+      setError(`Failed to send OTP: ${err.message}`);
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    if (!otp.trim() || otp.length !== 6) {
+      setError('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    try {
+      setSendingOtp(true);
+      setError('');
+
+      const result = await verificationId.confirm(otp);
+      
+      if (result.user) {
+        setOtpSent(false);
+        setShowOtpModal(false);
+        setOtp('');
+        // Proceed to place order
+        await placeOrderWithVerification(result.user.uid);
+      }
+      
+    } catch (err) {
+      console.error('Error verifying OTP:', err);
+      setError(`Invalid OTP: ${err.message}`);
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
   const filteredMenu = menu.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -134,16 +203,19 @@ const PlaceOrderContent = () => {
       return;
     }
 
+    // Start OTP verification process
+    await sendOtp();
+  };
+
+  const placeOrderWithVerification = async (firebaseUid) => {
     try {
       setPlacingOrder(true);
       setError('');
 
       const orderData = {
-        restaurantId: restaurantId,
         customerPhone: customerInfo.phone.trim(),
         customerName: customerInfo.name.trim() || 'Customer',
         seatNumber: customerInfo.seatNumber.trim() || 'Walk-in',
-        orderType: 'customer_self_order', // Special order type for customer orders
         items: cart.map(item => ({
           menuItemId: item.id,
           name: item.name,
@@ -152,11 +224,12 @@ const PlaceOrderContent = () => {
           shortCode: item.shortCode
         })),
         totalAmount: getCartTotal(),
-        status: 'pending',
-        notes: `Customer self-order from seat ${customerInfo.seatNumber || 'Walk-in'}`
+        notes: `Customer self-order from seat ${customerInfo.seatNumber || 'Walk-in'}`,
+        otp: 'verified',
+        verificationId: firebaseUid
       };
 
-      const response = await apiClient.createOrder(orderData);
+      const response = await apiClient.placePublicOrder(restaurantId, orderData);
       
       setSuccess('Order placed successfully! Your order will be prepared shortly.');
       setCart([]);
@@ -668,12 +741,122 @@ const PlaceOrderContent = () => {
         </div>
       )}
 
+      {/* OTP Verification Modal */}
+      {showOtpModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 200,
+          padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '24px',
+            maxWidth: '400px',
+            width: '100%',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <FaLock size={40} color="#e53e3e" style={{ marginBottom: '16px' }} />
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>
+                Verify Your Phone
+              </h2>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                We&apos;ve sent a 6-digit code to {customerInfo.phone}
+              </p>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="Enter 6-digit code"
+                maxLength="6"
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '12px',
+                  fontSize: '18px',
+                  textAlign: 'center',
+                  outline: 'none',
+                  backgroundColor: '#f9fafb',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => {
+                  setShowOtpModal(false);
+                  setOtpSent(false);
+                  setOtp('');
+                }}
+                style={{
+                  flex: 1,
+                  background: '#f3f4f6',
+                  color: '#6b7280',
+                  border: 'none',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={verifyOtp}
+                disabled={sendingOtp || otp.length !== 6}
+                style={{
+                  flex: 1,
+                  background: (sendingOtp || otp.length !== 6)
+                    ? '#d1d5db'
+                    : 'linear-gradient(135deg, #e53e3e, #dc2626)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: (sendingOtp || otp.length !== 6) ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                {sendingOtp ? (
+                  <>
+                    <FaSpinner size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                    Verifying...
+                  </>
+                ) : (
+                  'Verify & Place Order'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
       `}</style>
+      
+      {/* reCAPTCHA Container */}
+      <div id="recaptcha-container"></div>
     </div>
   );
 };

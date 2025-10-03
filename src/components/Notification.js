@@ -1,192 +1,177 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { FaCheckCircle, FaInfoCircle, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaTimes } from 'react-icons/fa';
 
-const Notification = ({ 
-  show, 
-  type = 'success', 
-  title, 
-  message, 
-  duration = 4000, 
-  onClose 
-}) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
-
-  const handleClose = useCallback(() => {
-    setIsExiting(true);
-    setTimeout(() => {
-      setIsVisible(false);
-      setIsExiting(false);
-      if (onClose) onClose();
-    }, 300);
-  }, [onClose]);
+const Notification = ({ message, type = 'info', duration = 5000, onClose }) => {
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    if (show) {
-      setIsVisible(true);
-      setIsExiting(false);
-      
-      if (duration > 0) {
-        const timer = setTimeout(() => {
-          handleClose();
-        }, duration);
-        
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [show, duration, handleClose]);
+    if (duration > 0) {
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+        setTimeout(() => onClose?.(), 300); // Wait for animation to complete
+      }, duration);
 
-  const getTypeConfig = () => {
+      return () => clearTimeout(timer);
+    }
+  }, [duration, onClose]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(() => onClose?.(), 300);
+  };
+
+  const getIcon = () => {
     switch (type) {
       case 'success':
-        return {
-          icon: FaCheckCircle,
-          bgColor: '#10b981',
-          borderColor: '#059669',
-          textColor: '#065f46'
-        };
-      case 'info':
-        return {
-          icon: FaInfoCircle,
-          bgColor: '#3b82f6',
-          borderColor: '#2563eb',
-          textColor: '#1e40af'
-        };
-      case 'warning':
-        return {
-          icon: FaExclamationTriangle,
-          bgColor: '#f59e0b',
-          borderColor: '#d97706',
-          textColor: '#92400e'
-        };
+        return <FaCheckCircle size={20} color="#10b981" />;
       case 'error':
-        return {
-          icon: FaExclamationTriangle,
-          bgColor: '#ef4444',
-          borderColor: '#dc2626',
-          textColor: '#991b1b'
-        };
+        return <FaExclamationTriangle size={20} color="#ef4444" />;
+      case 'warning':
+        return <FaExclamationTriangle size={20} color="#f59e0b" />;
       default:
-        return {
-          icon: FaInfoCircle,
-          bgColor: '#6b7280',
-          borderColor: '#4b5563',
-          textColor: '#374151'
-        };
+        return <FaInfoCircle size={20} color="#3b82f6" />;
     }
   };
 
-  if (!show && !isVisible) return null;
-
-  const config = getTypeConfig();
-  const Icon = config.icon;
-
-  return (
-    <div style={{
+  const getStyles = () => {
+    const baseStyles = {
       position: 'fixed',
       top: '20px',
       right: '20px',
       zIndex: 9999,
-      transform: isVisible && !isExiting ? 'translateX(0)' : 'translateX(100%)',
+      minWidth: '300px',
+      maxWidth: '400px',
+      padding: '16px',
+      borderRadius: '12px',
+      boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '12px',
+      transform: isVisible ? 'translateX(0)' : 'translateX(100%)',
+      opacity: isVisible ? 1 : 0,
       transition: 'all 0.3s ease-in-out',
-      opacity: isVisible && !isExiting ? 1 : 0,
-      minWidth: '320px',
-      maxWidth: '400px'
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        border: `2px solid ${config.borderColor}`,
-        borderRadius: '12px',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1)',
-        overflow: 'hidden'
-      }}>
-        {/* Progress bar */}
-        {duration > 0 && (
-          <div style={{
-            height: '3px',
-            backgroundColor: config.bgColor
-          }} />
-        )}
-        
-        {/* Content */}
-        <div style={{
-          padding: '16px',
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: '12px'
-        }}>
-          {/* Icon */}
-          <div style={{
-            width: '24px',
-            height: '24px',
-            backgroundColor: config.bgColor,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            marginTop: '2px'
-          }}>
-            <Icon size={12} color="white" />
-          </div>
-          
-          {/* Text content */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {title && (
-              <div style={{
-                fontSize: '14px',
-                fontWeight: 'bold',
-                color: config.textColor,
-                marginBottom: '4px',
-                lineHeight: '1.3'
-              }}>
-                {title}
-              </div>
-            )}
-            {message && (
-              <div style={{
-                fontSize: '13px',
-                color: '#6b7280',
-                lineHeight: '1.4'
-              }}>
-                {message}
-              </div>
-            )}
-          </div>
-          
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            style={{
-              backgroundColor: 'transparent',
-              border: 'none',
-              color: '#9ca3af',
-              cursor: 'pointer',
-              padding: '4px',
-              borderRadius: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              transition: 'color 0.2s, background-color 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#f3f4f6';
-              e.target.style.color = '#6b7280';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-              e.target.style.color = '#9ca3af';
-            }}
-          >
-            <FaTimes size={10} />
-          </button>
-        </div>
+      cursor: 'pointer'
+    };
+
+    switch (type) {
+      case 'success':
+        return {
+          ...baseStyles,
+          backgroundColor: '#f0fdf4',
+          border: '1px solid #bbf7d0',
+          color: '#166534'
+        };
+      case 'error':
+        return {
+          ...baseStyles,
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
+          color: '#dc2626'
+        };
+      case 'warning':
+        return {
+          ...baseStyles,
+          backgroundColor: '#fffbeb',
+          border: '1px solid #fed7aa',
+          color: '#d97706'
+        };
+      default:
+        return {
+          ...baseStyles,
+          backgroundColor: '#eff6ff',
+          border: '1px solid #bfdbfe',
+          color: '#1d4ed8'
+        };
+    }
+  };
+
+  return (
+    <div style={getStyles()} onClick={handleClose}>
+      <div style={{ flexShrink: 0, marginTop: '2px' }}>
+        {getIcon()}
       </div>
+      
+      <div style={{ flex: 1, fontSize: '14px', lineHeight: '1.4' }}>
+        {message}
+      </div>
+      
+      <button
+        onClick={handleClose}
+        style={{
+          background: 'none',
+          border: 'none',
+          padding: '4px',
+          cursor: 'pointer',
+          color: 'inherit',
+          opacity: 0.7,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <FaTimes size={14} />
+      </button>
     </div>
   );
+};
+
+// Notification Manager Hook
+export const useNotification = () => {
+  const [notifications, setNotifications] = useState([]);
+
+  const addNotification = (message, type = 'info', duration = 5000) => {
+    const id = Date.now() + Math.random();
+    const notification = { id, message, type, duration };
+    
+    setNotifications(prev => [...prev, notification]);
+    return id;
+  };
+
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
+
+  const showSuccess = (message, duration = 5000) => {
+    return addNotification(message, 'success', duration);
+  };
+
+  const showError = (message, duration = 7000) => {
+    return addNotification(message, 'error', duration);
+  };
+
+  const showWarning = (message, duration = 6000) => {
+    return addNotification(message, 'warning', duration);
+  };
+
+  const showInfo = (message, duration = 5000) => {
+    return addNotification(message, 'info', duration);
+  };
+
+  const NotificationContainer = () => (
+    <div style={{ position: 'fixed', top: 0, right: 0, zIndex: 9999 }}>
+      {notifications.map(notification => (
+        <Notification
+          key={notification.id}
+          message={notification.message}
+          type={notification.type}
+          duration={notification.duration}
+          onClose={() => removeNotification(notification.id)}
+        />
+      ))}
+    </div>
+  );
+
+  return {
+    addNotification,
+    removeNotification,
+    showSuccess,
+    showError,
+    showWarning,
+    showInfo,
+    NotificationContainer
+  };
 };
 
 export default Notification;

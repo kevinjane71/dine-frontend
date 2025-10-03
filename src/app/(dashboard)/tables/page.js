@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '../../../lib/api';
+import { useNotification } from '../../../components/Notification.js';
 import { 
   FaPlus, 
   FaTrash,
@@ -26,6 +27,7 @@ import {
 
 const TableManagement = () => {
   const router = useRouter();
+  const { showSuccess, showError, showWarning, NotificationContainer } = useNotification();
   const [floors, setFloors] = useState([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -269,10 +271,11 @@ const TableManagement = () => {
       setFloors(prev => [...prev, newFloorData]);
       setNewFloor({ name: '', description: '' });
       setShowAddFloor(false);
+      showSuccess('Floor added successfully!');
       
     } catch (err) {
       console.error('Error adding floor:', err);
-      alert(`Failed to add floor: ${err.message}`);
+      showError(`Failed to add floor: ${err.message}`);
     }
   };
 
@@ -297,10 +300,11 @@ const TableManagement = () => {
       setNewFloor({ name: '', description: '' });
       setEditingFloor(null);
       setShowEditFloor(false);
+      showSuccess('Floor updated successfully!');
       
     } catch (err) {
       console.error('Error editing floor:', err);
-      alert(`Failed to edit floor: ${err.message}`);
+      showError(`Failed to edit floor: ${err.message}`);
     }
   };
 
@@ -310,9 +314,10 @@ const TableManagement = () => {
     try {
       await apiClient.deleteFloor(floorId, { restaurantId: selectedRestaurant.id });
       setFloors(prev => prev.filter(floor => floor.id !== floorId));
+      showSuccess('Floor deleted successfully!');
     } catch (err) {
       console.error('Error deleting floor:', err);
-      alert(`Failed to delete floor: ${err.message}`);
+      showError(`Failed to delete floor: ${err.message}`);
     }
   };
 
@@ -329,7 +334,7 @@ const TableManagement = () => {
       // Find the selected floor to get its name
       const selectedFloor = floors.find(floor => floor.id === selectedFloorForTable);
       if (!selectedFloor) {
-        alert('Selected floor not found');
+        showError('Selected floor not found');
         return;
       }
 
@@ -357,10 +362,11 @@ const TableManagement = () => {
       setNewTable({ name: '', capacity: 4, type: 'regular', floorId: null });
       setSelectedFloorForTable(null);
       setShowAddTable(false);
+      showSuccess('Table added successfully!');
       
     } catch (err) {
       console.error('Error adding table:', err);
-      alert(`Failed to add table: ${err.message}`);
+      showError(`Failed to add table: ${err.message}`);
     }
   };
 
@@ -388,7 +394,7 @@ const TableManagement = () => {
       setActiveDropdown(null);
     } catch (err) {
       console.error('Error updating table status:', err);
-      alert(`Failed to update table: ${err.message}`);
+      showError(`Failed to update table: ${err.message}`);
     }
   };
 
@@ -406,7 +412,7 @@ const TableManagement = () => {
       setActiveDropdown(null);
     } catch (err) {
       console.error('Error deleting table:', err);
-      alert(`Failed to delete table: ${err.message}`);
+      showError(`Failed to delete table: ${err.message}`);
     }
   };
 
@@ -447,7 +453,7 @@ const TableManagement = () => {
       
     } catch (err) {
       console.error('Error creating booking:', err);
-      alert(`Failed to create booking: ${err.message}`);
+      showError(`Failed to create booking: ${err.message}`);
     }
   };
 
@@ -2428,6 +2434,8 @@ const TableManagement = () => {
           animation: spin 1s linear infinite;
         }
       `}</style>
+      
+      <NotificationContainer />
     </div>
   );
 };

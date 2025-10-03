@@ -208,6 +208,18 @@ class ApiClient {
     return this.request(`/api/menus/upload-status/${restaurantId}`);
   }
 
+  // Public API endpoints (no authentication required)
+  async getPublicMenu(restaurantId) {
+    return this.request(`/api/public/menu/${restaurantId}`);
+  }
+
+  async placePublicOrder(restaurantId, orderData) {
+    return this.request(`/api/public/orders/${restaurantId}`, {
+      method: 'POST',
+      body: orderData,
+    });
+  }
+
   // Order endpoints
   async createOrder(orderData) {
     return this.request('/api/orders', {
