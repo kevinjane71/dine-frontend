@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   FaPhone, 
@@ -8,8 +8,17 @@ import {
   FaUtensils, 
   FaArrowRight,
   FaSpinner,
-  FaCheck
+  FaCheck,
+  FaEdit,
+  FaTimes
 } from 'react-icons/fa';
+import { auth } from '../../../firebase';
+import { 
+  signInWithPhoneNumber,
+  RecaptchaVerifier,
+  GoogleAuthProvider,
+  signInWithPopup
+} from 'firebase/auth';
 
 const Login = () => {
   const router = useRouter();
@@ -20,6 +29,46 @@ const Login = () => {
   const [staffCredentials, setStaffCredentials] = useState({ loginId: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Firebase OTP state
+  const [verificationId, setVerificationId] = useState(null);
+  const [otpSent, setOtpSent] = useState(false);
+  const [isFirebaseOTP, setIsFirebaseOTP] = useState(false);
+
+  // Setup Firebase reCAPTCHA
+  useEffect(() => {
+    if (step === 'phone') {
+      setupRecaptcha();
+    }
+    return () => {
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+    };
+  }, [step]);
+
+  const setupRecaptcha = () => {
+    try {
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'invisible',
+          callback: () => {},
+          'expired-callback': () => {
+            setError('reCAPTCHA expired. Please try again.');
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error setting up RecaptchaVerifier:", error);
+      setError("Failed to setup verification. Please refresh the page.");
+    }
+  };
+
+  // Check if phone number is dummy account
+  const isDummyAccount = (phone) => {
+    return phone === '9000000000' || phone === '+919000000000';
+  };
 
   const handlePhoneSubmit = async (e) => {
     e.preventDefault();
@@ -33,25 +82,48 @@ const Login = () => {
     setLoading(true);
     
     try {
-      // Call backend API to send OTP
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dine-backend-lake.vercel.app';
-      const response = await fetch(`${backendUrl}/api/auth/phone/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phone: `+91${phoneNumber}` }),
-      });
+      // Check if it's dummy account
+      if (isDummyAccount(phoneNumber)) {
+        // Use backend OTP for dummy account
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dine-backend-lake.vercel.app';
+        const response = await fetch(`${backendUrl}/api/auth/phone/send-otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ phone: `+91${phoneNumber}` }),
+        });
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        setStep('otp');
+        const data = await response.json();
+        
+        if (response.ok) {
+          setIsFirebaseOTP(false);
+          setStep('otp');
+        } else {
+          setError(data.message || 'Failed to send OTP');
+        }
       } else {
-        setError(data.message || 'Failed to send OTP');
+        // Use Firebase OTP for real numbers
+        const formattedPhone = phoneNumber.startsWith('+91') ? phoneNumber : `+91${phoneNumber}`;
+        
+        const appVerifier = window.recaptchaVerifier;
+        const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+        
+        setVerificationId(confirmationResult);
+        setIsFirebaseOTP(true);
+        setOtpSent(true);
+        setStep('otp');
+        setError('');
       }
     } catch (error) {
-      setError('Network error. Please try again.');
+      console.error('Error sending OTP:', error);
+      setError('Failed to send OTP. Please check your phone number and try again.');
+      
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.render().then(widgetId => {
+          window.grecaptcha.reset(widgetId);
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -61,42 +133,65 @@ const Login = () => {
     e.preventDefault();
     setError('');
     
-    if (!otp || otp.length !== 4) {
-      setError('Please enter a valid 4-digit OTP');
+    if (!otp || otp.length !== 6) {
+      setError('Please enter a valid 6-digit OTP');
       return;
     }
 
     setLoading(true);
     
     try {
-      // Call backend API to verify OTP
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
-      const response = await fetch(`${backendUrl}/api/auth/phone/verify-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phone: `+91${phoneNumber}`, otp }),
-      });
-
-      const data = await response.json();
-      
-      if (response.ok) {
-        // Store auth token in localStorage
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+      if (isFirebaseOTP) {
+        // Verify Firebase OTP
+        const result = await verificationId.confirm(otp);
         
-        // Redirect based on backend response - new/existing owner goes to admin
-        if (data.redirectTo) {
-          router.push(data.redirectTo);
-        } else {
-          router.push('/dashboard'); // Default for owners
-        }
+        const userData = {
+          uid: result.user.uid,
+          phoneNumber: result.user.phoneNumber,
+          displayName: null,
+          email: null,
+          photoURL: null,
+          loginMethod: 'phone',
+          user_type: 'owner'
+        };
+
+        // Store in localStorage and redirect
+        localStorage.setItem('authToken', 'firebase-token');
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Redirect to dashboard
+        router.push('/dashboard');
       } else {
-        setError(data.message || 'Invalid OTP');
+        // Verify backend OTP (for dummy account)
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
+        const response = await fetch(`${backendUrl}/api/auth/phone/verify-otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ phone: `+91${phoneNumber}`, otp }),
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Store auth token in localStorage
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          
+          // Redirect based on backend response
+          if (data.redirectTo) {
+            router.push(data.redirectTo);
+          } else {
+            router.push('/dashboard');
+          }
+        } else {
+          setError(data.message || 'Invalid OTP');
+        }
       }
     } catch (error) {
-      setError('Network error. Please try again.');
+      console.error('Error verifying OTP:', error);
+      setError('Invalid OTP. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -115,8 +210,16 @@ const Login = () => {
   };
 
   const handleOtpChange = (e) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
     setOtp(value);
+  };
+
+  const resetOtpState = () => {
+    setOtp('');
+    setOtpSent(false);
+    setVerificationId(null);
+    setIsFirebaseOTP(false);
+    setStep('phone');
   };
 
   const handleStaffLogin = async (e) => {
@@ -448,8 +551,42 @@ const Login = () => {
                   margin: 0,
                   fontSize: "14px"
                 }}>
-                  We have sent a 4-digit code to +91 {phoneNumber}
+                  We have sent a {isFirebaseOTP ? '6' : '4'}-digit code to +91 {phoneNumber}
                 </p>
+              </div>
+
+              {/* Phone number display with edit option */}
+              <div style={{ 
+                marginBottom: "24px", 
+                padding: "12px", 
+                backgroundColor: "#f9fafb", 
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <FaPhone style={{ color: "#6b7280" }} />
+                  <span style={{ fontWeight: "500", color: "#374151" }}>+91 {phoneNumber}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={resetOtpState}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#3b82f6",
+                    cursor: "pointer",
+                    padding: "4px",
+                    borderRadius: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px"
+                  }}
+                >
+                  <FaEdit size={14} />
+                  <span style={{ fontSize: "12px" }}>Edit</span>
+                </button>
               </div>
   
               <form onSubmit={handleOtpSubmit}>
@@ -468,8 +605,8 @@ const Login = () => {
                     required
                     value={otp}
                     onChange={handleOtpChange}
-                    placeholder="1234"
-                    maxLength="4"
+                    placeholder={isFirebaseOTP ? "123456" : "1234"}
+                    maxLength="6"
                     style={{
                       width: "100%",
                       padding: "16px",
@@ -498,37 +635,24 @@ const Login = () => {
                     justifyContent: "space-between",
                     marginTop: "12px"
                   }}>
-                    <div style={{
-                      fontSize: "12px",
-                      color: "#6b7280"
-                    }}>
-                      For testing use: <strong style={{ color: "#e53e3e" }}>1234 </strong>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setStep("phone")}
-                      style={{
+                    {!isFirebaseOTP && (
+                      <div style={{
                         fontSize: "12px",
-                        color: "#e53e3e",
-                        backgroundColor: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        fontWeight: "600",
-                        textDecoration: "underline"
-                      }}
-                    >
-                      Change Number
-                    </button>
+                        color: "#6b7280"
+                      }}>
+                        For testing use: <strong style={{ color: "#e53e3e" }}>1234 </strong>
+                      </div>
+                    )}
                   </div>
                 </div>
   
   
                 <button
                   type="submit"
-                  disabled={loading || otp.length !== 4}
+                  disabled={loading || (isFirebaseOTP ? otp.length !== 6 : otp.length !== 4)}
                   style={{
                     width: "100%",
-                    background: otp.length === 4 && !loading
+                    background: ((isFirebaseOTP ? otp.length === 6 : otp.length === 4) && !loading)
                       ? "linear-gradient(135deg, #10b981, #059669)"
                       : "#d1d5db",
                     color: "white",
@@ -537,7 +661,7 @@ const Login = () => {
                     fontWeight: "700",
                     fontSize: "16px",
                     border: "none",
-                    cursor: otp.length === 4 && !loading ? "pointer" : "not-allowed",
+                    cursor: ((isFirebaseOTP ? otp.length === 6 : otp.length === 4) && !loading) ? "pointer" : "not-allowed",
                     transition: "all 0.2s",
                     display: "flex",
                     alignItems: "center",
@@ -704,6 +828,9 @@ const Login = () => {
           </p>
         </div>
       </div>
+      
+      {/* Hidden reCAPTCHA container */}
+      <div id="recaptcha-container" style={{ display: 'none' }}></div>
     </div>
   );  
 };
