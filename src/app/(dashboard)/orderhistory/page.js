@@ -19,7 +19,7 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 
-const Orders = () => {
+const OrderHistory = () => {
   console.log('Orders page: Component rendering');
   const router = useRouter();
   const [orders, setOrders] = useState([]);
@@ -1369,4 +1369,4 @@ const Orders = () => {
   );
 };
 
-export default Orders;
+export default OrderHistory;

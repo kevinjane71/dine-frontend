@@ -197,7 +197,7 @@ function NavigationContent({ isHidden = false }) {
   
   const getAllNavItems = () => [
     { id: 'pos', name: 'Orders', icon: FaHome, href: '/dashboard', color: '#ef4444', gradient: 'from-red-500 to-red-600', roles: ['owner', 'manager', 'waiter'] },
-    { id: 'orders', name: 'History', icon: FaClipboardList, href: '/orders', color: '#f59e0b', gradient: 'from-amber-500 to-amber-600', roles: ['owner', 'manager', 'waiter'] },
+    { id: 'orders', name: 'History', icon: FaClipboardList, href: '/orderhistory', color: '#f59e0b', gradient: 'from-amber-500 to-amber-600', roles: ['owner', 'manager', 'waiter'] },
     { id: 'tables', name: 'Tables', icon: FaChair, href: '/tables', color: '#3b82f6', gradient: 'from-blue-500 to-blue-600', roles: ['owner', 'manager', 'waiter'] },
     { id: 'menu', name: 'Menu', icon: FaUtensils, href: '/menu', color: '#10b981', gradient: 'from-emerald-500 to-emerald-600', roles: ['owner', 'manager'] },
     { id: 'inventory', name: 'Inventory', icon: FaBoxes, href: '/inventory', color: '#059669', gradient: 'from-teal-500 to-teal-600', roles: ['owner', 'manager'] },
