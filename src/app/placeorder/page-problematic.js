@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaArrowLeft, FaPhone, FaChair, FaUtensils, FaLeaf, FaDrumstickBite, FaSpinner, FaLock } from 'react-icons/fa';
 import apiClient from '../../lib/api.js';
@@ -8,6 +8,10 @@ import apiClient from '../../lib/api.js';
 const PlaceOrderContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // Refs and derived values first
+  const categoryRefs = useRef({});
+  const restaurantId = searchParams.get('restaurant') || 'default';
   
   // State variables
   const [loading, setLoading] = useState(true);
@@ -32,120 +36,127 @@ const PlaceOrderContent = () => {
   const [verificationId, setVerificationId] = useState(null);
   const [sendingOtp, setSendingOtp] = useState(false);
   
-  // Derived values
-  const restaurantId = searchParams.get('restaurant') || 'default';
-  const seatNumber = searchParams.get('seat') || '';
-
   // Initialize customer info from URL params
   useEffect(() => {
+    const seatNumber = searchParams.get('seat') || '';
     setCustomerInfo(prev => ({
       ...prev,
       seatNumber
     }));
-  }, [seatNumber]);
+  }, [searchParams]);
 
-  // Load restaurant data
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        
-        // Mock data for testing
-        const mockRestaurant = {
-          id: restaurantId,
-          name: 'Dino Restaurant',
-          description: 'Delicious food and great service'
-        };
-        
-        const mockMenu = [
-          {
-            id: '1',
-            name: 'Margherita Pizza',
-            description: 'Classic tomato and mozzarella pizza',
-            price: 299,
-            category: 'Pizza',
-            isVeg: true,
-            shortCode: 'MP',
-            spiceLevel: 'Mild',
-            available: true
-          },
-          {
-            id: '2',
-            name: 'Chicken Burger',
-            description: 'Juicy chicken patty with fresh vegetables',
-            price: 199,
-            category: 'Burgers',
-            isVeg: false,
-            shortCode: 'CB',
-            spiceLevel: 'Medium',
-            available: true
-          },
-          {
-            id: '3',
-            name: 'Caesar Salad',
-            description: 'Fresh lettuce with caesar dressing',
-            price: 149,
-            category: 'Salads',
-            isVeg: true,
-            shortCode: 'CS',
-            spiceLevel: 'Mild',
-            available: true
-          },
-          {
-            id: '4',
-            name: 'Pasta Carbonara',
-            description: 'Creamy pasta with bacon and cheese',
-            price: 249,
-            category: 'Pasta',
-            isVeg: false,
-            shortCode: 'PC',
-            spiceLevel: 'Mild',
-            available: true
-          },
-          {
-            id: '5',
-            name: 'Chocolate Cake',
-            description: 'Rich chocolate cake with vanilla ice cream',
-            price: 179,
-            category: 'Desserts',
-            isVeg: true,
-            shortCode: 'CC',
-            spiceLevel: 'Sweet',
-            available: true
-          }
-        ];
-        
-        // Try to load from API first, fallback to mock data
-        try {
-          const response = await apiClient.getPublicMenu(restaurantId);
-          setRestaurant(response.restaurant);
-          setMenu(response.menu);
-          
-          // Extract categories
-          const uniqueCategories = [...new Set(response.menu.map(item => item.category))];
-          setCategories(['all', ...uniqueCategories]);
-        } catch (apiError) {
-          console.log('API not available, using mock data:', apiError.message);
-          setRestaurant(mockRestaurant);
-          setMenu(mockMenu);
-          
-          // Extract categories from mock data
-          const uniqueCategories = [...new Set(mockMenu.map(item => item.category))];
-          setCategories(['all', ...uniqueCategories]);
+  const loadRestaurantData = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Mock data for testing when backend is not available
+      const mockRestaurant = {
+        id: restaurantId,
+        name: 'Dino Restaurant',
+        description: 'Delicious food and great service'
+      };
+      
+      const mockMenu = [
+        {
+          id: '1',
+          name: 'Margherita Pizza',
+          description: 'Classic tomato and mozzarella pizza',
+          price: 299,
+          category: 'Pizza',
+          isVeg: true,
+          shortCode: 'MP',
+          spiceLevel: 'Mild',
+          available: true
+        },
+        {
+          id: '2',
+          name: 'Chicken Burger',
+          description: 'Juicy chicken patty with fresh vegetables',
+          price: 199,
+          category: 'Burgers',
+          isVeg: false,
+          shortCode: 'CB',
+          spiceLevel: 'Medium',
+          available: true
+        },
+        {
+          id: '3',
+          name: 'Caesar Salad',
+          description: 'Fresh lettuce with caesar dressing',
+          price: 149,
+          category: 'Salads',
+          isVeg: true,
+          shortCode: 'CS',
+          spiceLevel: 'Mild',
+          available: true
+        },
+        {
+          id: '4',
+          name: 'Pasta Carbonara',
+          description: 'Creamy pasta with bacon and cheese',
+          price: 249,
+          category: 'Pasta',
+          isVeg: false,
+          shortCode: 'PC',
+          spiceLevel: 'Mild',
+          available: true
+        },
+        {
+          id: '5',
+          name: 'Chocolate Cake',
+          description: 'Rich chocolate cake with vanilla ice cream',
+          price: 179,
+          category: 'Desserts',
+          isVeg: true,
+          shortCode: 'CC',
+          spiceLevel: 'Sweet',
+          available: true
         }
+      ];
+      
+      // Try to load from API first, fallback to mock data
+      try {
+        const response = await apiClient.getPublicMenu(restaurantId);
+        setRestaurant(response.restaurant);
+        setMenu(response.menu);
         
-      } catch (err) {
-        console.error('Error loading restaurant data:', err);
-        setError('Failed to load restaurant menu. Please try again.');
-      } finally {
-        setLoading(false);
+        // Extract categories
+        const uniqueCategories = [...new Set(response.menu.map(item => item.category))];
+        setCategories(['all', ...uniqueCategories]);
+      } catch (apiError) {
+        console.log('API not available, using mock data:', apiError.message);
+        setRestaurant(mockRestaurant);
+        setMenu(mockMenu);
+        
+        // Extract categories from mock data
+        const uniqueCategories = [...new Set(mockMenu.map(item => item.category))];
+        setCategories(['all', ...uniqueCategories]);
       }
-    };
-
-    loadData();
+      
+    } catch (err) {
+      console.error('Error loading restaurant data:', err);
+      setError('Failed to load restaurant menu. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }, [restaurantId]);
 
-  // Cart functions
+  useEffect(() => {
+    loadRestaurantData();
+  }, [restaurantId]);
+
+  const scrollToCategory = (category) => {
+    if (category === 'all') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    
+    const element = categoryRefs.current[category];
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const addToCart = (item) => {
     setCart(prev => {
       const existingItem = prev.find(cartItem => cartItem.id === item.id);
@@ -184,25 +195,6 @@ const PlaceOrderContent = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
-  // Filter menu
-  const filteredMenu = menu.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const groupedMenu = categories.reduce((acc, category) => {
-    if (category === 'all') return acc;
-    
-    const categoryItems = filteredMenu.filter(item => item.category === category);
-    if (categoryItems.length > 0) {
-      acc[category] = categoryItems;
-    }
-    return acc;
-  }, {});
-
-  // OTP functions
   const sendOtp = async () => {
     if (!customerInfo.phone.trim()) {
       setError('Please enter your phone number');
@@ -213,7 +205,8 @@ const PlaceOrderContent = () => {
       setSendingOtp(true);
       setError('');
 
-      // Simulate OTP sending
+      // For now, simulate OTP sending (in production, integrate with Firebase)
+      // This is a temporary fix to resolve the initialization error
       setTimeout(() => {
         setVerificationId('simulated-verification-id');
         setOtpSent(true);
@@ -238,7 +231,8 @@ const PlaceOrderContent = () => {
       setSendingOtp(true);
       setError('');
 
-      // Simulate OTP verification
+      // For now, simulate OTP verification (in production, verify with Firebase)
+      // This is a temporary fix to resolve the initialization error
       setTimeout(async () => {
         setOtpSent(false);
         setShowOtpModal(false);
@@ -254,6 +248,23 @@ const PlaceOrderContent = () => {
       setSendingOtp(false);
     }
   };
+
+  const filteredMenu = menu.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const groupedMenu = categories.reduce((acc, category) => {
+    if (category === 'all') return acc;
+    
+    const categoryItems = filteredMenu.filter(item => item.category === category);
+    if (categoryItems.length > 0) {
+      acc[category] = categoryItems;
+    }
+    return acc;
+  }, {});
 
   const placeOrder = async () => {
     if (!customerInfo.phone.trim()) {
@@ -356,6 +367,7 @@ const PlaceOrderContent = () => {
           maxWidth: '400px',
           width: '100%'
         }}>
+          <FaUtensils size={60} color="#e53e3e" style={{ marginBottom: '20px' }} />
           <h2 style={{ color: '#1f2937', marginBottom: '10px' }}>Restaurant Not Found</h2>
           <p style={{ color: '#6b7280', marginBottom: '20px' }}>
             We couldn&apos;t find the restaurant menu. Please check the QR code or contact the restaurant.
@@ -551,7 +563,10 @@ const PlaceOrderContent = () => {
           {categories.map(category => (
             <button
               key={category}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => {
+                setSelectedCategory(category);
+                scrollToCategory(category);
+              }}
               style={{
                 background: selectedCategory === category 
                   ? 'linear-gradient(135deg, #e53e3e, #dc2626)' 
@@ -619,7 +634,7 @@ const PlaceOrderContent = () => {
         ) : (
           <div>
             {Object.entries(groupedMenu).map(([category, items]) => (
-              <div key={category}>
+              <div key={category} ref={el => categoryRefs.current[category] = el}>
                 <h2 style={{
                   fontSize: '18px',
                   fontWeight: 'bold',
@@ -919,7 +934,7 @@ const PlaceOrderContent = () => {
 
 // Menu Item Card Component
 const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity }) => {
-  const isVeg = item.isVeg !== false;
+  const [isVeg] = useState(item.isVeg !== false);
   
   return (
     <div style={{
