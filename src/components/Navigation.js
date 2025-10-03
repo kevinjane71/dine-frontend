@@ -35,7 +35,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import apiClient from '../lib/api';
 
-function NavigationContent() {
+function NavigationContent({ isHidden = false }) {
   const pathname = usePathname();
   const router = useRouter();
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
@@ -543,17 +543,17 @@ function NavigationContent() {
                 {/* Restaurant Dropdown - Modern Design */}
                 {showRestaurantDropdown && (
                   <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
+                    position: 'fixed',
+                    top: isHidden ? '0px' : '100%',
+                    right: isHidden ? '20px' : 0,
                     background: 'rgba(255, 255, 255, 0.95)',
                     backdropFilter: 'blur(20px)',
                     border: '1px solid rgba(0, 0, 0, 0.08)',
                     borderRadius: '16px',
                     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-                    zIndex: 50,
+                    zIndex: 9999,
                     minWidth: '300px',
-                    marginTop: '8px',
+                    marginTop: isHidden ? '0px' : '8px',
                     overflow: 'hidden'
                   }}>
                     <div style={{ 
@@ -787,17 +787,17 @@ function NavigationContent() {
                 {/* User Dropdown - Modern Design */}
                 {showUserDropdown && (
                   <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
+                    position: 'fixed',
+                    top: isHidden ? '0px' : '100%',
+                    right: isHidden ? '20px' : 0,
                     background: 'rgba(255, 255, 255, 0.95)',
                     backdropFilter: 'blur(20px)',
                     border: '1px solid rgba(0, 0, 0, 0.08)',
                     borderRadius: '16px',
                     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-                    zIndex: 50,
+                    zIndex: 9999,
                     minWidth: '220px',
-                    marginTop: '8px',
+                    marginTop: isHidden ? '0px' : '8px',
                     overflow: 'hidden'
                   }}>
                     {/* User Info Header */}

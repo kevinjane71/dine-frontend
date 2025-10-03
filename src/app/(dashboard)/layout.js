@@ -1,19 +1,42 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Navigation from '../../components/Navigation';
 
 function DashboardLayoutContent({ children }) {
+  const [isNavigationHidden, setIsNavigationHidden] = useState(false);
+
+  // Listen for navigation hide/show events
+  useEffect(() => {
+    const handleNavigationToggle = (event) => {
+      setIsNavigationHidden(event.detail.hidden);
+    };
+
+    window.addEventListener('navigationToggle', handleNavigationToggle);
+    return () => window.removeEventListener('navigationToggle', handleNavigationToggle);
+  }, []);
+
   return (
     <div style={{ 
       height: '100vh', 
       backgroundColor: '#f9fafb',
       overflow: 'hidden',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      transition: 'all 0.3s ease'
     }}>
-      <Navigation />
-      <main style={{ flex: 1, overflow: 'hidden' }}>
+      <div style={{
+        height: isNavigationHidden ? '0px' : 'auto',
+        overflow: 'visible',
+        transition: 'height 0.3s ease'
+      }}>
+        <Navigation isHidden={isNavigationHidden} />
+      </div>
+      <main style={{ 
+        flex: 1, 
+        overflow: 'hidden',
+        transition: 'all 0.3s ease'
+      }}>
         {children}
       </main>
     </div>

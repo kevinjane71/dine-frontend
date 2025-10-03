@@ -22,6 +22,11 @@ import {
   FaHamburger,
   FaHeart,
   FaFire,
+  FaExpand,
+  FaCompress,
+  FaExpandArrowsAlt,
+  FaChevronDown,
+  FaSignOutAlt,
   FaChair,
   FaEdit,
   FaTimes,
@@ -32,7 +37,6 @@ import {
   FaChartBar,
   FaUsers,
   FaCog,
-  FaSignOutAlt,
   FaBars,
   FaTable
 } from 'react-icons/fa';
@@ -80,6 +84,41 @@ function RestaurantPOSContent() {
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showMobileCart, setShowMobileCart] = useState(false);
+  
+  // Fullscreen mode states
+  const [isNavigationHidden, setIsNavigationHidden] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenStep, setFullscreenStep] = useState(0); // 0: normal, 1: nav hidden, 2: fullscreen
+  const [showLogoutDropdown, setShowLogoutDropdown] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // Load user data
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
+  // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('restaurant');
+    localStorage.removeItem('cart');
+    window.location.href = '/login';
+  };
+
+  // Close logout dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showLogoutDropdown && !event.target.closest('[data-logout-dropdown]')) {
+        setShowLogoutDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showLogoutDropdown]);
 
   // Generate dynamic categories based on actual menu items
   const getDynamicCategories = () => {
@@ -935,14 +974,6 @@ function RestaurantPOSContent() {
     }, 3000);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    localStorage.removeItem('dine_cart');
-    localStorage.removeItem('dine_saved_order');
-    router.push('/login');
-  };
-
   const navigateToPage = (page) => {
     router.push(page);
   };
@@ -969,6 +1000,78 @@ function RestaurantPOSContent() {
     // Clear URL parameters
     window.history.replaceState({}, '', window.location.pathname);
   };
+
+  // Fullscreen mode toggle function
+  const toggleFullscreen = useCallback(() => {
+    if (fullscreenStep === 0) {
+      // Step 1: Hide navigation
+      setIsNavigationHidden(true);
+      setFullscreenStep(1);
+      // Dispatch event to layout
+      window.dispatchEvent(new CustomEvent('navigationToggle', { 
+        detail: { hidden: true } 
+      }));
+    } else if (fullscreenStep === 1) {
+      // Step 2: Enter fullscreen
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) {
+        document.documentElement.msRequestFullscreen();
+      }
+      setIsFullscreen(true);
+      setFullscreenStep(2);
+    } else if (fullscreenStep === 2) {
+      // Step 3: Exit fullscreen and show navigation
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      setIsFullscreen(false);
+      setIsNavigationHidden(false);
+      setFullscreenStep(0);
+      // Dispatch event to layout
+      window.dispatchEvent(new CustomEvent('navigationToggle', { 
+        detail: { hidden: false } 
+      }));
+    }
+  }, [fullscreenStep]);
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.msFullscreenElement
+      );
+      
+      if (!isCurrentlyFullscreen && isFullscreen) {
+        // User exited fullscreen manually, go back to normal state
+        setIsFullscreen(false);
+        setIsNavigationHidden(false);
+        setFullscreenStep(0);
+        // Dispatch event to layout
+        window.dispatchEvent(new CustomEvent('navigationToggle', { 
+          detail: { hidden: false } 
+        }));
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+    };
+  }, [isFullscreen]);
 
   // Show onboarding if needed
   if (showOnboarding) {
@@ -1546,7 +1649,8 @@ function RestaurantPOSContent() {
           <div style={{ 
             padding: '20px 16px', 
             borderBottom: '1px solid #f3f4f6',
-            background: 'linear-gradient(135deg, #fef7f0 0%, #fed7aa 100%)'
+            background: 'linear-gradient(135deg, #fef7f0 0%, #fed7aa 100%)',
+            borderRadius: '5px'
           }}>
             <h2 style={{ 
               fontSize: '18px', 
@@ -1559,9 +1663,6 @@ function RestaurantPOSContent() {
             }}>
               Menu Categories
             </h2>
-            <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px 0', fontWeight: '500' }}>
-              Quick access for waiters
-            </p>
             <div style={{ position: 'relative' }}>
               <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={14} />
               <input
@@ -1604,11 +1705,25 @@ function RestaurantPOSContent() {
             msOverflowStyle: 'none'
           }} className="hide-scrollbar">
             
-            {categories.map((category) => {
+            {categories.map((category, index) => {
               const categoryItems = category.id === 'all-items' 
                 ? (menuItems || [])
                 : (menuItems || []).filter(item => item.category?.toLowerCase() === category.id);
               const isSelected = selectedCategory === category.id;
+              
+              // Color variations for different categories
+              const colors = [
+                { bg: '#ef4444', light: '#fef2f2', text: '#dc2626' }, // Red
+                { bg: '#f97316', light: '#fff7ed', text: '#ea580c' }, // Orange
+                { bg: '#10b981', light: '#ecfdf5', text: '#059669' }, // Emerald
+                { bg: '#3b82f6', light: '#eff6ff', text: '#2563eb' }, // Blue
+                { bg: '#8b5cf6', light: '#f3e8ff', text: '#7c3aed' }, // Purple
+                { bg: '#f59e0b', light: '#fffbeb', text: '#d97706' }, // Amber
+                { bg: '#06b6d4', light: '#ecfeff', text: '#0891b2' }, // Cyan
+                { bg: '#ec4899', light: '#fdf2f8', text: '#db2777' }, // Pink
+              ];
+              
+              const colorScheme = colors[index % colors.length];
               
               return (
                 <div
@@ -1616,27 +1731,23 @@ function RestaurantPOSContent() {
                   onClick={() => setSelectedCategory(category.id)}
                   style={{
                     padding: '12px 16px',
-                    margin: '4px 0',
-                    backgroundColor: isSelected ? '#ef4444' : 'transparent',
-                    borderRadius: '8px',
+                    margin: '2px 0',
+                    backgroundColor: isSelected ? colorScheme.bg : 'transparent',
+                    borderRadius: '0px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    border: isSelected ? 'none' : '1px solid #f3f4f6',
+                    transition: 'background-color 0.15s ease',
+                    border: 'none',
                     position: 'relative',
                     overflow: 'hidden'
                   }}
                   onMouseEnter={(e) => {
                     if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = '#f9fafb';
-                      e.currentTarget.style.borderColor = '#e5e7eb';
-                      e.currentTarget.style.transform = 'translateX(2px)';
+                      e.currentTarget.style.backgroundColor = colorScheme.light;
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isSelected) {
                       e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.borderColor = '#f3f4f6';
-                      e.currentTarget.style.transform = 'translateX(0)';
                     }
                   }}
                 >
@@ -1647,7 +1758,7 @@ function RestaurantPOSContent() {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent)',
+                      background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent)',
                       animation: 'shimmer 2s infinite'
                     }} />
                   )}
@@ -1659,22 +1770,41 @@ function RestaurantPOSContent() {
                     position: 'relative',
                     zIndex: 1
                   }}>
-                    <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {/* Category Icon */}
                       <div style={{
-                        fontSize: '14px',
+                        width: '28px',
+                        height: '28px',
+                        backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : colorScheme.bg,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
                         fontWeight: '600',
-                        color: isSelected ? 'white' : '#1f2937',
-                        marginBottom: '2px',
-                        lineHeight: '1.3'
+                        color: isSelected ? 'white' : 'white',
+                        boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.2)' : `0 2px 6px ${colorScheme.bg}40`
                       }}>
-                        {category.name}
+                        {category.emoji}
                       </div>
-                      <div style={{
-                        fontSize: '11px',
-                        color: isSelected ? 'rgba(255,255,255,0.8)' : '#6b7280',
-                        fontWeight: '500'
-                      }}>
-                        {categoryItems.length} items
+                      
+                      <div>
+                        <div style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: isSelected ? 'white' : colorScheme.text,
+                          marginBottom: '2px',
+                          lineHeight: '1.3'
+                        }}>
+                          {category.name}
+                        </div>
+                        <div style={{
+                          fontSize: '11px',
+                          color: isSelected ? 'rgba(255,255,255,0.8)' : '#6b7280',
+                          fontWeight: '500'
+                        }}>
+                          {categoryItems.length} items
+                        </div>
                       </div>
                     </div>
                     
@@ -1683,8 +1813,7 @@ function RestaurantPOSContent() {
                         width: '6px',
                         height: '6px',
                         backgroundColor: 'white',
-                        borderRadius: '50%',
-                        boxShadow: '0 0 8px rgba(255,255,255,0.5)'
+                        borderRadius: '0px'
                       }} />
                     )}
                   </div>
@@ -2330,6 +2459,177 @@ function RestaurantPOSContent() {
         onClose={() => setNotification(null)}
         duration={5000}
       />
+      
+      {/* Fullscreen Mode Button */}
+      <button
+        onClick={toggleFullscreen}
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          left: '20px',
+          width: '48px',
+          height: '48px',
+          backgroundColor: fullscreenStep === 0 ? '#ef4444' : fullscreenStep === 1 ? '#f97316' : '#10b981',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '16px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          transition: 'all 0.3s ease',
+          zIndex: 1000,
+          opacity: 0.9
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'scale(1.1)';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.opacity = '0.9';
+          e.target.style.transform = 'scale(1)';
+        }}
+        title={
+          fullscreenStep === 0 ? 'Hide Navigation' :
+          fullscreenStep === 1 ? 'Enter Fullscreen' :
+          'Exit Fullscreen'
+        }
+      >
+        {fullscreenStep === 0 ? <FaExpand size={18} /> :
+         fullscreenStep === 1 ? <FaExpandArrowsAlt size={18} /> :
+         <FaCompress size={18} />}
+      </button>
+
+      {/* Logout Dropdown - Only visible when navigation is hidden */}
+      {isNavigationHidden && user && (
+        <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1001 }} data-logout-dropdown>
+          <button
+            onClick={() => setShowLogoutDropdown(!showLogoutDropdown)}
+            style={{
+              backgroundColor: 'white',
+              border: '1px solid #e5e7eb',
+              borderRadius: '12px',
+              padding: '8px 12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'translateY(-1px)';
+              e.target.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+            }}
+          >
+            <div style={{
+              width: '24px',
+              height: '24px',
+              backgroundColor: '#ef4444',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '10px',
+              fontWeight: '600'
+            }}>
+              {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <span style={{ fontSize: '12px', fontWeight: '600', color: '#1f2937' }}>
+              {user.name || 'User'}
+            </span>
+            <FaChevronDown size={10} color="#6b7280" />
+          </button>
+
+          {/* Dropdown Menu */}
+          {showLogoutDropdown && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              right: '0',
+              marginTop: '8px',
+              backgroundColor: 'white',
+              border: '1px solid #e5e7eb',
+              borderRadius: '12px',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+              overflow: 'hidden',
+              minWidth: '200px',
+              zIndex: 1002
+            }}>
+              {/* User Info */}
+              <div style={{ padding: '12px', borderBottom: '1px solid #f3f4f6' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    backgroundColor: '#ef4444',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '12px',
+                    fontWeight: '600'
+                  }}>
+                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>
+                      {user.name || 'User'}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#6b7280' }}>
+                      {user.role || 'Staff'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Logout Button */}
+              <div style={{ padding: '8px' }}>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+                    color: '#dc2626',
+                    border: '1px solid rgba(220, 38, 38, 0.2)',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
+                    e.currentTarget.style.color = '#dc2626';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <FaSignOutAlt size={10} />
+                  Logout
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

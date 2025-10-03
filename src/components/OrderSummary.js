@@ -57,7 +57,8 @@ const OrderSummary = ({
         color: 'white',
         position: 'relative',
         overflow: 'hidden',
-        boxShadow: '0 4px 20px rgba(239, 68, 68, 0.3)'
+        boxShadow: '0 4px 20px rgba(239, 68, 68, 0.3)',
+        borderRadius: '5px'
       }}>
         {/* Background Pattern */}
         <div style={{

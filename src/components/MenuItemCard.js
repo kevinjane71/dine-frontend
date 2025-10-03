@@ -15,21 +15,43 @@ const MenuItemCard = ({
     <div
       className="menu-item-card"
       style={{
-        backgroundColor: 'white',
-        border: '1px solid #e5e7eb',
-        borderRadius: '8px',
+        backgroundColor: '#ffffff',
+        border: '1px solid #f3f4f6',
+        borderTop: `4px solid ${isVeg ? '#22c55e' : '#ef4444'}`,
+        borderRadius: '5px',
         cursor: 'pointer',
         height: isMobile ? '100px' : '110px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        padding: '8px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        padding: '12px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        transition: 'none' // Remove all transitions for stability
       }}
       onClick={() => onAddToCart(item)}
     >
+      
+      {/* Short Code - Top Left Corner */}
+      {item.shortCode && (
+        <div style={{
+          position: 'absolute',
+          top: '8px',
+          left: '8px',
+          backgroundColor: '#f3f4f6',
+          color: '#6b7280',
+          padding: '2px 6px',
+          borderRadius: '4px',
+          fontSize: '8px',
+          fontWeight: '600',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          zIndex: 5
+        }}>
+          {item.shortCode}
+        </div>
+      )}
       
       {/* Veg/Non-Veg Indicator */}
       {/* <div style={{
@@ -60,13 +82,13 @@ const MenuItemCard = ({
         justifyContent: 'center',
         alignItems: 'center',
         textAlign: 'center',
-        paddingTop: '4px'
+        paddingTop: '2px'
       }}>
         {/* Dish Name */}
         <h3 style={{
-          fontSize: isMobile ? '14px' : '16px',
-          fontWeight: '700',
-          margin: '0 0 6px 0',
+          fontSize: isMobile ? '12px' : '14px',
+          fontWeight: '600',
+          margin: '0 0 4px 0',
           color: '#1f2937',
           lineHeight: '1.2',
           textAlign: 'center',
@@ -74,7 +96,8 @@ const MenuItemCard = ({
           display: '-webkit-box',
           WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical',
-          wordWrap: 'break-word'
+          wordWrap: 'break-word',
+          maxHeight: '32px'
         }}>
           {item.name}
         </h3>
@@ -85,9 +108,9 @@ const MenuItemCard = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: '6px',
+        paddingTop: '8px',
         borderTop: '1px solid #f3f4f6',
-        marginTop: '4px'
+        marginTop: '6px'
       }}>
         {/* Price */}
         <div style={{
@@ -96,21 +119,12 @@ const MenuItemCard = ({
           alignItems: 'flex-start'
         }}>
           <span style={{
-            fontSize: isMobile ? '14px' : '16px',
+            fontSize: isMobile ? '12px' : '14px',
             color: '#ef4444',
             fontWeight: '700',
             lineHeight: 1
           }}>
             ₹{item.price}
-          </span>
-          <span style={{
-            fontSize: '8px',
-            color: '#6b7280',
-            fontWeight: '500',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}>
-            {isVeg ? 'VEG' : 'NON-VEG'}
           </span>
         </div>
         
@@ -118,9 +132,11 @@ const MenuItemCard = ({
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: quantityInCart > 0 ? '#ef4444' : '#f3f4f6',
-          borderRadius: '6px',
-          overflow: 'hidden'
+          backgroundColor: quantityInCart > 0 ? '#ef4444' : '#f8fafc',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          border: quantityInCart > 0 ? 'none' : '1px solid #e5e7eb',
+          boxShadow: quantityInCart > 0 ? '0 2px 4px rgba(239, 68, 68, 0.2)' : '0 1px 2px rgba(0, 0, 0, 0.05)'
         }}>
           {quantityInCart > 0 ? (
             <>
@@ -130,29 +146,32 @@ const MenuItemCard = ({
                   onRemoveFromCart(item.id);
                 }}
                 style={{
-                  width: '24px',
-                  height: '24px',
+                  width: '26px',
+                  height: '26px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'white',
                   backgroundColor: 'transparent',
                   border: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  borderRadius: '4px',
+                  transition: 'none'
                 }}
               >
-                <FaMinus size={8} />
+                <FaMinus size={9} />
               </button>
               <span style={{
-                width: '28px',
-                height: '24px',
+                width: '30px',
+                height: '26px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontWeight: 'bold',
+                fontWeight: '700',
                 color: 'white',
-                fontSize: '12px',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                fontSize: '11px',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                borderRadius: '4px'
               }}>
                 {quantityInCart}
               </span>
@@ -162,18 +181,20 @@ const MenuItemCard = ({
                   onAddToCart(item);
                 }}
                 style={{
-                  width: '24px',
-                  height: '24px',
+                  width: '26px',
+                  height: '26px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'white',
                   backgroundColor: 'transparent',
                   border: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  borderRadius: '4px',
+                  transition: 'none'
                 }}
               >
-                <FaPlus size={8} />
+                <FaPlus size={9} />
               </button>
             </>
           ) : (
@@ -183,7 +204,7 @@ const MenuItemCard = ({
                 onAddToCart(item);
               }}
               style={{
-                padding: '4px 8px',
+                padding: '6px 10px',
                 backgroundColor: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
@@ -192,7 +213,8 @@ const MenuItemCard = ({
                 gap: '4px',
                 color: '#6b7280',
                 fontWeight: '600',
-                fontSize: '10px'
+                fontSize: '10px',
+                transition: 'none'
               }}
             >
               <FaPlus size={8} />

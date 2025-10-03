@@ -27,7 +27,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 1024); // Increased breakpoint for better tablet support
     };
     
     checkMobile();
@@ -488,13 +488,13 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section style={{
         background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)',
-        padding: isMobile ? '80px 20px' : '120px 20px',
+        padding: isMobile ? '60px 16px' : '120px 20px',
         textAlign: 'center',
         position: 'relative',
         overflow: 'hidden',
-        minHeight: '100vh',
-                      display: 'flex', 
-                      alignItems: 'center',
+        minHeight: isMobile ? '80vh' : '100vh',
+        display: 'flex', 
+        alignItems: 'center',
         justifyContent: 'center'
       }}>
         {/* Background Pattern */}
@@ -547,26 +547,26 @@ export default function LandingPage() {
         <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           {/* Hero Icon */}
           <div style={{
-            fontSize: '120px',
-            marginBottom: '32px',
+            fontSize: isMobile ? '80px' : '120px',
+            marginBottom: isMobile ? '24px' : '32px',
             animation: 'pulse 2s ease-in-out infinite',
             filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2))'
           }}>
             🍽️
-                    </div>
+          </div>
                     
           {/* Main Heading */}
           <h1 style={{
-            fontSize: isMobile ? '36px' : '56px',
+            fontSize: isMobile ? '28px' : '56px',
             fontWeight: '900',
             color: 'white',
-            marginBottom: '24px',
+            marginBottom: isMobile ? '20px' : '24px',
             textShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
             lineHeight: '1.2'
           }}>
             Restaurant Management
             <br />
-                      <span style={{
+            <span style={{
               background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -575,16 +575,17 @@ export default function LandingPage() {
               marginTop: '8px'
             }}>
               Revolution 🚀
-                      </span>
+            </span>
           </h1>
           
           {/* Subtitle */}
           <p style={{
-            fontSize: isMobile ? '20px' : '24px',
+            fontSize: isMobile ? '16px' : '24px',
             color: 'rgba(255, 255, 255, 0.9)',
-            marginBottom: '16px',
+            marginBottom: isMobile ? '12px' : '16px',
             fontWeight: '600',
-            textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+            lineHeight: '1.4'
           }}>
             The Future of Dining is Here
           </p>
@@ -1543,47 +1544,52 @@ export default function LandingPage() {
 
       {/* Pricing Section */}
       <section id="pricing" style={{
-        padding: isMobile ? '60px 20px' : '100px 20px',
+        padding: isMobile ? '40px 16px' : '100px 20px',
         background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? '40px' : '60px' }}>
             <h2 style={{
-              fontSize: isMobile ? '28px' : '36px',
+              fontSize: isMobile ? '24px' : '36px',
               fontWeight: 'bold',
               color: '#1f2937',
-                  marginBottom: '16px'
-                }}>
+              marginBottom: '16px',
+              lineHeight: '1.2'
+            }}>
               Choose Your Perfect Plan
             </h2>
             <p style={{
-              fontSize: '18px',
+              fontSize: isMobile ? '16px' : '18px',
               color: '#6b7280',
               maxWidth: '600px',
-              margin: '0 auto'
+              margin: '0 auto',
+              lineHeight: '1.5'
             }}>
               Start free and scale as you grow. All plans include 14-day free trial.
             </p>
-            </div>
-            
-                      <div style={{
+          </div>
+          
+          <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-            gap: '24px',
-            alignItems: 'stretch'
+            gap: isMobile ? '16px' : '24px',
+            alignItems: 'stretch',
+            maxWidth: isMobile ? '400px' : 'none',
+            margin: isMobile ? '0 auto' : '0'
           }}>
             {plans.map((plan, index) => (
               <div
                 key={index}
-                  style={{
+                style={{
                   backgroundColor: 'white',
-                  borderRadius: '20px',
-                  padding: '32px 24px',
+                  borderRadius: isMobile ? '16px' : '20px',
+                  padding: isMobile ? '24px 20px' : '32px 24px',
                   position: 'relative',
                   border: plan.popular ? '2px solid #ef4444' : '1px solid #e5e7eb',
                   boxShadow: plan.popular ? '0 8px 32px rgba(239, 68, 68, 0.15)' : '0 4px 16px rgba(0,0,0,0.05)',
-                    display: 'flex',
-                  flexDirection: 'column'
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: isMobile ? 'auto' : '500px'
                 }}
               >
                 {plan.popular && (
@@ -1604,68 +1610,70 @@ export default function LandingPage() {
               </div>
                 )}
 
-                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ textAlign: 'center', marginBottom: isMobile ? '20px' : '24px' }}>
                   <h3 style={{
-                    fontSize: '24px',
-                          fontWeight: 'bold',
-                          color: '#1f2937',
-                    marginBottom: '8px'
+                    fontSize: isMobile ? '20px' : '24px',
+                    fontWeight: 'bold',
+                    color: '#1f2937',
+                    marginBottom: '8px',
+                    lineHeight: '1.2'
                   }}>
                     {plan.name}
                   </h3>
                   <div style={{ marginBottom: '8px' }}>
                     <span style={{
-                      fontSize: '36px',
+                      fontSize: isMobile ? '28px' : '36px',
                       fontWeight: 'bold',
                       color: '#1f2937'
                     }}>
                       {plan.price}
-                  </span>
-                    <span style={{ color: '#6b7280' }}>/{plan.period}</span>
-                </div>
-                  <p style={{ color: '#6b7280', fontSize: '14px' }}>
+                    </span>
+                    <span style={{ color: '#6b7280', fontSize: isMobile ? '14px' : '16px' }}>/{plan.period}</span>
+                  </div>
+                  <p style={{ color: '#6b7280', fontSize: isMobile ? '13px' : '14px', lineHeight: '1.4' }}>
                     {plan.description}
-                </p>
-            </div>
+                  </p>
+                </div>
             
                 <ul style={{
                   listStyle: 'none',
                   padding: 0,
-                  margin: '0 0 32px 0',
+                  margin: `0 0 ${isMobile ? '24px' : '32px'} 0`,
                   flex: 1
                 }}>
                   {plan.features.map((feature, featureIndex) => (
                     <li
                       key={featureIndex}
-                  style={{
-                        padding: '8px 0',
-                            display: 'flex',
-                            alignItems: 'center',
-                        gap: '12px',
-                    fontSize: '14px',
-                        color: '#374151'
+                      style={{
+                        padding: isMobile ? '6px 0' : '8px 0',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: isMobile ? '8px' : '12px',
+                        fontSize: isMobile ? '13px' : '14px',
+                        color: '#374151',
+                        lineHeight: '1.4'
                       }}
                     >
-                      <FaCheckCircle size={16} color="#10b981" />
-                      {feature}
+                      <FaCheckCircle size={isMobile ? 14 : 16} color="#10b981" style={{ marginTop: '2px', flexShrink: 0 }} />
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
 
-              <button
+                <button
                   onClick={handleGetStarted}
-                style={{
+                  style={{
                     width: '100%',
-                    padding: '14px 24px',
+                    padding: isMobile ? '12px 20px' : '14px 24px',
                     background: plan.popular 
                       ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
                       : 'transparent',
                     color: plan.popular ? 'white' : '#ef4444',
                     border: plan.popular ? 'none' : '2px solid #ef4444',
-                    borderRadius: '12px',
+                    borderRadius: isMobile ? '10px' : '12px',
                     fontWeight: 'bold',
-                    fontSize: '16px',
-                  cursor: 'pointer',
+                    fontSize: isMobile ? '14px' : '16px',
+                    cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
