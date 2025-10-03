@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaArrowLeft, FaPhone, FaChair, FaUtensils, FaLeaf, FaDrumstickBite, FaSpinner } from 'react-icons/fa';
 import apiClient from '../../lib/api.js';
@@ -30,9 +30,9 @@ const PlaceOrderPage = () => {
 
   useEffect(() => {
     loadRestaurantData();
-  }, [restaurantId]);
+  }, [restaurantId, loadRestaurantData]);
 
-  const loadRestaurantData = async () => {
+  const loadRestaurantData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -54,7 +54,7 @@ const PlaceOrderPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [restaurantId]);
 
   const scrollToCategory = (category) => {
     if (category === 'all') {
@@ -223,7 +223,7 @@ const PlaceOrderPage = () => {
           <FaUtensils size={60} color="#e53e3e" style={{ marginBottom: '20px' }} />
           <h2 style={{ color: '#1f2937', marginBottom: '10px' }}>Restaurant Not Found</h2>
           <p style={{ color: '#6b7280', marginBottom: '20px' }}>
-            We couldn't find the restaurant menu. Please check the QR code or contact the restaurant.
+            We couldn&apos;t find the restaurant menu. Please check the QR code or contact the restaurant.
           </p>
           <button
             onClick={() => router.push('/')}
