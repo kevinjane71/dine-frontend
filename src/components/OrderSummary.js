@@ -10,7 +10,8 @@ import {
   FaMoneyBillWave, 
   FaSave, 
   FaCheckCircle, 
-  FaSpinner 
+  FaSpinner,
+  FaQrcode
 } from 'react-icons/fa';
 
 const OrderSummary = ({ 
@@ -36,7 +37,10 @@ const OrderSummary = ({
   orderLookup,
   setOrderLookup,
   currentOrder,
-  setCurrentOrder
+  setCurrentOrder,
+  onShowQRCode,
+  restaurantId,
+  restaurantName
 }) => {
   // Debug logging
   console.log('OrderSummary orderSuccess:', orderSuccess);
@@ -93,7 +97,7 @@ const OrderSummary = ({
             }}>
               <FaShoppingCart size={14} />
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <h2 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0 }}>
                 Order Summary
               </h2>
@@ -101,6 +105,27 @@ const OrderSummary = ({
                 {cart.reduce((sum, item) => sum + item.quantity, 0)} items
               </p>
             </div>
+            
+            {/* QR Code Button */}
+            <button
+              onClick={onShowQRCode}
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '6px',
+                padding: '6px',
+                color: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.2s ease'
+              }}
+              title="Generate QR Code for Customer Orders"
+            >
+              <FaQrcode size={12} />
+            </button>
           </div>
           
           <button

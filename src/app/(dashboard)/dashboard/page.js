@@ -8,6 +8,7 @@ import MenuItemCard from '../../../components/MenuItemCard';
 import CategoryButton from '../../../components/CategoryButton';
 import OrderSummary from '../../../components/OrderSummary';
 import Notification from '../../../components/Notification';
+import QRCodeModal from '../../../components/QRCodeModal';
 import { 
   FaSearch, 
   FaShoppingCart, 
@@ -91,6 +92,9 @@ function RestaurantPOSContent() {
   const [fullscreenStep, setFullscreenStep] = useState(0); // 0: normal, 1: nav hidden, 2: fullscreen
   const [showLogoutDropdown, setShowLogoutDropdown] = useState(false);
   const [user, setUser] = useState(null);
+  
+  // QR Code modal state
+  const [showQRCodeModal, setShowQRCodeModal] = useState(false);
 
   // Load user data
   useEffect(() => {
@@ -106,6 +110,11 @@ function RestaurantPOSContent() {
     localStorage.removeItem('restaurant');
     localStorage.removeItem('cart');
     window.location.href = '/login';
+  };
+
+  // QR Code handler
+  const handleShowQRCode = () => {
+    setShowQRCodeModal(true);
   };
 
   // Close logout dropdown when clicking outside
@@ -2018,6 +2027,9 @@ function RestaurantPOSContent() {
             setOrderLookup={setOrderLookup}
             currentOrder={currentOrder}
             setCurrentOrder={setCurrentOrder}
+            onShowQRCode={handleShowQRCode}
+            restaurantId={selectedRestaurant?.id}
+            restaurantName={selectedRestaurant?.name}
           />
         </div>
         )}
@@ -2630,6 +2642,14 @@ function RestaurantPOSContent() {
           )}
         </div>
       )}
+      
+      {/* QR Code Modal */}
+      <QRCodeModal
+        isOpen={showQRCodeModal}
+        onClose={() => setShowQRCodeModal(false)}
+        restaurantId={selectedRestaurant?.id}
+        restaurantName={selectedRestaurant?.name}
+      />
     </div>
   );
 }

@@ -1,0 +1,317 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { FaQrcode, FaTimes, FaDownload, FaCopy } from 'react-icons/fa';
+import QRCode from 'qrcode';
+
+const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen && restaurantId) {
+      generateQRCode();
+    }
+  }, [isOpen, restaurantId]);
+
+  const generateQRCode = async () => {
+    try {
+      setLoading(true);
+      
+      // Generate the URL for the restaurant
+      const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
+      const qrUrl = `${baseUrl}/placeorder?restaurant=${restaurantId}`;
+      
+      // Generate QR code
+      const qrDataUrl = await QRCode.toDataURL(qrUrl, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: '#1f2937',
+          light: '#ffffff'
+        }
+      });
+      
+      setQrCodeDataUrl(qrDataUrl);
+      
+      // Also generate for canvas (for download)
+      if (canvasRef.current) {
+        await QRCode.toCanvas(canvasRef.current, qrUrl, {
+          width: 300,
+          margin: 2,
+          color: {
+            dark: '#1f2937',
+            light: '#ffffff'
+          }
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadQRCode = () => {
+    if (canvasRef.current) {
+      const link = document.createElement('a');
+      link.download = `qr-code-${restaurantName || 'restaurant'}.png`;
+      link.href = canvasRef.current.toDataURL();
+      link.click();
+    }
+  };
+
+  const copyQRUrl = () => {
+    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
+    const qrUrl = `${baseUrl}/placeorder?restaurant=${restaurantId}`;
+    navigator.clipboard.writeText(qrUrl);
+    // You could add a toast notification here
+  };
+
+  if (!isOpen) return null;
+
+  const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
+  const qrUrl = `${baseUrl}/placeorder?restaurant=${restaurantId}`;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '16px'
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '16px',
+        padding: '24px',
+        maxWidth: '400px',
+        width: '100%',
+        boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+        position: 'relative'
+      }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '20px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <FaQrcode size={24} color="#e53e3e" />
+            <h2 style={{
+              fontSize: '20px',
+              fontWeight: 'bold',
+              color: '#1f2937',
+              margin: 0
+            }}>
+              Customer QR Code
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: '8px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              color: '#6b7280',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
+
+        {/* Restaurant Info */}
+        <div style={{
+          backgroundColor: '#f9fafb',
+          padding: '16px',
+          borderRadius: '12px',
+          marginBottom: '20px'
+        }}>
+          <h3 style={{
+            fontSize: '16px',
+            fontWeight: '600',
+            color: '#1f2937',
+            margin: '0 0 8px 0'
+          }}>
+            {restaurantName || 'Restaurant'}
+          </h3>
+          <p style={{
+            fontSize: '14px',
+            color: '#6b7280',
+            margin: '0 0 8px 0'
+          }}>
+            Customers can scan this QR code to place orders directly from their table.
+          </p>
+          <p style={{
+            fontSize: '12px',
+            color: '#9ca3af',
+            margin: 0,
+            wordBreak: 'break-all'
+          }}>
+            {qrUrl}
+          </p>
+        </div>
+
+        {/* QR Code */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginBottom: '20px'
+        }}>
+          {loading ? (
+            <div style={{
+              width: '300px',
+              height: '300px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#f9fafb',
+              borderRadius: '12px'
+            }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  border: '4px solid #e5e7eb',
+                  borderTop: '4px solid #e53e3e',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+                  Generating QR Code...
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              backgroundColor: 'white',
+              padding: '16px',
+              borderRadius: '12px',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+            }}>
+              {qrCodeDataUrl && (
+                <img
+                  src={qrCodeDataUrl}
+                  alt="QR Code"
+                  style={{
+                    width: '300px',
+                    height: '300px',
+                    display: 'block'
+                  }}
+                />
+              )}
+              {/* Hidden canvas for download */}
+              <canvas
+                ref={canvasRef}
+                style={{ display: 'none' }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Instructions */}
+        <div style={{
+          backgroundColor: '#fef7f0',
+          padding: '16px',
+          borderRadius: '12px',
+          marginBottom: '20px'
+        }}>
+          <h4 style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#1f2937',
+            margin: '0 0 8px 0'
+          }}>
+            How to use:
+          </h4>
+          <ol style={{
+            fontSize: '13px',
+            color: '#6b7280',
+            margin: 0,
+            paddingLeft: '16px'
+          }}>
+            <li>Print this QR code and place it on tables</li>
+            <li>Customers scan the code with their phone</li>
+            <li>They can browse menu and place orders directly</li>
+            <li>Orders appear in your kitchen system</li>
+          </ol>
+        </div>
+
+        {/* Actions */}
+        <div style={{
+          display: 'flex',
+          gap: '12px'
+        }}>
+          <button
+            onClick={downloadQRCode}
+            disabled={loading || !qrCodeDataUrl}
+            style={{
+              flex: 1,
+              background: loading || !qrCodeDataUrl ? '#d1d5db' : '#f3f4f6',
+              color: loading || !qrCodeDataUrl ? '#9ca3af' : '#374151',
+              border: 'none',
+              padding: '12px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: loading || !qrCodeDataUrl ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            <FaDownload size={14} />
+            Download
+          </button>
+          <button
+            onClick={copyQRUrl}
+            style={{
+              flex: 1,
+              background: '#f3f4f6',
+              color: '#374151',
+              border: 'none',
+              padding: '12px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            <FaCopy size={14} />
+            Copy URL
+          </button>
+        </div>
+
+        <style jsx>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    </div>
+  );
+};
+
+export default QRCodeModal;
