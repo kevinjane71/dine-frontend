@@ -95,7 +95,7 @@ function RestaurantPOSContent() {
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showMobileCart, setShowMobileCart] = useState(false);
-  
+
   // Fullscreen mode states
   const [isNavigationHidden, setIsNavigationHidden] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -138,6 +138,31 @@ function RestaurantPOSContent() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showLogoutDropdown]);
+  
+  // Get appropriate emoji for category
+  const getCategoryEmoji = (category) => {
+    const categoryLower = category.toLowerCase();
+    const emojiMap = {
+      'appetizer': '🥗', 'appetizers': '🥗', 'starter': '🥗', 'starters': '🥗',
+      'main': '🍛', 'main-course': '🍛', 'mains': '🍛', 'entree': '🍛', 'entrees': '🍛',
+      'rice': '🍚', 'biryani': '🍚', 'biryanis': '🍚', 'fried-rice': '🍚',
+      'dal': '🍲', 'curry': '🍲', 'curries': '🍲', 'gravy': '🍲',
+      'bread': '🍞', 'breads': '🍞', 'naan': '🍞', 'roti': '🍞', 'chapati': '🍞',
+      'beverage': '🥤', 'beverages': '🥤', 'drinks': '🥤', 'juice': '🧃', 'tea': '☕', 'coffee': '☕',
+      'dessert': '🍰', 'desserts': '🍰', 'sweet': '🧁', 'sweets': '🧁', 'ice-cream': '🍨',
+      'snack': '🍿', 'snacks': '🍿', 'chaat': '🍿',
+      'pizza': '🍕', 'pizzas': '🍕',
+      'burger': '🍔', 'burgers': '🍔',
+      'sandwich': '🥪', 'sandwiches': '🥪',
+      'salad': '🥙', 'salads': '🥙',
+      'soup': '🍜', 'soups': '🍜',
+      'pasta': '🍝', 'pastas': '🍝',
+      'chinese': '🥢', 'asian': '🥢',
+      'tandoor': '🔥', 'grilled': '🔥', 'bbq': '🔥'
+    };
+    
+    return emojiMap[categoryLower] || '🍽️';
+  };
 
   // Generate dynamic categories based on actual menu items
   const getDynamicCategories = () => {
@@ -168,31 +193,6 @@ function RestaurantPOSContent() {
     });
     
     return Array.from(categoryMap.values());
-  };
-  
-  // Get appropriate emoji for category
-  const getCategoryEmoji = (category) => {
-    const categoryLower = category.toLowerCase();
-    const emojiMap = {
-      'appetizer': '🥗', 'appetizers': '🥗', 'starter': '🥗', 'starters': '🥗',
-      'main': '🍛', 'main-course': '🍛', 'mains': '🍛', 'entree': '🍛', 'entrees': '🍛',
-      'rice': '🍚', 'biryani': '🍚', 'biryanis': '🍚', 'fried-rice': '🍚',
-      'dal': '🍲', 'curry': '🍲', 'curries': '🍲', 'gravy': '🍲',
-      'bread': '🍞', 'breads': '🍞', 'naan': '🍞', 'roti': '🍞', 'chapati': '🍞',
-      'beverage': '🥤', 'beverages': '🥤', 'drinks': '🥤', 'juice': '🧃', 'tea': '☕', 'coffee': '☕',
-      'dessert': '🍰', 'desserts': '🍰', 'sweet': '🧁', 'sweets': '🧁', 'ice-cream': '🍨',
-      'snack': '🍿', 'snacks': '🍿', 'chaat': '🍿',
-      'pizza': '🍕', 'pizzas': '🍕',
-      'burger': '🍔', 'burgers': '🍔',
-      'sandwich': '🥪', 'sandwiches': '🥪',
-      'salad': '🥙', 'salads': '🥙',
-      'soup': '🍜', 'soups': '🍜',
-      'pasta': '🍝', 'pastas': '🍝',
-      'chinese': '🥢', 'asian': '🥢',
-      'tandoor': '🔥', 'grilled': '🔥', 'bbq': '🔥'
-    };
-    
-    return emojiMap[categoryLower] || '🍽️';
   };
   
   const categories = getDynamicCategories();

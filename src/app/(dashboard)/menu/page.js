@@ -1013,20 +1013,7 @@ const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, 
 const MenuManagement = () => {
   const router = useRouter();
   const [menuItems, setMenuItems] = useState([]);
-  const [categories, setCategories] = useState([
-    { id: 'appetizer', name: 'Appetizers', emoji: '🥗' },
-    { id: 'main-course', name: 'Main Course', emoji: '🍽️' },
-    { id: 'dessert', name: 'Desserts', emoji: '🍰' },
-    { id: 'beverages', name: 'Beverages', emoji: '🥤' },
-    { id: 'pizza', name: 'Pizza', emoji: '🍕' },
-    { id: 'chinese', name: 'Chinese', emoji: '🥢' },
-    { id: 'bread', name: 'Bread', emoji: '🍞' },
-    { id: 'rice', name: 'Rice', emoji: '🍚' },
-    { id: 'dal', name: 'Dal', emoji: '🍛' },
-    { id: 'south-indian', name: 'South Indian', emoji: '🍛' },
-    { id: 'north-indian', name: 'North Indian', emoji: '🍽️' },
-    { id: 'fast-food', name: 'Fast Food', emoji: '🍔' }
-  ]);
+  const [categories, setCategories] = useState(genericCategories);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedVegFilter, setSelectedVegFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -1168,7 +1155,7 @@ const MenuManagement = () => {
       const existingCategories = uniqueCategories.map(cat => {
         const generic = genericCategories.find(g => g.id === cat);
         return generic || {
-          id: cat,
+        id: cat,
           name: cat.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
           emoji: '🍽️'
         };
@@ -1731,7 +1718,7 @@ const MenuManagement = () => {
                 backgroundClip: 'text'
               }}>
                 🚀 Transform Your Vision 📱
-              </h3>
+            </h3>
               
               <p style={{
                 fontSize: '18px',
@@ -1826,8 +1813,8 @@ const MenuManagement = () => {
                     </button>
                     
                     {/* Add Item Button */}
-                    <button
-                      onClick={() => setShowAddForm(true)}
+            <button
+              onClick={() => setShowAddForm(true)}
                       style={{
                         padding: '16px 28px',
                         background: 'linear-gradient(135deg, #ef4444, #dc2626)',
@@ -1853,10 +1840,10 @@ const MenuManagement = () => {
                         e.target.style.transform = 'translateY(0)';
                         e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
                       }}
-                    >
-                      <FaPlus size={16} />
+            >
+              <FaPlus size={16} />
                       Add New Item
-                    </button>
+            </button>
                     
                     {/* Set Up Restaurant Link */}
                     <div style={{
