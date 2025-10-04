@@ -227,7 +227,12 @@ const PlaceOrderContent = () => {
       try {
         // Import Firebase auth functions
         const { signInWithPhoneNumber, RecaptchaVerifier } = await import('firebase/auth');
-        const { auth } = await import('../../../firebase');
+        const { auth, isFirebaseConfigured } = await import('../../../firebase');
+
+        // Check if Firebase is properly configured
+        if (!isFirebaseConfigured()) {
+          throw new Error('Firebase not configured - using demo mode');
+        }
 
         // Format phone number
         let phoneNumber = customerInfo.phone.trim();
@@ -268,6 +273,15 @@ const PlaceOrderContent = () => {
         
       } catch (firebaseError) {
         console.error('Firebase OTP error:', firebaseError);
+        
+        // Provide specific error messages based on Firebase error codes
+        if (firebaseError.code === 'auth/argument-error') {
+          console.log('Firebase argument error - likely reCAPTCHA or config issue');
+        } else if (firebaseError.code === 'auth/invalid-phone-number') {
+          console.log('Invalid phone number format');
+        } else if (firebaseError.code === 'auth/too-many-requests') {
+          console.log('Too many OTP requests');
+        }
         
         // Fallback: Simulate OTP for demo purposes
         console.log('Using fallback OTP simulation');
@@ -1300,6 +1314,9 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity }) => 
           </div>
         </div>
       </div>
+
+      {/* Hidden reCAPTCHA container for Firebase OTP */}
+      <div id="recaptcha-container" style={{ display: 'none' }}></div>
     </div>
   );
 };
