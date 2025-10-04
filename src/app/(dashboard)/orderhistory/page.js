@@ -195,6 +195,22 @@ const OrderHistory = () => {
     });
   }, [selectedWaiter, searchTerm]);
 
+  // Listen for restaurant changes from navigation
+  useEffect(() => {
+    const handleRestaurantChange = (event) => {
+      console.log('🏪 Order History page: Restaurant changed, reloading data', event.detail);
+      // Trigger a re-fetch by updating searchTerm (which will trigger the main useEffect)
+      setSearchTerm(prev => prev + ' '); // Add space to trigger re-fetch
+      setTimeout(() => setSearchTerm(prev => prev.trim()), 100); // Remove space after fetch
+    };
+
+    window.addEventListener('restaurantChanged', handleRestaurantChange);
+
+    return () => {
+      window.removeEventListener('restaurantChanged', handleRestaurantChange);
+    };
+  }, []);
+
   const getStatusInfo = (status) => {
     const statusMap = {
       'pending': { 
@@ -272,7 +288,17 @@ const OrderHistory = () => {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      await apiClient.updateOrderStatus(orderId, newStatus);
+      // Get current restaurant ID for validation
+      const userData = localStorage.getItem('user');
+      const user = JSON.parse(userData);
+      let restaurantId = user.restaurantId; // For staff users
+      
+      if (!restaurantId && (user.role === 'owner' || user.role === 'admin')) {
+        // For owners/admins, get selected restaurant
+        restaurantId = localStorage.getItem('selectedRestaurantId');
+      }
+      
+      await apiClient.updateOrderStatus(orderId, newStatus, restaurantId);
       setOrders(orders.map(order => 
         order.id === orderId ? { ...order, status: newStatus } : order
       ));

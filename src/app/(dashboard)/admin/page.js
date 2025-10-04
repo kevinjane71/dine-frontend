@@ -162,6 +162,37 @@ const Admin = () => {
     fetchRestaurants();
   }, [authorized]);
 
+  // Listen for restaurant changes from navigation
+  useEffect(() => {
+    const handleRestaurantChange = (event) => {
+      console.log('🏪 Admin page: Restaurant changed, reloading data', event.detail);
+      // Reload restaurants and update selected restaurant
+      const fetchRestaurants = async () => {
+        try {
+          const response = await apiClient.getRestaurants();
+          setRestaurants(response.restaurants || []);
+          
+          // Update selected restaurant based on localStorage
+          if (response.restaurants && response.restaurants.length > 0) {
+            const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+            const selectedRestaurant = response.restaurants.find(r => r.id === savedRestaurantId) || response.restaurants[0];
+            setSelectedRestaurant(selectedRestaurant);
+          }
+        } catch (error) {
+          console.error('Error reloading restaurants:', error);
+        }
+      };
+
+      fetchRestaurants();
+    };
+
+    window.addEventListener('restaurantChanged', handleRestaurantChange);
+
+    return () => {
+      window.removeEventListener('restaurantChanged', handleRestaurantChange);
+    };
+  }, []);
+
   // Fetch staff data when restaurant is selected
   useEffect(() => {
     const fetchStaff = async () => {

@@ -80,6 +80,7 @@ function RestaurantPOSContent() {
   const [tableNumber, setTableNumber] = useState('');
   const [orderLookup, setOrderLookup] = useState(''); // For table number or order ID lookup
   const [currentOrder, setCurrentOrder] = useState(null); // Current order being viewed/updated
+  const [orderSearchLoading, setOrderSearchLoading] = useState(false); // Loading state for order search
   
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false);
@@ -579,8 +580,8 @@ function RestaurantPOSContent() {
   const handleOrderLookup = async (e) => {
     if (e.key === 'Enter' && orderLookup.trim()) {
       try {
-        setLoading(true);
-        setError('');
+        setOrderSearchLoading(true);
+        setError(''); // Clear any existing errors
         
         const searchValue = orderLookup.trim();
         
@@ -588,14 +589,12 @@ function RestaurantPOSContent() {
         console.log('🔍 Order lookup - Search value:', searchValue);
         
         if (!selectedRestaurant?.id) {
-          setError('No restaurant selected');
-          setLoading(false);
-          return;
-        }
-        
-        // Try to find order by table number or order ID
-        if (!selectedRestaurant?.id) {
-          setError('No restaurant selected');
+          setNotification({
+            type: 'error',
+            title: 'No Restaurant Selected',
+            message: 'Please select a restaurant first',
+            show: true
+          });
           return;
         }
         
@@ -624,26 +623,36 @@ function RestaurantPOSContent() {
           setOrderType(order.orderType || 'dine-in');
           setPaymentMethod(order.paymentMethod || 'cash');
           
-          // Show notification
-          setOrderSuccess({
-            orderId: order.id,
-            show: true,
-            message: `Found Order for ${searchValue} - Ready to Edit! ✏️`
+          // Show success notification
+          setNotification({
+            type: 'success',
+            title: 'Order Found! 🎉',
+            message: `Order "${searchValue}" loaded successfully - Ready to edit!`,
+            show: true
           });
           
-          // Clear search after 3 seconds
-          setTimeout(() => {
-            setOrderSuccess(null);
-          }, 3000);
+          // Clear search input
+          setOrderLookup('');
           
         } else {
-          setError(`No active order found for "${searchValue}"`);
+          // Show not found notification instead of full-page error
+          setNotification({
+            type: 'warning',
+            title: 'Order Not Found',
+            message: `No active order found for "${searchValue}"`,
+            show: true
+          });
         }
       } catch (error) {
         console.error('Order lookup error:', error);
-        setError('Failed to search for order. Please try again.');
+        setNotification({
+          type: 'error',
+          title: 'Search Failed',
+          message: 'Failed to search for order. Please try again.',
+          show: true
+        });
       } finally {
-        setLoading(false);
+        setOrderSearchLoading(false);
       }
     }
   };
@@ -927,7 +936,7 @@ function RestaurantPOSContent() {
         if (response.order) {
           console.log('Updating order status to confirmed...');
           // Update order status to confirmed (sent to kitchen)
-          await apiClient.updateOrderStatus(response.order.id, 'confirmed');
+          await apiClient.updateOrderStatus(response.order.id, 'confirmed', selectedRestaurant?.id);
 
           // Update table status to 'serving' if table is assigned
           if (validatedTable) {
@@ -1879,13 +1888,33 @@ function RestaurantPOSContent() {
 
               {/* Order Lookup Input */}
               <div style={{ position: 'relative', flex: 1, maxWidth: '200px' }}>
-                <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#000000', opacity: 0.6 }} size={14} />
+                <FaSearch style={{ 
+                  position: 'absolute', 
+                  left: '12px', 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  color: '#000000', 
+                  opacity: 0.6,
+                  display: orderSearchLoading ? 'none' : 'block'
+                }} size={14} />
+                {orderSearchLoading && (
+                  <FaSpinner style={{ 
+                    position: 'absolute', 
+                    left: '12px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    color: '#ef4444', 
+                    opacity: 0.8,
+                    animation: 'spin 1s linear infinite'
+                  }} size={14} />
+                )}
                 <input
                   type="text"
                   placeholder="Search by Table No. or Order ID..."
                   value={orderLookup}
                   onChange={(e) => setOrderLookup(e.target.value)}
                   onKeyPress={handleOrderLookup}
+                  disabled={orderSearchLoading}
                   style={{
                     width: '100%',
                     paddingLeft: '36px',
@@ -1894,12 +1923,13 @@ function RestaurantPOSContent() {
                     paddingBottom: '10px',
                     border: 'none',
                     borderRadius: '0px',
-                    backgroundColor: '#f3f3f3',
+                    backgroundColor: orderSearchLoading ? '#f9f9f9' : '#f3f3f3',
                     fontSize: '14px',
                     fontWeight: '600',
                     outline: 'none',
-                    color: '#000000',
-                    transition: 'all 0.2s ease'
+                    color: orderSearchLoading ? '#9ca3af' : '#000000',
+                    transition: 'all 0.2s ease',
+                    cursor: orderSearchLoading ? 'not-allowed' : 'text'
                   }}
                   onFocus={(e) => {
                     e.target.style.backgroundColor = '#f3f3f3';

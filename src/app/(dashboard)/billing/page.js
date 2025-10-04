@@ -252,6 +252,22 @@ export default function BillingPage() {
     loadUserData();
   }, []);
 
+  // Listen for restaurant changes from navigation
+  useEffect(() => {
+    const handleRestaurantChange = (event) => {
+      console.log('🏪 Billing page: Restaurant changed', event.detail);
+      // Billing page doesn't need to reload data as it's user-specific, not restaurant-specific
+      // But we can show a notification that the restaurant context has changed
+      showNotification('info', 'Restaurant context updated. Billing remains user-specific.');
+    };
+
+    window.addEventListener('restaurantChanged', handleRestaurantChange);
+
+    return () => {
+      window.removeEventListener('restaurantChanged', handleRestaurantChange);
+    };
+  }, []);
+
   const formatCurrency = (amount, curr = currency) => {
     if (curr === 'INR') {
       return `₹${amount.toLocaleString()}`;

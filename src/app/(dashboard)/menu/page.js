@@ -1109,6 +1109,48 @@ const MenuManagement = () => {
     loadRestaurantContext();
   }, [router]);
 
+  // Listen for restaurant changes from navigation
+  useEffect(() => {
+    const handleRestaurantChange = (event) => {
+      console.log('🏪 Menu page: Restaurant changed, reloading data', event.detail);
+      // Reload restaurant context and menu data
+      const loadRestaurantContext = async () => {
+        try {
+          const userData = localStorage.getItem('user');
+          if (!userData) return;
+
+          const user = JSON.parse(userData);
+          let restaurantId = null;
+
+          if (user.restaurantId) {
+            restaurantId = user.restaurantId;
+          } else if (user.role === 'owner' || user.role === 'admin') {
+            const restaurantsResponse = await apiClient.getRestaurants();
+            const restaurants = restaurantsResponse.restaurants || [];
+            const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+            const selectedRestaurant = restaurants.find(r => r.id === savedRestaurantId) || restaurants[0];
+            restaurantId = selectedRestaurant?.id;
+            setCurrentRestaurant(selectedRestaurant);
+          }
+
+          if (restaurantId) {
+            await loadMenuData(restaurantId);
+          }
+        } catch (error) {
+          console.error('Error reloading restaurant context:', error);
+        }
+      };
+
+      loadRestaurantContext();
+    };
+
+    window.addEventListener('restaurantChanged', handleRestaurantChange);
+
+    return () => {
+      window.removeEventListener('restaurantChanged', handleRestaurantChange);
+    };
+  }, []);
+
   const loadMenuData = async (restaurantId) => {
     try {
       console.log('Loading menu data for restaurant:', restaurantId);
