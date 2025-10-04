@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
   FaArrowLeft, 
@@ -25,7 +25,7 @@ export default function BlogDetail() {
   const [loading, setLoading] = useState(true);
 
   // Blog posts data
-  const blogPosts = {
+  const blogPosts = useMemo(() => ({
     'why-dineopen-future-restaurant-management': {
       id: 'why-dineopen-future-restaurant-management',
       title: 'Why DineOpen is the Future of Restaurant Management',
@@ -306,7 +306,7 @@ export default function BlogDetail() {
       categoryColor: '#10b981',
       tags: ['Success Story', 'Case Study', 'Revenue Growth', 'Customer']
     }
-  };
+  }), []);
 
   useEffect(() => {
     const slug = params.slug;

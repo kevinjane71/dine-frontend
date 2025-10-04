@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { FaQrcode, FaTimes, FaDownload, FaCopy } from 'react-icons/fa';
 import QRCode from 'qrcode';
 
@@ -13,9 +13,9 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
     if (isOpen && restaurantId) {
       generateQRCode();
     }
-  }, [isOpen, restaurantId]);
+  }, [isOpen, restaurantId, generateQRCode]);
 
-  const generateQRCode = async () => {
+  const generateQRCode = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -52,7 +52,7 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [restaurantId]);
 
   const downloadQRCode = () => {
     if (canvasRef.current) {
