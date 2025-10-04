@@ -1727,8 +1727,8 @@ const MenuManagement = () => {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
               }}>
-                {searchTerm ? 'No dishes found' : 'Menu Management Ready! 🍽️'}
-            </h3>
+                🚀 Transform Your Vision 📱
+              </h3>
               
               <p style={{
                 fontSize: '18px',
@@ -1736,7 +1736,7 @@ const MenuManagement = () => {
                 marginBottom: '8px',
                 fontWeight: '500'
               }}>
-                {searchTerm ? 'Try different search terms' : 'Create Your Restaurant Menu'}
+                {searchTerm ? 'Try different search terms' : 'From Photo to Full Menu in Minutes!'}
               </p>
               
               <p style={{
@@ -1749,18 +1749,19 @@ const MenuManagement = () => {
               }}>
                 {searchTerm 
                   ? 'Try searching for something else or check out all our delicious categories.' 
-                  : 'Set up your restaurant first, then start building your amazing menu with delicious dishes, categories, and pricing.'
+                  : 'Transform your restaurant vision into reality! Upload your menu photo and let AI build it, or start creating dishes manually.'
                 }
               </p>
               
               <div style={{
                 display: 'flex',
-                gap: '12px',
+                gap: '16px',
                 justifyContent: 'center',
-                flexWrap: 'wrap'
+                flexWrap: 'wrap',
+                alignItems: 'center'
               }}>
                 {searchTerm ? (
-            <button
+                  <button
                     onClick={() => setSearchTerm('')}
                     style={{
                       padding: '16px 32px',
@@ -1785,23 +1786,61 @@ const MenuManagement = () => {
                     }}
                   >
                     Clear Search
-            </button>
+                  </button>
                 ) : (
                   <>
+                    {/* AI Upload Button - Main Action */}
                     <button
-                      onClick={() => router.push('/dashboard')}
+                      onClick={() => setShowBulkUpload(true)}
                       style={{
-                        padding: '16px 32px',
+                        padding: '18px 36px',
+                        background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '14px',
+                        fontWeight: '700',
+                        fontSize: '16px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 6px 20px rgba(139, 92, 246, 0.3)',
+                        transform: 'translateY(0)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        minWidth: '220px',
+                        justifyContent: 'center'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-3px)';
+                        e.target.style.boxShadow = '0 12px 30px rgba(139, 92, 246, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 6px 20px rgba(139, 92, 246, 0.3)';
+                      }}
+                    >
+                      🤖 Upload Menu & Build with AI
+                    </button>
+                    
+                    {/* Add Item Button */}
+                    <button
+                      onClick={() => setShowAddForm(true)}
+                      style={{
+                        padding: '16px 28px',
                         background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '12px',
                         fontWeight: '600',
-                        fontSize: '16px',
+                        fontSize: '15px',
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
                         boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
-                        transform: 'translateY(0)'
+                        transform: 'translateY(0)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        justifyContent: 'center'
                       }}
                       onMouseEnter={(e) => {
                         e.target.style.transform = 'translateY(-2px)';
@@ -1812,8 +1851,37 @@ const MenuManagement = () => {
                         e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
                       }}
                     >
-                      Set Up Restaurant First
+                      <FaPlus size={16} />
+                      Add New Item
                     </button>
+                    
+                    {/* Set Up Restaurant Link */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 16px',
+                      background: '#f8fafc',
+                      borderRadius: '10px',
+                      border: '1px solid #e2e8f0',
+                      fontSize: '14px',
+                      color: '#64748b',
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.borderColor = '#ef4444';
+                      e.target.style.color = '#ef4444';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.borderColor = '#e2e8f0';
+                      e.target.style.color = '#64748b';
+                    }}
+                    onClick={() => router.push('/dashboard')}
+                    >
+                      <FaHome size={14} />
+                      Set Up Restaurant First
+                    </div>
                   </>
                 )}
               </div>

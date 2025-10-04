@@ -28,6 +28,9 @@ import {
   FaExpandArrowsAlt,
   FaChevronDown,
   FaSignOutAlt,
+  FaCloudUploadAlt,
+  FaFileImage,
+  FaSpinner,
   FaChair,
   FaEdit,
   FaTimes,
@@ -82,6 +85,12 @@ function RestaurantPOSContent() {
   const [orderLookup, setOrderLookup] = useState(''); // For table number or order ID lookup
   const [currentOrder, setCurrentOrder] = useState(null); // Current order being viewed/updated
   const [orderSearchLoading, setOrderSearchLoading] = useState(false); // Loading state for order search
+  
+  // Drag and Drop AI Menu Upload States
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadingMenu, setUploadingMenu] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showUploadSuccess, setShowUploadSuccess] = useState(false);
   
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false);
@@ -265,7 +274,7 @@ function RestaurantPOSContent() {
           restaurant = user.restaurant;
         } else {
           // Fallback to finding restaurant in the list
-          restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
+        restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
         }
       }
       // For owners or customers (legacy), use selected restaurant from localStorage or first restaurant
@@ -596,6 +605,106 @@ function RestaurantPOSContent() {
         addToCart(foundItem);
         setQuickSearch('');
       }
+    }
+  };
+
+  // Drag and Drop AI Menu Upload Handlers
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileInput = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFileUpload(e.target.files[0]);
+    }
+  };
+
+  const handleFileUpload = async (file) => {
+    // Validate file size (500MB max)
+    const maxSize = 500 * 1024 * 1024; // 500MB in bytes
+    if (file.size > maxSize) {
+      setNotification({
+        type: 'error',
+        title: 'File Too Large',
+        message: 'Please upload a file smaller than 500MB',
+        show: true
+      });
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setNotification({
+        type: 'error',
+        title: 'Invalid File Type',
+        message: 'Please upload a valid image file (JPEG, PNG, WebP)',
+        show: true
+      });
+      return;
+    }
+
+    setUploadingMenu(true);
+    setUploadProgress(0);
+
+    try {
+      const formData = new FormData();
+      formData.append('menuImage', file);
+      formData.append('restaurantId', selectedRestaurant?.id);
+      
+      const response = await fetch('/api/menu/upload-and-build', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setNotification({
+          type: 'success',
+          title: 'AI Menu Created! 🤖✨',
+          message: `Successfully built menu with ${result.menuItems?.length || 0} items`,
+          show: true
+        });
+        
+        setShowUploadSuccess(true);
+        
+        // Reload menu data
+        setTimeout(() => {
+          loadMenuData(selectedRestaurant.id);
+          setShowUploadSuccess(false);
+        }, 2000);
+        
+      } else {
+        throw new Error(result.error || 'Failed to process menu image');
+      }
+    } catch (error) {
+      console.error('Error uploading menu:', error);
+      setNotification({
+        type: 'error',
+        title: 'Uh oh! 😅',
+        message: error.message || 'Failed to upload and process menu image',
+        show: true
+      });
+    } finally {
+      setUploadingMenu(false);
+      setUploadProgress(0);
     }
   };
 
@@ -1472,42 +1581,218 @@ function RestaurantPOSContent() {
               </div>
             </div>
             
-            {/* CTA Button */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '20px',
-              flexWrap: 'wrap'
-            }}>
+            {/* AI Upload Area */}
+            <div 
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '20px',
+                flexWrap: 'wrap',
+                margin: '40px auto 20px auto',
+                maxWidth: '800px'
+              }}
+            >
+              {/* Drag and Drop Box */}
+              <div style={{
+                width: '100%',
+                minHeight: '200px',
+                border: `3px ${dragActive ? 'solid' : 'dashed'} ${dragActive ? '#8b5cf6' : 'rgba(255, 255, 255, 0.7)'}`,
+                borderRadius: '20px',
+                background: dragActive 
+                  ? 'rgba(139, 92, 246, 0.1)' 
+                  : 'rgba(255, 255, 255, 0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '40px 20px',
+                cursor: uploadingMenu ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                backdropFilter: 'blur(10px)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                
+                {/* Background Effect on Drag */}
+                {dragActive && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(45deg, rgba(139, 92, 246, 0.1), rgba(255, 255, 255, 0.1))',
+                    animation: 'pulse 1s infinite'
+                  }} />
+                )}
+                
+                {/* Upload Success Animation */}
+                {showUploadSuccess && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(45deg, rgba(34, 197, 94, 0.1), rgba(255, 255, 255, 0.1))',
+                    animation: 'pulse 1s infinite',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 10
+                  }}>
+                    <FaCheckCircle size={60} style={{ color: '#22c55e' }} />
+                  </div>
+                )}
+                
+                {/* Content */}
+                <div style={{
+                  position: 'relative',
+                  zIndex: 5,
+                  textAlign: 'center'
+                }}>
+                  {uploadingMenu ? (
+                    <>
+                      <FaSpinner size={50} style={{ color: '#8b5cf6', animation: 'spin 1s linear infinite' }} />
+                      <h3 style={{ color: 'white', fontSize: '24px', marginTop: '20px' }}>
+                        AI is Building Your Menu... 🤖
+                      </h3>
+                      <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginTop: '10px' }}>
+                        Processing your image and extracting dishes
+                      </p>
+                      <div style={{
+                        width: '200px',
+                        height: '6px',
+                        background: 'rgba(255, 255, 255, 0.3)',
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                        marginTop: '20px'
+                      }}>
+                        <div style={{
+                          width: `${uploadProgress}%`,
+                          height: '100%',
+                          background: 'linear-gradient(90deg, #8b5cf6, #a855f7)',
+                          transition: 'width 0.3s ease'
+                        }} />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{
+                        fontSize: '60px',
+                        marginBottom: '20px',
+                        animation: dragActive ? 'bounce 0.6s infinite' : 'none'
+                      }}>
+                        🤖
+                      </div>
+                      <h3 style={{ color: 'white', fontSize: '28px', fontWeight: 'bold', marginBottom: '15px' }}>
+                        Drag & Drop Your Menu Photo Here
+                      </h3>
+                      <p style={{ 
+                        color: 'rgba(255, 255, 255, 0.8)', 
+                        fontSize: '16px', 
+                        marginBottom: '25px',
+                        lineHeight: '1.5'
+                      }}>
+                        Upload your menu image and AI will automatically create your full menu
+                      </p>
+                      
+                      {/* File Input */}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/jpg,image/webp"
+                        onChange={handleFileInput}
+                        style={{ display: 'none' }}
+                        id="menu-upload-input"
+                        disabled={uploadingMenu}
+                      />
+                      
+                      {/* Upload Button */}
+                      <label
+                        htmlFor="menu-upload-input"
+                        style={{
+                          padding: '18px 36px',
+                          background: 'rgba(255, 255, 255, 0.95)',
+                          color: '#8b5cf6',
+                          border: 'none',
+                          borderRadius: '16px',
+                          fontWeight: '700',
+                          fontSize: '18px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
+                          transform: 'translateY(0)',
+                          backdropFilter: 'blur(10px)',
+                          border: '2px solid rgba(139, 92, 246, 0.3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!uploadingMenu) {
+                            e.target.style.transform = 'translateY(-4px)';
+                            e.target.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.3)';
+                            e.target.style.background = 'white';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!uploadingMenu) {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
+                            e.target.style.background = 'rgba(255, 255, 255, 0.95)';
+                          }
+                        }}
+                      >
+                        <FaCloudUploadAlt size={20} />
+                        Choose File
+                      </label>
+                      
+                      <p style={{
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        fontSize: '14px',
+                        marginTop: '15px'
+                      }}>
+                        Supports JPEG, PNG, WebP up to 500MB
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {/* Traditional Setup Button */}
               <button
                 onClick={() => setShowOnboarding(true)}
                 style={{
-                  padding: '20px 40px',
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  color: '#dc2626',
-                  border: 'none',
-                  borderRadius: '16px',
-                  fontWeight: '700',
-                  fontSize: '20px',
+                  padding: '16px 32px',
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  color: 'white',
+                  border: '2px solid rgba(255, 255, 255, 0.5)',
+                  borderRadius: '12px',
+                  fontWeight: '600',
+                  fontSize: '16px',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
-                  transform: 'translateY(0)',
                   backdropFilter: 'blur(10px)',
-                  border: '2px solid rgba(255, 255, 255, 0.3)'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginTop: '20px'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-4px)';
-                  e.target.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.3)';
-                  e.target.style.background = 'white';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.8)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
-                  e.target.style.background = 'rgba(255, 255, 255, 0.95)';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
                 }}
               >
-                🚀 Launch Restaurant System
+                <FaPlus size={16} />
+                Manual Setup
               </button>
             </div>
             
