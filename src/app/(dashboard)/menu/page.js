@@ -1,6 +1,6 @@
 'use client';
-import dynamic from 'next/dynamic';
-import { useState, useEffect, useRef, useCallback } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BulkMenuUpload from '../../../components/BulkMenuUpload';
 import apiClient from '../../../lib/api';
@@ -21,7 +21,6 @@ import {
   FaStar,
   FaClock,
   FaHeart,
-  FaHome,
   FaTh,
   FaList,
   FaEye,
@@ -34,22 +33,6 @@ import {
   FaCloudUploadAlt,
   FaTimes
 } from 'react-icons/fa';
-
-// Generic categories - defined at top level to avoid hoisting issues
-const genericCategories = [
-  { id: 'appetizer', name: 'Appetizers', emoji: '🥗' },
-  { id: 'main-course', name: 'Main Course', emoji: '🍽️' },
-  { id: 'dessert', name: 'Desserts', emoji: '🍰' },
-  { id: 'beverages', name: 'Beverages', emoji: '🥤' },
-  { id: 'rice', name: 'Rice & Biryani', emoji: '🍚' },
-  { id: 'bread', name: 'Bread & Roti', emoji: '🥖' },
-  { id: 'dal', name: 'Dal & Curry', emoji: '🍛' },
-  { id: 'fast-food', name: 'Fast Food', emoji: '🍔' },
-  { id: 'chinese', name: 'Chinese', emoji: '🥢' },
-  { id: 'pizza', name: 'Pizza', emoji: '🫓' },
-  { id: 'south-indian', name: 'South Indian', emoji: '🍛' },
-  { id: 'north-indian', name: 'North Indian', emoji: '🍽️' }
-];
 
 // Enhanced Dropdown Component
 const EnhancedDropdown = ({ 
@@ -1013,7 +996,20 @@ const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, 
 const MenuManagement = () => {
   const router = useRouter();
   const [menuItems, setMenuItems] = useState([]);
-  const [categories, setCategories] = useState(genericCategories);
+  const [categories, setCategories] = useState([
+    { id: 'appetizer', name: 'Appetizers', emoji: '🥗' },
+    { id: 'main-course', name: 'Main Course', emoji: '🍽️' },
+    { id: 'dessert', name: 'Desserts', emoji: '🍰' },
+    { id: 'beverages', name: 'Beverages', emoji: '🥤' },
+    { id: 'pizza', name: 'Pizza', emoji: '🍕' },
+    { id: 'chinese', name: 'Chinese', emoji: '🥢' },
+    { id: 'bread', name: 'Bread', emoji: '🍞' },
+    { id: 'rice', name: 'Rice', emoji: '🍚' },
+    { id: 'dal', name: 'Dal', emoji: '🍛' },
+    { id: 'south-indian', name: 'South Indian', emoji: '🍛' },
+    { id: 'north-indian', name: 'North Indian', emoji: '🍽️' },
+    { id: 'fast-food', name: 'Fast Food', emoji: '🍔' }
+  ]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedVegFilter, setSelectedVegFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -1042,7 +1038,21 @@ const MenuManagement = () => {
     stockQuantity: null
   });
 
-  // Generic categories are now imported as a constant from top level
+  // Generic categories
+  const genericCategories = [
+    { id: 'appetizer', name: 'Appetizers', emoji: '🥗' },
+    { id: 'main-course', name: 'Main Course', emoji: '🍽️' },
+    { id: 'dessert', name: 'Desserts', emoji: '🍰' },
+    { id: 'beverages', name: 'Beverages', emoji: '🥤' },
+    { id: 'rice', name: 'Rice & Biryani', emoji: '🍚' },
+    { id: 'bread', name: 'Bread & Roti', emoji: '🥖' },
+    { id: 'dal', name: 'Dal & Curry', emoji: '🍛' },
+    { id: 'fast-food', name: 'Fast Food', emoji: '🍔' },
+    { id: 'chinese', name: 'Chinese', emoji: '🥢' },
+    { id: 'pizza', name: 'Pizza', emoji: '🍕' },
+    { id: 'south-indian', name: 'South Indian', emoji: '🍛' },
+    { id: 'north-indian', name: 'North Indian', emoji: '🍽️' }
+  ];
 
   // Mobile detection with client-side hydration safety
   useEffect(() => {
@@ -1097,7 +1107,7 @@ const MenuManagement = () => {
     };
 
     loadRestaurantContext();
-  }, [router, loadMenuData]);
+  }, [router]);
 
   // Listen for restaurant changes from navigation
   useEffect(() => {
@@ -1139,9 +1149,9 @@ const MenuManagement = () => {
     return () => {
       window.removeEventListener('restaurantChanged', handleRestaurantChange);
     };
-  }, [loadMenuData]);
+  }, []);
 
-  const loadMenuData = useCallback(async (restaurantId) => {
+  const loadMenuData = async (restaurantId) => {
     try {
       console.log('Loading menu data for restaurant:', restaurantId);
       setLoading(true);
@@ -1162,7 +1172,7 @@ const MenuManagement = () => {
       });
       
       // Merge with generic categories, avoiding duplicates
-      const allCategories = Array.from(genericCategories);
+      const allCategories = [...genericCategories];
       existingCategories.forEach(cat => {
         if (!allCategories.find(g => g.id === cat.id)) {
           allCategories.push(cat);
@@ -1182,7 +1192,7 @@ const MenuManagement = () => {
       console.log('Setting loading to false');
       setLoading(false);
     }
-  }, [setCategories, setFormData]);
+  };
 
   const filteredItems = menuItems.filter(item => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
@@ -1717,7 +1727,7 @@ const MenuManagement = () => {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
               }}>
-                🚀 Transform Your Vision 📱
+                {searchTerm ? 'No dishes found' : 'Menu Management Ready! 🍽️'}
             </h3>
               
               <p style={{
@@ -1726,7 +1736,7 @@ const MenuManagement = () => {
                 marginBottom: '8px',
                 fontWeight: '500'
               }}>
-                {searchTerm ? 'Try different search terms' : 'From Photo to Full Menu in Minutes!'}
+                {searchTerm ? 'Try different search terms' : 'Create Your Restaurant Menu'}
               </p>
               
               <p style={{
@@ -1739,19 +1749,18 @@ const MenuManagement = () => {
               }}>
                 {searchTerm 
                   ? 'Try searching for something else or check out all our delicious categories.' 
-                  : 'Transform your restaurant vision into reality! Upload your menu photo and let AI build it, or start creating dishes manually.'
+                  : 'Set up your restaurant first, then start building your amazing menu with delicious dishes, categories, and pricing.'
                 }
               </p>
               
               <div style={{
                 display: 'flex',
-                gap: '16px',
+                gap: '12px',
                 justifyContent: 'center',
-                flexWrap: 'wrap',
-                alignItems: 'center'
+                flexWrap: 'wrap'
               }}>
                 {searchTerm ? (
-                  <button
+            <button
                     onClick={() => setSearchTerm('')}
                     style={{
                       padding: '16px 32px',
@@ -1776,61 +1785,23 @@ const MenuManagement = () => {
                     }}
                   >
                     Clear Search
-                  </button>
+            </button>
                 ) : (
                   <>
-                    {/* AI Upload Button - Main Action */}
                     <button
-                      onClick={() => setShowBulkUpload(true)}
+                      onClick={() => router.push('/dashboard')}
                       style={{
-                        padding: '18px 36px',
-                        background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '14px',
-                        fontWeight: '700',
-                        fontSize: '16px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        boxShadow: '0 6px 20px rgba(139, 92, 246, 0.3)',
-                        transform: 'translateY(0)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        minWidth: '220px',
-                        justifyContent: 'center'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.transform = 'translateY(-3px)';
-                        e.target.style.boxShadow = '0 12px 30px rgba(139, 92, 246, 0.4)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 6px 20px rgba(139, 92, 246, 0.3)';
-                      }}
-                    >
-                      🤖 Upload Menu & Build with AI
-                    </button>
-                    
-                    {/* Add Item Button */}
-            <button
-              onClick={() => setShowAddForm(true)}
-                      style={{
-                        padding: '16px 28px',
+                        padding: '16px 32px',
                         background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '12px',
                         fontWeight: '600',
-                        fontSize: '15px',
+                        fontSize: '16px',
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
                         boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
-                        transform: 'translateY(0)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        justifyContent: 'center'
+                        transform: 'translateY(0)'
                       }}
                       onMouseEnter={(e) => {
                         e.target.style.transform = 'translateY(-2px)';
@@ -1840,38 +1811,9 @@ const MenuManagement = () => {
                         e.target.style.transform = 'translateY(0)';
                         e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
                       }}
-            >
-              <FaPlus size={16} />
-                      Add New Item
-            </button>
-                    
-                    {/* Set Up Restaurant Link */}
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '12px 16px',
-                      background: '#f8fafc',
-                      borderRadius: '10px',
-                      border: '1px solid #e2e8f0',
-                      fontSize: '14px',
-                      color: '#64748b',
-                      transition: 'all 0.2s ease',
-                      cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.borderColor = '#ef4444';
-                      e.target.style.color = '#ef4444';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.borderColor = '#e2e8f0';
-                      e.target.style.color = '#64748b';
-                    }}
-                    onClick={() => router.push('/dashboard')}
                     >
-                      <FaHome size={14} />
                       Set Up Restaurant First
-                    </div>
+                    </button>
                   </>
                 )}
               </div>
@@ -2337,4 +2279,4 @@ const MenuManagement = () => {
   );
 };
 
-export default dynamic(() => Promise.resolve(MenuManagement), { ssr: false });
+export default MenuManagement;
