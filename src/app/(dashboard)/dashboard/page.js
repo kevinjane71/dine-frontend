@@ -323,6 +323,20 @@ function RestaurantPOSContent() {
   useEffect(() => {
     loadInitialData();
   }, [loadInitialData]);
+
+  // Listen for restaurant changes from navigation
+  useEffect(() => {
+    const handleRestaurantChange = (event) => {
+      console.log('🏪 Dashboard page: Restaurant changed, reloading data', event.detail);
+      loadInitialData(); // Reload all data with new restaurant
+    };
+
+    window.addEventListener('restaurantChanged', handleRestaurantChange);
+
+    return () => {
+      window.removeEventListener('restaurantChanged', handleRestaurantChange);
+    };
+  }, [loadInitialData]);
  
   // REMOVED - createSampleRestaurant function no longer needed
   
