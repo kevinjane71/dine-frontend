@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import BulkMenuUpload from '../../../components/BulkMenuUpload';
 import apiClient from '../../../lib/api';
@@ -21,6 +21,7 @@ import {
   FaStar,
   FaClock,
   FaHeart,
+  FaHome,
   FaTh,
   FaList,
   FaEye,
@@ -1107,7 +1108,7 @@ const MenuManagement = () => {
     };
 
     loadRestaurantContext();
-  }, [router]);
+  }, [router, loadMenuData]);
 
   // Listen for restaurant changes from navigation
   useEffect(() => {
@@ -1149,9 +1150,9 @@ const MenuManagement = () => {
     return () => {
       window.removeEventListener('restaurantChanged', handleRestaurantChange);
     };
-  }, []);
+  }, [loadMenuData]);
 
-  const loadMenuData = async (restaurantId) => {
+  const loadMenuData = useCallback(async (restaurantId) => {
     try {
       console.log('Loading menu data for restaurant:', restaurantId);
       setLoading(true);
@@ -1192,7 +1193,7 @@ const MenuManagement = () => {
       console.log('Setting loading to false');
       setLoading(false);
     }
-  };
+  }, [setCategories, setFormData]);
 
   const filteredItems = menuItems.filter(item => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
