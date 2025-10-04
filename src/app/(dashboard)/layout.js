@@ -6,10 +6,22 @@ import Navigation from '../../components/Navigation';
 
 function DashboardLayoutContent({ children }) {
   const [isNavigationHidden, setIsNavigationHidden] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
   
   // Check if current page is dashboard
   const isDashboardPage = pathname === '/dashboard';
+
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Listen for navigation hide/show events
   useEffect(() => {
@@ -23,10 +35,10 @@ function DashboardLayoutContent({ children }) {
 
   return (
     <div style={{ 
-      height: isDashboardPage ? '100vh' : 'auto', // Only dashboard gets 100vh
-      minHeight: isDashboardPage ? '100vh' : 'auto',
+      height: (isDashboardPage && !isMobile) ? '100vh' : 'auto', // Only desktop dashboard gets 100vh
+      minHeight: (isDashboardPage && !isMobile) ? '100vh' : 'auto',
       backgroundColor: '#f9fafb',
-      overflow: isDashboardPage ? 'hidden' : 'visible', // Allow scrolling on other pages
+      overflow: (isDashboardPage && !isMobile) ? 'hidden' : 'visible', // Allow scrolling on mobile and other pages
       position: 'relative'
     }}>
       {/* Fixed Navigation */}
@@ -46,8 +58,8 @@ function DashboardLayoutContent({ children }) {
       {/* Main Content with top padding for fixed nav */}
       <main style={{ 
         paddingTop: isNavigationHidden ? '0px' : '80px', // Adjust based on nav height
-        minHeight: isDashboardPage ? 'calc(100vh - 80px)' : 'auto',
-        overflow: isDashboardPage ? 'hidden' : 'visible', // Allow scrolling on other pages
+        minHeight: (isDashboardPage && !isMobile) ? 'calc(100vh - 80px)' : 'auto',
+        overflow: (isDashboardPage && !isMobile) ? 'hidden' : 'visible', // Allow scrolling on mobile and other pages
         transition: 'all 0.3s ease'
       }}>
         {children}

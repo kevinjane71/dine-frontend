@@ -1601,12 +1601,13 @@ function RestaurantPOSContent() {
 
   return (
     <div style={{ 
-      height: '100%', // Use full height available from layout
+      height: isMobile ? 'auto' : '100%', // Auto height on mobile for scrolling
       backgroundColor: '#f8fafc', 
       display: 'flex', 
       flexDirection: 'column',
       background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-      overflow: 'hidden' // Hide overall page scroll
+      overflow: 'visible', // Always allow scrolling
+      minHeight: isMobile ? '100vh' : '100%' // Ensure full viewport height on mobile
     }}>
       {/* Restaurant Change Loading Overlay */}
       {restaurantChangeLoading && (
@@ -1651,99 +1652,113 @@ function RestaurantPOSContent() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px'
+          gap: '12px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
-          {/* Search Bar */}
-          <div style={{ flex: 1, position: 'relative' }}>
-            <FaSearch style={{ 
-              position: 'absolute', 
-              left: '12px', 
-              top: '50%', 
-              transform: 'translateY(-50%)', 
-              color: '#9ca3af' 
-            }} size={16} />
-            <input
-              type="text"
-              placeholder="Search menu..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                paddingLeft: '40px',
-                paddingRight: '12px',
-                paddingTop: '12px',
-                paddingBottom: '12px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '12px',
-                backgroundColor: '#f9fafb',
-                fontSize: '14px',
-                outline: 'none'
-              }}
-            />
+          {/* Restaurant Name */}
+          <div style={{
+            flex: 1,
+            minWidth: 0
+          }}>
+            <h2 style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              color: '#1f2937',
+              margin: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
+              {selectedRestaurant?.name || 'My Restaurant'}
+            </h2>
+            <p style={{
+              fontSize: '12px',
+              color: '#6b7280',
+              margin: '2px 0 0 0',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
+              {filteredItems.length} items • {selectedCategory === 'all-items' ? 'All Categories' : categories.find(c => c.id === selectedCategory)?.name}
+            </p>
           </div>
           
-          {/* Category Filter Button */}
+          {/* Action Buttons */}
+          <div style={{
+            display: 'flex',
+            gap: '8px'
+          }}>
+            {/* Categories Button */}
           <button
             onClick={() => setShowMobileSidebar(true)}
             style={{
-              padding: '12px',
+                padding: '10px',
               backgroundColor: '#ef4444',
               color: 'white',
               border: 'none',
-              borderRadius: '12px',
+                borderRadius: '10px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+                gap: '6px',
               fontWeight: '600',
-              fontSize: '14px',
-              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
-            }}
-          >
-            <FaBars size={16} />
-            Categories
+                fontSize: '12px',
+                boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                minWidth: '80px',
+                justifyContent: 'center'
+              }}
+            >
+              <FaBars size={14} />
+              Menu
           </button>
           
           {/* Cart Button */}
           <button
             onClick={() => setShowMobileCart(true)}
             style={{
-              padding: '12px',
+                padding: '10px',
               backgroundColor: cart.length > 0 ? '#10b981' : '#6b7280',
               color: 'white',
               border: 'none',
-              borderRadius: '12px',
+                borderRadius: '10px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+                gap: '6px',
               fontWeight: '600',
-              fontSize: '14px',
+                fontSize: '12px',
               position: 'relative',
-              boxShadow: cart.length > 0 ? '0 2px 8px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(107, 114, 128, 0.3)'
+                boxShadow: cart.length > 0 ? '0 2px 8px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(107, 114, 128, 0.3)',
+                minWidth: '80px',
+                justifyContent: 'center'
             }}
           >
-            <FaShoppingCart size={16} />
+              <FaShoppingCart size={14} />
+              Cart
             {cart.length > 0 && (
               <span style={{
                 position: 'absolute',
-                top: '-8px',
-                right: '-8px',
+                  top: '-6px',
+                  right: '-6px',
                 backgroundColor: '#ef4444',
                 color: 'white',
                 borderRadius: '50%',
-                width: '20px',
-                height: '20px',
+                  width: '18px',
+                  height: '18px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '12px',
+                  fontSize: '10px',
                 fontWeight: 'bold'
               }}>
                 {cart.reduce((sum, item) => sum + item.quantity, 0)}
               </span>
             )}
           </button>
+          </div>
         </div>
       )}
       
@@ -1751,9 +1766,10 @@ function RestaurantPOSContent() {
       <div style={{ 
         display: 'flex', 
         flex: 1, 
-        overflow: 'hidden',
+        overflow: 'visible', // Always allow scrolling
         flexDirection: isMobile ? 'column' : 'row',
-        height: '100%' // Ensure full height usage
+        height: isMobile ? 'auto' : '100%', // Auto height on mobile for scrolling
+        minHeight: isMobile ? 'calc(100vh - 80px)' : '100%' // Account for navigation height
       }}>
         {/* Desktop Menu Sections Sidebar - Redesigned */}
         {!isMobile && (
@@ -1950,7 +1966,10 @@ function RestaurantPOSContent() {
           display: 'flex', 
           flexDirection: 'column',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'visible', // Always allow scrolling
+          height: isMobile ? 'auto' : '100%',
+          minHeight: isMobile ? '400px' : '100%',
+          paddingBottom: isMobile ? '80px' : '0' // Add bottom padding for mobile cart button
         }}>
           {/* Show empty menu prompt if no menu items */}
           {filteredItems.length === 0 && (menuItems || []).length === 0 && !loading ? (
@@ -1962,7 +1981,8 @@ function RestaurantPOSContent() {
               width: '100%'
             }}>
               <EmptyMenuPrompt 
-                restaurantName={selectedRestaurant?.name} 
+                restaurantName={selectedRestaurant?.name}
+                selectedRestaurant={selectedRestaurant}
                 onAddMenu={() => router.push('/menu')}
                 onMenuItemsAdded={loadInitialData}
               />
@@ -2126,8 +2146,8 @@ function RestaurantPOSContent() {
           <div style={{ 
             flex: 1, 
             padding: isMobile ? '16px' : '8px', 
-            overflowY: 'auto',
-            height: '100%',
+            overflowY: isMobile ? 'visible' : 'auto',
+            height: isMobile ? 'auto' : '100%',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none'
           }} className="hide-scrollbar">
@@ -2161,8 +2181,11 @@ function RestaurantPOSContent() {
         </div>
 
        
-        {/* Order Summary - Only show when there are menu items */}
+        {/* Order Summary - Desktop Sidebar / Mobile Bottom Sheet */}
         {!(filteredItems.length === 0 && (menuItems || []).length === 0 && !loading) && (
+          <>
+            {/* Desktop Order Summary */}
+            {!isMobile && (
           <div style={{ width: '30%', minWidth: '320px' }}>
           <OrderSummary
             cart={cart}
@@ -2188,11 +2211,115 @@ function RestaurantPOSContent() {
             setOrderLookup={setOrderLookup}
             currentOrder={currentOrder}
             setCurrentOrder={setCurrentOrder}
-            onShowQRCode={handleShowQRCode}
-            restaurantId={selectedRestaurant?.id}
-            restaurantName={selectedRestaurant?.name}
+                  onShowQRCode={handleShowQRCode}
+                  restaurantId={selectedRestaurant?.id}
+                  restaurantName={selectedRestaurant?.name}
           />
         </div>
+            )}
+
+            {/* Mobile Order Summary Bottom Sheet */}
+            {isMobile && (
+              <div style={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                backgroundColor: 'white',
+                borderTop: '1px solid #e5e7eb',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px',
+                boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
+                zIndex: 1000,
+                maxHeight: '70vh',
+                overflowY: 'auto',
+                transform: showMobileCart ? 'translateY(0)' : 'translateY(100%)',
+                transition: 'transform 0.3s ease-in-out'
+              }}>
+                <div style={{
+                  padding: '16px',
+                  borderBottom: '1px solid #f3f4f6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    color: '#1f2937',
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <FaShoppingCart size={16} />
+                    Order Summary
+                    {cart.length > 0 && (
+                      <span style={{
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                      }}>
+                        {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                      </span>
+                    )}
+                  </h3>
+                  <button
+                    onClick={() => setShowMobileCart(false)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '20px',
+                      cursor: 'pointer',
+                      color: '#6b7280',
+                      padding: '4px'
+                    }}
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+                
+                <div style={{ padding: '16px' }}>
+                  <OrderSummary
+                    cart={cart}
+                    orderType={orderType}
+                    setOrderType={setOrderType}
+                    paymentMethod={paymentMethod}
+                    setPaymentMethod={setPaymentMethod}
+                    onClearCart={clearCart}
+                    onProcessOrder={processOrder}
+                    onSaveOrder={saveOrder}
+                    onPlaceOrder={placeOrder}
+                    onRemoveFromCart={removeFromCart}
+                    onAddToCart={addToCart}
+                    onTableNumberChange={setTableNumber}
+                    processing={processing}
+                    placingOrder={placingOrder}
+                    orderSuccess={orderSuccess}
+                    setOrderSuccess={setOrderSuccess}
+                    error={error}
+                    getTotalAmount={getTotalAmount}
+                    tableNumber={tableNumber}
+                    orderLookup={orderLookup}
+                    setOrderLookup={setOrderLookup}
+                    currentOrder={currentOrder}
+                    setCurrentOrder={setCurrentOrder}
+                    onShowQRCode={handleShowQRCode}
+                    restaurantId={selectedRestaurant?.id}
+                    restaurantName={selectedRestaurant?.name}
+                    isMobile={true}
+                  />
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

@@ -22,12 +22,14 @@ import {
 } from 'react-icons/fa';
 import apiClient from '../lib/api';
 
-const EmptyMenuPrompt = ({ restaurantName, onAddMenu, onMenuItemsAdded }) => {
+const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenuItemsAdded }) => {
   const router = useRouter();
   const [isAnimating, setIsAnimating] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [processingStep, setProcessingStep] = useState('');
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -40,6 +42,8 @@ const EmptyMenuPrompt = ({ restaurantName, onAddMenu, onMenuItemsAdded }) => {
 
   const handleUploadClick = () => {
     setShowUploadModal(true);
+    setUploadError(''); // Clear any previous errors
+    setProcessingStep(''); // Clear processing step
   };
 
   const handleFileSelect = async (event) => {
@@ -48,34 +52,127 @@ const EmptyMenuPrompt = ({ restaurantName, onAddMenu, onMenuItemsAdded }) => {
 
     setUploading(true);
     setUploadSuccess(false);
+    setUploadError('');
 
     try {
+      // Get restaurant ID from localStorage or create one if needed
+      let currentRestaurant = selectedRestaurant;
+      let restaurantId = currentRestaurant?.id;
+
+      // If no restaurant exists, create one automatically
+      if (!restaurantId) {
+        setProcessingStep('Creating your restaurant...');
+        console.log('No restaurant found, creating default restaurant...');
+        
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.id) {
+          throw new Error('User not logged in. Please log in again.');
+        }
+
+        const defaultRestaurant = {
+          name: 'My Restaurant',
+          description: 'Welcome to your restaurant!',
+          address: 'Add your address here',
+          phone: '',
+          email: '',
+          cuisine: 'Multi-cuisine',
+          timings: {
+            open: '09:00',
+            close: '22:00',
+            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+          },
+          settings: {
+            currency: 'INR',
+            taxRate: 18,
+            serviceCharge: 0,
+            deliveryFee: 0,
+            minOrderAmount: 0
+          },
+          menu: {
+            categories: [],
+            items: [],
+            lastUpdated: new Date()
+          },
+          ownerId: user.id,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        const response = await apiClient.createRestaurant(defaultRestaurant);
+        currentRestaurant = response.restaurant;
+        restaurantId = currentRestaurant.id;
+        
+        // Update local storage
+        localStorage.setItem('selectedRestaurant', JSON.stringify(currentRestaurant));
+        
+        console.log('✅ Default restaurant created successfully');
+      }
+
+      setProcessingStep('Processing your menu...');
+      console.log('🔍 Using restaurant ID for upload:', restaurantId);
+      console.log('🔍 Current restaurant:', currentRestaurant);
+      
       const formData = new FormData();
       files.forEach(file => {
-        formData.append('files', file);
+        formData.append('menuFiles', file); // Backend expects 'menuFiles' field name
       });
 
-      // Call the bulk upload API
-      const response = await apiClient.post('/api/menus/bulk-upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Call the bulk upload API using the correct method
+      const response = await apiClient.bulkUploadMenu(restaurantId, formData);
 
-      if (response.data.success) {
-        setUploadSuccess(true);
-        setTimeout(() => {
-          setShowUploadModal(false);
-          setUploading(false);
-          setUploadSuccess(false);
-          if (onMenuItemsAdded) {
-            onMenuItemsAdded();
+      if (response.success) {
+        // If we have extracted menu items, save them to the database
+        if (response.data && response.data.length > 0) {
+          const allMenuItems = response.data.flatMap(menu => menu.menuItems);
+          
+          if (allMenuItems.length > 0) {
+            setProcessingStep('Saving menu items to database...');
+            console.log('🔍 Auto-saving extracted menu items to database...');
+            console.log('🔍 Restaurant ID for save:', restaurantId);
+            console.log('🔍 Number of items to save:', allMenuItems.length);
+            
+            try {
+              const saveResponse = await apiClient.bulkSaveMenuItems(restaurantId, allMenuItems);
+              
+              if (saveResponse.savedCount > 0) {
+                console.log(`✅ Successfully saved ${saveResponse.savedCount} menu items to database`);
+                setUploadSuccess(true);
+                setTimeout(() => {
+                  setShowUploadModal(false);
+                  setUploading(false);
+                  setUploadSuccess(false);
+                  if (onMenuItemsAdded) {
+                    onMenuItemsAdded();
+                  }
+                }, 2000);
+              } else {
+                throw new Error('Failed to save menu items to database');
+              }
+            } catch (saveError) {
+              console.error('Auto-save error:', saveError);
+              setUploadError(`Menu items extracted but failed to save: ${saveError.message}`);
+              setUploading(false);
+              return;
+            }
+          } else {
+            setUploadError('No menu items were extracted from the uploaded files. Please try with clearer menu images.');
+            setUploading(false);
+            return;
           }
-        }, 2000);
+        } else {
+          setUploadError('No menu data was extracted from the uploaded files.');
+          setUploading(false);
+          return;
+        }
+      } else {
+        setUploadError(response.error || 'Upload failed. Please try again.');
+        setUploading(false);
+        return;
       }
     } catch (error) {
       console.error('Upload error:', error);
       setUploading(false);
+      setUploadError(error.message || 'Upload failed. Please try again.');
     }
   };
 
@@ -262,7 +359,7 @@ const EmptyMenuPrompt = ({ restaurantName, onAddMenu, onMenuItemsAdded }) => {
                 Take Photo
               </span>
               <span style={{ fontSize: '12px', opacity: 0.8 }}>
-                Perfect for mobile
+                Camera or Gallery
               </span>
             </button>
 
@@ -297,7 +394,7 @@ const EmptyMenuPrompt = ({ restaurantName, onAddMenu, onMenuItemsAdded }) => {
                 From Gallery
               </span>
               <span style={{ fontSize: '12px', opacity: 0.8 }}>
-                Upload existing photos
+                Select existing photos
               </span>
             </button>
           </div>
@@ -397,7 +494,6 @@ const EmptyMenuPrompt = ({ restaurantName, onAddMenu, onMenuItemsAdded }) => {
         ref={cameraInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleFileSelect}
         style={{ display: 'none' }}
       />
@@ -444,21 +540,185 @@ const EmptyMenuPrompt = ({ restaurantName, onAddMenu, onMenuItemsAdded }) => {
 
             {uploading ? (
               <>
+                {/* AI Working Animation */}
+                <div style={{
+                  width: '120px',
+                  height: '120px',
+                  margin: '0 auto 24px',
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {/* Outer rotating ring */}
+                  <div style={{
+                    position: 'absolute',
+                    width: '120px',
+                    height: '120px',
+                    border: '4px solid #e5e7eb',
+                    borderTop: '4px solid #ef4444',
+                    borderRadius: '50%',
+                    animation: 'spin 2s linear infinite'
+                  }} />
+                  
+                  {/* Inner pulsing circle */}
+                  <div style={{
+                    width: '80px',
+                    height: '80px',
+                    backgroundColor: '#ef4444',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                    boxShadow: '0 0 20px rgba(239, 68, 68, 0.5)'
+                  }}>
+                    <FaMagic size={32} style={{ color: 'white' }} />
+                  </div>
+                  
+                  {/* Floating dots */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    width: '12px',
+                    height: '12px',
+                    backgroundColor: '#10b981',
+                    borderRadius: '50%',
+                    animation: 'float 2s ease-in-out infinite'
+                  }} />
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '15px',
+                    left: '15px',
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: '#3b82f6',
+                    borderRadius: '50%',
+                    animation: 'float 2s ease-in-out infinite 1s'
+                  }} />
+                </div>
+                
+                <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: '0 0 16px 0' }}>
+                  {processingStep || 'AI is Working Magic...'}
+                </h3>
+                <p style={{ fontSize: '16px', color: '#6b7280', margin: '0 0 24px 0', lineHeight: '1.6' }}>
+                  {processingStep === 'Creating your restaurant...' 
+                    ? 'Setting up your restaurant account...'
+                    : processingStep === 'Processing your menu...'
+                    ? 'Our AI is analyzing your menu image and extracting items, prices, and categories. This may take a moment...'
+                    : processingStep === 'Saving menu items to database...'
+                    ? 'Saving the extracted menu items to your restaurant database...'
+                    : 'Our AI is working on your menu. Please wait...'
+                  }
+                </p>
+                
+                {/* Progress steps */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: '16px',
+                  marginTop: '24px'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    opacity: processingStep === 'Creating your restaurant...' ? 1 : 0.5
+                  }}>
+                    <div style={{
+                      width: '12px',
+                      height: '12px',
+                      backgroundColor: processingStep === 'Creating your restaurant...' ? '#ef4444' : '#e5e7eb',
+                      borderRadius: '50%'
+                    }} />
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Setup</span>
+                  </div>
+                  
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    opacity: processingStep === 'Processing your menu...' ? 1 : 0.5
+                  }}>
+                    <div style={{
+                      width: '12px',
+                      height: '12px',
+                      backgroundColor: processingStep === 'Processing your menu...' ? '#ef4444' : '#e5e7eb',
+                      borderRadius: '50%'
+                    }} />
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>AI Analysis</span>
+                  </div>
+                  
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    opacity: processingStep === 'Saving menu items to database...' ? 1 : 0.5
+                  }}>
+                    <div style={{
+                      width: '12px',
+                      height: '12px',
+                      backgroundColor: processingStep === 'Saving menu items to database...' ? '#ef4444' : '#e5e7eb',
+                      borderRadius: '50%'
+                    }} />
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Saving</span>
+                  </div>
+                  
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    opacity: uploadSuccess ? 1 : 0.5
+                  }}>
+                    <div style={{
+                      width: '12px',
+                      height: '12px',
+                      backgroundColor: uploadSuccess ? '#10b981' : '#e5e7eb',
+                      borderRadius: '50%'
+                    }} />
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Complete</span>
+                  </div>
+                </div>
+              </>
+            ) : uploadError ? (
+              <>
                 <div style={{
                   width: '80px',
                   height: '80px',
-                  border: '4px solid #e5e7eb',
-                  borderTop: '4px solid #ef4444',
+                  backgroundColor: '#ef4444',
                   borderRadius: '50%',
-                  animation: 'spin 1s linear infinite',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   margin: '0 auto 24px'
-                }} />
+                }}>
+                  <FaTimes size={40} style={{ color: 'white' }} />
+                </div>
                 <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: '0 0 16px 0' }}>
-                  Processing Your Menu...
+                  Upload Failed
                 </h3>
-                <p style={{ fontSize: '16px', color: '#6b7280', margin: '0' }}>
-                  Our AI is extracting items, prices, and categories from your menu.
+                <p style={{ fontSize: '16px', color: '#6b7280', margin: '0 0 24px 0' }}>
+                  {uploadError}
                 </p>
+                <button
+                  onClick={() => {
+                    setUploadError('');
+                    setShowUploadModal(false);
+                  }}
+                  style={{
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    color: 'white',
+                    padding: '12px 24px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: '14px'
+                  }}
+                >
+                  Try Again
+                </button>
               </>
             ) : uploadSuccess ? (
               <>
@@ -564,6 +824,16 @@ const EmptyMenuPrompt = ({ restaurantName, onAddMenu, onMenuItemsAdded }) => {
           50% {
             transform: translateY(-10px) rotate(5deg);
           }
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.05); opacity: 0.8; }
         }
 
         @keyframes fadeInUp {
