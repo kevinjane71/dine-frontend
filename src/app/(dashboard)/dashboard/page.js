@@ -106,6 +106,69 @@ function RestaurantPOSContent() {
   // QR Code modal state
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
 
+  // All function definitions moved to top to prevent hoisting issues
+  const getCategoryEmoji = (category) => {
+    const categoryLower = category.toLowerCase();
+    const emojiMap = {
+      'appetizer': '🥗', 'appetizers': '🥗', 'starter': '🥗', 'starters': '🥗',
+      'main': '🍛', 'main-course': '🍛', 'mains': '🍛', 'entree': '🍛', 'entrees': '🍛',
+      'rice': '🍚', 'biryani': '🍚', 'biryanis': '🍚', 'fried-rice': '🍚',
+      'dal': '🍲', 'curry': '🍲', 'curries': '🍲', 'gravy': '🍲',
+      'bread': '🍞', 'breads': '🍞', 'naan': '🍞', 'roti': '🍞', 'chapati': '🍞',
+      'beverage': '🥤', 'beverages': '🥤', 'drinks': '🥤', 'juice': '🧃', 'tea': '☕', 'coffee': '☕',
+      'dessert': '🍰', 'desserts': '🍰', 'sweet': '🧁', 'sweets': '🧁', 'ice-cream': '🍨',
+      'snack': '🍿', 'snacks': '🍿', 'chaat': '🍿',
+      'pizza': '🍕', 'pizzas': '🍕',
+      'burger': '🍔', 'burgers': '🍔',
+      'sandwich': '🥪', 'sandwiches': '🥪',
+      'salad': '🥙', 'salads': '🥙',
+      'soup': '🍜', 'soups': '🍜',
+      'pasta': '🍝', 'pastas': '🍝',
+      'chinese': '🥢', 'asian': '🥢',
+      'tandoor': '🔥', 'grilled': '🔥', 'bbq': '🔥'
+    };
+    
+    return emojiMap[categoryLower] || '🍽️';
+  };
+
+  const getDynamicCategories = () => {
+    if (!menuItems || menuItems.length === 0) {
+      return [{ id: 'all-items', name: 'All Items', emoji: '🍽️', count: 0 }];
+    }
+    
+    // Get unique categories from menu items
+    const categoryMap = new Map();
+    categoryMap.set('all-items', { id: 'all-items', name: 'All Items', emoji: '🍽️', count: menuItems.length });
+    
+    menuItems.forEach(item => {
+      if (item.category) {
+        const categoryId = item.category.toLowerCase();
+        if (categoryMap.has(categoryId)) {
+          categoryMap.get(categoryId).count++;
+        } else {
+          // Create dynamic category with appropriate emoji
+          const emoji = getCategoryEmoji(item.category);
+          categoryMap.set(categoryId, {
+            id: categoryId,
+            name: item.category.split('-').map(word => 
+              word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' '),
+            emoji: emoji,
+            count: 1
+          });
+        }
+      }
+    });
+    
+    return Array.from(categoryMap.values());
+  };
+
+  const getTotalAmount = () => {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  const categories = getDynamicCategories();
+
   // Load user data
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -139,63 +202,7 @@ function RestaurantPOSContent() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showLogoutDropdown]);
   
-  // Get appropriate emoji for category
-  const getCategoryEmoji = (category) => {
-    const categoryLower = category.toLowerCase();
-    const emojiMap = {
-      'appetizer': '🥗', 'appetizers': '🥗', 'starter': '🥗', 'starters': '🥗',
-      'main': '🍛', 'main-course': '🍛', 'mains': '🍛', 'entree': '🍛', 'entrees': '🍛',
-      'rice': '🍚', 'biryani': '🍚', 'biryanis': '🍚', 'fried-rice': '🍚',
-      'dal': '🍲', 'curry': '🍲', 'curries': '🍲', 'gravy': '🍲',
-      'bread': '🍞', 'breads': '🍞', 'naan': '🍞', 'roti': '🍞', 'chapati': '🍞',
-      'beverage': '🥤', 'beverages': '🥤', 'drinks': '🥤', 'juice': '🧃', 'tea': '☕', 'coffee': '☕',
-      'dessert': '🍰', 'desserts': '🍰', 'sweet': '🧁', 'sweets': '🧁', 'ice-cream': '🍨',
-      'snack': '🍿', 'snacks': '🍿', 'chaat': '🍿',
-      'pizza': '🍕', 'pizzas': '🍕',
-      'burger': '🍔', 'burgers': '🍔',
-      'sandwich': '🥪', 'sandwiches': '🥪',
-      'salad': '🥙', 'salads': '🥙',
-      'soup': '🍜', 'soups': '🍜',
-      'pasta': '🍝', 'pastas': '🍝',
-      'chinese': '🥢', 'asian': '🥢',
-      'tandoor': '🔥', 'grilled': '🔥', 'bbq': '🔥'
-    };
-    
-    return emojiMap[categoryLower] || '🍽️';
-  };
-
-  // Generate dynamic categories based on actual menu items
-  const getDynamicCategories = () => {
-    if (!menuItems || menuItems.length === 0) {
-      return [{ id: 'all-items', name: 'All Items', emoji: '🍽️', count: 0 }];
-    }
-    
-    // Get unique categories from menu items
-    const categoryMap = new Map();
-    categoryMap.set('all-items', { id: 'all-items', name: 'All Items', emoji: '🍽️', count: menuItems.length });
-    
-    menuItems.forEach(item => {
-      if (item.category) {
-        const categoryId = item.category.toLowerCase();
-        if (categoryMap.has(categoryId)) {
-          categoryMap.get(categoryId).count++;
-        } else {
-          // Create dynamic category with appropriate emoji
-          const emoji = getCategoryEmoji(item.category);
-          categoryMap.set(categoryId, {
-            id: categoryId,
-            name: item.category.charAt(0).toUpperCase() + item.category.slice(1),
-            emoji: emoji,
-            count: 1
-          });
-        }
-      }
-    });
-    
-    return Array.from(categoryMap.values());
-  };
-  
-  const categories = getDynamicCategories();
+  // Load user data
 
   // Mobile detection hook
   useEffect(() => {
@@ -586,10 +593,6 @@ function RestaurantPOSContent() {
           : cartItem
       ).filter(cartItem => cartItem.quantity > 0);
     });
-  };
-
-  const getTotalAmount = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
   const handleQuickSearch = (e) => {
