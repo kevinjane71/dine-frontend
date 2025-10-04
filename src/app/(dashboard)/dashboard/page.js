@@ -9,6 +9,7 @@ import CategoryButton from '../../../components/CategoryButton';
 import OrderSummary from '../../../components/OrderSummary';
 import Notification from '../../../components/Notification';
 import QRCodeModal from '../../../components/QRCodeModal';
+import BulkMenuUpload from '../../../components/BulkMenuUpload';
 import { 
   FaSearch, 
   FaShoppingCart, 
@@ -39,7 +40,8 @@ import {
   FaUsers,
   FaCog,
   FaBars,
-  FaTable
+  FaTable,
+  FaCloudUploadAlt
 } from 'react-icons/fa';
 import apiClient from '../../../lib/api';
 
@@ -97,6 +99,7 @@ function RestaurantPOSContent() {
   
   // QR Code modal state
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
 
   // Load user data
   useEffect(() => {
@@ -117,6 +120,14 @@ function RestaurantPOSContent() {
   // QR Code handler
   const handleShowQRCode = () => {
     setShowQRCodeModal(true);
+  };
+
+  // Handle menu items added via bulk upload
+  const handleMenuItemsAdded = async () => {
+    console.log('🔄 Menu items added via upload, reloading menu data...');
+    if (selectedRestaurant?.id) {
+      await loadMenu(selectedRestaurant.id);
+    }
   };
 
   // Close logout dropdown when clicking outside
@@ -2025,6 +2036,35 @@ function RestaurantPOSContent() {
                 />
               </div>
 
+              {/* Bulk Upload Button */}
+              <button
+                onClick={() => setShowBulkUpload(true)}
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s ease',
+                  minWidth: 'fit-content'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#dc2626';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#ef4444';
+                }}
+              >
+                <FaCloudUploadAlt size={12} />
+                Upload Menu
+              </button>
+
               {/* Current Order Status */}
               {currentOrder && (
                 <div style={{ 
@@ -2733,6 +2773,15 @@ function RestaurantPOSContent() {
         onClose={() => setShowQRCodeModal(false)}
         restaurantId={selectedRestaurant?.id}
         restaurantName={selectedRestaurant?.name}
+      />
+
+      {/* Bulk Upload Modal */}
+      <BulkMenuUpload
+        isOpen={showBulkUpload}
+        onClose={() => setShowBulkUpload(false)}
+        restaurantId={selectedRestaurant?.id}
+        onMenuItemsAdded={handleMenuItemsAdded}
+        currentMenuItems={menuItems}
       />
     </div>
   );
