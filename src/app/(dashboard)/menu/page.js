@@ -1,5 +1,5 @@
 'use client';
-
+import dynamic from 'next/dynamic';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import BulkMenuUpload from '../../../components/BulkMenuUpload';
@@ -34,6 +34,22 @@ import {
   FaCloudUploadAlt,
   FaTimes
 } from 'react-icons/fa';
+
+// Generic categories - defined at top level to avoid hoisting issues
+const genericCategories = [
+  { id: 'appetizer', name: 'Appetizers', emoji: '🥗' },
+  { id: 'main-course', name: 'Main Course', emoji: '🍽️' },
+  { id: 'dessert', name: 'Desserts', emoji: '🍰' },
+  { id: 'beverages', name: 'Beverages', emoji: '🥤' },
+  { id: 'rice', name: 'Rice & Biryani', emoji: '🍚' },
+  { id: 'bread', name: 'Bread & Roti', emoji: '🥖' },
+  { id: 'dal', name: 'Dal & Curry', emoji: '🍛' },
+  { id: 'fast-food', name: 'Fast Food', emoji: '🍔' },
+  { id: 'chinese', name: 'Chinese', emoji: '🥢' },
+  { id: 'pizza', name: 'Pizza', emoji: '🫓' },
+  { id: 'south-indian', name: 'South Indian', emoji: '🍛' },
+  { id: 'north-indian', name: 'North Indian', emoji: '🍽️' }
+];
 
 // Enhanced Dropdown Component
 const EnhancedDropdown = ({ 
@@ -1039,21 +1055,7 @@ const MenuManagement = () => {
     stockQuantity: null
   });
 
-  // Generic categories
-  const genericCategories = [
-    { id: 'appetizer', name: 'Appetizers', emoji: '🥗' },
-    { id: 'main-course', name: 'Main Course', emoji: '🍽️' },
-    { id: 'dessert', name: 'Desserts', emoji: '🍰' },
-    { id: 'beverages', name: 'Beverages', emoji: '🥤' },
-    { id: 'rice', name: 'Rice & Biryani', emoji: '🍚' },
-    { id: 'bread', name: 'Bread & Roti', emoji: '🥖' },
-    { id: 'dal', name: 'Dal & Curry', emoji: '🍛' },
-    { id: 'fast-food', name: 'Fast Food', emoji: '🍔' },
-    { id: 'chinese', name: 'Chinese', emoji: '🥢' },
-    { id: 'pizza', name: 'Pizza', emoji: '🍕' },
-    { id: 'south-indian', name: 'South Indian', emoji: '🍛' },
-    { id: 'north-indian', name: 'North Indian', emoji: '🍽️' }
-  ];
+  // Generic categories are now imported as a constant from top level
 
   // Mobile detection with client-side hydration safety
   useEffect(() => {
@@ -1166,14 +1168,14 @@ const MenuManagement = () => {
       const existingCategories = uniqueCategories.map(cat => {
         const generic = genericCategories.find(g => g.id === cat);
         return generic || {
-        id: cat,
+          id: cat,
           name: cat.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
           emoji: '🍽️'
         };
       });
       
       // Merge with generic categories, avoiding duplicates
-      const allCategories = [...genericCategories];
+      const allCategories = Array.from(genericCategories);
       existingCategories.forEach(cat => {
         if (!allCategories.find(g => g.id === cat.id)) {
           allCategories.push(cat);
@@ -2348,4 +2350,4 @@ const MenuManagement = () => {
   );
 };
 
-export default MenuManagement;
+export default dynamic(() => Promise.resolve(MenuManagement), { ssr: false });
