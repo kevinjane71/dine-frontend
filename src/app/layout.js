@@ -48,6 +48,13 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" 
           rel="stylesheet" 
         />
+        {/* Analytics Script */}
+        <script
+          defer
+          data-website-id="dfid_XPKZbIBWhgE8AtCACES6e"
+          data-domain="dineopen.com"
+          src="https://datafa.st/js/script.js">
+        </script>
       </head>
       <body suppressHydrationWarning={true}>
         {children}
