@@ -34,7 +34,6 @@ import {
   FaChair,
   FaEdit,
   FaTimes,
-  FaSpinner,
   FaCheckCircle,
   FaHome,
   FaClipboardList,
