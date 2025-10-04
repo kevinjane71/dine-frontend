@@ -213,13 +213,35 @@ const PlaceOrderContent = () => {
       setSendingOtp(true);
       setError('');
 
-      // Simulate OTP sending
-      setTimeout(() => {
-        setVerificationId('simulated-verification-id');
-        setOtpSent(true);
-        setShowOtpModal(true);
-        setSendingOtp(false);
-      }, 1000);
+      // Import Firebase auth functions
+      const { signInWithPhoneNumber, RecaptchaVerifier } = await import('firebase/auth');
+      const { auth } = await import('../../../firebase');
+
+      // Format phone number
+      let phoneNumber = customerInfo.phone.trim();
+      if (!phoneNumber.startsWith('+')) {
+        phoneNumber = '+91' + phoneNumber;
+      }
+
+      // Setup reCAPTCHA
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'invisible',
+          callback: (response) => {
+            console.log('reCAPTCHA solved');
+          },
+          'expired-callback': () => {
+            console.log('reCAPTCHA expired');
+          }
+        });
+      }
+
+      // Send OTP
+      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
+      setVerificationId(confirmationResult);
+      setOtpSent(true);
+      setShowOtpModal(true);
+      setSendingOtp(false);
       
     } catch (err) {
       console.error('Error sending OTP:', err);
@@ -238,15 +260,17 @@ const PlaceOrderContent = () => {
       setSendingOtp(true);
       setError('');
 
-      // Simulate OTP verification
-      setTimeout(async () => {
-        setOtpSent(false);
-        setShowOtpModal(false);
-        setOtp('');
-        setSendingOtp(false);
-        // Proceed to place order
-        await placeOrderWithVerification('simulated-firebase-uid');
-      }, 1000);
+      // Verify OTP with Firebase
+      const result = await verificationId.confirm(otp);
+      const user = result.user;
+      
+      // Get Firebase UID and proceed to place order
+      await placeOrderWithVerification(user.uid);
+      
+      setOtpSent(false);
+      setShowOtpModal(false);
+      setOtp('');
+      setSendingOtp(false);
       
     } catch (err) {
       console.error('Error verifying OTP:', err);
@@ -610,28 +634,31 @@ const PlaceOrderContent = () => {
           left: 0,
           right: 0,
           backgroundColor: 'white',
-          boxShadow: '0 -8px 32px rgba(0,0,0,0.12)',
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
           zIndex: 200,
-          maxHeight: '70vh',
+          maxHeight: '60vh',
           overflowY: 'auto',
-          borderTopLeftRadius: '24px',
-          borderTopRightRadius: '24px'
+          borderTopLeftRadius: '16px',
+          borderTopRightRadius: '16px'
         }}>
-          <div style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                Your Order ({getCartItemCount()} items)
+          <div style={{ padding: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+                Order ({getCartItemCount()} items)
               </h3>
               <button
                 onClick={() => setShowCart(false)}
                 style={{
                   background: '#f1f5f9',
                   border: 'none',
-                  padding: '10px',
-                  borderRadius: '12px',
+                  padding: '8px',
+                  borderRadius: '8px',
                   cursor: 'pointer',
                   color: '#64748b',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = '#e2e8f0';
@@ -640,46 +667,46 @@ const PlaceOrderContent = () => {
                   e.currentTarget.style.background = '#f1f5f9';
                 }}
               >
-                <FaTrash size={16} />
+                <FaTrash size={14} />
               </button>
             </div>
 
             {cart.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
-                <FaShoppingCart size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                <p style={{ fontSize: '16px', margin: 0 }}>Your cart is empty</p>
-                <p style={{ fontSize: '14px', margin: '8px 0 0 0', opacity: 0.7 }}>Add some delicious items to get started</p>
+              <div style={{ textAlign: 'center', padding: '30px 20px', color: '#64748b' }}>
+                <FaShoppingCart size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                <p style={{ fontSize: '14px', margin: 0 }}>Your cart is empty</p>
+                <p style={{ fontSize: '12px', margin: '4px 0 0 0', opacity: 0.7 }}>Add some delicious items to get started</p>
               </div>
             ) : (
               <div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
                   {cart.map(item => (
                     <div key={item.id} style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '16px',
+                      padding: '12px',
                       backgroundColor: '#f8fafc',
-                      borderRadius: '16px',
+                      borderRadius: '12px',
                       border: '1px solid #e2e8f0'
                     }}>
                       <div style={{ flex: 1 }}>
-                        <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
+                        <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 2px 0' }}>
                           {item.name}
                         </h4>
-                        <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>
+                        <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>
                           ₹{item.price} each
                         </p>
                       </div>
                       
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <button
                           onClick={() => removeFromCart(item.id)}
                           style={{
                             background: '#f1f5f9',
                             border: 'none',
-                            padding: '8px',
-                            borderRadius: '10px',
+                            padding: '6px',
+                            borderRadius: '8px',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
@@ -693,10 +720,10 @@ const PlaceOrderContent = () => {
                             e.currentTarget.style.background = '#f1f5f9';
                           }}
                         >
-                          <FaMinus size={14} color="#64748b" />
+                          <FaMinus size={12} color="#64748b" />
                         </button>
                         
-                        <span style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937', minWidth: '24px', textAlign: 'center' }}>
+                        <span style={{ fontSize: '16px', fontWeight: '700', color: '#1f2937', minWidth: '20px', textAlign: 'center' }}>
                           {item.quantity}
                         </span>
                         
@@ -705,13 +732,13 @@ const PlaceOrderContent = () => {
                           style={{
                             background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
                             border: 'none',
-                            padding: '8px',
-                            borderRadius: '10px',
+                            padding: '6px',
+                            borderRadius: '8px',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 4px 12px rgba(229, 62, 62, 0.3)',
+                            boxShadow: '0 2px 8px rgba(229, 62, 62, 0.3)',
                             transition: 'all 0.2s ease'
                           }}
                           onMouseEnter={(e) => {
@@ -721,7 +748,7 @@ const PlaceOrderContent = () => {
                             e.currentTarget.style.transform = 'scale(1)';
                           }}
                         >
-                          <FaPlus size={14} color="white" />
+                          <FaPlus size={12} color="white" />
                         </button>
                       </div>
                     </div>
@@ -731,19 +758,26 @@ const PlaceOrderContent = () => {
                 {/* Customer Info Section */}
                 <div style={{
                   backgroundColor: '#f8fafc',
-                  padding: '20px',
-                  borderRadius: '16px',
-                  marginBottom: '24px',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  marginBottom: '16px',
                   border: '1px solid #e2e8f0'
                 }}>
-                  <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 16px 0' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 12px 0' }}>
                     Contact Information
                   </h4>
                   
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                        <FaPhone size={12} style={{ marginRight: '6px' }} />
+                      <label style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        fontSize: '11px', 
+                        fontWeight: '600', 
+                        color: '#374151', 
+                        marginBottom: '6px' 
+                      }}>
+                        <FaPhone size={10} style={{ marginRight: '4px' }} />
                         Phone Number *
                       </label>
                       <input
@@ -753,17 +787,17 @@ const PlaceOrderContent = () => {
                         placeholder="Enter phone number"
                         style={{
                           width: '100%',
-                          padding: '12px 16px',
+                          padding: '10px 12px',
                           border: 'none',
-                          borderRadius: '12px',
-                          fontSize: '14px',
+                          borderRadius: '8px',
+                          fontSize: '13px',
                           outline: 'none',
                           backgroundColor: 'white',
                           boxSizing: 'border-box',
                           transition: 'all 0.2s ease'
                         }}
                         onFocus={(e) => {
-                          e.target.style.boxShadow = '0 0 0 3px rgba(229, 62, 62, 0.1)';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(229, 62, 62, 0.1)';
                         }}
                         onBlur={(e) => {
                           e.target.style.boxShadow = 'none';
@@ -772,8 +806,15 @@ const PlaceOrderContent = () => {
                     </div>
                     
                     <div>
-                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                        <FaChair size={12} style={{ marginRight: '6px' }} />
+                      <label style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        fontSize: '11px', 
+                        fontWeight: '600', 
+                        color: '#374151', 
+                        marginBottom: '6px' 
+                      }}>
+                        <FaChair size={10} style={{ marginRight: '4px' }} />
                         Table Number
                       </label>
                       <input
@@ -783,17 +824,17 @@ const PlaceOrderContent = () => {
                         placeholder="Table/Seat number"
                         style={{
                           width: '100%',
-                          padding: '12px 16px',
+                          padding: '10px 12px',
                           border: 'none',
-                          borderRadius: '12px',
-                          fontSize: '14px',
+                          borderRadius: '8px',
+                          fontSize: '13px',
                           outline: 'none',
                           backgroundColor: 'white',
                           boxSizing: 'border-box',
                           transition: 'all 0.2s ease'
                         }}
                         onFocus={(e) => {
-                          e.target.style.boxShadow = '0 0 0 3px rgba(229, 62, 62, 0.1)';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(229, 62, 62, 0.1)';
                         }}
                         onBlur={(e) => {
                           e.target.style.boxShadow = 'none';
@@ -805,10 +846,10 @@ const PlaceOrderContent = () => {
 
                 <div style={{
                   borderTop: '1px solid #e2e8f0',
-                  paddingTop: '20px'
+                  paddingTop: '16px'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
                       Total: ₹{getCartTotal()}
                     </span>
                   </div>
@@ -823,41 +864,41 @@ const PlaceOrderContent = () => {
                         : 'linear-gradient(135deg, #e53e3e, #dc2626)',
                       color: 'white',
                       border: 'none',
-                      padding: '18px',
-                      borderRadius: '16px',
-                      fontSize: '18px',
+                      padding: '14px',
+                      borderRadius: '12px',
+                      fontSize: '16px',
                       fontWeight: '700',
                       cursor: (placingOrder || !customerInfo.phone.trim() || cart.length === 0) ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '12px',
+                      gap: '8px',
                       boxShadow: (placingOrder || !customerInfo.phone.trim() || cart.length === 0)
                         ? 'none'
-                        : '0 8px 24px rgba(229, 62, 62, 0.3)',
+                        : '0 4px 16px rgba(229, 62, 62, 0.3)',
                       transition: 'all 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
                       if (!placingOrder && customerInfo.phone.trim() && cart.length > 0) {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 12px 32px rgba(229, 62, 62, 0.4)';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(229, 62, 62, 0.4)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!placingOrder && customerInfo.phone.trim() && cart.length > 0) {
                         e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(229, 62, 62, 0.3)';
+                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(229, 62, 62, 0.3)';
                       }
                     }}
                   >
                     {placingOrder ? (
                       <>
-                        <FaSpinner size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                        <FaSpinner size={16} style={{ animation: 'spin 1s linear infinite' }} />
                         Placing Order...
                       </>
                     ) : (
                       <>
-                        <FaUtensils size={18} />
+                        <FaUtensils size={16} />
                         Place Order
                       </>
                     )}
@@ -883,23 +924,23 @@ const PlaceOrderContent = () => {
         }}>
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '16px',
-            padding: '24px',
-            maxWidth: '400px',
+            borderRadius: '12px',
+            padding: '20px',
+            maxWidth: '350px',
             width: '100%',
-            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)'
+            boxShadow: '0 10px 25px rgba(0,0,0,0.15)'
           }}>
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <FaLock size={40} color="#e53e3e" style={{ marginBottom: '16px' }} />
-              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <FaLock size={32} color="#e53e3e" style={{ marginBottom: '12px' }} />
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 6px 0' }}>
                 Verify Your Phone
               </h2>
-              <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+              <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>
                 We&apos;ve sent a 6-digit code to {customerInfo.phone}
               </p>
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '16px' }}>
               <input
                 type="text"
                 value={otp}
@@ -908,19 +949,20 @@ const PlaceOrderContent = () => {
                 maxLength="6"
                 style={{
                   width: '100%',
-                  padding: '16px',
+                  padding: '12px',
                   border: '2px solid #e5e7eb',
-                  borderRadius: '12px',
-                  fontSize: '18px',
+                  borderRadius: '8px',
+                  fontSize: '16px',
                   textAlign: 'center',
                   outline: 'none',
                   backgroundColor: '#f9fafb',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  letterSpacing: '2px'
                 }}
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 onClick={() => {
                   setShowOtpModal(false);
@@ -932,9 +974,9 @@ const PlaceOrderContent = () => {
                   background: '#f3f4f6',
                   color: '#6b7280',
                   border: 'none',
-                  padding: '12px',
+                  padding: '10px',
                   borderRadius: '8px',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: '600',
                   cursor: 'pointer'
                 }}
@@ -951,20 +993,20 @@ const PlaceOrderContent = () => {
                     : 'linear-gradient(135deg, #e53e3e, #dc2626)',
                   color: 'white',
                   border: 'none',
-                  padding: '12px',
+                  padding: '10px',
                   borderRadius: '8px',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: '600',
                   cursor: (sendingOtp || otp.length !== 6) ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px'
+                  gap: '6px'
                 }}
               >
                 {sendingOtp ? (
                   <>
-                    <FaSpinner size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                    <FaSpinner size={12} style={{ animation: 'spin 1s linear infinite' }} />
                     Verifying...
                   </>
                 ) : (
