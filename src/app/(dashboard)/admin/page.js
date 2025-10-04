@@ -35,6 +35,9 @@ import {
 const Admin = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('restaurants');
+  const [settings, setSettings] = useState(null);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [restaurants, setRestaurants] = useState([]);
   const [staff, setStaff] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
@@ -708,6 +711,28 @@ const Admin = () => {
                   <FaUtensils size={10} />
                   Menu
                 </button>
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  style={{
+                    flex: 1,
+                    backgroundColor: activeTab === 'settings' ? '#ec4899' : 'transparent',
+                    color: activeTab === 'settings' ? 'white' : '#6b7280',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    border: activeTab === 'settings' ? 'none' : '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <FaUserCog size={10} />
+                  Settings
+                </button>
               </div>
             </div>
           ) : (
@@ -797,6 +822,26 @@ const Admin = () => {
               >
                 <FaUtensils size={14} />
                 Menu
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                style={{
+                  backgroundColor: activeTab === 'settings' ? '#ec4899' : 'transparent',
+                  color: activeTab === 'settings' ? 'white' : '#6b7280',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  border: activeTab === 'settings' ? 'none' : '2px solid #e5e7eb',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <FaUserCog size={14} />
+                Settings
               </button>
             </div>
             </div>

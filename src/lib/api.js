@@ -537,6 +537,36 @@ class ApiClient {
       method: 'DELETE',
     });
   }
+
+  // Admin Settings endpoints
+  async getAdminSettings(restaurantId) {
+    return this.request(`/api/admin/settings/${restaurantId}`);
+  }
+
+  async updateAdminSettings(restaurantId, settingsData) {
+    return this.request(`/api/admin/settings/${restaurantId}`, {
+      method: 'PUT',
+      body: settingsData,
+    });
+  }
+
+  async applyDiscount(restaurantId, discountData) {
+    return this.request(`/api/admin/settings/${restaurantId}/apply-discount`, {
+      method: 'POST',
+      body: discountData,
+    });
+  }
+
+  async getRestaurantStatus(restaurantId) {
+    return this.request(`/api/admin/settings/${restaurantId}/status`);
+  }
+
+  async updateRestaurantStatus(restaurantId, statusData) {
+    return this.request(`/api/admin/settings/${restaurantId}/status`, {
+      method: 'PUT',
+      body: statusData,
+    });
+  }
 }
 
 const apiClient = new ApiClient();
