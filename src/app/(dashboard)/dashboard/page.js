@@ -64,6 +64,7 @@ function RestaurantPOSContent() {
   const [tables, setTables] = useState([]);
   const [floors, setFloors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [restaurantChangeLoading, setRestaurantChangeLoading] = useState(false); // Loading state for restaurant changes
   const [processing, setProcessing] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState('');
@@ -326,9 +327,16 @@ function RestaurantPOSContent() {
 
   // Listen for restaurant changes from navigation
   useEffect(() => {
-    const handleRestaurantChange = (event) => {
+    const handleRestaurantChange = async (event) => {
       console.log('🏪 Dashboard page: Restaurant changed, reloading data', event.detail);
-      loadInitialData(); // Reload all data with new restaurant
+      setRestaurantChangeLoading(true); // Show loading overlay
+      try {
+        await loadInitialData(); // Reload all data with new restaurant
+      } catch (error) {
+        console.error('Error reloading data after restaurant change:', error);
+      } finally {
+        setRestaurantChangeLoading(false); // Hide loading overlay
+      }
     };
 
     window.addEventListener('restaurantChanged', handleRestaurantChange);
@@ -1553,6 +1561,38 @@ function RestaurantPOSContent() {
       background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
       overflow: 'hidden' // Hide overall page scroll
     }}>
+      {/* Restaurant Change Loading Overlay */}
+      {restaurantChangeLoading && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          backdropFilter: 'blur(2px)'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <FaSpinner style={{ 
+              fontSize: '32px', 
+              color: '#ef4444', 
+              animation: 'spin 1s linear infinite',
+              marginBottom: '12px'
+            }} />
+            <p style={{ fontSize: '16px', color: '#374151', fontWeight: '600', margin: 0 }}>
+              Switching restaurant...
+            </p>
+            <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 0 0' }}>
+              Loading menu and data
+            </p>
+          </div>
+        </div>
+      )}
+      
       {/* Header */}
       
       {/* Mobile Top Bar */}
