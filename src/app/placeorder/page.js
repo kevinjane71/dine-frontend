@@ -990,16 +990,28 @@ const PlaceOrderContent = () => {
 const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity }) => {
   const isVeg = item.isVeg !== false;
   
-  // Default food images based on category
-  const getDefaultImage = (category) => {
-    const images = {
-      'Pizza': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=200&h=150&fit=crop',
-      'Burgers': 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=150&fit=crop',
-      'Salads': 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=150&fit=crop',
-      'Pasta': 'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=200&h=150&fit=crop',
-      'Desserts': 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=200&h=150&fit=crop'
+  // Use simple colored placeholders instead of external images
+  const getImageStyle = (category) => {
+    const colors = {
+      'Pizza': '#ff6b6b',
+      'Burgers': '#4ecdc4', 
+      'Salads': '#45b7d1',
+      'Pasta': '#96ceb4',
+      'Desserts': '#feca57',
+      'appetizer': '#ff9ff3',
+      'Tea': '#8b4513',
+      'Samosa': '#ffa500',
+      'default': '#ddd6fe'
     };
-    return images[category] || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=200&h=150&fit=crop';
+    return {
+      backgroundColor: colors[category] || colors.default,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: 'white',
+      fontSize: '24px',
+      fontWeight: 'bold'
+    };
   };
   
   return (
@@ -1023,27 +1035,23 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity }) => 
       e.currentTarget.style.transform = 'translateY(0)';
       e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
     }}>
-      {/* Food Image */}
+      {/* Food Image Placeholder */}
       <div style={{
         width: '80px',
         height: '80px',
         borderRadius: '8px',
-        overflow: 'hidden',
         flexShrink: 0,
-        backgroundColor: '#f1f5f9'
+        ...getImageStyle(item.category)
       }}>
-        <img 
-          src={item.image || getDefaultImage(item.category)} 
-          alt={item.name}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
-          onError={(e) => {
-            e.target.src = getDefaultImage(item.category);
-          }}
-        />
+        {item.category === 'Pizza' && '🍕'}
+        {item.category === 'Burgers' && '🍔'}
+        {item.category === 'Salads' && '🥗'}
+        {item.category === 'Pasta' && '🍝'}
+        {item.category === 'Desserts' && '🍰'}
+        {item.category === 'appetizer' && '🥟'}
+        {item.category === 'Tea' && '☕'}
+        {item.category === 'Samosa' && '🥟'}
+        {!['Pizza', 'Burgers', 'Salads', 'Pasta', 'Desserts', 'appetizer', 'Tea', 'Samosa'].includes(item.category) && '🍽️'}
       </div>
 
       {/* Content */}
