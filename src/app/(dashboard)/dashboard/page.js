@@ -1601,13 +1601,13 @@ function RestaurantPOSContent() {
 
   return (
     <div style={{ 
-      height: isMobile ? 'auto' : '100%', // Auto height on mobile for scrolling
+      height: isMobile ? 'auto' : 'calc(100vh - 80px)', // Full height minus navigation on desktop
       backgroundColor: '#f8fafc', 
       display: 'flex', 
       flexDirection: 'column',
       background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
       overflow: 'visible', // Always allow scrolling
-      minHeight: isMobile ? '100vh' : '100%' // Ensure full viewport height on mobile
+      minHeight: isMobile ? '100vh' : 'calc(100vh - 80px)' // Ensure full viewport height minus nav
     }}>
       {/* Restaurant Change Loading Overlay */}
       {restaurantChangeLoading && (
@@ -1768,18 +1768,21 @@ function RestaurantPOSContent() {
         flex: 1, 
         overflow: 'visible', // Always allow scrolling
         flexDirection: isMobile ? 'column' : 'row',
-        height: isMobile ? 'auto' : '100%', // Auto height on mobile for scrolling
+        height: isMobile ? 'auto' : '100%', // Use 100% since parent has calc(100vh - 80px)
         minHeight: isMobile ? 'calc(100vh - 80px)' : '100%' // Account for navigation height
       }}>
         {/* Desktop Menu Sections Sidebar - Redesigned */}
         {!isMobile && (
           <div style={{ 
             width: '280px', 
+            height: '100%',
             backgroundColor: '#ffffff', 
             borderRight: '1px solid #f3f4f6', 
             boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
           }}>
           <div style={{ 
             padding: '20px 16px', 
@@ -1835,7 +1838,7 @@ function RestaurantPOSContent() {
           <div style={{ 
             padding: '12px 8px', 
             overflowY: 'auto', 
-            height: 'calc(100% - 120px)',
+            flex: 1, // Fill remaining space
             scrollbarWidth: 'none',
             msOverflowStyle: 'none'
           }} className="hide-scrollbar">
@@ -1969,7 +1972,8 @@ function RestaurantPOSContent() {
           overflow: 'visible', // Always allow scrolling
           height: isMobile ? 'auto' : '100%',
           minHeight: isMobile ? '400px' : '100%',
-          paddingBottom: isMobile ? '80px' : '0' // Add bottom padding for mobile cart button
+          paddingBottom: isMobile ? '80px' : '0', // Add bottom padding for mobile cart button
+          maxHeight: isMobile ? 'none' : '100%'
         }}>
           {/* Show empty menu prompt if no menu items */}
           {filteredItems.length === 0 && (menuItems || []).length === 0 && !loading ? (
@@ -1981,7 +1985,7 @@ function RestaurantPOSContent() {
               width: '100%'
             }}>
               <EmptyMenuPrompt 
-                restaurantName={selectedRestaurant?.name}
+                restaurantName={selectedRestaurant?.name} 
                 selectedRestaurant={selectedRestaurant}
                 onAddMenu={() => router.push('/menu')}
                 onMenuItemsAdded={loadInitialData}
@@ -2186,7 +2190,13 @@ function RestaurantPOSContent() {
           <>
             {/* Desktop Order Summary */}
             {!isMobile && (
-          <div style={{ width: '30%', minWidth: '320px' }}>
+          <div style={{ 
+            width: '30%', 
+            minWidth: '320px',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
           <OrderSummary
             cart={cart}
             orderType={orderType}
