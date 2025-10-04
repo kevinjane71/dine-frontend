@@ -59,20 +59,59 @@ const KitchenOrderTicket = () => {
       }
       setError('');
 
-      // Get current restaurant from auth or localStorage
-      const restaurants = await apiClient.getRestaurants();
-      if (!restaurants.restaurants || restaurants.restaurants.length === 0) {
-        setError('No restaurants found');
+      // Get current restaurant from localStorage or user data
+      const userData = localStorage.getItem('user');
+      if (!userData) {
+        setError('User not authenticated');
         setCurrentRestaurant(null);
         setKotOrders([]);
         return;
       }
-      
-      const restaurant = restaurants.restaurants[0]; // Use first restaurant for now
-      setCurrentRestaurant(restaurant);
+
+      const user = JSON.parse(userData);
+      let restaurantId = null;
+
+      // For staff members, use their assigned restaurant
+      if (user.restaurantId) {
+        restaurantId = user.restaurantId;
+        console.log('KOT: Using staff restaurant ID:', restaurantId);
+      } 
+      // For owners, get selected restaurant from localStorage or first restaurant
+      else if (user.role === 'owner' || user.role === 'admin') {
+        try {
+          const restaurants = await apiClient.getRestaurants();
+          if (!restaurants.restaurants || restaurants.restaurants.length === 0) {
+            setError('No restaurants found');
+            setCurrentRestaurant(null);
+            setKotOrders([]);
+            return;
+          }
+          
+          const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+          const selectedRestaurant = restaurants.restaurants.find(r => r.id === savedRestaurantId) || 
+                                    restaurants.restaurants[0];
+          restaurantId = selectedRestaurant.id;
+          setCurrentRestaurant(selectedRestaurant);
+          console.log('KOT: Using selected restaurant:', selectedRestaurant);
+        } catch (error) {
+          console.error('Error fetching restaurants:', error);
+          setError('Failed to load restaurants');
+          return;
+        }
+      } else {
+        setError('Invalid user role');
+        return;
+      }
+
+      if (!restaurantId) {
+        setError('No restaurant selected');
+        setCurrentRestaurant(null);
+        setKotOrders([]);
+        return;
+      }
 
       // Get KOT orders for this restaurant
-      const response = await apiClient.getKotOrders(restaurant.id);
+      const response = await apiClient.getKotOrders(restaurantId);
       
       if (response.orders) {
         setKotOrders(response.orders);
@@ -111,6 +150,21 @@ const KitchenOrderTicket = () => {
     }, 60000); // 60 seconds
 
     return () => clearInterval(interval);
+  }, [loadKotData]);
+
+  // Listen for restaurant changes from navigation
+  useEffect(() => {
+    const handleRestaurantChange = (event) => {
+      console.log('KOT: Restaurant changed, reloading data', event.detail);
+      loadKotData();
+    };
+
+    // Listen for custom restaurant change events
+    window.addEventListener('restaurantChanged', handleRestaurantChange);
+
+    return () => {
+      window.removeEventListener('restaurantChanged', handleRestaurantChange);
+    };
   }, [loadKotData]);
 
   // Update cooking timers every second

@@ -191,8 +191,10 @@ function NavigationContent({ isHidden = false }) {
     localStorage.setItem('selectedRestaurantId', restaurant.id);
     setShowRestaurantDropdown(false);
     
-    // Trigger a page refresh to reload data for the new restaurant
-    window.location.reload();
+    // Dispatch custom event for other components to listen to
+    window.dispatchEvent(new CustomEvent('restaurantChanged', { 
+      detail: { restaurant } 
+    }));
   };
   
   const getAllNavItems = () => [
