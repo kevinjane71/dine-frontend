@@ -276,7 +276,7 @@ function RestaurantPOSContent() {
           restaurant = user.restaurant;
         } else {
           // Fallback to finding restaurant in the list
-          restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
+        restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
         }
       }
       // For owners or customers (legacy), use selected restaurant from localStorage or first restaurant
@@ -301,13 +301,49 @@ function RestaurantPOSContent() {
         ]);
         console.log('✅ Restaurant data loaded successfully');
       } else {
-        // No restaurant found - show onboarding or empty state
-        if (isFirstTimeUser && !localStorage.getItem('onboarding_skipped')) {
-          setShowOnboarding(true);
-        } else {
-          // User skipped onboarding but has no restaurant - show empty state
-          console.log('📋 No restaurant found for user');
-          // Don't create sample restaurant - let user manually create one
+        // No restaurant found - automatically create one with default name
+        console.log('📋 No restaurant found for user, creating default restaurant');
+        try {
+          const defaultRestaurant = {
+            name: 'My Restaurant',
+            description: 'Welcome to your restaurant!',
+            address: 'Add your address here',
+            phone: '',
+            email: '',
+            cuisine: 'Multi-cuisine',
+            timings: {
+              open: '09:00',
+              close: '22:00',
+              days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            },
+            settings: {
+              currency: 'INR',
+              taxRate: 18,
+              serviceCharge: 0,
+              deliveryFee: 0,
+              minOrderAmount: 0
+            },
+            menu: {
+              categories: [],
+              items: [],
+              lastUpdated: new Date()
+            },
+            ownerId: user.id,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+
+          const response = await apiClient.post('/api/restaurants', defaultRestaurant);
+          const newRestaurant = response.data.restaurant;
+          
+          // Update local storage
+          localStorage.setItem('selectedRestaurant', JSON.stringify(newRestaurant));
+          setSelectedRestaurant(newRestaurant);
+          
+          console.log('✅ Default restaurant created successfully');
+        } catch (error) {
+          console.error('Error creating default restaurant:', error);
+          // Continue with empty state if creation fails
         }
       }
       
@@ -1928,6 +1964,7 @@ function RestaurantPOSContent() {
               <EmptyMenuPrompt 
                 restaurantName={selectedRestaurant?.name} 
                 onAddMenu={() => router.push('/menu')}
+                onMenuItemsAdded={loadInitialData}
               />
             </div>
           ) : (
