@@ -137,12 +137,26 @@ const OrderHistory = () => {
         const waitersResponse = await apiClient.getWaiters(restaurantId);
         setWaiters(waitersResponse.waiters || []);
         
-        // Fetch orders with waiter filter
-        const response = await apiClient.getOrders(restaurantId, {
-          waiterId: selectedWaiter !== 'all' ? selectedWaiter : undefined,
-          search: searchTerm || undefined
-        });
+        // Fetch orders with waiter filter - only include defined values
+        const filters = {};
+        
+        // For staff users, automatically filter by their own waiter ID unless they specifically select "all"
+        if (user.role === 'staff' && selectedWaiter === 'all') {
+          // Staff users see only their own orders by default
+          filters.waiterId = user.id;
+        } else if (selectedWaiter && selectedWaiter !== 'all') {
+          // Admin/owner users can filter by specific waiter
+          filters.waiterId = selectedWaiter;
+        }
+        
+        if (searchTerm && searchTerm.trim()) {
+          filters.search = searchTerm.trim();
+        }
+        
+        const response = await apiClient.getOrders(restaurantId, filters);
         console.log('Orders page: API response:', response);
+        console.log('Orders page: Filters sent:', filters);
+        console.log('Orders page: User ID:', user.id);
         
         // Transform backend order data to match frontend format
         const transformedOrders = response.orders.map(order => ({
