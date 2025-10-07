@@ -246,17 +246,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
         </div>
 
         {/* Main Content */}
-        <h2 style={{
-          fontSize: '32px',
-          fontWeight: '800',
-          color: '#1f2937',
-          margin: '0 0 16px 0',
-          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
-        }}>
-          Ready to Create Your Menu? 🍽️
-        </h2>
+        
         
         <p style={{
           fontSize: '18px',
@@ -438,8 +428,8 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
           onClick={handleAddMenu}
           disabled={isAnimating}
           style={{
-            background: 'transparent',
-            color: '#6b7280',
+            background: 'red',
+            color: '#fff',
             padding: '12px 24px',
             borderRadius: '12px',
             fontWeight: '600',
