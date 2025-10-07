@@ -1101,14 +1101,14 @@ const Admin = () => {
                     </div>
                   )}
 
-                  {restaurant.cuisine && restaurant.cuisine.length > 0 && (
+                  {restaurant.cuisine && Array.isArray(restaurant.cuisine) && restaurant.cuisine.length > 0 && (
                     <div style={{ marginBottom: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                         <FaUtensils style={{ color: '#9ca3af', fontSize: '12px' }} />
                         <span style={{ fontSize: '13px', color: '#6b7280' }}>Cuisine</span>
                       </div>
                       <div style={{ display: 'flex', gap: '6px', paddingLeft: '20px', flexWrap: 'wrap' }}>
-                        {restaurant.cuisine.map((c, index) => (
+                        {(Array.isArray(restaurant.cuisine) ? restaurant.cuisine : [restaurant.cuisine]).map((c, index) => (
                           <span key={index} style={{
                             padding: '2px 8px',
                             borderRadius: '12px',

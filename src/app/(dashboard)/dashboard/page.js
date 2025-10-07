@@ -81,6 +81,8 @@ function RestaurantPOSContent() {
   const [orderSuccess, setOrderSuccess] = useState(null); // { orderId: 'ORD-123', show: true }
   const [notification, setNotification] = useState(null); // For top-right corner notifications
   const [tableNumber, setTableNumber] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerMobile, setCustomerMobile] = useState('');
   const [orderLookup, setOrderLookup] = useState(''); // For table number or order ID lookup
   const [currentOrder, setCurrentOrder] = useState(null); // Current order being viewed/updated
   const [orderSearchLoading, setOrderSearchLoading] = useState(false); // Loading state for order search
@@ -801,31 +803,30 @@ function RestaurantPOSContent() {
       if (paymentMethod === 'cash') {
         await apiClient.verifyPayment({
           orderId,
-          razorpay_payment_id: `cash_payment_${Date.now()}`,
-          razorpay_order_id: `cash_order_${Date.now()}`,
-          razorpay_signature: 'cash_signature',
-          paymentMethod: 'cash'
+          paymentMethod: 'cash',
+          amount: getTotalAmount(),
+          userId: currentUser.id,
+          restaurantId: selectedRestaurant.id
         });
       } else if (paymentMethod === 'upi') {
         await apiClient.verifyPayment({
           orderId,
-          razorpay_payment_id: `upi_payment_${Date.now()}`,
-          razorpay_order_id: `upi_order_${Date.now()}`,
-          razorpay_signature: 'upi_signature',
-          paymentMethod: 'upi'
+          paymentMethod: 'upi',
+          amount: getTotalAmount(),
+          userId: currentUser.id,
+          restaurantId: selectedRestaurant.id
         });
       } else if (paymentMethod === 'card') {
         await apiClient.verifyPayment({
           orderId,
-          razorpay_payment_id: `card_payment_${Date.now()}`,
-          razorpay_order_id: `card_order_${Date.now()}`,
-          razorpay_signature: 'card_signature',
-          paymentMethod: 'card'
+          paymentMethod: 'card',
+          amount: getTotalAmount(),
+          userId: currentUser.id,
+          restaurantId: selectedRestaurant.id
         });
       }
 
-      // Mark order as completed after successful payment
-      await apiClient.completeOrder(orderId);
+      // Payment verification now also completes the order, no need for separate call
 
       // Free up table if this order was assigned to a table
       if (tableNumber) {
@@ -1007,7 +1008,11 @@ function RestaurantPOSContent() {
             quantity: item.quantity,
             notes: ''
           })),
-          customerInfo: {},
+          customerInfo: {
+            name: customerName || null,
+            phone: customerMobile || null,
+            tableNumber: tableNumber || selectedTable?.number || null
+          },
           orderType,
           paymentMethod,
           staffInfo: {
@@ -2230,6 +2235,8 @@ function RestaurantPOSContent() {
             onRemoveFromCart={removeFromCart}
             onAddToCart={addToCart}
             onTableNumberChange={setTableNumber}
+            onCustomerNameChange={setCustomerName}
+            onCustomerMobileChange={setCustomerMobile}
             processing={processing}
             placingOrder={placingOrder}
             orderSuccess={orderSuccess}
@@ -2237,6 +2244,8 @@ function RestaurantPOSContent() {
             error={error}
             getTotalAmount={getTotalAmount}
             tableNumber={tableNumber}
+            customerName={customerName}
+            customerMobile={customerMobile}
             orderLookup={orderLookup}
             setOrderLookup={setOrderLookup}
             currentOrder={currentOrder}
@@ -2330,6 +2339,8 @@ function RestaurantPOSContent() {
                     onRemoveFromCart={removeFromCart}
                     onAddToCart={addToCart}
                     onTableNumberChange={setTableNumber}
+                    onCustomerNameChange={setCustomerName}
+                    onCustomerMobileChange={setCustomerMobile}
                     processing={processing}
                     placingOrder={placingOrder}
                     orderSuccess={orderSuccess}
@@ -2337,6 +2348,8 @@ function RestaurantPOSContent() {
                     error={error}
                     getTotalAmount={getTotalAmount}
                     tableNumber={tableNumber}
+                    customerName={customerName}
+                    customerMobile={customerMobile}
                     orderLookup={orderLookup}
                     setOrderLookup={setOrderLookup}
                     currentOrder={currentOrder}

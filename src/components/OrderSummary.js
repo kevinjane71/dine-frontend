@@ -11,7 +11,8 @@ import {
   FaSave, 
   FaCheckCircle, 
   FaSpinner,
-  FaQrcode
+  FaQrcode,
+  FaTrash
 } from 'react-icons/fa';
 
 const OrderSummary = ({ 
@@ -27,6 +28,8 @@ const OrderSummary = ({
   onRemoveFromCart, 
   onAddToCart, 
   onTableNumberChange,
+  onCustomerNameChange,
+  onCustomerMobileChange,
   processing, 
   placingOrder,
   orderSuccess, 
@@ -34,6 +37,8 @@ const OrderSummary = ({
   error, 
   getTotalAmount,
   tableNumber,
+  customerName,
+  customerMobile,
   orderLookup,
   setOrderLookup,
   currentOrder,
@@ -105,6 +110,54 @@ const OrderSummary = ({
                 {cart.reduce((sum, item) => sum + item.quantity, 0)} items
               </p>
             </div>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {/* Order Type Selector - Small Buttons */}
+            <div style={{ display: 'flex', gap: '2px' }}>
+              <button
+                onClick={() => setOrderType('dine-in')}
+                style={{
+                  backgroundColor: orderType === 'dine-in' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '4px',
+                  padding: '4px 6px',
+                  fontSize: '8px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backdropFilter: 'blur(10px)',
+                  minWidth: '32px'
+                }}
+                title="Dine In"
+              >
+                🍽️
+              </button>
+              <button
+                onClick={() => setOrderType('takeaway')}
+                style={{
+                  backgroundColor: orderType === 'takeaway' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '4px',
+                  padding: '4px 6px',
+                  fontSize: '8px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backdropFilter: 'blur(10px)',
+                  minWidth: '32px'
+                }}
+                title="Takeaway"
+              >
+                📦
+              </button>
+            </div>
             
             {/* QR Code Button */}
             <button
@@ -126,73 +179,28 @@ const OrderSummary = ({
             >
               <FaQrcode size={12} />
             </button>
+            
+            {/* Clear Button - Icon Only */}
+            <button
+              onClick={onClearCart}
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '6px',
+                padding: '6px',
+                color: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.2s ease'
+              }}
+              title="Clear Cart"
+            >
+              <FaTrash size={10} />
+            </button>
           </div>
-          
-          <button
-            onClick={onClearCart}
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.15)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '6px',
-              padding: '4px 8px',
-              color: 'white',
-              fontSize: '10px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              backdropFilter: 'blur(10px)'
-            }}
-          >
-            <FaTimes size={8} />
-            Clear
-          </button>
-        </div>
-        
-        {/* Order Type Selector */}
-        <div style={{ display: 'flex', gap: '4px', position: 'relative', zIndex: 2 }}>
-          <button
-            onClick={() => setOrderType('dine-in')}
-            style={{
-              flex: 1,
-              backgroundColor: orderType === 'dine-in' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '6px',
-              padding: '6px 8px',
-              fontSize: '10px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
-              backdropFilter: 'blur(10px)'
-            }}
-          >
-            🍽️ DINE IN
-          </button>
-          <button
-            onClick={() => setOrderType('takeaway')}
-            style={{
-              flex: 1,
-              backgroundColor: orderType === 'takeaway' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '6px',
-              padding: '6px 8px',
-              fontSize: '10px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
-              backdropFilter: 'blur(10px)'
-            }}
-          >
-            📦 TAKEAWAY
-          </button>
         </div>
       </div>
 
@@ -504,39 +512,95 @@ const OrderSummary = ({
           {/* Actions Section */}
           {!orderSuccess?.show && (
             <div style={{ padding: '20px' }}>
-              {/* Table Number Input */}
+              {/* Customer Information */}
               <div style={{ marginBottom: '12px' }}>
                 <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
+                  fontSize: '12px', 
+                  fontWeight: '700', 
+                  color: '#1f2937', 
+                  marginBottom: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: '6px'
                 }}>
-                  <label style={{ 
-                    fontSize: '11px', 
-                    fontWeight: '600', 
-                    color: '#374151',
-                    minWidth: '50px'
-                  }}>
-                    Table:
-                  </label>
+                  Customer Details
+                </div>
+                
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '8px',
+                  alignItems: 'center'
+                }}>
+                  {/* Customer Name */}
                   <input
                     type="text"
-                    placeholder="Optional"
+                    placeholder="Customer Name"
+                    value={customerName || ''}
+                    style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      outline: 'none',
+                      backgroundColor: '#f9fafb',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onChange={(e) => {
+                      if (typeof onCustomerNameChange === 'function') {
+                        onCustomerNameChange(e.target.value);
+                      }
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#ef4444'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                  />
+                  
+                  {/* Customer Mobile */}
+                  <input
+                    type="tel"
+                    placeholder="Mobile Number"
+                    value={customerMobile || ''}
+                    style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      outline: 'none',
+                      backgroundColor: '#f9fafb',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onChange={(e) => {
+                      if (typeof onCustomerMobileChange === 'function') {
+                        onCustomerMobileChange(e.target.value);
+                      }
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#ef4444'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                  />
+                  
+                  {/* Table Number */}
+                  <input
+                    type="text"
+                    placeholder="Table No"
                     value={tableNumber || ''}
                     style={{
-                      width: '80px',
-                      padding: '4px 6px',
+                      width: '20%',
+                      padding: '8px 10px',
                       border: '1px solid #d1d5db',
-                      borderRadius: '4px',
-                      fontSize: '11px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
                       outline: 'none',
-                      backgroundColor: '#f9fafb'
+                      backgroundColor: '#f9fafb',
+                      transition: 'border-color 0.2s'
                     }}
                     onChange={(e) => {
                       if (typeof onTableNumberChange === 'function') {
                         onTableNumberChange(e.target.value);
                       }
                     }}
+                    onFocus={(e) => e.target.style.borderColor = '#ef4444'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                   />
                 </div>
               </div>

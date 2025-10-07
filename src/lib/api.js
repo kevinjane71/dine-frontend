@@ -327,6 +327,12 @@ class ApiClient {
     });
   }
 
+  async completeOrder(orderId) {
+    return this.request(`/api/orders/${orderId}/complete`, {
+      method: 'POST',
+    });
+  }
+
   // Analytics endpoints
   async getAnalytics(restaurantId, period = '7d') {
     return this.request(`/api/analytics/${restaurantId}?period=${period}`);
