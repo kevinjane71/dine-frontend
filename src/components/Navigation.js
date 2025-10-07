@@ -265,13 +265,47 @@ function NavigationContent({ isHidden = false }) {
 
   // Get user's initials for avatar
   const getUserInitials = () => {
-    if (user?.name) {
-      return user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+    // If user has phone (phone login)
+    if (user?.phone) {
+      return user.phone.substring(user.phone.length - 2).toUpperCase();
     }
+    // If user has email (Gmail login)
     if (user?.email) {
       return user.email.substring(0, 2).toUpperCase();
     }
+    // Fallback to name
+    if (user?.name) {
+      return user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
     return user?.role ? user.role.substring(0, 2).toUpperCase() : 'U';
+  };
+
+  // Get user display name based on login method
+  const getUserDisplayName = () => {
+    // If user has phone (phone login)
+    if (user?.phone) {
+      return user.phone;
+    }
+    // If user has email (Gmail login)
+    if (user?.email) {
+      return user.email;
+    }
+    // Fallback to name or user ID
+    return user?.name || user?.id || 'User';
+  };
+
+  // Get user role display based on login method
+  const getUserRoleDisplay = () => {
+    // If user has phone (phone login)
+    if (user?.phone) {
+      return 'Admin';
+    }
+    // If user has email (Gmail login)
+    if (user?.email) {
+      return 'Admin';
+    }
+    // Fallback to role
+    return user?.role || 'Staff';
   };
 
   // Get role color
@@ -806,7 +840,7 @@ function NavigationContent({ isHidden = false }) {
                       color: '#1f2937',
                       lineHeight: '1.2'
                     }}>
-                      {user?.name || user?.email?.split('@')[0] || 'User'}
+                      {getUserDisplayName()}
                     </span>
                     <span style={{ 
                       fontSize: '10px', 
@@ -816,7 +850,7 @@ function NavigationContent({ isHidden = false }) {
                       letterSpacing: '0.5px',
                       lineHeight: '1.2'
                     }}>
-                      {user?.role || 'Staff'}
+                      {getUserRoleDisplay()}
                   </span>
                   </div>
                   
@@ -887,10 +921,10 @@ function NavigationContent({ isHidden = false }) {
                         </div>
                         <div>
                           <p style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
-                            {user?.name || user?.email?.split('@')[0] || 'User'}
+                            {getUserDisplayName()}
                           </p>
                           <p style={{ fontSize: '11px', color: getRoleColor(user?.role), fontWeight: '600', margin: '2px 0 0 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            {user?.role || 'Staff'}
+                            {getUserRoleDisplay()}
                           </p>
                         </div>
                       </div>
@@ -1117,10 +1151,10 @@ function NavigationContent({ isHidden = false }) {
                 </div>
                 <div>
                   <p style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
-                    {user?.name || user?.email?.split('@')[0] || 'User'}
+                    {getUserDisplayName()}
                   </p>
                   <p style={{ fontSize: '12px', color: getRoleColor(user?.role), fontWeight: '600', margin: '2px 0 0 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    {user?.role || 'Staff'}
+                    {getUserRoleDisplay()}
                   </p>
                   {selectedRestaurant && (
                     <p style={{ fontSize: '11px', color: '#6b7280', margin: '2px 0 0 0' }}>
@@ -1294,4 +1328,5 @@ const Navigation = () => {
   );
 };
 
+export default Navigation;
 export default Navigation;
