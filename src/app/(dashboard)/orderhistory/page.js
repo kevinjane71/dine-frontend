@@ -238,6 +238,13 @@ const OrderHistory = () => {
         icon: FaCheck,
         border: '#22c55e'
       },
+      'completed': { 
+        bg: '#dcfce7', 
+        text: '#166534', 
+        label: 'Completed',
+        icon: FaCheckCircle,
+        border: '#22c55e'
+      },
       'delivered': { 
         bg: '#f3e8ff', 
         text: '#7c2d92', 
@@ -648,6 +655,7 @@ const OrderHistory = () => {
                     <option value="confirmed">Confirmed</option>
                     <option value="preparing">Preparing</option>
                     <option value="ready">Ready</option>
+                    <option value="completed">Completed</option>
                     <option value="delivered">Delivered</option>
                     <option value="cancelled">Cancelled</option>
                   </select>
@@ -784,6 +792,7 @@ const OrderHistory = () => {
             <option value="confirmed">Confirmed</option>
             <option value="preparing">Preparing</option>
             <option value="ready">Ready</option>
+            <option value="completed">Completed</option>
             <option value="delivered">Delivered</option>
             <option value="cancelled">Cancelled</option>
           </select>
