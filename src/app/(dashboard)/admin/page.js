@@ -50,10 +50,6 @@ const Admin = () => {
   const [authorized, setAuthorized] = useState(false);
   const [newRestaurant, setNewRestaurant] = useState({
     name: '',
-    address: '',
-    phone: '',
-    email: '',
-    cuisine: '',
     description: ''
   });
   const [newStaff, setNewStaff] = useState({
@@ -331,22 +327,13 @@ const Admin = () => {
     try {
       setLoading(true);
       
-      const restaurantData = {
-        ...newRestaurant,
-        cuisine: newRestaurant.cuisine.split(',').map(c => c.trim()).filter(c => c)
-      };
-      
-      const response = await apiClient.createRestaurant(restaurantData);
+      const response = await apiClient.createRestaurant(newRestaurant);
       
       // Add the new restaurant to the local state
       setRestaurants([...restaurants, response.restaurant]);
       
       setNewRestaurant({
         name: '',
-        address: '',
-        phone: '',
-        email: '',
-        cuisine: '',
         description: ''
       });
       setShowAddRestaurantModal(false);
@@ -1829,10 +1816,10 @@ const Admin = () => {
         }}>
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '24px',
+            borderRadius: '16px',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
             width: '100%',
-            maxWidth: '500px',
+            maxWidth: '400px',
             border: '1px solid #fce7f3'
           }}>
             <div style={{
@@ -1866,7 +1853,7 @@ const Admin = () => {
               </div>
             </div>
             
-            <form onSubmit={handleAddRestaurant} style={{ padding: '24px' }}>
+            <form onSubmit={handleAddRestaurant} style={{ padding: '20px' }}>
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ 
                   display: 'block', 
@@ -1894,152 +1881,6 @@ const Admin = () => {
                     boxSizing: 'border-box'
                   }}
                   placeholder="Enter restaurant name"
-                />
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '14px', 
-                  fontWeight: '600', 
-                  color: '#374151', 
-                  marginBottom: '8px' 
-                }}>
-                  Address
-                </label>
-                <textarea
-                  value={newRestaurant.address}
-                  onChange={(e) => setNewRestaurant({ ...newRestaurant, address: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    backgroundColor: '#f8fafc',
-                    transition: 'all 0.2s',
-                    boxSizing: 'border-box',
-                    minHeight: '80px',
-                    resize: 'vertical'
-                  }}
-                  placeholder="Enter complete address"
-                />
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '14px', 
-                  fontWeight: '600', 
-                  color: '#374151', 
-                  marginBottom: '8px' 
-                }}>
-                  City
-                </label>
-                <input
-                  type="text"
-                  value={newRestaurant.city || ''}
-                  onChange={(e) => setNewRestaurant({ ...newRestaurant, city: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    backgroundColor: '#f8fafc',
-                    transition: 'all 0.2s',
-                    boxSizing: 'border-box'
-                  }}
-                  placeholder="Mumbai, Delhi, Bangalore"
-                />
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '14px', 
-                  fontWeight: '600', 
-                  color: '#374151', 
-                  marginBottom: '8px' 
-                }}>
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={newRestaurant.phone}
-                  onChange={(e) => setNewRestaurant({ ...newRestaurant, phone: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    backgroundColor: '#f8fafc',
-                    transition: 'all 0.2s',
-                    boxSizing: 'border-box'
-                  }}
-                  placeholder="+91-9876543210"
-                />
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '14px', 
-                  fontWeight: '600', 
-                  color: '#374151', 
-                  marginBottom: '8px' 
-                }}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={newRestaurant.email}
-                  onChange={(e) => setNewRestaurant({ ...newRestaurant, email: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    backgroundColor: '#f8fafc',
-                    transition: 'all 0.2s',
-                    boxSizing: 'border-box'
-                  }}
-                  placeholder="restaurant@example.com"
-                />
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '14px', 
-                  fontWeight: '600', 
-                  color: '#374151', 
-                  marginBottom: '8px' 
-                }}>
-                  Cuisine Types
-                </label>
-                <input
-                  type="text"
-                  value={newRestaurant.cuisine}
-                  onChange={(e) => setNewRestaurant({ ...newRestaurant, cuisine: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    backgroundColor: '#f8fafc',
-                    transition: 'all 0.2s',
-                    boxSizing: 'border-box'
-                  }}
-                  placeholder="Indian, Chinese, Continental (comma-separated)"
                 />
               </div>
 
