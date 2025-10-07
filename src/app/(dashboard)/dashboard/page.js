@@ -44,6 +44,7 @@ import {
   FaCloudUploadAlt
 } from 'react-icons/fa';
 import apiClient from '../../../lib/api';
+import { t } from '../../../lib/i18n';
 
 function RestaurantPOSContent() {
   const searchParams = useSearchParams();
@@ -2061,7 +2062,7 @@ function RestaurantPOSContent() {
                 )}
                 <input
                   type="text"
-                  placeholder="Search by Table No. or Order ID..."
+                  placeholder={t('dashboard.searchOrder')}
                   value={orderLookup}
                   onChange={(e) => setOrderLookup(e.target.value)}
                   onKeyPress={handleOrderLookup}
@@ -2094,7 +2095,7 @@ function RestaurantPOSContent() {
                 <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#000000', opacity: 0.6 }} size={14} />
                 <input
                   type="text"
-                  placeholder="Quick add: type name or code..."
+                  placeholder={t('dashboard.quickAdd')}
                   value={quickSearch}
                   onChange={(e) => setQuickSearch(e.target.value)}
                   onKeyPress={handleQuickSearch}
@@ -2292,7 +2293,7 @@ function RestaurantPOSContent() {
                     gap: '8px'
                   }}>
                     <FaShoppingCart size={16} />
-                    Order Summary
+                    {t('dashboard.orderSummary')}
                     {cart.length > 0 && (
                       <span style={{
                         backgroundColor: '#ef4444',
@@ -2404,7 +2405,7 @@ function RestaurantPOSContent() {
               justifyContent: 'space-between'
             }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                Menu Categories
+{t('dashboard.menuCategories')}
               </h2>
               <button
                 onClick={() => setShowMobileSidebar(false)}
@@ -2495,7 +2496,7 @@ function RestaurantPOSContent() {
               justifyContent: 'space-between'
             }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                Your Order ({cart.reduce((sum, item) => sum + item.quantity, 0)} items)
+{t('dashboard.yourOrder')} ({cart.reduce((sum, item) => sum + item.quantity, 0)} {t('common.items')})
               </h2>
               <button
                 onClick={() => setShowMobileCart(false)}

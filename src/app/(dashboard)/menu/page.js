@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BulkMenuUpload from '../../../components/BulkMenuUpload';
 import apiClient from '../../../lib/api';
+import { t } from '../../../lib/i18n';
 import { 
   FaPlus, 
   FaEdit, 
@@ -1596,14 +1597,14 @@ const MenuManagement = () => {
                 margin: 0,
                 marginBottom: '4px'
               }}>
-                Menu Management
+{t('menu.title')}
                 </h1>
               <p style={{
                 fontSize: '14px',
                 color: '#6b7280',
                 margin: 0
               }}>
-              {filteredItems.length} items • {currentRestaurant?.name}
+{filteredItems.length} {t('common.items')} • {currentRestaurant?.name}
               </p>
           </div>
           
@@ -1636,7 +1637,7 @@ const MenuManagement = () => {
                 }}
               >
                 <FaCloudUploadAlt size={12} />
-                Bulk Upload
+{t('menu.bulkUpload')}
             </button>
             <button
               onClick={() => setShowAddForm(true)}
@@ -1662,7 +1663,7 @@ const MenuManagement = () => {
                 }}
               >
                 <FaPlus size={12} />
-              New Item
+{t('menu.addNewDish')}
             </button>
           </div>
         </div>
@@ -1695,7 +1696,7 @@ const MenuManagement = () => {
                 }} />
                   <input
                     type="text"
-                  placeholder="Search dishes..."
+                  placeholder={t('menu.searchMenu')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   style={{
@@ -1731,11 +1732,11 @@ const MenuManagement = () => {
                 value={selectedVegFilter}
                 onChange={setSelectedVegFilter}
                 options={[
-                  { value: 'all', label: 'All Types', icon: '🍽️' },
-                  { value: 'veg', label: 'Vegetarian', icon: '🥬' },
-                  { value: 'non-veg', label: 'Non-Vegetarian', icon: '🍖' }
+                  { value: 'all', label: t('menu.allTypes'), icon: '🍽️' },
+                  { value: 'veg', label: t('common.veg'), icon: '🥬' },
+                  { value: 'non-veg', label: t('common.nonVeg'), icon: '🍖' }
                 ]}
-                placeholder="All Types"
+                placeholder={t('menu.allTypes')}
                 style={{ minWidth: '120px' }}
               />
 
@@ -1744,14 +1745,14 @@ const MenuManagement = () => {
                 value={selectedCategory}
                 onChange={setSelectedCategory}
                 options={[
-                  { value: 'all', label: 'All Categories', icon: '🍽️' },
+                  { value: 'all', label: t('menu.allCategories'), icon: '🍽️' },
                   ...categories.map(category => ({ 
                     value: category.id, 
                     label: category.name, 
                     icon: category.emoji 
                   }))
                 ]}
-                placeholder="All Categories"
+                placeholder={t('menu.allCategories')}
                 style={{ minWidth: '140px' }}
               />
               
@@ -1780,7 +1781,7 @@ const MenuManagement = () => {
                   }}
                 >
                   <FaTh size={12} />
-                  Grid
+                  {t('menu.gridView')}
               </button>
               <button
                 onClick={() => setViewMode('list')}
@@ -1800,7 +1801,7 @@ const MenuManagement = () => {
                   }}
                 >
                   <FaList size={12} />
-                  List
+                  {t('menu.listView')}
               </button>
             </div>
           </div>
@@ -1937,7 +1938,7 @@ const MenuManagement = () => {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
               }}>
-                {searchTerm ? 'No dishes found' : 'Menu Management Ready! 🍽️'}
+                {searchTerm ? t('menu.noDishesFound') : t('menu.menuReady')}
             </h3>
               
               <p style={{
@@ -1946,7 +1947,7 @@ const MenuManagement = () => {
                 marginBottom: '8px',
                 fontWeight: '500'
               }}>
-                {searchTerm ? 'Try different search terms' : 'Create Your Restaurant Menu'}
+                {searchTerm ? t('menu.tryDifferentSearch') : t('menu.createMenu')}
               </p>
               
               <p style={{
@@ -1958,8 +1959,8 @@ const MenuManagement = () => {
                 lineHeight: '1.6'
               }}>
                 {searchTerm 
-                  ? 'Try searching for something else or check out all our delicious categories.' 
-                  : 'Set up your restaurant first, then start building your amazing menu with delicious dishes, categories, and pricing.'
+                  ? t('menu.trySearchingElse') 
+                  : t('menu.setupRestaurantFirst')
                 }
               </p>
               
@@ -1998,8 +1999,8 @@ const MenuManagement = () => {
             </button>
                 ) : (
                   <>
-                    <button
-                      onClick={() => setShowAddForm(true)}
+            <button
+              onClick={() => setShowAddForm(true)}
                       style={{
                         padding: '16px 32px',
                         background: 'linear-gradient(135deg, #ef4444, #dc2626)',
@@ -2023,7 +2024,7 @@ const MenuManagement = () => {
                       }}
                     >
                       New item
-                    </button>
+            </button>
                   </>
                 )}
               </div>

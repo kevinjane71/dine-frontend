@@ -20,6 +20,7 @@ import {
   signInWithPopup
 } from 'firebase/auth';
 import apiClient from '../../lib/api';
+import { t } from '../../lib/i18n';
 
 const Login = () => {
   const router = useRouter();
@@ -418,14 +419,14 @@ const Login = () => {
             fontWeight: "bold",
             margin: "0 0 8px 0"
           }}>
-            Dine POS
+            {t('login.title')}
           </h1>
           <p style={{
             fontSize: "16px",
             opacity: 0.9,
             margin: 0
           }}>
-            Restaurant Management System
+            {t('login.subtitle')}
           </p>
         </div>
 
@@ -449,7 +450,7 @@ const Login = () => {
               transition: 'all 0.2s'
             }}
           >
-            Restaurant Owner
+{t('login.restaurantOwner')}
           </button>
           <button
             onClick={() => {
@@ -469,7 +470,7 @@ const Login = () => {
               transition: 'all 0.2s'
             }}
           >
-            Staff Member
+{t('login.staffMember')}
           </button>
         </div>
   
@@ -511,14 +512,14 @@ const Login = () => {
                   color: "#1f2937",
                   margin: "0 0 8px 0"
                 }}>
-                  Phone Login
+                  {t('login.phoneLogin')}
                 </h2>
                 <p style={{
                   color: "#6b7280",
                   margin: 0,
                   fontSize: "14px"
                 }}>
-                  Enter your phone number to receive an OTP
+                  {t('login.enterPhone')}
                 </p>
               </div>
   
@@ -531,7 +532,7 @@ const Login = () => {
                     color: "#374151",
                     marginBottom: "8px"
                   }}>
-                    Phone Number
+{t('common.phone')}
                   </label>
                   <div style={{ position: "relative" }}>
                     <div style={{
@@ -553,7 +554,7 @@ const Login = () => {
                       required
                       value={phoneNumber}
                       onChange={handlePhoneChange}
-                      placeholder="Enter 10-digit number"
+                      placeholder={t('login.phonePlaceholder')}
                       style={{
                         width: "100%",
                         paddingLeft: "80px",
@@ -589,7 +590,7 @@ const Login = () => {
                       fontWeight: "500"
                     }}>
                       <FaCheck size={10} />
-                      Valid phone number
+{t('login.validPhone')}
                     </div>
                   )}
                 </div>
@@ -622,7 +623,7 @@ const Login = () => {
                   ) : (
                     <FaArrowRight size={16} />
                   )}
-                  {loading ? "Sending OTP..." : "Send OTP"}
+                  {loading ? t('login.sendingOtp') : t('login.sendOtp')}
                 </button>
               </form>
 
@@ -641,7 +642,7 @@ const Login = () => {
                     backgroundColor: 'white',
                     fontWeight: '500'
                   }}>
-                    Or continue with
+{t('login.orContinueWith')}
                   </span>
                   <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
                 </div>
@@ -691,7 +692,7 @@ const Login = () => {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  {loading ? 'Signing in...' : 'Continue with Google'}
+                  {loading ? t('login.signingIn') : t('login.googleLogin')}
                 </button>
                 
                 <div style={{
@@ -701,7 +702,7 @@ const Login = () => {
                   color: '#6b7280'
                 }}>
                   <p style={{ margin: 0 }}>
-                    Restaurant owners can create accounts using Google
+{t('login.googleDescription')}
                   </p>
                 </div>
               </div>
@@ -728,7 +729,7 @@ const Login = () => {
                   color: "#1f2937",
                   margin: "0 0 8px 0"
                 }}>
-                  Enter OTP
+{t('login.enterOtp')}
                 </h2>
                 <p style={{
                   color: "#6b7280",

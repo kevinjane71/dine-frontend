@@ -34,6 +34,7 @@ import { BiRestaurant } from 'react-icons/bi';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import apiClient from '../lib/api';
+import LanguageSwitcher from './LanguageSwitcher';
 
 function NavigationContent({ isHidden = false }) {
   const pathname = usePathname();
@@ -483,6 +484,9 @@ function NavigationContent({ isHidden = false }) {
         
           {/* Right Side - Modern Design */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+            
             {/* Restaurant Selector - Modern Design */}
             {!isMobile && (user?.role === 'owner' || user?.role === 'customer') && allRestaurants.length > 1 && (
               <div style={{ position: 'relative', zIndex: 1000 }} data-restaurant-dropdown>

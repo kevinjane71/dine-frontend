@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '../../../lib/api';
+import { t } from '../../../lib/i18n';
 import { 
   FaStore, 
   FaUsers, 
@@ -1753,7 +1754,7 @@ const Admin = () => {
                     }}
                   >
                     <FaPlus size={16} />
-                    Add Restaurant
+{t('admin.addRestaurant')}
                   </button>
                 )}
               </div>
@@ -1788,7 +1789,7 @@ const Admin = () => {
               color: '#374151',
               margin: '0 0 8px 0'
             }}>
-              {!selectedRestaurant ? 'Select a restaurant first' : 'No staff members found'}
+              {!selectedRestaurant ? t('admin.selectRestaurantFirst') : t('admin.noStaffFound')}
             </h3>
             <p style={{
               color: '#6b7280',
@@ -1950,7 +1951,7 @@ const Admin = () => {
                     opacity: loading ? 0.7 : 1
                   }}
                 >
-                  {loading ? 'Adding...' : 'Add Restaurant'}
+                  {loading ? t('admin.adding') : t('admin.addRestaurant')}
                 </button>
               </div>
             </form>
@@ -1994,7 +1995,7 @@ const Admin = () => {
                   color: '#1f2937',
                   margin: 0
                 }}>
-                  Add New Staff Member
+{t('admin.addNewStaff')}
                 </h2>
                 <button
                   onClick={() => setShowAddStaffModal(false)}
@@ -2276,14 +2277,14 @@ const Admin = () => {
                   border: '1px solid #e5e7eb'
                 }}>
                   {[
-                    { key: 'dashboard', label: 'Dashboard', icon: '🏠' },
-                    { key: 'history', label: 'Order History', icon: '📋' },
-                    { key: 'tables', label: 'Tables', icon: '🪑' },
-                    { key: 'menu', label: 'Menu Management', icon: '🍽️' },
-                    { key: 'analytics', label: 'Analytics', icon: '📊' },
-                    { key: 'inventory', label: 'Inventory', icon: '📦' },
-                    { key: 'kot', label: 'KOT (Kitchen)', icon: '👨‍🍳' },
-                    { key: 'admin', label: 'Admin Panel', icon: '⚙️' }
+                    { key: 'dashboard', label: t('nav.dashboard'), icon: '🏠' },
+                    { key: 'history', label: t('nav.history'), icon: '📋' },
+                    { key: 'tables', label: t('nav.tables'), icon: '🪑' },
+                    { key: 'menu', label: t('nav.menu'), icon: '🍽️' },
+                    { key: 'analytics', label: t('nav.analytics'), icon: '📊' },
+                    { key: 'inventory', label: t('nav.inventory'), icon: '📦' },
+                    { key: 'kot', label: t('nav.kot'), icon: '👨‍🍳' },
+                    { key: 'admin', label: t('nav.admin'), icon: '⚙️' }
                   ].map(({ key, label, icon }) => (
                     <label key={key} style={{ 
                       display: 'flex', 
@@ -2322,7 +2323,7 @@ const Admin = () => {
                   ))}
                 </div>
                 <p style={{ fontSize: '12px', color: '#6b7280', margin: '8px 0 0 0' }}>
-                  Select which pages this staff member can access. Default access includes Dashboard, History, Tables, and Menu.
+                  {t('admin.selectPageAccess')}
                 </p>
               </div>
 
@@ -2334,7 +2335,7 @@ const Admin = () => {
                   color: '#374151', 
                   marginBottom: '8px' 
                 }}>
-                  Start Date *
+                  {t('admin.startDate')} *
                 </label>
                 <input
                   type="date"

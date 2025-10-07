@@ -135,6 +135,16 @@ const PlaceOrderContent = () => {
           const uniqueCategories = [...new Set(response.menu.map(item => item.category))];
           setCategories(['all', ...uniqueCategories]);
         } catch (apiError) {
+          console.log('API error:', apiError);
+          
+          // Check if it's a 404 error (restaurant not found)
+          if (apiError.status === 404 || apiError.message?.includes('Restaurant not found')) {
+            setError(`Restaurant not found. The restaurant ID "${restaurantId}" does not exist in our database. Please check the URL or contact the restaurant.`);
+            setLoading(false);
+            return;
+          }
+          
+          // For other errors, fall back to mock data
           console.log('API not available, using mock data:', apiError.message);
           setRestaurant(mockRestaurant);
           setMenu(mockMenu);
