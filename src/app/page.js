@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import apiClient from '../lib/api';
 import { 
   FaUtensils,
   FaChartBar,
@@ -34,6 +35,21 @@ export default function LandingPage() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Background authentication check
+  useEffect(() => {
+    const checkAuthInBackground = async () => {
+      if (apiClient.isAuthenticated()) {
+        const redirectPath = apiClient.getRedirectPath();
+        console.log('🔄 User already authenticated, redirecting to:', redirectPath);
+        router.replace(redirectPath);
+      }
+    };
+
+    // Check after a short delay to not block initial render
+    const timeoutId = setTimeout(checkAuthInBackground, 500);
+    return () => clearTimeout(timeoutId);
+  }, [router]);
 
   const features = [
     {
@@ -131,7 +147,14 @@ export default function LandingPage() {
   };
 
   const handleLogin = () => {
-    router.push('/login');
+    // Check if user is already authenticated
+    if (apiClient.isAuthenticated()) {
+      const redirectPath = apiClient.getRedirectPath();
+      console.log('🔄 User already authenticated, redirecting to:', redirectPath);
+      router.replace(redirectPath);
+    } else {
+      router.push('/login');
+    }
   };
 
     return (
@@ -493,8 +516,8 @@ export default function LandingPage() {
         position: 'relative',
         overflow: 'hidden',
         minHeight: isMobile ? '80vh' : '100vh',
-        display: 'flex', 
-        alignItems: 'center',
+                      display: 'flex', 
+                      alignItems: 'center',
         justifyContent: 'center'
       }}>
         {/* Background Pattern */}
@@ -553,7 +576,7 @@ export default function LandingPage() {
             filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2))'
           }}>
             🍽️
-          </div>
+                    </div>
                     
           {/* Main Heading */}
           <h1 style={{
@@ -566,7 +589,7 @@ export default function LandingPage() {
           }}>
             Restaurant Management
             <br />
-            <span style={{
+                      <span style={{
               background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -575,7 +598,7 @@ export default function LandingPage() {
               marginTop: '8px'
             }}>
               Revolution 🚀
-            </span>
+                      </span>
           </h1>
           
           {/* Subtitle */}
@@ -1567,8 +1590,8 @@ export default function LandingPage() {
             }}>
               Start free and scale as you grow. All plans include 14-day free trial.
             </p>
-          </div>
-          
+            </div>
+            
           <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
@@ -1580,7 +1603,7 @@ export default function LandingPage() {
             {plans.map((plan, index) => (
               <div
                 key={index}
-                style={{
+                  style={{
                   backgroundColor: 'white',
                   borderRadius: isMobile ? '16px' : '20px',
                   padding: isMobile ? '24px 20px' : '32px 24px',
@@ -1627,13 +1650,13 @@ export default function LandingPage() {
                       color: '#1f2937'
                     }}>
                       {plan.price}
-                    </span>
+                  </span>
                     <span style={{ color: '#6b7280', fontSize: isMobile ? '14px' : '16px' }}>/{plan.period}</span>
-                  </div>
+                </div>
                   <p style={{ color: '#6b7280', fontSize: isMobile ? '13px' : '14px', lineHeight: '1.4' }}>
                     {plan.description}
-                  </p>
-                </div>
+                </p>
+            </div>
             
                 <ul style={{
                   listStyle: 'none',
@@ -1660,9 +1683,9 @@ export default function LandingPage() {
                   ))}
                 </ul>
 
-                <button
+              <button
                   onClick={handleGetStarted}
-                  style={{
+                style={{
                     width: '100%',
                     padding: isMobile ? '12px 20px' : '14px 24px',
                     background: plan.popular 
@@ -1673,7 +1696,7 @@ export default function LandingPage() {
                     borderRadius: isMobile ? '10px' : '12px',
                     fontWeight: 'bold',
                     fontSize: isMobile ? '14px' : '16px',
-                    cursor: 'pointer',
+                  cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {

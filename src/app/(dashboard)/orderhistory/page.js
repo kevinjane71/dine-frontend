@@ -56,10 +56,7 @@ const OrderHistory = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    localStorage.removeItem('dine_cart');
-    localStorage.removeItem('dine_saved_order');
+    apiClient.clearToken();
     router.push('/login');
   };
 

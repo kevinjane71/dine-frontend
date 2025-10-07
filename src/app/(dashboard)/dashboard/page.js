@@ -101,6 +101,28 @@ function RestaurantPOSContent() {
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
 
+  // Authentication guard
+  useEffect(() => {
+    const checkAuth = () => {
+      if (!apiClient.isAuthenticated()) {
+        console.log('🚫 User not authenticated, redirecting to login');
+        router.replace('/login');
+        return;
+      }
+      
+      const user = apiClient.getUser();
+      if (!user) {
+        console.log('🚫 No user data found, redirecting to login');
+        router.replace('/login');
+        return;
+      }
+      
+      console.log('✅ User authenticated:', user.role);
+    };
+
+    checkAuth();
+  }, [router]);
+
   // Load user data
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -111,9 +133,7 @@ function RestaurantPOSContent() {
 
   // Logout function
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('restaurant');
-    localStorage.removeItem('cart');
+    apiClient.clearToken();
     window.location.href = '/login';
   };
 

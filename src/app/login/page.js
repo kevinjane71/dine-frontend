@@ -19,6 +19,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
+import apiClient from '../../lib/api';
 
 const Login = () => {
   const router = useRouter();
@@ -34,6 +35,25 @@ const Login = () => {
   const [verificationId, setVerificationId] = useState(null);
   const [otpSent, setOtpSent] = useState(false);
   const [isFirebaseOTP, setIsFirebaseOTP] = useState(false);
+
+  // Check if user is already logged in and redirect
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      if (apiClient.isAuthenticated()) {
+        const redirectPath = apiClient.getRedirectPath();
+        console.log('🔄 User already authenticated, redirecting to:', redirectPath);
+        router.replace(redirectPath);
+      }
+    };
+
+    // Check immediately
+    checkAuthStatus();
+
+    // Also check when component mounts (for hydration)
+    const timeoutId = setTimeout(checkAuthStatus, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [router]);
 
   // Setup Firebase reCAPTCHA
   useEffect(() => {
@@ -170,9 +190,9 @@ const Login = () => {
           
           // Redirect based on backend response
           if (firebaseData.redirectTo) {
-            router.push(firebaseData.redirectTo);
+            router.replace(firebaseData.redirectTo);
           } else {
-            router.push('/dashboard');
+            router.replace('/dashboard');
           }
         } else {
           setError(firebaseData.message || 'Failed to verify with backend');
@@ -197,9 +217,9 @@ const Login = () => {
           
           // Redirect based on backend response
           if (data.redirectTo) {
-            router.push(data.redirectTo);
+            router.replace(data.redirectTo);
           } else {
-            router.push('/dashboard');
+            router.replace('/dashboard');
           }
         } else {
           setError(data.message || 'Invalid OTP');
@@ -272,9 +292,9 @@ const Login = () => {
         
         // Redirect based on backend response
         if (googleData.redirectTo) {
-          router.push(googleData.redirectTo);
+          router.replace(googleData.redirectTo);
         } else {
-          router.push('/dashboard');
+          router.replace('/dashboard');
         }
       } else {
         setError(googleData.message || 'Google login failed');
@@ -326,7 +346,7 @@ const Login = () => {
         localStorage.setItem('user', JSON.stringify(userData));
         
         // Staff goes to main POS page
-        router.push('/dashboard');
+        router.replace('/dashboard');
       } else {
         setError(data.error || 'Login failed');
       }

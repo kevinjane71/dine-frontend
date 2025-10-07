@@ -53,7 +53,67 @@ class ApiClient {
   clearToken() {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('restaurant');
+      localStorage.removeItem('selectedRestaurant');
+      localStorage.removeItem('selectedRestaurantId');
+      localStorage.removeItem('cart');
+      localStorage.removeItem('dine_cart');
+      localStorage.removeItem('dine_saved_order');
+      localStorage.removeItem('order');
+      localStorage.removeItem('currentOrder');
+      localStorage.removeItem('menuItems');
+      localStorage.removeItem('categories');
+      localStorage.removeItem('staff');
+      localStorage.removeItem('settings');
+      localStorage.removeItem('tables');
+      localStorage.removeItem('floors');
+      localStorage.removeItem('analytics');
+      localStorage.removeItem('inventory');
+      localStorage.removeItem('payments');
+      localStorage.removeItem('customers');
+      localStorage.removeItem('bookings');
+      localStorage.removeItem('loyalty');
+      localStorage.removeItem('feedback');
+      localStorage.removeItem('suppliers');
+      localStorage.removeItem('userRestaurants');
+      localStorage.removeItem('restaurantSettings');
+      localStorage.removeItem('discountSettings');
+      
+      // Clear session storage as well
+      sessionStorage.clear();
     }
+  }
+
+  // Authentication utilities
+  isAuthenticated() {
+    if (typeof window === 'undefined') return false;
+    const token = localStorage.getItem('authToken');
+    const user = localStorage.getItem('user');
+    return !!(token && user);
+  }
+
+  getUser() {
+    if (typeof window === 'undefined') return null;
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+  }
+
+  getRedirectPath() {
+    if (typeof window === 'undefined') return '/login';
+    const user = this.getUser();
+    if (!user) return '/login';
+    
+    // Check if user has restaurants
+    const hasRestaurants = localStorage.getItem('selectedRestaurantId');
+    
+    if (user.role === 'owner' || user.role === 'customer') {
+      return hasRestaurants ? '/dashboard' : '/admin';
+    } else if (user.role === 'staff') {
+      return '/dashboard';
+    }
+    
+    return '/login';
   }
 
   // Auth endpoints

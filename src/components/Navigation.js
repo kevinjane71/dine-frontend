@@ -176,11 +176,7 @@ function NavigationContent({ isHidden = false }) {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    localStorage.removeItem('dine_cart');
-    localStorage.removeItem('dine_saved_order');
-    localStorage.removeItem('selectedRestaurantId');
+    apiClient.clearToken();
     setShowMobileMenu(false);
     setShowUserDropdown(false);
     router.push('/login');
