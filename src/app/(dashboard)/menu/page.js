@@ -14,6 +14,7 @@ import {
   FaUtensils,
   FaFire,
   FaLeaf,
+  FaDrumstickBite,
   FaTags,
   FaFilter,
   FaSpinner,
@@ -34,45 +35,134 @@ import {
   FaTimes
 } from 'react-icons/fa';
 
-// Enhanced Dropdown Component
-const EnhancedDropdown = ({ 
+// Enhanced Category Dropdown Component with Management
+const CategoryDropdown = ({ 
   label, 
   value, 
   onChange, 
-  options, 
-  placeholder = "Select option",
-  allowAddNew = false,
-  onAddNew = null,
+  categories = [], 
+  placeholder = "Select category",
+  restaurantId,
+  onCategoryAdded = null,
+  onCategoryUpdated = null,
+  onCategoryDeleted = null,
   className = ""
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newOption, setNewOption] = useState('');
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [newCategory, setNewCategory] = useState({ name: '', emoji: '🍽️', description: '' });
+  const [loading, setLoading] = useState(false);
+  const dropdownRef = useRef(null);
 
-  const selectedOption = options.find(opt => opt.value === value) || null;
+  const selectedCategory = categories.find(cat => cat.id === value) || null;
   
-  const filteredOptions = options.filter(option =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCategories = categories.filter(category =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSelect = (option) => {
-    onChange(option.value);
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    setIsOpen(false);
+    setSearchTerm('');
+        setShowAddForm(false);
+        setShowEditForm(false);
+        setEditingCategory(null);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const handleSelect = (category) => {
+    onChange(category.id);
     setIsOpen(false);
     setSearchTerm('');
   };
 
-  const handleAddNew = () => {
-    if (newOption.trim() && onAddNew) {
-      onAddNew(newOption.trim());
-      setNewOption('');
+  const handleAddNew = async () => {
+    if (!newCategory.name.trim()) return;
+    
+    try {
+      setLoading(true);
+      const response = await apiClient.createCategory(restaurantId, newCategory);
+      if (onCategoryAdded) {
+        onCategoryAdded(response.category);
+      }
+      setNewCategory({ name: '', emoji: '🍽️', description: '' });
       setShowAddForm(false);
       setSearchTerm('');
+    } catch (error) {
+      console.error('Error creating category:', error);
+      alert('Failed to create category: ' + (error.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (category) => {
+    setEditingCategory(category);
+    setNewCategory({ 
+      name: category.name, 
+      emoji: category.emoji, 
+      description: category.description || '' 
+    });
+    setShowEditForm(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editingCategory || !newCategory.name.trim()) return;
+    
+    try {
+      setLoading(true);
+      const response = await apiClient.updateCategory(restaurantId, editingCategory.id, newCategory);
+      if (onCategoryUpdated) {
+        onCategoryUpdated(response.category);
+      }
+      setNewCategory({ name: '', emoji: '🍽️', description: '' });
+      setShowEditForm(false);
+      setEditingCategory(null);
+    } catch (error) {
+      console.error('Error updating category:', error);
+      alert('Failed to update category: ' + (error.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (category) => {
+    if (!confirm(`Are you sure you want to delete "${category.name}"? This action cannot be undone.`)) return;
+    
+    try {
+      setLoading(true);
+      await apiClient.deleteCategory(restaurantId, category.id);
+      if (onCategoryDeleted) {
+        onCategoryDeleted(category.id);
+      }
+      // If the deleted category was selected, clear selection
+      if (value === category.id) {
+        onChange('');
+      }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert('Failed to delete category: ' + (error.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${className}`} ref={dropdownRef}>
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-2">
           {label}
@@ -83,73 +173,176 @@ const EnhancedDropdown = ({
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-4 py-3 text-left bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 flex items-center justify-between transition-all duration-200 hover:border-gray-400"
       >
-        <span className={selectedOption ? 'text-gray-900' : 'text-gray-500'}>
-          {selectedOption ? selectedOption.label : placeholder}
+                 <span className={selectedCategory ? 'text-gray-900' : 'text-gray-500'}>
+                   {selectedCategory ? selectedCategory.name : placeholder}
         </span>
         <FaChevronDown className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} size={12} />
       </button>
       
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden">
-          {allowAddNew && (
-            <div className="p-3 border-b border-gray-200">
-              {!showAddForm ? (
-                <button
-                  onClick={() => setShowAddForm(true)}
-                  className="w-full text-left text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2"
-                >
-                  <FaPlus size={12} />
-                  Add new category
-                </button>
-              ) : (
-                <div className="space-y-2">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-80 overflow-hidden">
+          {/* Add New Category Form */}
+          {showAddForm && (
+            <div className="p-3 border-b border-gray-200 bg-blue-50">
+              <div className="space-y-3">
+                <div>
                   <input
                     type="text"
-                    value={newOption}
-                    onChange={(e) => setNewOption(e.target.value)}
-                    placeholder="Enter new category name"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={newCategory.name}
+                    onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                    placeholder="Category name"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                     autoFocus
                   />
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newCategory.emoji}
+                    onChange={(e) => setNewCategory({...newCategory, emoji: e.target.value})}
+                    placeholder="🍽️"
+                    className="w-16 px-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    maxLength="2"
+                  />
+                  <input
+                    type="text"
+                    value={newCategory.description}
+                    onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+                    placeholder="Description (optional)"
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
                   <div className="flex gap-2">
-                    <button
+                <button
                       onClick={handleAddNew}
-                      className="px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    >
-                      Add
-                    </button>
+                             disabled={loading || !newCategory.name.trim()}
+                             className="px-3 py-1 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                             {loading ? 'Adding...' : 'Add'}
+                </button>
                     <button
                       onClick={() => {
                         setShowAddForm(false);
-                        setNewOption('');
+                      setNewCategory({ name: '', emoji: '🍽️', description: '' });
                       }}
                       className="px-3 py-1 text-xs bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                     >
                       Cancel
                     </button>
+                </div>
                   </div>
                 </div>
               )}
+
+          {/* Edit Category Form */}
+          {showEditForm && editingCategory && (
+            <div className="p-3 border-b border-gray-200 bg-green-50">
+              <div className="space-y-3">
+                <div>
+                  <input
+                    type="text"
+                    value={newCategory.name}
+                    onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                    placeholder="Category name"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newCategory.emoji}
+                    onChange={(e) => setNewCategory({...newCategory, emoji: e.target.value})}
+                    placeholder="🍽️"
+                    className="w-16 px-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    maxLength="2"
+                  />
+                  <input
+                    type="text"
+                    value={newCategory.description}
+                    onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+                    placeholder="Description (optional)"
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                  <div className="flex gap-2">
+                    <button
+                             onClick={handleUpdate}
+                             disabled={loading || !newCategory.name.trim()}
+                             className="px-3 py-1 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                             {loading ? 'Updating...' : 'Update'}
+                    </button>
+                    <button
+                      onClick={() => {
+                      setShowEditForm(false);
+                      setEditingCategory(null);
+                      setNewCategory({ name: '', emoji: '🍽️', description: '' });
+                      }}
+                      className="px-3 py-1 text-xs bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                </div>
+                  </div>
+                </div>
+              )}
+          
+          {/* Add New Button */}
+          {!showAddForm && !showEditForm && (
+            <div className="p-3 border-b border-gray-200">
+                       <button
+                         onClick={() => setShowAddForm(true)}
+                         className="w-full text-left text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-2"
+                       >
+                         Add new category
+                       </button>
             </div>
           )}
           
+          {/* Categories List */}
           <div className="max-h-48 overflow-y-auto">
-            {filteredOptions.map((option, index) => (
+            {filteredCategories.map((category) => (
+              <div key={category.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 group">
             <button
-              key={option.value}
               type="button"
-              onClick={() => handleSelect(option)}
-                className="w-full px-4 py-3 text-left text-sm text-gray-900 hover:bg-gray-50 flex items-center justify-between transition-colors duration-150"
-              >
-                <span>{option.label}</span>
-                {selectedOption?.value === option.value && (
-                  <FaCheck className="text-red-500" size={12} />
+                           onClick={() => handleSelect(category)}
+                           className="flex-1 text-left text-sm text-gray-900 hover:text-gray-700 flex items-center gap-2"
+                         >
+                           <span>{category.name}</span>
+                           {selectedCategory?.id === category.id && (
+                             <FaCheck className="text-red-500 ml-auto" size={12} />
                 )}
             </button>
-          ))}
-            {filteredOptions.length === 0 && (
+                
+                {/* Category Actions */}
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(category);
+                    }}
+                    className="p-1 text-blue-600 hover:text-blue-800"
+                    title="Edit category"
+                  >
+                    <FaEdit size={10} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(category);
+                    }}
+                    className="p-1 text-red-600 hover:text-red-800"
+                    title="Delete category"
+                  >
+                    <FaTrash size={10} />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {filteredCategories.length === 0 && (
               <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                No options found
+                No categories found
               </div>
             )}
           </div>
@@ -1157,32 +1350,40 @@ const MenuManagement = () => {
       setLoading(true);
       setError('');
 
-      const menuResponse = await apiClient.getMenu(restaurantId);
+      // Load menu items and categories in parallel
+      const [menuResponse, categoriesResponse] = await Promise.all([
+        apiClient.getMenu(restaurantId),
+        apiClient.getCategories(restaurantId)
+      ]);
+      
       setMenuItems(menuResponse.menuItems || []);
 
-      // Extract unique categories from menu items and merge with generic categories
-      const uniqueCategories = [...new Set((menuResponse.menuItems || []).map(item => item.category))];
-      const existingCategories = uniqueCategories.map(cat => {
-        const generic = genericCategories.find(g => g.id === cat);
-        return generic || {
-        id: cat,
-          name: cat.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-          emoji: '🍽️'
-        };
-      });
-      
-      // Merge with generic categories, avoiding duplicates
-      const allCategories = [...genericCategories];
-      existingCategories.forEach(cat => {
-        if (!allCategories.find(g => g.id === cat.id)) {
-          allCategories.push(cat);
+      // Use categories from backend, fallback to generic categories if none exist
+      const backendCategories = categoriesResponse.categories || [];
+      if (backendCategories.length > 0) {
+        setCategories(backendCategories);
+      } else {
+        // If no categories exist, create default categories
+        const defaultCategories = [
+          { id: 'appetizer', name: 'Appetizers', emoji: '🥗', description: 'Starters and appetizers' },
+          { id: 'main-course', name: 'Main Course', emoji: '🍽️', description: 'Main dishes' },
+          { id: 'dessert', name: 'Desserts', emoji: '🍰', description: 'Sweet treats' },
+          { id: 'beverages', name: 'Beverages', emoji: '🥤', description: 'Drinks and beverages' }
+        ];
+        setCategories(defaultCategories);
+        
+        // Create default categories in backend
+        try {
+          for (const category of defaultCategories) {
+            await apiClient.createCategory(restaurantId, category);
+          }
+        } catch (error) {
+          console.error('Error creating default categories:', error);
         }
-      });
-      
-      setCategories(allCategories);
+      }
 
-      if (allCategories.length > 0 && !formData.category) {
-        setFormData(prev => ({ ...prev, category: allCategories[0].id }));
+      if (backendCategories.length > 0 && !formData.category) {
+        setFormData(prev => ({ ...prev, category: backendCategories[0].id }));
       }
 
     } catch (error) {
@@ -1318,14 +1519,23 @@ const MenuManagement = () => {
     return categoryObj?.emoji || '🍽️';
   };
 
-  const handleAddNewCategory = (categoryName) => {
-    const newCategory = {
-      id: categoryName.toLowerCase().replace(/\s+/g, '-'),
-      name: categoryName,
-      emoji: '🍽️'
-    };
-    setCategories(prev => [...prev, newCategory]);
-    setFormData(prev => ({ ...prev, category: newCategory.id }));
+  const handleAddNewCategory = (category) => {
+    setCategories(prev => [...prev, category]);
+    setFormData(prev => ({ ...prev, category: category.id }));
+  };
+
+  const handleCategoryUpdated = (updatedCategory) => {
+    setCategories(prev => prev.map(cat => 
+      cat.id === updatedCategory.id ? updatedCategory : cat
+    ));
+  };
+
+  const handleCategoryDeleted = (categoryId) => {
+    setCategories(prev => prev.filter(cat => cat.id !== categoryId));
+    // If the deleted category was selected, clear selection
+    if (formData.category === categoryId) {
+      setFormData(prev => ({ ...prev, category: '' }));
+    }
   };
 
   const toggleCategoryCollapse = (categoryId) => {
@@ -1828,33 +2038,35 @@ const MenuManagement = () => {
         <div style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.6)',
+          backgroundColor: 'rgba(0,0,0,0.7)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 50,
-          padding: '20px',
-          backdropFilter: 'blur(4px)'
+          padding: '20px'
         }}>
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '24px',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            borderRadius: '8px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
             width: '100%',
-            maxWidth: '600px',
+            maxWidth: '500px',
             maxHeight: '90vh',
-            overflowY: 'auto',
-            border: '1px solid #fed7aa'
+            overflowY: 'auto'
           }}>
+            {/* Modal Header */}
             <div style={{
-              padding: '32px 32px 0 32px',
-              borderBottom: '1px solid #f3f4f6'
+              padding: '20px 24px',
+              borderBottom: '1px solid #e5e7eb',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: '#fef2f2'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <h2 style={{
-                  fontSize: '20px',
+                fontSize: '18px',
                   fontWeight: '600',
-                  color: '#1f2937',
+                color: '#dc2626',
                   margin: 0
                 }}>
                   {editingItem ? 'Edit Dish' : 'Add New Dish'}
@@ -1864,29 +2076,34 @@ const MenuManagement = () => {
                   style={{
                     backgroundColor: 'transparent',
                     border: 'none',
-                    fontSize: '20px',
+                  fontSize: '18px',
                     color: '#6b7280',
                     cursor: 'pointer',
-                    padding: '4px',
-                    borderRadius: '8px',
+                  padding: '8px',
+                  borderRadius: '4px',
                     transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f3f4f6';
-                    e.currentTarget.style.color = '#ef4444';
+                  e.currentTarget.style.backgroundColor = '#fee2e2';
+                  e.currentTarget.style.color = '#dc2626';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent';
                     e.currentTarget.style.color = '#6b7280';
                   }}
                 >
-                  <FaTimes />
+                ×
                 </button>
-              </div>
             </div>
             
             <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              {/* Mobile-friendly responsive grid */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : '2fr 1fr', 
+                gap: '16px', 
+                marginBottom: '16px' 
+              }}>
                 {/* Name */}
                 <div>
                   <label style={{
@@ -1914,7 +2131,7 @@ const MenuManagement = () => {
                       transition: 'border-color 0.2s ease'
                     }}
                     placeholder="Enter dish name"
-                    onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                    onFocus={(e) => e.target.style.borderColor = '#dc2626'}
                     onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                   />
                 </div>
@@ -1928,11 +2145,10 @@ const MenuManagement = () => {
                     color: '#374151',
                     marginBottom: '6px'
                   }}>
-                    Short Code *
+                    Short Code
                   </label>
                   <input
                     type="text"
-                    required
                     value={formData.shortCode}
                     onChange={(e) => setFormData({...formData, shortCode: e.target.value.toUpperCase()})}
                     style={{
@@ -1945,8 +2161,8 @@ const MenuManagement = () => {
                       backgroundColor: 'white',
                       transition: 'border-color 0.2s ease'
                     }}
-                    placeholder="e.g., DAL, SAM"
-                    onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                    placeholder="e.g., DAL, SAM (optional)"
+                    onFocus={(e) => e.target.style.borderColor = '#dc2626'}
                     onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                   />
                 </div>
@@ -1985,7 +2201,13 @@ const MenuManagement = () => {
                 />
               </div>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              {/* Price and Category - Mobile-friendly */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : '1fr 2fr', 
+                gap: '16px', 
+                marginBottom: '16px' 
+              }}>
                 {/* Price */}
                 <div>
                   <label style={{
@@ -1998,10 +2220,8 @@ const MenuManagement = () => {
                     Price (₹) *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     required
-                    min="0"
-                    step="0.01"
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: e.target.value})}
                     style={{
@@ -2014,48 +2234,30 @@ const MenuManagement = () => {
                       backgroundColor: 'white',
                       transition: 'border-color 0.2s ease'
                     }}
-                    placeholder="0.00"
-                    onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                    placeholder="Enter price"
+                    onFocus={(e) => e.target.style.borderColor = '#dc2626'}
                     onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                   />
                 </div>
                 
                 {/* Category */}
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    color: '#374151',
-                    marginBottom: '6px'
-                  }}>
-                    Category *
-                  </label>
-                  <input
-                    type="text"
-                    required
+                  <CategoryDropdown
+                    label="Category *"
                     value={formData.category}
-                    onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      backgroundColor: 'white',
-                      transition: 'border-color 0.2s ease'
-                    }}
-                    placeholder="e.g., appetizer, main-course"
-                    onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                    onChange={(value) => setFormData({...formData, category: value})}
+                    categories={categories}
+                    placeholder="Select category"
+                    restaurantId={currentRestaurant?.id}
+                    onCategoryAdded={handleAddNewCategory}
+                    onCategoryUpdated={handleCategoryUpdated}
+                    onCategoryDeleted={handleCategoryDeleted}
                   />
                 </div>
                 
                 {/* Spice Level */}
                 <div>
-                  <EnhancedDropdown
-                    label="Spice Level"
+                  <CustomDropdown
                     value={formData.spiceLevel}
                     onChange={(value) => setFormData({...formData, spiceLevel: value})}
                     options={[
@@ -2068,10 +2270,8 @@ const MenuManagement = () => {
                 </div>
               </div>
               
-              {/* Food Type and Availability */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-                {/* Food Type */}
-                <div>
+              {/* Food Type - Mobile-friendly */}
+              <div style={{ marginBottom: '24px' }}>
                   <label style={{
                     display: 'block',
                     fontSize: '14px',
@@ -2081,21 +2281,26 @@ const MenuManagement = () => {
                   }}>
                     Food Type
                   </label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '8px',
+                  flexDirection: window.innerWidth <= 768 ? 'column' : 'row'
+                }}>
                     <button
                       type="button"
                       onClick={() => setFormData({...formData, isVeg: true})}
                       style={{
                         flex: 1,
-                        padding: '10px 16px',
+                      padding: '12px 16px',
                         border: '1px solid #e5e7eb',
                         borderRadius: '6px',
-                        backgroundColor: formData.isVeg === true ? '#10b981' : 'white',
+                      backgroundColor: formData.isVeg === true ? '#dc2626' : 'white',
                         color: formData.isVeg === true ? 'white' : '#6b7280',
                         fontSize: '14px',
                         fontWeight: '500',
                         cursor: 'pointer',
-                        transition: 'all 0.2s ease'
+                      transition: 'all 0.2s ease',
+                      textAlign: 'center'
                       }}
                     >
                       Veg
@@ -2105,15 +2310,16 @@ const MenuManagement = () => {
                       onClick={() => setFormData({...formData, isVeg: false})}
                       style={{
                         flex: 1,
-                        padding: '10px 16px',
+                      padding: '12px 16px',
                         border: '1px solid #e5e7eb',
                         borderRadius: '6px',
-                        backgroundColor: formData.isVeg === false ? '#ef4444' : 'white',
+                      backgroundColor: formData.isVeg === false ? '#dc2626' : 'white',
                         color: formData.isVeg === false ? 'white' : '#6b7280',
                         fontSize: '14px',
                         fontWeight: '500',
                         cursor: 'pointer',
-                        transition: 'all 0.2s ease'
+                      transition: 'all 0.2s ease',
+                      textAlign: 'center'
                       }}
                     >
                       Non-Veg
@@ -2121,65 +2327,14 @@ const MenuManagement = () => {
                   </div>
                 </div>
 
-                {/* Availability */}
-                <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    color: '#374151',
-                    marginBottom: '6px'
-                  }}>
-                    Availability
-                  </label>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({...formData, isAvailable: true})}
-                      style={{
-                        padding: '10px 16px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '6px',
-                        backgroundColor: formData.isAvailable === true ? '#10b981' : 'white',
-                        color: formData.isAvailable === true ? 'white' : '#6b7280',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        textAlign: 'left'
-                      }}
-                    >
-                      Available
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({...formData, isAvailable: false})}
-                      style={{
-                        padding: '10px 16px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '6px',
-                        backgroundColor: formData.isAvailable === false ? '#ef4444' : 'white',
-                        color: formData.isAvailable === false ? 'white' : '#6b7280',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        textAlign: 'left'
-                      }}
-                    >
-                      Out of Stock
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Actions */}
+              {/* Actions - Mobile-friendly */}
               <div style={{ 
                 display: 'flex', 
                 gap: '12px', 
                 justifyContent: 'flex-end',
                 paddingTop: '16px',
-                borderTop: '1px solid #f3f4f6'
+                borderTop: '1px solid #f3f4f6',
+                flexDirection: window.innerWidth <= 768 ? 'column' : 'row'
               }}>
                 <button
                   type="button"
@@ -2193,7 +2348,8 @@ const MenuManagement = () => {
                     border: '1px solid #e5e7eb',
                     borderRadius: '6px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    width: window.innerWidth <= 768 ? '100%' : 'auto'
                   }}
                 >
                   Cancel
@@ -2203,14 +2359,15 @@ const MenuManagement = () => {
                   disabled={processing}
                   style={{
                     padding: '12px 24px',
-                    backgroundColor: processing ? '#d1d5db' : '#3b82f6',
+                    backgroundColor: processing ? '#d1d5db' : '#dc2626',
                     color: 'white',
                     fontSize: '14px',
                     fontWeight: '500',
                     border: 'none',
                     borderRadius: '6px',
                     cursor: processing ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    width: window.innerWidth <= 768 ? '100%' : 'auto'
                   }}
                 >
                   {processing ? 'Processing...' : editingItem ? 'Update Dish' : 'Add Dish'}

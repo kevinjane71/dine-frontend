@@ -333,6 +333,33 @@ class ApiClient {
     });
   }
 
+  // Category Management APIs
+  async getCategories(restaurantId) {
+    return this.request(`/api/categories/${restaurantId}`, {
+      method: 'GET',
+    });
+  }
+
+  async createCategory(restaurantId, categoryData) {
+    return this.request(`/api/categories/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify(categoryData),
+    });
+  }
+
+  async updateCategory(restaurantId, categoryId, categoryData) {
+    return this.request(`/api/categories/${restaurantId}/${categoryId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(categoryData),
+    });
+  }
+
+  async deleteCategory(restaurantId, categoryId) {
+    return this.request(`/api/categories/${restaurantId}/${categoryId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Analytics endpoints
   async getAnalytics(restaurantId, period = '7d') {
     return this.request(`/api/analytics/${restaurantId}?period=${period}`);
