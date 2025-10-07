@@ -1999,7 +1999,7 @@ const MenuManagement = () => {
                 ) : (
                   <>
                     <button
-                      onClick={() => router.push('/dashboard')}
+                      onClick={() => setShowAddForm(true)}
                       style={{
                         padding: '16px 32px',
                         background: 'linear-gradient(135deg, #ef4444, #dc2626)',
@@ -2022,7 +2022,7 @@ const MenuManagement = () => {
                         e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
                       }}
                     >
-                      Set Up Restaurant First
+                      New item
                     </button>
                   </>
                 )}
