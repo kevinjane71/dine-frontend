@@ -578,7 +578,7 @@ const Customers = () => {
                 No Order History
               </h3>
               <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#9ca3af' }}>
-                This customer hasn't placed any orders yet.
+                This customer hasn&apos;t placed any orders yet.
               </p>
             </div>
           )}

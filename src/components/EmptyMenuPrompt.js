@@ -266,7 +266,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
         }}>
           Welcome to <strong style={{ color: '#1f2937' }}>{restaurantName || 'Your Restaurant'}</strong>! 
           <br />
-          Let&apos;s start by uploading your menu and let AI handle the rest.
+          
         </p>
 
         {/* AI Upload Section */}
