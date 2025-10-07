@@ -3,11 +3,19 @@
 import { useState, useEffect } from 'react';
 import { FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaTimes } from 'react-icons/fa';
 
-const Notification = ({ message, type = 'info', duration = 5000, onClose }) => {
-  const [isVisible, setIsVisible] = useState(true);
+const Notification = ({ message, type = 'info', duration = 5000, onClose, show = true, title }) => {
+  const [isVisible, setIsVisible] = useState(show && message);
 
   useEffect(() => {
-    if (duration > 0) {
+    if (show && message) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  }, [show, message]);
+
+  useEffect(() => {
+    if (duration > 0 && show && message) {
       const timer = setTimeout(() => {
         setIsVisible(false);
         setTimeout(() => onClose?.(), 300); // Wait for animation to complete
@@ -15,7 +23,7 @@ const Notification = ({ message, type = 'info', duration = 5000, onClose }) => {
 
       return () => clearTimeout(timer);
     }
-  }, [duration, onClose]);
+  }, [duration, onClose, show, message]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -94,6 +102,11 @@ const Notification = ({ message, type = 'info', duration = 5000, onClose }) => {
       </div>
       
       <div style={{ flex: 1, fontSize: '14px', lineHeight: '1.4' }}>
+        {title && (
+          <div style={{ fontWeight: '600', marginBottom: '4px' }}>
+            {title}
+          </div>
+        )}
         {message}
       </div>
       

@@ -48,6 +48,11 @@ function NavigationContent({ isHidden = false }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [pageAccess, setPageAccess] = useState(null);
   
+  // Debug dropdown states
+  useEffect(() => {
+    console.log('Dropdown states:', { showRestaurantDropdown, showUserDropdown });
+  }, [showRestaurantDropdown, showUserDropdown]);
+  
   // Check for mobile screen size
   useEffect(() => {
     const checkMobile = () => {
@@ -65,10 +70,13 @@ function NavigationContent({ isHidden = false }) {
   // Close dropdown and mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Only close if clicking outside the dropdown containers
       if (showRestaurantDropdown && !event.target.closest('[data-restaurant-dropdown]')) {
+        console.log('Clicking outside restaurant dropdown, closing it');
         setShowRestaurantDropdown(false);
       }
       if (showUserDropdown && !event.target.closest('[data-user-dropdown]')) {
+        console.log('Clicking outside user dropdown, closing it');
         setShowUserDropdown(false);
       }
       if (showMobileMenu && !event.target.closest('[data-mobile-menu]')) {
@@ -76,8 +84,15 @@ function NavigationContent({ isHidden = false }) {
       }
     };
 
+    // Add a small delay to prevent immediate closing
+    const timeoutId = setTimeout(() => {
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [showRestaurantDropdown, showUserDropdown, showMobileMenu]);
   
   // Load restaurant and user data
@@ -308,7 +323,7 @@ function NavigationContent({ isHidden = false }) {
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
         position: 'sticky',
         top: 0,
-        zIndex: 100,
+        zIndex: 1000,
         backdropFilter: 'blur(12px)',
         height: '64px', // Fixed shorter height
         display: 'flex',
@@ -470,9 +485,14 @@ function NavigationContent({ isHidden = false }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {/* Restaurant Selector - Modern Design */}
             {!isMobile && (user?.role === 'owner' || user?.role === 'customer') && allRestaurants.length > 1 && (
-              <div style={{ position: 'relative' }} data-restaurant-dropdown>
+              <div style={{ position: 'relative', zIndex: 1000 }} data-restaurant-dropdown>
                 <button
-                    onClick={() => setShowRestaurantDropdown(!showRestaurantDropdown)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Restaurant dropdown clicked, current state:', showRestaurantDropdown);
+                      setShowRestaurantDropdown(!showRestaurantDropdown);
+                    }}
                     style={{ 
                     display: 'flex',
                     alignItems: 'center',
@@ -543,19 +563,20 @@ function NavigationContent({ isHidden = false }) {
                 {/* Restaurant Dropdown - Modern Design */}
                 {showRestaurantDropdown && (
                   <div style={{
-                    position: 'fixed',
-                    top: isHidden ? '0px' : '100%',
-                    right: isHidden ? '20px' : 0,
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
                     background: 'rgba(255, 255, 255, 0.95)',
                     backdropFilter: 'blur(20px)',
                     border: '1px solid rgba(0, 0, 0, 0.08)',
                     borderRadius: '16px',
                     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-                    zIndex: 9999,
+                    zIndex: 10000,
                     minWidth: '300px',
-                    marginTop: isHidden ? '0px' : '8px',
+                    marginTop: '8px',
                     overflow: 'hidden'
                   }}>
+                    {console.log('Rendering restaurant dropdown')}
                     <div style={{ 
                       padding: '16px 20px', 
                       borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
@@ -700,9 +721,14 @@ function NavigationContent({ isHidden = false }) {
 
             {/* User Menu - Modern Design */}
             {!isMobile && (
-              <div style={{ position: 'relative' }} data-user-dropdown>
+              <div style={{ position: 'relative', zIndex: 1000 }} data-user-dropdown>
                 <button
-                  onClick={() => setShowUserDropdown(!showUserDropdown)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('User dropdown clicked, current state:', showUserDropdown);
+                    setShowUserDropdown(!showUserDropdown);
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -739,7 +765,9 @@ function NavigationContent({ isHidden = false }) {
                   <div style={{
                     width: '32px',
                     height: '32px',
-                    background: `linear-gradient(135deg, ${getRoleColor(user?.role)} 0%, ${getRoleColor(user?.role)}dd 100%)`,
+                    background: user?.photoURL 
+                      ? 'transparent'
+                      : `linear-gradient(135deg, ${getRoleColor(user?.role)} 0%, ${getRoleColor(user?.role)}dd 100%)`,
                     borderRadius: '10px',
                     display: 'flex',
                     alignItems: 'center',
@@ -748,9 +776,23 @@ function NavigationContent({ isHidden = false }) {
                     fontWeight: '700',
                     color: 'white',
                     boxShadow: `0 4px 12px ${getRoleColor(user?.role)}40`,
-                    border: '2px solid rgba(255, 255, 255, 0.9)'
+                    border: '2px solid rgba(255, 255, 255, 0.9)',
+                    overflow: 'hidden'
                   }}>
-                    {getUserInitials()}
+                    {user?.photoURL ? (
+                      <img 
+                        src={user.photoURL} 
+                        alt={user?.name || 'User'} 
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    ) : (
+                      getUserInitials()
+                    )}
                   </div>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -787,19 +829,20 @@ function NavigationContent({ isHidden = false }) {
                 {/* User Dropdown - Modern Design */}
                 {showUserDropdown && (
                   <div style={{
-                    position: 'fixed',
-                    top: isHidden ? '0px' : '100%',
-                    right: isHidden ? '20px' : 0,
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
                     background: 'rgba(255, 255, 255, 0.95)',
                     backdropFilter: 'blur(20px)',
                     border: '1px solid rgba(0, 0, 0, 0.08)',
                     borderRadius: '16px',
                     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-                    zIndex: 9999,
+                    zIndex: 10000,
                     minWidth: '220px',
-                    marginTop: isHidden ? '0px' : '8px',
+                    marginTop: '8px',
                     overflow: 'hidden'
                   }}>
+                    {console.log('Rendering user dropdown')}
                     {/* User Info Header */}
                     <div style={{
                       padding: '16px 20px',
@@ -810,7 +853,9 @@ function NavigationContent({ isHidden = false }) {
                         <div style={{
                           width: '40px',
                           height: '40px',
-                          background: `linear-gradient(135deg, ${getRoleColor(user?.role)} 0%, ${getRoleColor(user?.role)}dd 100%)`,
+                          background: user?.photoURL 
+                            ? 'transparent'
+                            : `linear-gradient(135deg, ${getRoleColor(user?.role)} 0%, ${getRoleColor(user?.role)}dd 100%)`,
                           borderRadius: '12px',
                           display: 'flex',
                           alignItems: 'center',
@@ -818,9 +863,23 @@ function NavigationContent({ isHidden = false }) {
                           fontSize: '14px',
                           fontWeight: '700',
                           color: 'white',
-                          boxShadow: `0 4px 12px ${getRoleColor(user?.role)}40`
+                          boxShadow: `0 4px 12px ${getRoleColor(user?.role)}40`,
+                          overflow: 'hidden'
                         }}>
-                          {getUserInitials()}
+                          {user?.photoURL ? (
+                            <img 
+                              src={user.photoURL} 
+                              alt={user?.name || 'User'} 
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: '10px'
+                              }}
+                            />
+                          ) : (
+                            getUserInitials()
+                          )}
                         </div>
                         <div>
                           <p style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
@@ -1024,7 +1083,9 @@ function NavigationContent({ isHidden = false }) {
                 <div style={{
                   width: '48px',
                   height: '48px',
-                  background: `linear-gradient(135deg, ${getRoleColor(user?.role)} 0%, ${getRoleColor(user?.role)}dd 100%)`,
+                  background: user?.photoURL 
+                    ? 'transparent'
+                    : `linear-gradient(135deg, ${getRoleColor(user?.role)} 0%, ${getRoleColor(user?.role)}dd 100%)`,
                   borderRadius: '14px',
                   display: 'flex',
                   alignItems: 'center',
@@ -1032,9 +1093,23 @@ function NavigationContent({ isHidden = false }) {
                   fontSize: '16px',
                   fontWeight: '700',
                   color: 'white',
-                  boxShadow: `0 6px 20px ${getRoleColor(user?.role)}40`
+                  boxShadow: `0 6px 20px ${getRoleColor(user?.role)}40`,
+                  overflow: 'hidden'
                 }}>
-                  {getUserInitials()}
+                  {user?.photoURL ? (
+                    <img 
+                      src={user.photoURL} 
+                      alt={user?.name || 'User'} 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '12px'
+                      }}
+                    />
+                  ) : (
+                    getUserInitials()
+                  )}
                 </div>
                 <div>
                   <p style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>

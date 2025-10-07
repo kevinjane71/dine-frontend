@@ -265,10 +265,16 @@ const Login = () => {
       setError('');
       
       const provider = new GoogleAuthProvider();
+      // Add additional scopes for better user data
+      provider.addScope('email');
+      provider.addScope('profile');
+      
       const result = await signInWithPopup(auth, provider);
       
+      console.log('Google login result:', result.user);
+      
       // Call backend to get JWT token
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dine-backend-lake.vercel.app';
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
       const googleResponse = await fetch(`${backendUrl}/api/auth/firebase/verify`, {
         method: 'POST',
         headers: {
@@ -290,6 +296,8 @@ const Login = () => {
         localStorage.setItem('authToken', googleData.token);
         localStorage.setItem('user', JSON.stringify(googleData.user));
         
+        console.log('Google login successful:', googleData);
+        
         // Redirect based on backend response
         if (googleData.redirectTo) {
           router.replace(googleData.redirectTo);
@@ -297,12 +305,22 @@ const Login = () => {
           router.replace('/dashboard');
         }
       } else {
-        setError(googleData.message || 'Google login failed');
+        setError(googleData.error || googleData.message || 'Google login failed');
       }
 
     } catch (error) {
       console.error('Google login error:', error);
-      setError('Google login failed. Please try again.');
+      
+      // Handle specific Firebase errors
+      if (error.code === 'auth/popup-closed-by-user') {
+        setError('Login cancelled. Please try again.');
+      } else if (error.code === 'auth/popup-blocked') {
+        setError('Popup blocked. Please allow popups and try again.');
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        setError('Login cancelled. Please try again.');
+      } else {
+        setError('Google login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -620,7 +638,8 @@ const Login = () => {
                     padding: '0 16px',
                     fontSize: '14px',
                     color: '#6b7280',
-                    backgroundColor: 'white'
+                    backgroundColor: 'white',
+                    fontWeight: '500'
                   }}>
                     Or continue with
                   </span>
@@ -633,7 +652,7 @@ const Login = () => {
                   disabled={loading}
                   style={{
                     width: '100%',
-                    padding: '12px 16px',
+                    padding: '14px 16px',
                     backgroundColor: 'white',
                     border: '2px solid #e5e7eb',
                     borderRadius: '12px',
@@ -646,18 +665,23 @@ const Login = () => {
                     justifyContent: 'center',
                     gap: '12px',
                     transition: 'all 0.2s',
-                    opacity: loading ? 0.6 : 1
+                    opacity: loading ? 0.6 : 1,
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
                   }}
                   onMouseEnter={(e) => {
                     if (!loading) {
                       e.target.style.backgroundColor = '#f9fafb';
                       e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+                      e.target.style.transform = 'translateY(-1px)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!loading) {
                       e.target.style.backgroundColor = 'white';
                       e.target.style.borderColor = '#e5e7eb';
+                      e.target.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
+                      e.target.style.transform = 'translateY(0)';
                     }
                   }}
                 >
@@ -667,8 +691,19 @@ const Login = () => {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Continue with Google
+                  {loading ? 'Signing in...' : 'Continue with Google'}
                 </button>
+                
+                <div style={{
+                  marginTop: '12px',
+                  textAlign: 'center',
+                  fontSize: '12px',
+                  color: '#6b7280'
+                }}>
+                  <p style={{ margin: 0 }}>
+                    Restaurant owners can create accounts using Google
+                  </p>
+                </div>
               </div>
             </>
           ) : loginType === 'owner' && step === 'otp' ? (

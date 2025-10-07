@@ -49,7 +49,7 @@ function DashboardLayoutContent({ children }) {
         right: 0,
         zIndex: 1000,
         height: isNavigationHidden ? '0px' : 'auto',
-        overflow: 'hidden',
+        overflow: 'visible',
         transition: 'height 0.3s ease'
       }}>
         <Navigation isHidden={isNavigationHidden} />
