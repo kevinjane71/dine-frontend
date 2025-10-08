@@ -17,6 +17,7 @@ import {
 
 const OrderSummary = ({ 
   cart, 
+  setCart,
   orderType, 
   setOrderType, 
   paymentMethod, 
@@ -27,6 +28,7 @@ const OrderSummary = ({
   onPlaceOrder,
   onRemoveFromCart, 
   onAddToCart, 
+  onUpdateCartItemQuantity,
   onTableNumberChange,
   onCustomerNameChange,
   onCustomerMobileChange,
@@ -59,10 +61,10 @@ const OrderSummary = ({
       flexDirection: 'column',
       boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.08)'
     }}>
-      {/* Header */}
+      {/* Header - More Compact */}
       <div style={{ 
         background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)', 
-        padding: '16px', 
+        padding: '12px', 
         color: 'white',
         position: 'relative',
         overflow: 'hidden',
@@ -74,46 +76,45 @@ const OrderSummary = ({
           position: 'absolute',
           top: 0,
           right: 0,
-          width: '100px',
-          height: '100px',
+          width: '80px',
+          height: '80px',
           background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
           borderRadius: '50%',
-          transform: 'translate(30px, -30px)'
+          transform: 'translate(25px, -25px)'
         }} />
         
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
-          justifyContent: 'space-between', 
-          marginBottom: '8px',
+          justifyContent: 'space-between',
           position: 'relative',
           zIndex: 2
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <div style={{
-              width: '28px',
-              height: '28px',
+              width: '24px',
+              height: '24px',
               backgroundColor: 'rgba(255,255,255,0.2)',
-              borderRadius: '8px',
+              borderRadius: '6px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               backdropFilter: 'blur(10px)'
             }}>
-              <FaShoppingCart size={14} />
+              <FaShoppingCart size={12} />
             </div>
             <div style={{ flex: 1 }}>
-              <h2 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0 }}>
+              <h2 style={{ fontSize: '13px', fontWeight: 'bold', margin: 0 }}>
                 Order Summary
               </h2>
-              <p style={{ fontSize: '10px', margin: '2px 0 0 0', opacity: 0.8 }}>
+              <p style={{ fontSize: '9px', margin: '1px 0 0 0', opacity: 0.8 }}>
                 {cart.reduce((sum, item) => sum + item.quantity, 0)} items
               </p>
             </div>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {/* Order Type Selector - Small Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {/* Order Type Selector - Text Based */}
             <div style={{ display: 'flex', gap: '2px' }}>
               <button
                 onClick={() => setOrderType('dine-in')}
@@ -122,19 +123,16 @@ const OrderSummary = ({
                   color: 'white',
                   border: '1px solid rgba(255,255,255,0.2)',
                   borderRadius: '4px',
-                  padding: '4px 6px',
+                  padding: '3px 6px',
                   fontSize: '8px',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   backdropFilter: 'blur(10px)',
-                  minWidth: '32px'
+                  minWidth: '28px'
                 }}
                 title="Dine In"
               >
-                🍽️
+                DINE IN
               </button>
               <button
                 onClick={() => setOrderType('takeaway')}
@@ -143,19 +141,16 @@ const OrderSummary = ({
                   color: 'white',
                   border: '1px solid rgba(255,255,255,0.2)',
                   borderRadius: '4px',
-                  padding: '4px 6px',
+                  padding: '3px 6px',
                   fontSize: '8px',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   backdropFilter: 'blur(10px)',
-                  minWidth: '32px'
+                  minWidth: '28px'
                 }}
                 title="Takeaway"
               >
-                📦
+                TAKEAWAY
               </button>
             </div>
             
@@ -165,8 +160,8 @@ const OrderSummary = ({
               style={{
                 backgroundColor: 'rgba(255,255,255,0.15)',
                 border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '6px',
-                padding: '6px',
+                borderRadius: '4px',
+                padding: '4px',
                 color: 'white',
                 cursor: 'pointer',
                 display: 'flex',
@@ -177,7 +172,7 @@ const OrderSummary = ({
               }}
               title="Generate QR Code for Customer Orders"
             >
-              <FaQrcode size={12} />
+              <FaQrcode size={10} />
             </button>
             
             {/* Clear Button - Icon Only */}
@@ -186,8 +181,8 @@ const OrderSummary = ({
               style={{
                 backgroundColor: 'rgba(255,255,255,0.15)',
                 border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '6px',
-                padding: '6px',
+                borderRadius: '4px',
+                padding: '4px',
                 color: 'white',
                 cursor: 'pointer',
                 display: 'flex',
@@ -198,7 +193,7 @@ const OrderSummary = ({
               }}
               title="Clear Cart"
             >
-              <FaTrash size={10} />
+              <FaTrash size={8} />
             </button>
           </div>
         </div>
@@ -269,7 +264,7 @@ const OrderSummary = ({
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ 
-                          fontSize: '10px', 
+                          fontSize: '11px', 
                           fontWeight: '600', 
                           color: '#6b7280' 
                         }}>
@@ -299,115 +294,132 @@ const OrderSummary = ({
                   <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
-                    backgroundColor: 'white', 
-                    borderRadius: '6px', 
-                    border: '1px solid #e5e7eb',
-                    marginLeft: '8px',
-                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                    gap: '2px'
+                    gap: '4px'
                   }}>
+                    {/* Individual Delete Button */}
                     <button
-                      onClick={() => onRemoveFromCart(item.id)}
+                      onClick={() => {
+                        // Remove all instances of this item
+                        const newCart = cart.filter(cartItem => cartItem.id !== item.id);
+                        setCart(newCart);
+                      }}
                       style={{
-                        width: '24px',
-                        height: '24px',
+                        width: '20px',
+                        height: '20px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: '#ef4444',
                         backgroundColor: 'transparent',
-                        border: 'none',
-                        borderRadius: '4px 0 0 4px',
+                        border: '1px solid #fecaca',
+                        borderRadius: '4px',
                         cursor: 'pointer',
-                        transition: 'background-color 0.2s'
+                        transition: 'all 0.2s'
                       }}
                       onMouseEnter={(e) => {
                         e.target.style.backgroundColor = '#fef2f2';
+                        e.target.style.borderColor = '#ef4444';
                       }}
                       onMouseLeave={(e) => {
                         e.target.style.backgroundColor = 'transparent';
+                        e.target.style.borderColor = '#fecaca';
                       }}
+                      title="Remove item"
                     >
-                      <FaMinus size={10} />
+                      <FaTimes size={8} />
                     </button>
-                    <input
-                      type="text"
-                      value={item.quantity}
-                      onChange={(e) => {
-                        const newQuantity = parseInt(e.target.value) || 1;
-                        if (newQuantity > 0) {
-                          // Update quantity directly
-                          const currentItem = cart.find(cartItem => cartItem.id === item.id);
-                          if (currentItem) {
-                            const diff = newQuantity - currentItem.quantity;
-                            if (diff > 0) {
-                              for (let i = 0; i < diff; i++) {
-                                onAddToCart(item);
-                              }
-                            } else if (diff < 0) {
-                              for (let i = 0; i < Math.abs(diff); i++) {
-                                onRemoveFromCart(item.id);
-                              }
+                    
+                    {/* Quantity Controls */}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      backgroundColor: 'white', 
+                      borderRadius: '6px', 
+                      border: '1px solid #e5e7eb',
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                      gap: '2px'
+                    }}>
+                      <button
+                        onClick={() => onRemoveFromCart(item.id)}
+                        style={{
+                          width: '22px',
+                          height: '22px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#ef4444',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          borderRadius: '4px 0 0 4px',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#fef2f2';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = 'transparent';
+                        }}
+                      >
+                        <FaMinus size={8} />
+                      </button>
+                      <input
+                        type="text"
+                        value={item.quantity}
+                        onChange={(e) => {
+                          const newQuantity = parseInt(e.target.value) || 1;
+                          if (newQuantity > 0 && onUpdateCartItemQuantity) {
+                            onUpdateCartItemQuantity(item.id, newQuantity);
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Ensure minimum quantity of 1
+                          const quantity = parseInt(e.target.value) || 1;
+                          if (quantity < 1) {
+                            e.target.value = 1;
+                            if (onUpdateCartItemQuantity) {
+                              onUpdateCartItemQuantity(item.id, 1);
                             }
                           }
-                        }
-                      }}
-                      onBlur={(e) => {
-                        // Ensure minimum quantity of 1
-                        if (parseInt(e.target.value) < 1) {
-                          e.target.value = 1;
-                          const currentItem = cart.find(cartItem => cartItem.id === item.id);
-                          if (currentItem && currentItem.quantity !== 1) {
-                            const diff = 1 - currentItem.quantity;
-                            if (diff > 0) {
-                              for (let i = 0; i < diff; i++) {
-                                onAddToCart(item);
-                              }
-                            } else if (diff < 0) {
-                              for (let i = 0; i < Math.abs(diff); i++) {
-                                onRemoveFromCart(item.id);
-                              }
-                            }
-                          }
-                        }
-                      }}
-                      style={{
-                        width: '40px',
-                        height: '24px',
-                        textAlign: 'center',
-                        fontWeight: 'bold',
-                        color: '#1f2937',
-                        border: 'none',
-                        fontSize: '11px',
-                        backgroundColor: '#f9fafb',
-                        outline: 'none',
-                        borderRadius: '0'
-                      }}
-                    />
-                    <button
-                      onClick={() => onAddToCart(item)}
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#10b981',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        borderRadius: '0 4px 4px 0',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.2s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#f0fdf4';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = 'transparent';
-                      }}
-                    >
-                      <FaPlus size={10} />
-                    </button>
+                        }}
+                        style={{
+                          width: '36px',
+                          height: '22px',
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                          color: '#1f2937',
+                          border: 'none',
+                          fontSize: '11px',
+                          backgroundColor: '#f9fafb',
+                          outline: 'none',
+                          borderRadius: '0'
+                        }}
+                      />
+                      <button
+                        onClick={() => onAddToCart(item)}
+                        style={{
+                          width: '22px',
+                          height: '22px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#10b981',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          borderRadius: '0 4px 4px 0',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#f0fdf4';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = 'transparent';
+                        }}
+                      >
+                        <FaPlus size={8} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -619,13 +631,12 @@ const OrderSummary = ({
                   <FaCreditCard size={12} />
                   Payment Method
                 </div>
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '4px' }}>
                   {[
-                    { id: 'cash', label: 'Cash', icon: FaMoneyBillWave },
-                    { id: 'upi', label: 'UPI', icon: FaCreditCard },
-                    { id: 'card', label: 'Card', icon: FaCreditCard }
+                    { id: 'cash', label: 'Cash' },
+                    { id: 'upi', label: 'UPI' },
+                    { id: 'card', label: 'Card' }
                   ].map((method) => {
-                    const Icon = method.icon;
                     const isSelected = paymentMethod === method.id;
                     return (
                       <button
@@ -633,23 +644,21 @@ const OrderSummary = ({
                         onClick={() => setPaymentMethod(method.id)}
                         style={{
                           flex: 1,
-                          padding: '8px 6px',
+                          padding: '6px 4px',
                           backgroundColor: isSelected ? '#ef4444' : 'white',
                           color: isSelected ? 'white' : '#6b7280',
                           border: isSelected ? '1px solid #ef4444' : '1px solid #e5e7eb',
                           borderRadius: '6px',
                           fontWeight: '600',
-                          fontSize: '10px',
+                          fontSize: '9px',
                           cursor: 'pointer',
                           display: 'flex',
-                          flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '4px',
+                          justifyContent: 'center',
                           transition: 'all 0.2s',
                           boxShadow: isSelected ? '0 2px 6px rgba(239, 68, 68, 0.3)' : '0 1px 2px rgba(0, 0, 0, 0.05)'
                         }}
                       >
-                        <Icon size={12} />
                         {method.label}
                       </button>
                     );
@@ -658,30 +667,30 @@ const OrderSummary = ({
               </div>
 
               {/* Workflow Actions */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
                 {/* First Row - Save and Place Order */}
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '6px' }}>
                   <button 
                     onClick={onSaveOrder}
                     style={{
                       flex: 1,
                       background: 'linear-gradient(135deg, #f97316, #ea580c)',
                       color: 'white',
-                      padding: '8px 12px',
-                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      borderRadius: '6px',
                       fontWeight: '600',
                       border: 'none',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '6px',
+                      gap: '4px',
                       fontSize: '11px',
                       transition: 'all 0.2s',
                       boxShadow: '0 2px 8px rgba(249, 115, 22, 0.3)'
                     }}
                   >
-                    <FaSave size={10} />
+                        <FaSave size={10} />
                     SAVE ORDER
                   </button>
                   
@@ -698,15 +707,15 @@ const OrderSummary = ({
                         ? 'linear-gradient(135deg, #d1d5db, #9ca3af)' 
                         : 'linear-gradient(135deg, #ef4444, #dc2626)',
                       color: 'white',
-                      padding: '8px 12px',
-                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      borderRadius: '6px',
                       fontWeight: '600',
                       border: 'none',
                       cursor: placingOrder || cart.length === 0 ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '6px',
+                      gap: '4px',
                       fontSize: '11px',
                       transition: 'all 0.2s',
                       boxShadow: placingOrder || cart.length === 0 ? 'none' : '0 2px 8px rgba(239, 68, 68, 0.3)'
@@ -726,8 +735,8 @@ const OrderSummary = ({
                   </button>
                 </div>
 
-                {/* Second Row - Complete Billing and Clear */}
-                <div style={{ display: 'flex', gap: '8px' }}>
+                {/* Second Row - Complete Billing Only */}
+                <div style={{ display: 'flex', gap: '6px' }}>
                   <button 
                     onClick={onProcessOrder}
                     disabled={processing || cart.length === 0}
@@ -737,15 +746,15 @@ const OrderSummary = ({
                         ? 'linear-gradient(135deg, #d1d5db, #9ca3af)' 
                         : 'linear-gradient(135deg, #10b981, #059669)',
                       color: 'white',
-                      padding: '8px 12px',
-                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      borderRadius: '6px',
                       fontWeight: '600',
                       border: 'none',
                       cursor: processing || cart.length === 0 ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '6px',
+                      gap: '4px',
                       fontSize: '11px',
                       transition: 'all 0.2s',
                       boxShadow: processing || cart.length === 0 ? 'none' : '0 2px 8px rgba(34, 197, 94, 0.3)'
@@ -762,34 +771,6 @@ const OrderSummary = ({
                         COMPLETE BILLING
                       </>
                     )}
-                  </button>
-                  
-                  <button 
-                    onClick={() => {
-                      if (window.confirm('Are you sure you want to clear this order?')) {
-                        onClearCart();
-                      }
-                    }}
-                    style={{
-                      background: 'linear-gradient(135deg, #6b7280, #4b5563)',
-                      color: 'white',
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      border: 'none',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      fontSize: '11px',
-                      minWidth: '80px',
-                      transition: 'all 0.2s',
-                      boxShadow: '0 2px 8px rgba(107, 114, 128, 0.3)'
-                    }}
-                  >
-                    <FaTimes size={10} />
-                    CLEAR
                   </button>
                 </div>
               </div>

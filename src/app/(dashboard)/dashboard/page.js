@@ -629,11 +629,15 @@ function RestaurantPOSContent() {
     }
     
     setCart(prevCart => {
-      const existingItem = prevCart.find(cartItem => cartItem.id === item.id);
-      if (existingItem) {
-        // Move updated item to top
-        const updatedCart = prevCart.filter(cartItem => cartItem.id !== item.id);
-        return [{ ...existingItem, quantity: existingItem.quantity + 1 }, ...updatedCart];
+      const existingItemIndex = prevCart.findIndex(cartItem => cartItem.id === item.id);
+      if (existingItemIndex !== -1) {
+        // Update existing item in place (don't move it)
+        const updatedCart = [...prevCart];
+        updatedCart[existingItemIndex] = { 
+          ...updatedCart[existingItemIndex], 
+          quantity: updatedCart[existingItemIndex].quantity + 1 
+        };
+        return updatedCart;
       }
       // Add new item to top
       return [{ ...item, quantity: 1 }, ...prevCart];
@@ -645,6 +649,16 @@ function RestaurantPOSContent() {
       return prevCart.map(cartItem =>
         cartItem.id === itemId
           ? { ...cartItem, quantity: Math.max(0, cartItem.quantity - 1) }
+          : cartItem
+      ).filter(cartItem => cartItem.quantity > 0);
+    });
+  };
+
+  const updateCartItemQuantity = (itemId, newQuantity) => {
+    setCart(prevCart => {
+      return prevCart.map(cartItem =>
+        cartItem.id === itemId
+          ? { ...cartItem, quantity: Math.max(1, newQuantity) }
           : cartItem
       ).filter(cartItem => cartItem.quantity > 0);
     });
@@ -2315,6 +2329,7 @@ function RestaurantPOSContent() {
           }}>
           <OrderSummary
             cart={cart}
+            setCart={setCart}
             orderType={orderType}
             setOrderType={setOrderType}
             paymentMethod={paymentMethod}
@@ -2325,6 +2340,7 @@ function RestaurantPOSContent() {
             onPlaceOrder={placeOrder}
             onRemoveFromCart={removeFromCart}
             onAddToCart={addToCart}
+            onUpdateCartItemQuantity={updateCartItemQuantity}
             onTableNumberChange={setTableNumber}
             onCustomerNameChange={setCustomerName}
             onCustomerMobileChange={setCustomerMobile}
