@@ -30,8 +30,16 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [processingStep, setProcessingStep] = useState('');
+  const [backgroundProcessing, setBackgroundProcessing] = useState(false);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+
+  // Request notification permission on component mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
 
   const handleAddMenu = () => {
     setIsAnimating(true);
@@ -108,7 +116,9 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
         console.log('✅ Default restaurant created successfully');
       }
 
-      setProcessingStep('Processing your menu...');
+      // Step 1: Upload files
+      setProcessingStep('Uploading menu images...');
+      console.log('📤 Uploading files:', files.map(f => f.name));
       console.log('🔍 Using restaurant ID for upload:', restaurantId);
       console.log('🔍 Current restaurant:', currentRestaurant);
       
@@ -121,13 +131,18 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
       const response = await apiClient.bulkUploadMenu(restaurantId, formData);
 
       if (response.success) {
+        // Step 2: AI Processing
+        setProcessingStep('AI is analyzing your menu...');
+        console.log('🤖 AI is processing the uploaded menu images...');
+        
         // If we have extracted menu items, save them to the database
         if (response.data && response.data.length > 0) {
           const allMenuItems = response.data.flatMap(menu => menu.menuItems);
           
           if (allMenuItems.length > 0) {
+            // Step 3: Save to database
             setProcessingStep('Saving menu items to database...');
-            console.log('🔍 Auto-saving extracted menu items to database...');
+            console.log('💾 Saving extracted menu items to database...');
             console.log('🔍 Restaurant ID for save:', restaurantId);
             console.log('🔍 Number of items to save:', allMenuItems.length);
             
@@ -136,15 +151,34 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
               
               if (saveResponse.savedCount > 0) {
                 console.log(`✅ Successfully saved ${saveResponse.savedCount} menu items to database`);
+                
+                // Step 4: Final success
+                setProcessingStep('Menu is ready!');
                 setUploadSuccess(true);
+                
+                // Show notification if processing in background
+                if (backgroundProcessing) {
+                  // Show browser notification if supported
+                  if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Menu Upload Complete!', {
+                      body: 'Your menu has been successfully processed and is ready to use.',
+                      icon: '/favicon.ico'
+                    });
+                  }
+                  
+                  // Reset background processing state
+                  setBackgroundProcessing(false);
+                }
+                
                 setTimeout(() => {
                   setShowUploadModal(false);
                   setUploading(false);
                   setUploadSuccess(false);
+                  setProcessingStep('');
                   if (onMenuItemsAdded) {
                     onMenuItemsAdded();
                   }
-                }, 2000);
+                }, 3000);
               } else {
                 throw new Error('Failed to save menu items to database');
               }
@@ -199,6 +233,29 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
       minHeight: '60vh',
       padding: '40px 20px'
     }}>
+      {/* Background processing indicator */}
+      {backgroundProcessing && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          backgroundColor: '#0ea5e9',
+          color: 'white',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: '500',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+        }}>
+          <FaSpinner style={{ animation: 'spin 1s linear infinite' }} />
+          Processing menu in background...
+        </div>
+      )}
+      
       <div style={{
         textAlign: 'center',
         maxWidth: '600px',
@@ -590,15 +647,30 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
                 </div>
                 
                 <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: '0 0 16px 0' }}>
-                  {processingStep || 'AI is Working Magic...'}
+                  {processingStep === 'Creating your restaurant...' 
+                    ? 'Setting Up Your Restaurant...'
+                    : processingStep === 'Uploading menu images...'
+                    ? 'Uploading Your Menu...'
+                    : processingStep === 'AI is analyzing your menu...'
+                    ? 'AI is Working Magic...'
+                    : processingStep === 'Saving menu items to database...'
+                    ? 'Saving Your Menu...'
+                    : processingStep === 'Menu is ready!'
+                    ? 'Menu is Ready!'
+                    : 'AI is Working Magic...'
+                  }
                 </h3>
                 <p style={{ fontSize: '16px', color: '#6b7280', margin: '0 0 24px 0', lineHeight: '1.6' }}>
                   {processingStep === 'Creating your restaurant...' 
-                    ? 'Setting up your restaurant account...'
-                    : processingStep === 'Processing your menu...'
-                    ? 'Our AI is analyzing your menu image and extracting items, prices, and categories. This may take a moment...'
+                    ? 'Setting up your restaurant account and preparing everything for your menu...'
+                    : processingStep === 'Uploading menu images...'
+                    ? 'Uploading your menu images to our secure servers. This usually takes just a few seconds...'
+                    : processingStep === 'AI is analyzing your menu...'
+                    ? 'Our advanced AI is analyzing your menu images, extracting items, prices, and categories. This may take 30-60 seconds...'
                     : processingStep === 'Saving menu items to database...'
-                    ? 'Saving the extracted menu items to your restaurant database...'
+                    ? 'Saving the extracted menu items to your restaurant database. Almost done!'
+                    : processingStep === 'Menu is ready!'
+                    ? 'Your menu has been successfully processed and is now ready to use!'
                     : 'Our AI is working on your menu. Please wait...'
                   }
                 </p>
@@ -629,12 +701,27 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    opacity: processingStep === 'Processing your menu...' ? 1 : 0.5
+                    opacity: processingStep === 'Uploading menu images...' ? 1 : 0.5
                   }}>
                     <div style={{
                       width: '12px',
                       height: '12px',
-                      backgroundColor: processingStep === 'Processing your menu...' ? '#ef4444' : '#e5e7eb',
+                      backgroundColor: processingStep === 'Uploading menu images...' ? '#ef4444' : '#e5e7eb',
+                      borderRadius: '50%'
+                    }} />
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Upload</span>
+                  </div>
+                  
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    opacity: processingStep === 'AI is analyzing your menu...' ? 1 : 0.5
+                  }}>
+                    <div style={{
+                      width: '12px',
+                      height: '12px',
+                      backgroundColor: processingStep === 'AI is analyzing your menu...' ? '#ef4444' : '#e5e7eb',
                       borderRadius: '50%'
                     }} />
                     <span style={{ fontSize: '12px', color: '#6b7280' }}>AI Analysis</span>
@@ -659,16 +746,64 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    opacity: uploadSuccess ? 1 : 0.5
+                    opacity: processingStep === 'Menu is ready!' ? 1 : 0.5
                   }}>
                     <div style={{
                       width: '12px',
                       height: '12px',
-                      backgroundColor: uploadSuccess ? '#10b981' : '#e5e7eb',
+                      backgroundColor: processingStep === 'Menu is ready!' ? '#10b981' : '#e5e7eb',
                       borderRadius: '50%'
                     }} />
-                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Complete</span>
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Ready</span>
                   </div>
+                </div>
+                
+                {/* Background processing notice */}
+                <div style={{
+                  backgroundColor: '#f0f9ff',
+                  border: '1px solid #0ea5e9',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  marginTop: '24px',
+                  textAlign: 'center'
+                }}>
+                  <p style={{ 
+                    margin: '0 0 12px 0', 
+                    fontSize: '14px', 
+                    color: '#0369a1',
+                    fontWeight: '500'
+                  }}>
+                    💡 You can navigate to other pages while we process your menu
+                  </p>
+                  <p style={{ 
+                    margin: '0 0 16px 0', 
+                    fontSize: '12px', 
+                    color: '#0369a1',
+                    opacity: 0.8
+                  }}>
+                    The upload will continue in the background and you'll be notified when it's ready
+                  </p>
+                  <button
+                    onClick={() => {
+                      setBackgroundProcessing(true);
+                      setShowUploadModal(false);
+                    }}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: '#0ea5e9',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#0284c7'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#0ea5e9'}
+                  >
+                    Continue in Background
+                  </button>
                 </div>
               </>
             ) : uploadError ? (
