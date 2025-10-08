@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Head from 'next/head';
 import apiClient from '../../../lib/api';
@@ -233,8 +233,8 @@ const Customers = () => {
       }
     });
 
-  // Customer form component
-  const CustomerForm = ({ isEdit = false }) => (
+  // Customer form component - Memoized to prevent focus loss
+  const CustomerForm = React.memo(({ isEdit = false }) => (
     <div style={{
       position: 'fixed',
       inset: 0,
@@ -480,7 +480,9 @@ const Customers = () => {
         </form>
       </div>
     </div>
-  );
+  ));
+
+  CustomerForm.displayName = 'CustomerForm';
 
   // Order history modal
   const OrderHistoryModal = () => (
