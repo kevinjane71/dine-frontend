@@ -27,214 +27,20 @@ import {
   FaSortAmountUp
 } from 'react-icons/fa';
 
-const Customers = () => {
-  const router = useRouter();
-  const [customers, setCustomers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showOrderHistory, setShowOrderHistory] = useState(false);
-  const [sortBy, setSortBy] = useState('lastOrderDate');
-  const [sortOrder, setSortOrder] = useState('desc');
-  const [isMobile, setIsMobile] = useState(false);
-  
-  // Customer form state
-  const [customerForm, setCustomerForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    city: '',
-    dob: ''
-  });
-  const [formErrors, setFormErrors] = useState({});
-  const [saving, setSaving] = useState(false);
+// Memoized Customer Form Component to prevent focus loss
+const CustomerForm = React.memo(({ 
+  isEdit = false, 
+  customerForm, 
+  setCustomerForm, 
+  formErrors, 
+  saving, 
+  onSubmit, 
+  onClose, 
+  isMobile 
+}) => {
+  if (!isEdit && !customerForm) return null;
 
-  // Mobile detection
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Load customers
-  useEffect(() => {
-    loadCustomers();
-  }, []);
-
-  const loadCustomers = async () => {
-    try {
-      setLoading(true);
-      const user = apiClient.getUser();
-      if (!user) {
-        router.replace('/login');
-        return;
-      }
-
-      // Get selected restaurant
-      const selectedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
-      if (!selectedRestaurant.id) {
-        setError('No restaurant selected');
-        return;
-      }
-
-      const response = await apiClient.request(`/api/customers/${selectedRestaurant.id}`);
-      setCustomers(response.customers || []);
-    } catch (error) {
-      console.error('Error loading customers:', error);
-      setError('Failed to load customers');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Form validation
-  const validateForm = () => {
-    const errors = {};
-    
-    // At least one of phone, email, or name must be provided
-    if (!customerForm.phone && !customerForm.email && !customerForm.name) {
-      errors.general = 'Please provide at least one of: Name, Phone, or Email';
-    }
-    
-    // If phone is provided, validate format
-    if (customerForm.phone && !/^[\+]?[0-9\s\-\(\)]{10,}$/.test(customerForm.phone)) {
-      errors.phone = 'Please enter a valid phone number';
-    }
-    
-    // If email is provided, validate format
-    if (customerForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerForm.email)) {
-      errors.email = 'Please enter a valid email address';
-    }
-    
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    try {
-      setSaving(true);
-      const selectedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
-      
-      const customerData = {
-        name: customerForm.name || null,
-        phone: customerForm.phone || null,
-        email: customerForm.email || null,
-        city: customerForm.city || null,
-        dob: customerForm.dob || null,
-        restaurantId: selectedRestaurant.id
-      };
-
-      if (selectedCustomer) {
-        // Update existing customer
-        await apiClient.request(`/api/customers/${selectedCustomer.id}`, {
-          method: 'PATCH',
-          body: customerData
-        });
-        setShowEditModal(false);
-      } else {
-        // Create new customer
-        await apiClient.request('/api/customers', {
-          method: 'POST',
-          body: customerData
-        });
-        setShowAddModal(false);
-      }
-
-      // Reset form
-      setCustomerForm({ name: '', phone: '', email: '', city: '', dob: '' });
-      setFormErrors({});
-      setSelectedCustomer(null);
-      
-      // Reload customers
-      await loadCustomers();
-      
-    } catch (error) {
-      console.error('Error saving customer:', error);
-      setError('Failed to save customer');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Handle delete customer
-  const handleDelete = async (customer) => {
-    if (!confirm(`Are you sure you want to delete ${customer.name || customer.phone || 'this customer'}?`)) {
-      return;
-    }
-
-    try {
-      await apiClient.request(`/api/customers/${customer.id}`, {
-        method: 'DELETE'
-      });
-      await loadCustomers();
-    } catch (error) {
-      console.error('Error deleting customer:', error);
-      setError('Failed to delete customer');
-    }
-  };
-
-  // Handle edit customer
-  const handleEdit = (customer) => {
-    setSelectedCustomer(customer);
-    setCustomerForm({
-      name: customer.name || '',
-      phone: customer.phone || '',
-      email: customer.email || '',
-      city: customer.city || '',
-      dob: customer.dob || ''
-    });
-    setShowEditModal(true);
-  };
-
-  // Handle view order history
-  const handleViewHistory = (customer) => {
-    setSelectedCustomer(customer);
-    setShowOrderHistory(true);
-  };
-
-  // Filter and sort customers
-  const filteredCustomers = customers
-    .filter(customer => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        (customer.name && customer.name.toLowerCase().includes(searchLower)) ||
-        (customer.phone && customer.phone.includes(searchTerm)) ||
-        (customer.email && customer.email.toLowerCase().includes(searchLower)) ||
-        (customer.city && customer.city.toLowerCase().includes(searchLower))
-      );
-    })
-    .sort((a, b) => {
-      let aValue = a[sortBy];
-      let bValue = b[sortBy];
-      
-      if (sortBy === 'lastOrderDate') {
-        aValue = aValue ? new Date(aValue) : new Date(0);
-        bValue = bValue ? new Date(bValue) : new Date(0);
-      }
-      
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
-
-  // Customer form component - Memoized to prevent focus loss
-  const CustomerForm = React.memo(({ isEdit = false }) => (
+  return (
     <div style={{
       position: 'fixed',
       inset: 0,
@@ -267,13 +73,7 @@ const Customers = () => {
               {isEdit ? 'Edit Customer' : 'Add New Customer'}
             </h2>
             <button
-              onClick={() => {
-                setShowAddModal(false);
-                setShowEditModal(false);
-                setCustomerForm({ name: '', phone: '', email: '', city: '', dob: '' });
-                setFormErrors({});
-                setSelectedCustomer(null);
-              }}
+              onClick={onClose}
               style={{
                 background: 'rgba(255,255,255,0.2)',
                 border: 'none',
@@ -292,7 +92,7 @@ const Customers = () => {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
+        <form onSubmit={onSubmit} style={{ padding: '24px' }}>
           {formErrors.general && (
             <div style={{
               backgroundColor: '#fef2f2',
@@ -308,11 +108,24 @@ const Customers = () => {
             </div>
           )}
 
+          {/* Field Requirements Note */}
+          <div style={{
+            backgroundColor: '#f0f9ff',
+            border: '1px solid #0ea5e9',
+            borderRadius: '6px',
+            padding: '8px 12px',
+            marginBottom: '16px',
+            fontSize: '12px',
+            color: '#0369a1'
+          }}>
+            <strong>Note:</strong> Either Name or Phone Number is required. Email, City, and Date of Birth are optional.
+          </div>
+
           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', marginBottom: '16px' }}>
             {/* Name */}
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                Name
+                Name <span style={{ color: '#dc2626' }}>*</span>
               </label>
               <input
                 type="text"
@@ -334,7 +147,7 @@ const Customers = () => {
             {/* Phone */}
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                Phone Number
+                Phone Number <span style={{ color: '#dc2626' }}>*</span>
               </label>
               <input
                 type="tel"
@@ -435,13 +248,7 @@ const Customers = () => {
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
             <button
               type="button"
-              onClick={() => {
-                setShowAddModal(false);
-                setShowEditModal(false);
-                setCustomerForm({ name: '', phone: '', email: '', city: '', dob: '' });
-                setFormErrors({});
-                setSelectedCustomer(null);
-              }}
+              onClick={onClose}
               style={{
                 padding: '12px 24px',
                 backgroundColor: '#6b7280',
@@ -480,9 +287,284 @@ const Customers = () => {
         </form>
       </div>
     </div>
-  ));
+  );
+});
 
-  CustomerForm.displayName = 'CustomerForm';
+CustomerForm.displayName = 'CustomerForm';
+
+const Customers = () => {
+  const router = useRouter();
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [sortBy, setSortBy] = useState('lastOrderDate');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Customer form state
+  const [customerForm, setCustomerForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    city: '',
+    dob: ''
+  });
+  const [formErrors, setFormErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Load customers
+  useEffect(() => {
+    loadCustomers();
+  }, []);
+
+  // Listen for restaurant changes
+  useEffect(() => {
+    const handleRestaurantChange = () => {
+      console.log('Restaurant changed, reloading customers');
+      loadCustomers();
+    };
+
+    window.addEventListener('restaurantChanged', handleRestaurantChange);
+    return () => window.removeEventListener('restaurantChanged', handleRestaurantChange);
+  }, []);
+
+  const loadCustomers = async () => {
+    try {
+      setLoading(true);
+      const user = apiClient.getUser();
+      if (!user) {
+        router.replace('/login');
+        return;
+      }
+
+      // Get selected restaurant ID (Navigation saves it as selectedRestaurantId)
+      const selectedRestaurantId = localStorage.getItem('selectedRestaurantId');
+      const selectedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+      const restaurant = JSON.parse(localStorage.getItem('restaurant') || '{}');
+      
+      const restaurantId = selectedRestaurantId || selectedRestaurant.id || restaurant.id;
+      if (!restaurantId) {
+        setError('No restaurant selected');
+        return;
+      }
+
+      const response = await apiClient.request(`/api/customers/${restaurantId}`);
+      setCustomers(response.customers || []);
+    } catch (error) {
+      console.error('Error loading customers:', error);
+      setError('Failed to load customers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Form validation
+  const validateForm = () => {
+    const errors = {};
+    
+    console.log('Validating form with data:', customerForm);
+    
+    // Either name OR phone must be provided (mandatory)
+    if (!customerForm.name && !customerForm.phone) {
+      errors.general = 'Please provide either Name or Phone Number (at least one is required)';
+    }
+    
+    // If phone is provided, validate format
+    if (customerForm.phone && !/^[\+]?[0-9\s\-\(\)]{10,}$/.test(customerForm.phone)) {
+      errors.phone = 'Please enter a valid phone number';
+    }
+    
+    // If email is provided, validate format (optional field)
+    if (customerForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerForm.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    
+    console.log('Validation errors:', errors);
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log('Form submitted!', customerForm);
+    
+    if (!validateForm()) {
+      console.log('Form validation failed');
+      return;
+    }
+
+    console.log('Form validation passed, proceeding with submission');
+
+    try {
+      console.log('Setting saving to true');
+      setSaving(true);
+      console.log('Saving state set to true');
+      
+      // Get restaurant ID from localStorage (Navigation saves it as selectedRestaurantId)
+      const selectedRestaurantId = localStorage.getItem('selectedRestaurantId');
+      const selectedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+      const restaurant = JSON.parse(localStorage.getItem('restaurant') || '{}');
+      
+      console.log('Selected restaurant ID:', selectedRestaurantId);
+      console.log('Selected restaurant object:', selectedRestaurant);
+      console.log('Restaurant object:', restaurant);
+      
+      // Try multiple ways to get restaurant ID
+      let restaurantId = selectedRestaurantId || selectedRestaurant.id || restaurant.id;
+      
+      if (!restaurantId) {
+        console.log('No restaurant ID found, setting error');
+        setError('No restaurant selected. Please select a restaurant from the top navigation first.');
+        return;
+      }
+      
+      console.log('Using restaurant ID:', restaurantId);
+      
+      const customerData = {
+        name: customerForm.name || null,
+        phone: customerForm.phone || null,
+        email: customerForm.email || null,
+        city: customerForm.city || null,
+        dob: customerForm.dob || null,
+        restaurantId: restaurantId
+      };
+
+      console.log('Creating customer with data:', customerData);
+      console.log('About to make API call...');
+      console.log('Selected customer state:', selectedCustomer);
+
+      if (selectedCustomer) {
+        // Update existing customer
+        console.log('Updating existing customer:', selectedCustomer.id);
+        await apiClient.request(`/api/customers/${selectedCustomer.id}`, {
+          method: 'PATCH',
+          body: customerData
+        });
+        console.log('Customer updated successfully');
+        setShowEditModal(false);
+      } else {
+        // Create new customer
+        console.log('Creating new customer via API...');
+        const response = await apiClient.request('/api/customers', {
+          method: 'POST',
+          body: customerData
+        });
+        console.log('Customer created successfully:', response);
+        setShowAddModal(false);
+      }
+
+      // Reset form
+      setCustomerForm({ name: '', phone: '', email: '', city: '', dob: '' });
+      setFormErrors({});
+      setSelectedCustomer(null);
+      
+      // Reload customers
+      await loadCustomers();
+      
+    } catch (error) {
+      console.error('Error saving customer:', error);
+      console.error('Error details:', error.message, error.stack);
+      setError(error.message || 'Failed to save customer');
+    } finally {
+      console.log('Setting saving to false');
+      setSaving(false);
+    }
+  };
+
+  // Handle delete customer
+  const handleDelete = async (customer) => {
+    if (!confirm(`Are you sure you want to delete ${customer.name || customer.phone || 'this customer'}?`)) {
+      return;
+    }
+
+    try {
+      await apiClient.request(`/api/customers/${customer.id}`, {
+        method: 'DELETE'
+      });
+      await loadCustomers();
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      setError('Failed to delete customer');
+    }
+  };
+
+  // Handle edit customer
+  const handleEdit = (customer) => {
+    setSelectedCustomer(customer);
+    setCustomerForm({
+      name: customer.name || '',
+      phone: customer.phone || '',
+      email: customer.email || '',
+      city: customer.city || '',
+      dob: customer.dob || ''
+    });
+    setShowEditModal(true);
+  };
+
+  // Handle view order history
+  const handleViewHistory = (customer) => {
+    setSelectedCustomer(customer);
+    setShowOrderHistory(true);
+  };
+
+  // Filter and sort customers
+  const filteredCustomers = customers
+    .filter(customer => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        (customer.name && customer.name.toLowerCase().includes(searchLower)) ||
+        (customer.phone && customer.phone.includes(searchTerm)) ||
+        (customer.email && customer.email.toLowerCase().includes(searchLower)) ||
+        (customer.city && customer.city.toLowerCase().includes(searchLower))
+      );
+    })
+    .sort((a, b) => {
+      let aValue = a[sortBy];
+      let bValue = b[sortBy];
+      
+      if (sortBy === 'lastOrderDate') {
+        aValue = aValue ? new Date(aValue) : new Date(0);
+        bValue = bValue ? new Date(bValue) : new Date(0);
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+  // Helper functions for modal management
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    setCustomerForm({ name: '', phone: '', email: '', city: '', dob: '' });
+    setFormErrors({});
+    setSelectedCustomer(null);
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setCustomerForm({ name: '', phone: '', email: '', city: '', dob: '' });
+    setFormErrors({});
+    setSelectedCustomer(null);
+  };
 
   // Order history modal
   const OrderHistoryModal = () => (
@@ -543,7 +625,9 @@ const Customers = () => {
         <div style={{ padding: '24px' }}>
           {selectedCustomer?.orderHistory && selectedCustomer.orderHistory.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {selectedCustomer.orderHistory.map((order, index) => (
+              {selectedCustomer.orderHistory
+                .sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate))
+                .map((order, index) => (
                 <div key={index} style={{
                   border: '1px solid #e5e7eb',
                   borderRadius: '12px',
@@ -601,6 +685,64 @@ const Customers = () => {
         <div style={{ textAlign: 'center' }}>
           <FaSpinner className="animate-spin" size={32} style={{ color: '#ef4444', marginBottom: '16px' }} />
           <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading customers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if restaurant is selected
+  const selectedRestaurantId = localStorage.getItem('selectedRestaurantId');
+  const selectedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+  const restaurant = JSON.parse(localStorage.getItem('restaurant') || '{}');
+  const hasRestaurant = selectedRestaurantId || selectedRestaurant.id || restaurant.id;
+
+  if (!hasRestaurant) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '100vh',
+        backgroundColor: '#f9fafb'
+      }}>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            backgroundColor: '#fef2f2',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px',
+            border: '2px solid #fecaca'
+          }}>
+            <FaExclamationTriangle size={32} style={{ color: '#dc2626' }} />
+          </div>
+          <h2 style={{ margin: '0 0 16px 0', fontSize: '24px', fontWeight: '600', color: '#1f2937' }}>
+            No Restaurant Selected
+          </h2>
+          <p style={{ margin: '0 0 24px 0', fontSize: '16px', color: '#6b7280', maxWidth: '400px' }}>
+            Please select a restaurant from the top navigation dropdown to manage customers.
+          </p>
+          <button
+            onClick={() => router.push('/admin')}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#dc2626'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#ef4444'}
+          >
+            Go to Admin
+          </button>
         </div>
       </div>
     );
@@ -949,8 +1091,30 @@ const Customers = () => {
       </div>
 
       {/* Modals */}
-      {showAddModal && <CustomerForm isEdit={false} />}
-      {showEditModal && <CustomerForm isEdit={true} />}
+      {showAddModal && (
+        <CustomerForm 
+          isEdit={false}
+          customerForm={customerForm}
+          setCustomerForm={setCustomerForm}
+          formErrors={formErrors}
+          saving={saving}
+          onSubmit={handleSubmit}
+          onClose={closeAddModal}
+          isMobile={isMobile}
+        />
+      )}
+      {showEditModal && (
+        <CustomerForm 
+          isEdit={true}
+          customerForm={customerForm}
+          setCustomerForm={setCustomerForm}
+          formErrors={formErrors}
+          saving={saving}
+          onSubmit={handleSubmit}
+          onClose={closeEditModal}
+          isMobile={isMobile}
+        />
+      )}
       {showOrderHistory && <OrderHistoryModal />}
     </>
   );

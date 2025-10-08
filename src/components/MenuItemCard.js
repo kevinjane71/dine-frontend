@@ -37,8 +37,8 @@ const MenuItemCard = ({
       {item.shortCode && (
         <div style={{
           position: 'absolute',
-          top: '8px',
-          left: '8px',
+          top: '2px',
+          left: '2px',
           backgroundColor: '#f3f4f6',
           color: '#6b7280',
           padding: '2px 6px',

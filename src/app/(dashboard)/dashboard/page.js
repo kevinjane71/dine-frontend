@@ -785,11 +785,18 @@ function RestaurantPOSContent() {
           price: item.price
         })),
         customerInfo: {
-          name: 'Walk-in Customer',
-          phone: ''
+          name: customerName || 'Walk-in Customer',
+          phone: customerMobile || null,
+          tableNumber: tableNumber || selectedTable?.number || null
         },
         notes: ''
       };
+
+      console.log('📞 Dashboard Order Data - Customer Info:', {
+        customerName: customerName,
+        customerMobile: customerMobile,
+        customerInfo: orderData.customerInfo
+      });
 
       // Create order
       const orderResponse = await apiClient.createOrder(orderData);
@@ -2034,12 +2041,9 @@ function RestaurantPOSContent() {
             </div>
             
             {/* Order Management Row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' }}>
-              {/* Table Number Input */}
-              
-
-              {/* Order Lookup Input */}
-              <div style={{ position: 'relative', flex: 1, maxWidth: '200px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' }}>
+              {/* Order Lookup Input - Left side */}
+              <div style={{ position: 'relative', flex: 1, maxWidth: '300px' }}>
                 <FaSearch style={{ 
                   position: 'absolute', 
                   left: '12px', 
@@ -2073,65 +2077,79 @@ function RestaurantPOSContent() {
                     paddingRight: '12px',
                     paddingTop: '10px',
                     paddingBottom: '10px',
-                    border: 'none',
-                    borderRadius: '0px',
-                    backgroundColor: orderSearchLoading ? '#f9f9f9' : '#f3f3f3',
+                    border: orderLookup.trim() ? '2px solid #ef4444' : '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                    backgroundColor: orderSearchLoading ? '#f9f9f9' : (orderLookup.trim() ? '#fef2f2' : '#f3f3f3'),
                     fontSize: '14px',
                     fontWeight: '600',
                     outline: 'none',
                     color: orderSearchLoading ? '#9ca3af' : '#000000',
                     transition: 'all 0.2s ease',
-                    cursor: orderSearchLoading ? 'not-allowed' : 'text'
+                    cursor: orderSearchLoading ? 'not-allowed' : 'text',
+                    boxShadow: orderLookup.trim() ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none'
                   }}
                   onFocus={(e) => {
-                    e.target.style.backgroundColor = '#f3f3f3';
+                    e.target.style.backgroundColor = orderLookup.trim() ? '#fef2f2' : '#ffffff';
+                    e.target.style.borderColor = '#ef4444';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.backgroundColor = '#f3f3f3';
+                    e.target.style.backgroundColor = orderLookup.trim() ? '#fef2f2' : '#f3f3f3';
+                    e.target.style.borderColor = orderLookup.trim() ? '#ef4444' : '#e5e7eb';
+                    e.target.style.boxShadow = orderLookup.trim() ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none';
                   }}
                 />
-              </div>
-              <div style={{ position: 'relative', width: '240px' }}>
-                <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#000000', opacity: 0.6 }} size={14} />
+            </div>
+            
+              {/* Right side container for Quick Add and Upload Button */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {/* Quick Add Input - Right side with reduced width */}
+                <div style={{ position: 'relative', width: '100px' }}>
+                  <FaSearch style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#000000', opacity: 0.6 }} size={12} />
                 <input
                   type="text"
-                  placeholder={t('dashboard.quickAdd')}
-                  value={quickSearch}
-                  onChange={(e) => setQuickSearch(e.target.value)}
-                  onKeyPress={handleQuickSearch}
+                    placeholder="Code"
+                    value={quickSearch}
+                    onChange={(e) => setQuickSearch(e.target.value)}
+                    onKeyPress={handleQuickSearch}
                   style={{
                     width: '100%',
-                    paddingLeft: '36px',
-                    paddingRight: '12px',
-                    paddingTop: '10px',
-                    paddingBottom: '10px',
-                    border: 'none',
-                    borderRadius: '0px',
-                    backgroundColor: '#f3f3f3',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    outline: 'none',
-                    color: '#000000',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.backgroundColor = '#f3f3f3';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.backgroundColor = '#f3f3f3';
+                    paddingLeft: '28px',
+                    paddingRight: '8px',
+                      paddingTop: '10px',
+                      paddingBottom: '10px',
+                      border: quickSearch.trim() ? '2px solid #10b981' : '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                      backgroundColor: quickSearch.trim() ? '#ecfdf5' : '#f3f3f3',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      outline: 'none',
+                      color: '#000000',
+                      transition: 'all 0.2s ease',
+                      boxShadow: quickSearch.trim() ? '0 0 0 3px rgba(16, 185, 129, 0.1)' : 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.backgroundColor = quickSearch.trim() ? '#ecfdf5' : '#ffffff';
+                      e.target.style.borderColor = '#10b981';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.backgroundColor = quickSearch.trim() ? '#ecfdf5' : '#f3f3f3';
+                      e.target.style.borderColor = quickSearch.trim() ? '#10b981' : '#e5e7eb';
+                      e.target.style.boxShadow = quickSearch.trim() ? '0 0 0 3px rgba(16, 185, 129, 0.1)' : 'none';
                   }}
                 />
               </div>
 
-              {/* Bulk Upload Button */}
+                {/* Bulk Upload Button */}
               <button
                 onClick={() => setShowBulkUpload(true)}
-                style={{
+                  style={{
                   padding: '8px 12px',
                   backgroundColor: '#ef4444',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '6px',
+                    borderRadius: '6px',
                   fontSize: '12px',
                   fontWeight: '600',
                   cursor: 'pointer',
@@ -2151,6 +2169,7 @@ function RestaurantPOSContent() {
                 <FaCloudUploadAlt size={12} />
                 Upload Menu
               </button>
+              </div>
 
               {/* Current Order Status */}
               {currentOrder && (
