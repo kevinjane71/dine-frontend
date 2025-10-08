@@ -669,6 +669,31 @@ function RestaurantPOSContent() {
     }
   };
 
+  // Reset UI state for fresh order
+  const handleFreshOrder = () => {
+    setCart([]);
+    setTableNumber('');
+    setCustomerName('');
+    setCustomerMobile('');
+    setOrderLookup('');
+    setCurrentOrder(null);
+    setSelectedTable(null);
+    setManualTableNumber('');
+    setError('');
+    setNotification(null);
+    setOrderSuccess(null);
+    setOrderComplete(false);
+    setPlacingOrder(false);
+    
+    // Show success notification
+    setNotification({
+      type: 'success',
+      title: 'Fresh Order Started',
+      message: 'Ready to take a new order!',
+      show: true
+    });
+  };
+
   const handleOrderLookup = async (e) => {
     if (e.key === 'Enter' && orderLookup.trim()) {
       try {
@@ -2040,17 +2065,25 @@ function RestaurantPOSContent() {
               
             </div>
             
-            {/* Order Management Row */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' }}>
-              {/* Order Lookup Input - Left side */}
-              <div style={{ position: 'relative', flex: 1, maxWidth: '300px' }}>
+            {/* Order Management Row - Redesigned */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              gap: '12px', 
+              paddingTop: '8px', 
+              borderTop: '1px solid #f3f4f6',
+              minHeight: '44px' // Consistent height for all elements
+            }}>
+              {/* Left side - Order Search */}
+              <div style={{ position: 'relative', flex: 1, maxWidth: '320px' }}>
                 <FaSearch style={{ 
                   position: 'absolute', 
                   left: '12px', 
                   top: '50%', 
                   transform: 'translateY(-50%)', 
-                  color: '#000000', 
-                  opacity: 0.6,
+                  color: '#6b7280', 
+                  opacity: 0.7,
                   display: orderSearchLoading ? 'none' : 'block'
                 }} size={14} />
                 {orderSearchLoading && (
@@ -2066,27 +2099,26 @@ function RestaurantPOSContent() {
                 )}
                 <input
                   type="text"
-                  placeholder={t('dashboard.searchOrder')}
+                  placeholder="Search by Table No. or Order ID..."
                   value={orderLookup}
                   onChange={(e) => setOrderLookup(e.target.value)}
                   onKeyPress={handleOrderLookup}
                   disabled={orderSearchLoading}
                   style={{
                     width: '100%',
+                    height: '40px', // Fixed height
                     paddingLeft: '36px',
                     paddingRight: '12px',
-                    paddingTop: '10px',
-                    paddingBottom: '10px',
-                    border: orderLookup.trim() ? '2px solid #ef4444' : '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                    backgroundColor: orderSearchLoading ? '#f9f9f9' : (orderLookup.trim() ? '#fef2f2' : '#f3f3f3'),
+                    border: orderLookup.trim() ? '2px solid #ef4444' : '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    backgroundColor: orderSearchLoading ? '#f9fafb' : (orderLookup.trim() ? '#fef2f2' : '#ffffff'),
                     fontSize: '14px',
-                    fontWeight: '600',
+                    fontWeight: '500',
                     outline: 'none',
-                    color: orderSearchLoading ? '#9ca3af' : '#000000',
+                    color: orderSearchLoading ? '#9ca3af' : '#374151',
                     transition: 'all 0.2s ease',
                     cursor: orderSearchLoading ? 'not-allowed' : 'text',
-                    boxShadow: orderLookup.trim() ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none'
+                    boxShadow: orderLookup.trim() ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : '0 1px 2px rgba(0, 0, 0, 0.05)'
                   }}
                   onFocus={(e) => {
                     e.target.style.backgroundColor = orderLookup.trim() ? '#fef2f2' : '#ffffff';
@@ -2094,18 +2126,25 @@ function RestaurantPOSContent() {
                     e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.backgroundColor = orderLookup.trim() ? '#fef2f2' : '#f3f3f3';
-                    e.target.style.borderColor = orderLookup.trim() ? '#ef4444' : '#e5e7eb';
-                    e.target.style.boxShadow = orderLookup.trim() ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none';
+                    e.target.style.backgroundColor = orderLookup.trim() ? '#fef2f2' : '#ffffff';
+                    e.target.style.borderColor = orderLookup.trim() ? '#ef4444' : '#d1d5db';
+                    e.target.style.boxShadow = orderLookup.trim() ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : '0 1px 2px rgba(0, 0, 0, 0.05)';
                   }}
                 />
             </div>
             
-              {/* Right side container for Quick Add and Upload Button */}
+              {/* Right side - Action Buttons */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {/* Quick Add Input - Right side with reduced width */}
-                <div style={{ position: 'relative', width: '100px' }}>
-                  <FaSearch style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#000000', opacity: 0.6 }} size={12} />
+                {/* Quick Add Input - Better proportions */}
+              <div style={{ position: 'relative', width: '120px' }}>
+                  <FaSearch style={{ 
+                    position: 'absolute', 
+                    left: '10px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    color: '#6b7280', 
+                    opacity: 0.7 
+                  }} size={12} />
                 <input
                   type="text"
                     placeholder="Code"
@@ -2114,19 +2153,18 @@ function RestaurantPOSContent() {
                     onKeyPress={handleQuickSearch}
                   style={{
                     width: '100%',
-                    paddingLeft: '28px',
-                    paddingRight: '8px',
-                      paddingTop: '10px',
-                      paddingBottom: '10px',
-                      border: quickSearch.trim() ? '2px solid #10b981' : '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                      backgroundColor: quickSearch.trim() ? '#ecfdf5' : '#f3f3f3',
-                      fontSize: '12px',
+                      height: '40px', // Fixed height to match other elements
+                      paddingLeft: '32px',
+                      paddingRight: '10px',
+                      border: quickSearch.trim() ? '2px solid #10b981' : '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      backgroundColor: quickSearch.trim() ? '#ecfdf5' : '#ffffff',
+                      fontSize: '13px',
                       fontWeight: '600',
                       outline: 'none',
-                      color: '#000000',
+                      color: '#374151',
                       transition: 'all 0.2s ease',
-                      boxShadow: quickSearch.trim() ? '0 0 0 3px rgba(16, 185, 129, 0.1)' : 'none'
+                      boxShadow: quickSearch.trim() ? '0 0 0 3px rgba(16, 185, 129, 0.1)' : '0 1px 2px rgba(0, 0, 0, 0.05)'
                     }}
                     onFocus={(e) => {
                       e.target.style.backgroundColor = quickSearch.trim() ? '#ecfdf5' : '#ffffff';
@@ -2134,41 +2172,74 @@ function RestaurantPOSContent() {
                       e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
                     }}
                     onBlur={(e) => {
-                      e.target.style.backgroundColor = quickSearch.trim() ? '#ecfdf5' : '#f3f3f3';
-                      e.target.style.borderColor = quickSearch.trim() ? '#10b981' : '#e5e7eb';
-                      e.target.style.boxShadow = quickSearch.trim() ? '0 0 0 3px rgba(16, 185, 129, 0.1)' : 'none';
+                      e.target.style.backgroundColor = quickSearch.trim() ? '#ecfdf5' : '#ffffff';
+                      e.target.style.borderColor = quickSearch.trim() ? '#10b981' : '#d1d5db';
+                      e.target.style.boxShadow = quickSearch.trim() ? '0 0 0 3px rgba(16, 185, 129, 0.1)' : '0 1px 2px rgba(0, 0, 0, 0.05)';
                   }}
                 />
               </div>
 
-                {/* Bulk Upload Button */}
-              <button
-                onClick={() => setShowBulkUpload(true)}
+                {/* Fresh Order Button */}
+                <button
+                  onClick={handleFreshOrder}
                   style={{
-                  padding: '8px 12px',
-                  backgroundColor: '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                    borderRadius: '6px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.2s ease',
-                  minWidth: 'fit-content'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#dc2626';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#ef4444';
-                }}
-              >
-                <FaCloudUploadAlt size={12} />
-                Upload Menu
-              </button>
+                    height: '40px',
+                    padding: '0 16px',
+                    backgroundColor: '#f3f4f6',
+                    color: '#374151',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.2s ease',
+                    minWidth: 'fit-content'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#e5e7eb';
+                    e.target.style.borderColor = '#9ca3af';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#f3f4f6';
+                    e.target.style.borderColor = '#d1d5db';
+                  }}
+                >
+                  <FaPlus size={12} />
+                  Fresh Order
+                </button>
+
+                {/* Upload Menu Button */}
+                <button
+                  onClick={() => setShowBulkUpload(true)}
+                  style={{
+                    height: '40px',
+                    padding: '0 16px',
+                    backgroundColor: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.2s ease',
+                    minWidth: 'fit-content'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#dc2626';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#ef4444';
+                  }}
+                >
+                  <FaCloudUploadAlt size={12} />
+                  Upload Menu
+                </button>
               </div>
 
               {/* Current Order Status */}
