@@ -913,9 +913,13 @@ function RestaurantPOSContent() {
         }
       }, 5000);
 
+      // Return order ID for invoice generation
+      return { orderId };
+
     } catch (error) {
       console.error('Order processing error:', error);
       setError('Failed to process order. Please try again.');
+      return null;
     } finally {
       setProcessing(false);
     }

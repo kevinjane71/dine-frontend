@@ -664,6 +664,47 @@ class ApiClient {
       body: statusData,
     });
   }
+
+  // Tax Management endpoints
+  async getTaxSettings(restaurantId) {
+    return this.request(`/api/admin/tax/${restaurantId}`);
+  }
+
+  async updateTaxSettings(restaurantId, taxSettings) {
+    return this.request(`/api/admin/tax/${restaurantId}`, {
+      method: 'PUT',
+      body: { taxSettings },
+    });
+  }
+
+  async calculateTax(restaurantId, items, subtotal) {
+    return this.request(`/api/tax/calculate/${restaurantId}`, {
+      method: 'POST',
+      body: { items, subtotal },
+    });
+  }
+
+  // Invoice Management endpoints
+  async generateInvoice(orderId) {
+    return this.request(`/api/invoice/generate/${orderId}`, {
+      method: 'POST',
+    });
+  }
+
+  async getInvoice(invoiceId) {
+    return this.request(`/api/invoice/${invoiceId}`);
+  }
+
+  async getInvoices(restaurantId, options = {}) {
+    const queryParams = new URLSearchParams();
+    if (options.limit) queryParams.append('limit', options.limit);
+    if (options.offset) queryParams.append('offset', options.offset);
+    if (options.startDate) queryParams.append('startDate', options.startDate);
+    if (options.endDate) queryParams.append('endDate', options.endDate);
+    
+    const query = queryParams.toString();
+    return this.request(`/api/invoices/${restaurantId}${query ? `?${query}` : ''}`);
+  }
 }
 
 const apiClient = new ApiClient();

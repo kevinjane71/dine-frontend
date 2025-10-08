@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import apiClient from '../lib/api';
 import { 
   FaShoppingCart, 
   FaTimes, 
@@ -49,8 +51,49 @@ const OrderSummary = ({
   restaurantId,
   restaurantName
 }) => {
+  const [invoice, setInvoice] = useState(null);
+  const [showInvoicePermanently, setShowInvoicePermanently] = useState(false);
+  
   // Debug logging
   console.log('OrderSummary orderSuccess:', orderSuccess);
+  
+  const generateInvoice = async (orderId) => {
+    try {
+      console.log('Generating invoice for order ID:', orderId);
+      const response = await apiClient.generateInvoice(orderId);
+      console.log('Invoice generation response:', response);
+      if (response.success) {
+        console.log('Invoice generated successfully:', response.invoice);
+        setInvoice(response.invoice);
+        setShowInvoicePermanently(true);
+        console.log('Invoice will remain visible permanently');
+        return true;
+      } else {
+        console.error('Invoice generation failed:', response);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error generating invoice:', error);
+      return false;
+    }
+  };
+  
+  const handleProcessOrder = async () => {
+    if (typeof onProcessOrder === 'function') {
+      try {
+        const result = await onProcessOrder();
+        console.log('Process order result:', result);
+        // If order was successful and we have an order ID, generate invoice
+        if (result && result.orderId) {
+          console.log('Generating invoice for order:', result.orderId);
+          const invoiceGenerated = await generateInvoice(result.orderId);
+        }
+      } catch (error) {
+        console.error('Error in handleProcessOrder:', error);
+      }
+    }
+  };
+  
   return (
     <div style={{ 
       width: '100%', 
@@ -465,6 +508,102 @@ const OrderSummary = ({
               : 'Payment processed successfully. Thank you for your order!'
             }
           </div>
+          
+          {/* Show invoice content inline for billing completion */}
+          {((orderSuccess?.message?.includes('successfully completed') && invoice) || showInvoicePermanently) && (
+            <div style={{ 
+              backgroundColor: '#f8fafc', 
+              border: '1px solid #e2e8f0', 
+              borderRadius: '12px', 
+              padding: '16px', 
+              marginBottom: '12px',
+              marginTop: '12px'
+            }}>
+              <div style={{ 
+                fontSize: '16px', 
+                fontWeight: '700', 
+                color: '#1f2937', 
+                marginBottom: '12px',
+                textAlign: 'center'
+              }}>
+                Invoice #{invoice?.invoiceNumber || 'N/A'}
+              </div>
+              
+              {invoice && (
+                <div style={{ fontSize: '12px', color: '#374151', lineHeight: '1.4' }}>
+                  <div style={{ marginBottom: '8px', fontWeight: '600' }}>
+                    Restaurant: {invoice.restaurantName || 'N/A'}
+                  </div>
+                  <div style={{ marginBottom: '8px' }}>
+                    Order ID: {invoice.orderId || 'N/A'}
+                  </div>
+                  <div style={{ marginBottom: '8px' }}>
+                    Date: {invoice.generatedAt ? new Date(invoice.generatedAt).toLocaleString() : 'N/A'}
+                  </div>
+                  
+                  <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '8px', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span>Subtotal:</span>
+                      <span>₹{invoice.subtotal?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    {invoice.taxBreakdown && invoice.taxBreakdown.map((tax, index) => (
+                      <div key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '11px' }}>
+                        <span>{tax.name} ({tax.rate}%):</span>
+                        <span>₹{tax.amount?.toFixed(2) || '0.00'}</span>
+                      </div>
+                    ))}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', borderTop: '1px solid #e5e7eb', paddingTop: '4px', marginTop: '4px' }}>
+                      <span>Total:</span>
+                      <span>₹{invoice.total?.toFixed(2) || '0.00'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                <button
+                  onClick={() => window.print()}
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  Print Invoice
+                </button>
+                <button
+                  onClick={() => {
+                    setShowInvoicePermanently(false);
+                    setInvoice(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Clear Invoice
+                </button>
+              </div>
+            </div>
+          )}
+          
           <button
             onClick={() => {
               setOrderSuccess(null);
@@ -738,7 +877,7 @@ const OrderSummary = ({
                 {/* Second Row - Complete Billing Only */}
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <button 
-                    onClick={onProcessOrder}
+                    onClick={handleProcessOrder}
                     disabled={processing || cart.length === 0}
                     style={{
                       flex: 1,

@@ -781,7 +781,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
                     color: '#0369a1',
                     opacity: 0.8
                   }}>
-                    The upload will continue in the background and you'll be notified when it's ready
+                    The upload will continue in the background and you&apos;ll be notified when it&apos;s ready
                   </p>
                   <button
                     onClick={() => {

@@ -23,15 +23,332 @@ import {
   FaCrown,
   FaUserShield,
   FaUtensils,
-  FaTabs,
   FaArrowRight,
   FaKey,
   FaIdBadge,
   FaCopy,
   FaUserCog,
   FaCheck,
-  FaTimes
+  FaTimes,
+  FaPercentage,
+  FaSave,
+  FaSpinner
 } from 'react-icons/fa';
+
+// Tax Management Component
+const TaxManagement = ({ restaurants, selectedRestaurant, setSelectedRestaurant }) => {
+  const [taxSettings, setTaxSettings] = useState({
+    enabled: true,
+    taxes: [
+      {
+        id: 'gst',
+        name: 'GST',
+        rate: 5,
+        enabled: true,
+        type: 'percentage'
+      }
+    ],
+    defaultTaxRate: 5
+  });
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const loadTaxSettings = async (restaurantId) => {
+    if (!restaurantId) return;
+    
+    setLoading(true);
+    try {
+      const response = await apiClient.getTaxSettings(restaurantId);
+      if (response.success) {
+        setTaxSettings(response.taxSettings);
+      }
+    } catch (error) {
+      console.error('Error loading tax settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveTaxSettings = async () => {
+    if (!selectedRestaurant?.id) return;
+    
+    setSaving(true);
+    try {
+      const response = await apiClient.updateTaxSettings(selectedRestaurant.id, taxSettings);
+      if (response.success) {
+        alert('Tax settings saved successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving tax settings:', error);
+      alert('Error saving tax settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addTax = () => {
+    const newTax = {
+      id: `tax_${Date.now()}`,
+      name: 'New Tax',
+      rate: 0,
+      enabled: true,
+      type: 'percentage'
+    };
+    setTaxSettings(prev => ({
+      ...prev,
+      taxes: [...prev.taxes, newTax]
+    }));
+  };
+
+  const updateTax = (index, field, value) => {
+    setTaxSettings(prev => ({
+      ...prev,
+      taxes: prev.taxes.map((tax, i) => 
+        i === index ? { ...tax, [field]: value } : tax
+      )
+    }));
+  };
+
+  const removeTax = (index) => {
+    setTaxSettings(prev => ({
+      ...prev,
+      taxes: prev.taxes.filter((_, i) => i !== index)
+    }));
+  };
+
+  const toggleTaxEnabled = (index) => {
+    setTaxSettings(prev => ({
+      ...prev,
+      taxes: prev.taxes.map((tax, i) => 
+        i === index ? { ...tax, enabled: !tax.enabled } : tax
+      )
+    }));
+  };
+
+  // Load tax settings when restaurant changes
+  useEffect(() => {
+    if (selectedRestaurant?.id) {
+      loadTaxSettings(selectedRestaurant.id);
+    }
+  }, [selectedRestaurant?.id]);
+
+  return (
+    <div>
+      <div style={{ marginBottom: '24px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <FaPercentage size={20} />
+          Tax Management
+        </h2>
+        <p style={{ color: '#6b7280', margin: 0, fontSize: '14px' }}>
+          Configure tax rates and settings for your restaurant
+        </p>
+      </div>
+
+      {/* Restaurant Selection */}
+      <div style={{ marginBottom: '24px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '12px' }}>
+          Select Restaurant
+        </h3>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {restaurants.map((restaurant) => (
+            <button
+              key={restaurant.id}
+              onClick={() => setSelectedRestaurant(restaurant)}
+              style={{
+                backgroundColor: selectedRestaurant?.id === restaurant.id ? '#ec4899' : '#f8fafc',
+                color: selectedRestaurant?.id === restaurant.id ? 'white' : '#374151',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                fontWeight: '500',
+                fontSize: '14px',
+                border: selectedRestaurant?.id === restaurant.id ? 'none' : '1px solid #e2e8f0',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <FaStore size={12} style={{ marginRight: '6px' }} />
+              {restaurant.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {selectedRestaurant && (
+        <div>
+          {/* Tax Enable/Disable */}
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '12px' }}>
+              <input
+                type="checkbox"
+                checked={taxSettings.enabled}
+                onChange={(e) => setTaxSettings(prev => ({ ...prev, enabled: e.target.checked }))}
+                style={{ width: '18px', height: '18px' }}
+              />
+              Enable Tax Calculation
+            </label>
+            <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+              When enabled, taxes will be automatically calculated and added to orders
+            </p>
+          </div>
+
+          {taxSettings.enabled && (
+            <div>
+              {/* Tax List */}
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                    Tax Rates
+                  </h3>
+                  <button
+                    onClick={addTax}
+                    style={{
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      fontSize: '14px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <FaPlus size={12} />
+                    Add Tax
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {taxSettings.taxes.map((tax, index) => (
+                    <div key={tax.id} style={{
+                      backgroundColor: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={tax.enabled}
+                        onChange={() => toggleTaxEnabled(index)}
+                        style={{ width: '18px', height: '18px' }}
+                      />
+                      
+                      <input
+                        type="text"
+                        value={tax.name}
+                        onChange={(e) => updateTax(index, 'name', e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          fontSize: '14px',
+                          outline: 'none'
+                        }}
+                        placeholder="Tax Name (e.g., GST, VAT)"
+                      />
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <input
+                          type="number"
+                          value={tax.rate}
+                          onChange={(e) => updateTax(index, 'rate', parseFloat(e.target.value) || 0)}
+                          min="0"
+                          max="100"
+                          step="0.1"
+                          style={{
+                            width: '80px',
+                            padding: '8px 12px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            textAlign: 'center',
+                            outline: 'none'
+                          }}
+                        />
+                        <span style={{ fontSize: '14px', color: '#6b7280' }}>%</span>
+                      </div>
+                      
+                      <button
+                        onClick={() => removeTax(index)}
+                        style={{
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          padding: '8px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <FaTrash size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Save Button */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={saveTaxSettings}
+                  disabled={saving}
+                  style={{
+                    backgroundColor: saving ? '#9ca3af' : '#ec4899',
+                    color: 'white',
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    border: 'none',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {saving ? (
+                    <>
+                      <FaSpinner size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <FaSave size={14} />
+                      Save Tax Settings
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!selectedRestaurant && (
+        <div style={{
+          textAlign: 'center',
+          padding: '40px 20px',
+          color: '#6b7280'
+        }}>
+          <FaStore size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+          <p style={{ fontSize: '16px', margin: 0 }}>
+            Please select a restaurant to manage tax settings
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Admin = () => {
   const router = useRouter();
@@ -752,6 +1069,28 @@ const Admin = () => {
                   <FaUserCog size={10} />
                   Settings
                 </button>
+                <button
+                  onClick={() => setActiveTab('tax')}
+                  style={{
+                    flex: 1,
+                    backgroundColor: activeTab === 'tax' ? '#ec4899' : 'transparent',
+                    color: activeTab === 'tax' ? 'white' : '#6b7280',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    border: activeTab === 'tax' ? 'none' : '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <FaPercentage size={10} />
+                  Tax
+                </button>
               </div>
             </div>
           ) : (
@@ -861,6 +1200,26 @@ const Admin = () => {
               >
                 <FaUserCog size={14} />
                 Settings
+              </button>
+              <button
+                onClick={() => setActiveTab('tax')}
+                style={{
+                  backgroundColor: activeTab === 'tax' ? '#ec4899' : 'transparent',
+                  color: activeTab === 'tax' ? 'white' : '#6b7280',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  border: activeTab === 'tax' ? 'none' : '2px solid #e5e7eb',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <FaPercentage size={14} />
+                Tax Management
               </button>
             </div>
             </div>
@@ -2694,6 +3053,23 @@ const Admin = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Tax Management Section */}
+      {activeTab === 'tax' && (
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          padding: '24px',
+          border: '1px solid #fce7f3'
+        }}>
+          <TaxManagement 
+            restaurants={restaurants}
+            selectedRestaurant={selectedRestaurant}
+            setSelectedRestaurant={setSelectedRestaurant}
+          />
         </div>
       )}
       
