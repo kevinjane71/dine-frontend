@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import apiClient from '../lib/api';
 import { 
   FaShoppingCart, 
@@ -53,9 +53,98 @@ const OrderSummary = ({
 }) => {
   const [invoice, setInvoice] = useState(null);
   const [showInvoicePermanently, setShowInvoicePermanently] = useState(false);
+  const [taxBreakdown, setTaxBreakdown] = useState([]);
+  const [totalTax, setTotalTax] = useState(0);
+  const [grandTotal, setGrandTotal] = useState(0);
+  
+  const calculateTax = useCallback(async () => {
+    console.log('Calculating tax for cart:', cart.length, 'items, restaurantId:', restaurantId);
+    if (cart.length === 0 || !restaurantId) {
+      setTaxBreakdown([]);
+      setTotalTax(0);
+      setGrandTotal(getTotalAmount());
+      return;
+    }
+
+    try {
+      // First, get the restaurant's tax settings
+      const taxSettingsResponse = await apiClient.getTaxSettings(restaurantId);
+      console.log('Tax settings response:', taxSettingsResponse);
+      
+      if (!taxSettingsResponse.success || !taxSettingsResponse.taxSettings?.enabled) {
+        console.log('Tax not enabled for this restaurant');
+        setTaxBreakdown([]);
+        setTotalTax(0);
+        setGrandTotal(getTotalAmount());
+        return;
+      }
+
+      const taxSettings = taxSettingsResponse.taxSettings;
+      const subtotal = getTotalAmount();
+      
+      // Calculate tax based on restaurant's tax settings
+      const calculatedTaxes = [];
+      let totalTaxAmount = 0;
+
+      if (taxSettings.taxes && taxSettings.taxes.length > 0) {
+        taxSettings.taxes.forEach(tax => {
+          if (tax.enabled) {
+            const taxAmount = subtotal * (tax.rate / 100);
+            calculatedTaxes.push({
+              name: tax.name,
+              rate: tax.rate,
+              amount: taxAmount
+            });
+            totalTaxAmount += taxAmount;
+          }
+        });
+      } else if (taxSettings.defaultTaxRate) {
+        // Fallback to default tax rate
+        const taxAmount = subtotal * (taxSettings.defaultTaxRate / 100);
+        calculatedTaxes.push({
+          name: 'GST',
+          rate: taxSettings.defaultTaxRate,
+          amount: taxAmount
+        });
+        totalTaxAmount = taxAmount;
+      }
+
+      console.log('Calculated taxes:', calculatedTaxes, 'Total tax:', totalTaxAmount);
+      setTaxBreakdown(calculatedTaxes);
+      setTotalTax(totalTaxAmount);
+      setGrandTotal(subtotal + totalTaxAmount);
+
+    } catch (error) {
+      console.error('Error calculating tax:', error);
+      // Fallback: Apply 5% GST if API fails
+      const subtotal = getTotalAmount();
+      const fallbackTax = subtotal * 0.05; // 5% GST
+      setTaxBreakdown([{
+        name: 'GST',
+        rate: 5,
+        amount: fallbackTax
+      }]);
+      setTotalTax(fallbackTax);
+      setGrandTotal(subtotal + fallbackTax);
+      console.log('Using fallback tax calculation:', fallbackTax);
+    }
+  }, [cart, restaurantId, getTotalAmount]);
+  
+  // Calculate tax when cart changes
+  useEffect(() => {
+    console.log('useEffect triggered - cart length:', cart.length, 'restaurantId:', restaurantId);
+    if (cart.length > 0 && restaurantId) {
+      calculateTax();
+    } else {
+      setTaxBreakdown([]);
+      setTotalTax(0);
+      setGrandTotal(getTotalAmount());
+    }
+  }, [calculateTax, cart, restaurantId, getTotalAmount]);
   
   // Debug logging
   console.log('OrderSummary orderSuccess:', orderSuccess);
+  console.log('Tax state - taxBreakdown:', taxBreakdown, 'totalTax:', totalTax, 'grandTotal:', grandTotal);
   
   const generateInvoice = async (orderId) => {
     try {
@@ -554,7 +643,7 @@ const OrderSummary = ({
                     ))}
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', borderTop: '1px solid #e5e7eb', paddingTop: '4px', marginTop: '4px' }}>
                       <span>Total:</span>
-                      <span>₹{invoice.total?.toFixed(2) || '0.00'}</span>
+                      <span>₹{((invoice.subtotal || 0) + (invoice.taxBreakdown?.reduce((sum, tax) => sum + (tax.amount || 0), 0) || 0)).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -562,7 +651,75 @@ const OrderSummary = ({
               
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                 <button
-                  onClick={() => window.print()}
+                  onClick={() => {
+                    // Create a new window with just the invoice content
+                    const printWindow = window.open('', '_blank', 'width=800,height=600');
+                    const invoiceContent = `
+                      <!DOCTYPE html>
+                      <html>
+                        <head>
+                          <title>Invoice #${invoice?.invoiceNumber || 'N/A'}</title>
+                          <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            .invoice-header { text-align: center; margin-bottom: 20px; }
+                            .invoice-details { margin-bottom: 20px; }
+                            .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                            .invoice-table th, .invoice-table td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+                            .invoice-table .total-row { font-weight: bold; border-top: 2px solid #000; }
+                            .invoice-footer { text-align: center; margin-top: 30px; font-size: 12px; color: #666; }
+                          </style>
+                        </head>
+                        <body>
+                          <div class="invoice-header">
+                            <h1>Invoice #${invoice?.invoiceNumber || 'N/A'}</h1>
+                            <h2>${invoice?.restaurantName || 'Restaurant'}</h2>
+                          </div>
+                          
+                          <div class="invoice-details">
+                            <p><strong>Order ID:</strong> ${invoice?.orderId || 'N/A'}</p>
+                            <p><strong>Date:</strong> ${invoice?.generatedAt ? new Date(invoice.generatedAt).toLocaleString() : 'N/A'}</p>
+                          </div>
+                          
+                          <table class="invoice-table">
+                            <thead>
+                              <tr>
+                                <th>Description</th>
+                                <th>Amount</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>Subtotal</td>
+                                <td>₹${(invoice?.subtotal || 0).toFixed(2)}</td>
+                              </tr>
+                              ${invoice?.taxBreakdown?.map(tax => `
+                                <tr>
+                                  <td>${tax.name} (${tax.rate}%)</td>
+                                  <td>₹${(tax.amount || 0).toFixed(2)}</td>
+                                </tr>
+                              `).join('') || ''}
+                              <tr class="total-row">
+                                <td>Total</td>
+                                <td>₹${((invoice?.subtotal || 0) + (invoice?.taxBreakdown?.reduce((sum, tax) => sum + (tax.amount || 0), 0) || 0)).toFixed(2)}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          
+                          <div class="invoice-footer">
+                            <p>Thank you for your business!</p>
+                            <p>Generated by DineOpen Restaurant Management System</p>
+                          </div>
+                        </body>
+                      </html>
+                    `;
+                    printWindow.document.write(invoiceContent);
+                    printWindow.document.close();
+                    printWindow.focus();
+                    setTimeout(() => {
+                      printWindow.print();
+                      printWindow.close();
+                    }, 500);
+                  }}
                   style={{
                     flex: 1,
                     backgroundColor: '#10b981',
@@ -646,6 +803,28 @@ const OrderSummary = ({
         <div style={{ borderTop: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
           {/* Total */}
           <div style={{ padding: '12px' }}>
+            {/* Tax Breakdown - Compact */}
+            {(taxBreakdown.length > 0 || totalTax > 0) && (
+              <div style={{ 
+                backgroundColor: '#f3f4f6', 
+                padding: '8px 12px', 
+                borderRadius: '6px', 
+                marginBottom: '8px',
+                fontSize: '11px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                  <span style={{ color: '#6b7280' }}>Subtotal:</span>
+                  <span style={{ color: '#374151', fontWeight: '600' }}>₹{getTotalAmount().toFixed(2)}</span>
+                </div>
+                {taxBreakdown.map((tax, index) => (
+                  <div key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                    <span style={{ color: '#6b7280' }}>{tax.name} ({tax.rate}%):</span>
+                    <span style={{ color: '#374151', fontWeight: '600' }}>₹{tax.amount?.toFixed(2) || '0.00'}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            
             <div style={{ 
               background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)', 
               color: 'white', 
@@ -655,7 +834,7 @@ const OrderSummary = ({
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Grand Total</span>
-                <span style={{ fontSize: '20px', fontWeight: 'bold' }}>₹{getTotalAmount()}</span>
+                <span style={{ fontSize: '20px', fontWeight: 'bold' }}>₹{grandTotal > 0 ? grandTotal.toFixed(2) : getTotalAmount().toFixed(2)}</span>
               </div>
             </div>
           </div>
