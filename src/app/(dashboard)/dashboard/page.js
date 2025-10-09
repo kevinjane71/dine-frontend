@@ -44,7 +44,7 @@ import {
   FaCloudUploadAlt
 } from 'react-icons/fa';
 import apiClient from '../../../lib/api';
-import { t } from '../../../lib/i18n';
+// import { t } from '../../../lib/i18n';
 
 function RestaurantPOSContent() {
   const searchParams = useSearchParams();
@@ -2403,7 +2403,7 @@ function RestaurantPOSContent() {
                     gap: '8px'
                   }}>
                     <FaShoppingCart size={16} />
-                    {t('dashboard.orderSummary')}
+                    Order Summary
                     {cart.length > 0 && (
                       <span style={{
                         backgroundColor: '#ef4444',
@@ -2515,7 +2515,7 @@ function RestaurantPOSContent() {
               justifyContent: 'space-between'
             }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-{t('dashboard.menuCategories')}
+Menu Categories
               </h2>
               <button
                 onClick={() => setShowMobileSidebar(false)}
@@ -2606,7 +2606,7 @@ function RestaurantPOSContent() {
               justifyContent: 'space-between'
             }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-{t('dashboard.yourOrder')} ({cart.reduce((sum, item) => sum + item.quantity, 0)} {t('common.items')})
+Your Order ({cart.reduce((sum, item) => sum + item.quantity, 0)} items)
               </h2>
               <button
                 onClick={() => setShowMobileCart(false)}

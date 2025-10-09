@@ -8,15 +8,30 @@ class ApiClient {
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     const token = this.getToken();
+    
+    console.log('🌐 API Request:', { endpoint, hasToken: !!token, method: options.method || 'GET' });
+    if (token) {
+      console.log('🔑 Token preview:', token.substring(0, 20) + '...');
+    }
 
     const config = {
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
+        ...(token && { Authorization: `Bearer ${token}` }),
       },
       ...options,
     };
+
+    console.log('🔧 Final request config:', {
+      url,
+      method: config.method,
+      headers: config.headers,
+      hasAuth: !!config.headers.Authorization,
+      authValue: config.headers.Authorization ? config.headers.Authorization.substring(0, 20) + '...' : 'none',
+      allHeaders: Object.keys(config.headers),
+      optionsHeaders: options.headers ? Object.keys(options.headers) : 'none'
+    });
 
     if (config.body && typeof config.body === 'object') {
       config.body = JSON.stringify(config.body);
@@ -39,8 +54,17 @@ class ApiClient {
 
   getToken() {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('authToken');
+      const token = localStorage.getItem('authToken');
+      console.log('🔍 getToken() called:', {
+        hasWindow: typeof window !== 'undefined',
+        hasToken: !!token,
+        tokenLength: token ? token.length : 0,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'null',
+        localStorageKeys: Object.keys(localStorage)
+      });
+      return token;
     }
+    console.log('🔍 getToken() called: No window object');
     return null;
   }
 
@@ -343,14 +367,14 @@ class ApiClient {
   async createCategory(restaurantId, categoryData) {
     return this.request(`/api/categories/${restaurantId}`, {
       method: 'POST',
-      body: JSON.stringify(categoryData),
+      body: categoryData,
     });
   }
 
   async updateCategory(restaurantId, categoryId, categoryData) {
     return this.request(`/api/categories/${restaurantId}/${categoryId}`, {
       method: 'PATCH',
-      body: JSON.stringify(categoryData),
+      body: categoryData,
     });
   }
 
@@ -704,6 +728,57 @@ class ApiClient {
     
     const query = queryParams.toString();
     return this.request(`/api/invoices/${restaurantId}${query ? `?${query}` : ''}`);
+  }
+
+  // ==================== DINEBOT METHODS ====================
+
+  // Send query to DineBot
+  async queryDineBot(query, restaurantId) {
+    console.log('🤖 DineBot queryDineBot called with:', { query, restaurantId });
+    const token = this.getToken();
+    console.log('🔑 Token in queryDineBot:', !!token, token ? token.substring(0, 20) + '...' : 'null');
+    
+    return this.request('/api/dinebot/query', {
+      method: 'POST',
+      body: {
+        query: query,
+        restaurantId: restaurantId
+      }
+    });
+  }
+
+  // Get DineBot status and capabilities
+  async getDineBotStatus(restaurantId) {
+    return this.request(`/api/dinebot/status?restaurantId=${restaurantId}`);
+  }
+
+  // ==================== EMAIL METHODS ====================
+
+  // Send welcome email to new user
+  async sendWelcomeEmail(email, name) {
+    return this.request('/api/email/welcome', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: {
+        email: email,
+        name: name
+      }
+    });
+  }
+
+  // Send weekly analytics report
+  async sendWeeklyAnalyticsReport(restaurantId) {
+    return this.request('/api/email/weekly-analytics', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: {
+        restaurantId: restaurantId
+      }
+    });
   }
 }
 
