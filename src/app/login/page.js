@@ -270,6 +270,11 @@ const Login = () => {
       provider.addScope('email');
       provider.addScope('profile');
       
+      // Add custom parameters to handle popup issues
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      
       const result = await signInWithPopup(auth, provider);
       
       console.log('Google login result:', result.user);
@@ -297,6 +302,12 @@ const Login = () => {
         localStorage.setItem('authToken', googleData.token);
         localStorage.setItem('user', JSON.stringify(googleData.user));
         
+        // Store restaurant data if available
+        if (googleData.restaurants && googleData.restaurants.length > 0) {
+          localStorage.setItem('selectedRestaurant', JSON.stringify(googleData.restaurants[0]));
+          localStorage.setItem('selectedRestaurantId', googleData.restaurants[0].id);
+        }
+        
         console.log('Google login successful:', googleData);
         
         // Redirect based on backend response
@@ -319,6 +330,12 @@ const Login = () => {
         setError('Popup blocked. Please allow popups and try again.');
       } else if (error.code === 'auth/cancelled-popup-request') {
         setError('Login cancelled. Please try again.');
+      } else if (error.code === 'auth/network-request-failed') {
+        setError('Network error. Please check your connection and try again.');
+      } else if (error.message && error.message.includes('Cross-Origin-Opener-Policy')) {
+        // Ignore COOP errors as they don't affect functionality
+        console.warn('COOP policy warning (non-critical):', error.message);
+        setError('Google login failed. Please try again.');
       } else {
         setError('Google login failed. Please try again.');
       }
