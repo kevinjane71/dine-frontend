@@ -58,9 +58,21 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
     const files = Array.from(event.target.files);
     if (files.length === 0) return;
 
+    console.log('📁 Files selected:', files.map(f => f.name));
+    console.log('🔄 Starting upload process...');
+    
+    // Show immediate feedback
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Menu Upload Started', {
+        body: `Uploading ${files.length} file(s) to DineOpen`,
+        icon: '/favicon.ico'
+      });
+    }
+    
     setUploading(true);
     setUploadSuccess(false);
     setUploadError('');
+    setShowUploadModal(true); // Ensure modal is visible during upload
 
     try {
       // Get restaurant ID from localStorage or create one if needed
@@ -155,17 +167,18 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
                 // Step 4: Final success
                 setProcessingStep('Menu is ready!');
                 setUploadSuccess(true);
+                setUploading(false);
+                
+                // Show success notification
+                if ('Notification' in window && Notification.permission === 'granted') {
+                  new Notification('🎉 Menu Upload Complete!', {
+                    body: `Successfully added ${saveResponse.savedCount} menu items to your restaurant!`,
+                    icon: '/favicon.ico'
+                  });
+                }
                 
                 // Show notification if processing in background
                 if (backgroundProcessing) {
-                  // Show browser notification if supported
-                  if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification('Menu Upload Complete!', {
-                      body: 'Your menu has been successfully processed and is ready to use.',
-                      icon: '/favicon.ico'
-                    });
-                  }
-                  
                   // Reset background processing state
                   setBackgroundProcessing(false);
                 }
@@ -211,10 +224,18 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
   };
 
   const handleCameraCapture = () => {
+    console.log('📷 Camera capture clicked');
+    setShowUploadModal(true); // Show modal immediately
+    setUploadError(''); // Clear any previous errors
+    setProcessingStep(''); // Clear processing step
     cameraInputRef.current?.click();
   };
 
   const handleGalleryUpload = () => {
+    console.log('🖼️ Gallery upload clicked');
+    setShowUploadModal(true); // Show modal immediately
+    setUploadError(''); // Clear any previous errors
+    setProcessingStep(''); // Clear processing step
     fileInputRef.current?.click();
   };
 
@@ -378,70 +399,94 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
             {/* Camera Upload */}
             <button
               onClick={handleCameraCapture}
+              disabled={uploading}
               style={{
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                background: uploading ? 'linear-gradient(135deg, #9ca3af, #6b7280)' : 'linear-gradient(135deg, #ef4444, #dc2626)',
                 color: 'white',
                 padding: '20px',
                 borderRadius: '16px',
                 border: 'none',
-                cursor: 'pointer',
+                cursor: uploading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: '12px',
                 transition: 'all 0.3s ease',
-                boxShadow: '0 4px 16px rgba(239, 68, 68, 0.3)'
+                boxShadow: uploading ? '0 2px 8px rgba(156, 163, 175, 0.3)' : '0 4px 16px rgba(239, 68, 68, 0.3)',
+                opacity: uploading ? 0.7 : 1,
+                position: 'relative',
+                overflow: 'hidden'
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.4)';
+                if (!uploading) {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.4)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.3)';
+                if (!uploading) {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.3)';
+                }
               }}
             >
-              <FaCamera size={32} />
+              {uploading ? (
+                <FaSpinner size={32} style={{ animation: 'spin 1s linear infinite' }} />
+              ) : (
+                <FaCamera size={32} />
+              )}
               <span style={{ fontWeight: '600', fontSize: '14px' }}>
-                Take Photo
+                {uploading ? 'Processing...' : 'Take Photo'}
               </span>
               <span style={{ fontSize: '12px', opacity: 0.8 }}>
-                Camera or Gallery
+                {uploading ? 'Please wait...' : 'Camera or Gallery'}
               </span>
             </button>
 
             {/* Gallery Upload */}
             <button
               onClick={handleGalleryUpload}
+              disabled={uploading}
               style={{
-                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                background: uploading ? 'linear-gradient(135deg, #9ca3af, #6b7280)' : 'linear-gradient(135deg, #3b82f6, #2563eb)',
                 color: 'white',
                 padding: '20px',
                 borderRadius: '16px',
                 border: 'none',
-                cursor: 'pointer',
+                cursor: uploading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: '12px',
                 transition: 'all 0.3s ease',
-                boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)'
+                boxShadow: uploading ? '0 2px 8px rgba(156, 163, 175, 0.3)' : '0 4px 16px rgba(59, 130, 246, 0.3)',
+                opacity: uploading ? 0.7 : 1,
+                position: 'relative',
+                overflow: 'hidden'
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 8px 24px rgba(59, 130, 246, 0.4)';
+                if (!uploading) {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 24px rgba(59, 130, 246, 0.4)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
+                if (!uploading) {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
+                }
               }}
             >
-              <FaImage size={32} />
+              {uploading ? (
+                <FaSpinner size={32} style={{ animation: 'spin 1s linear infinite' }} />
+              ) : (
+                <FaImage size={32} />
+              )}
               <span style={{ fontWeight: '600', fontSize: '14px' }}>
-                From Gallery
+                {uploading ? 'Processing...' : 'From Gallery'}
               </span>
               <span style={{ fontSize: '12px', opacity: 0.8 }}>
-                Select existing photos
+                {uploading ? 'Please wait...' : 'Select existing photos'}
               </span>
             </button>
           </div>
