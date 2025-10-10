@@ -839,8 +839,13 @@ function RestaurantPOSContent() {
       });
 
       // Create order
+      console.log('🛒 Creating order with data:', orderData);
+      console.log('🛒 Order data status:', orderData.status);
+      console.log('🛒 Order data staffInfo:', orderData.staffInfo);
       const orderResponse = await apiClient.createOrder(orderData);
       const orderId = orderResponse.order.id;
+      console.log('✅ Order created successfully:', orderId);
+      console.log('✅ Order response:', orderResponse);
 
       // Update table status if table is selected
       if (selectedTable && selectedTable.id) {
@@ -848,8 +853,9 @@ function RestaurantPOSContent() {
       }
 
       // Process payment based on method
+      console.log('💳 Processing payment for order:', orderId, 'Method:', paymentMethod);
       if (paymentMethod === 'cash') {
-        await apiClient.verifyPayment({
+        const paymentResult = await apiClient.verifyPayment({
           orderId,
           paymentMethod: 'cash',
           amount: getTotalAmount(),
@@ -857,8 +863,9 @@ function RestaurantPOSContent() {
           restaurantId: selectedRestaurant.id,
           paymentStatus: 'completed' // Mark payment as completed
         });
+        console.log('✅ Cash payment verified:', paymentResult);
       } else if (paymentMethod === 'upi') {
-        await apiClient.verifyPayment({
+        const paymentResult = await apiClient.verifyPayment({
           orderId,
           paymentMethod: 'upi',
           amount: getTotalAmount(),
@@ -866,8 +873,9 @@ function RestaurantPOSContent() {
           restaurantId: selectedRestaurant.id,
           paymentStatus: 'completed' // Mark payment as completed
         });
+        console.log('✅ UPI payment verified:', paymentResult);
       } else if (paymentMethod === 'card') {
-        await apiClient.verifyPayment({
+        const paymentResult = await apiClient.verifyPayment({
           orderId,
           paymentMethod: 'card',
           amount: getTotalAmount(),
@@ -875,6 +883,7 @@ function RestaurantPOSContent() {
           restaurantId: selectedRestaurant.id,
           paymentStatus: 'completed' // Mark payment as completed
         });
+        console.log('✅ Card payment verified:', paymentResult);
       }
 
       // Payment verification now also completes the order, no need for separate call
@@ -889,6 +898,7 @@ function RestaurantPOSContent() {
       }
 
       // Show notification for billing completion
+      console.log('🎉 Order processing completed successfully:', orderId);
       setNotification({
         type: 'success',
         title: 'Billing Complete! 💳',
@@ -2519,7 +2529,7 @@ function RestaurantPOSContent() {
               justifyContent: 'space-between'
             }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-Menu Categories
+                Menu Categories
               </h2>
               <button
                 onClick={() => setShowMobileSidebar(false)}
@@ -2610,7 +2620,7 @@ Menu Categories
               justifyContent: 'space-between'
             }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-Your Order ({cart.reduce((sum, item) => sum + item.quantity, 0)} items)
+                Your Order ({cart.reduce((sum, item) => sum + item.quantity, 0)} items)
               </h2>
               <button
                 onClick={() => setShowMobileCart(false)}

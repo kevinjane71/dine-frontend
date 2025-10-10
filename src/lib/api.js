@@ -306,6 +306,7 @@ class ApiClient {
 
   // Order endpoints
   async createOrder(orderData) {
+    console.log('📤 API Client - Creating order with data:', orderData);
     return this.request('/api/orders', {
       method: 'POST',
       body: orderData,
@@ -313,8 +314,13 @@ class ApiClient {
   }
 
   async getOrders(restaurantId, filters = {}) {
-    const query = new URLSearchParams(filters).toString();
+    // Filter out undefined values to avoid sending them in query params
+    const cleanFilters = Object.fromEntries(
+      Object.entries(filters).filter(([_, value]) => value !== undefined && value !== null && value !== '')
+    );
+    const query = new URLSearchParams(cleanFilters).toString();
     const queryString = query ? `?${query}` : '';
+    console.log('📤 API Client - getOrders filters:', cleanFilters);
     return this.request(`/api/orders/${restaurantId}${queryString}`);
   }
 

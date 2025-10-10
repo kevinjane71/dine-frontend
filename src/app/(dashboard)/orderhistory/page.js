@@ -1,1417 +1,489 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Head from 'next/head';
 import apiClient from '../../../lib/api';
 import { 
-  FaEye, 
-  FaCheck, 
-  FaClock, 
-  FaUtensils, 
   FaSearch,
   FaFilter,
-  FaChair,
-  FaTruck,
-  FaShoppingBag,
+  FaChevronLeft, 
+  FaChevronRight,
+  FaClock,
+  FaUser,
+  FaTable,
+  FaPhone,
   FaCheckCircle,
-  FaTimesCircle,
-  FaExclamationTriangle
+  FaUtensils,
+  FaReceipt,
+  FaSpinner,
+  FaCalendarAlt,
+  FaSortAmountDown,
+  FaEye,
+  FaEdit
 } from 'react-icons/fa';
 
 const OrderHistory = () => {
-  console.log('Orders page: Component rendering');
   const router = useRouter();
   const [orders, setOrders] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
-  const [selectedWaiter, setSelectedWaiter] = useState('all');
-  const [waiters, setWaiters] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedOrderType, setSelectedOrderType] = useState('all');
+  const [selectedWaiter, setSelectedWaiter] = useState('all');
+  const [waiters, setWaiters] = useState([]);
+  const [restaurantId, setRestaurantId] = useState(null);
+  const [restaurant, setRestaurant] = useState(null);
+  const [user, setUser] = useState(null);
   
-  // Mobile responsive state
-  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [limit] = useState(10);
 
-  // Mobile detection hook
-  useEffect(() => {
-    const checkMobile = () => {
-      const width = window.innerWidth;
-      const isMobileView = width <= 768;
-      setIsMobile(isMobileView);
-    };
-    
-    // Check immediately and also with a delay for hydration
-    checkMobile();
-    const timeoutId = setTimeout(checkMobile, 100);
-    
-    window.addEventListener('resize', checkMobile);
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-      clearTimeout(timeoutId);
-    };
-  }, []);
-
-  const handleLogout = () => {
-    apiClient.clearToken();
-    router.push('/login');
+  // Format date for display
+  const formatDate = (date) => {
+    if (!date) return 'N/A';
+    const d = date.toDate ? date.toDate() : new Date(date);
+    return d.toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
-  // Fetch real orders from backend
-  useEffect(() => {
-    console.log('Orders page: useEffect triggered');
-    const fetchOrders = async () => {
+  // Get status badge color
+  const getStatusColor = (status, orderFlow) => {
+    if (orderFlow?.isDirectBilling) {
+      return 'bg-green-100 text-green-800 border-green-200';
+    }
+    if (orderFlow?.isKitchenOrder) {
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    }
+    if (status === 'completed') {
+      return 'bg-green-100 text-green-800 border-green-200';
+    }
+    if (status === 'confirmed') {
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    }
+    if (status === 'pending') {
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    }
+    return 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
+  // Get status display text
+  const getStatusText = (status, orderFlow) => {
+    if (orderFlow?.isDirectBilling) {
+      return 'Direct Billing';
+    }
+    if (orderFlow?.isKitchenOrder) {
+      return 'Kitchen Order';
+    }
+    return status?.charAt(0).toUpperCase() + status?.slice(1) || 'Unknown';
+  };
+
+  // Get order flow icon
+  const getOrderFlowIcon = (orderFlow) => {
+    if (orderFlow?.isDirectBilling) {
+      return <FaReceipt className="text-green-600" />;
+    }
+    if (orderFlow?.isKitchenOrder) {
+      return <FaUtensils className="text-blue-600" />;
+    }
+    return <FaCheckCircle className="text-gray-600" />;
+  };
+
+  const fetchOrders = useCallback(async () => {
+    if (!restaurantId) return;
+
       try {
         setLoading(true);
         setError(null);
         
-        console.log('Orders page: Starting fetchOrders');
-        
-        // Check if user is authenticated
-        const token = localStorage.getItem('authToken');
-        const userData = localStorage.getItem('user');
-        console.log('Orders page: Token exists:', !!token);
-        console.log('Orders page: User data exists:', !!userData);
-        
-        if (!token || !userData) {
-          console.log('Orders page: Missing authentication data');
-          setError('Please log in to view orders');
-          setLoading(false);
-          return;
-        }
+      const filters = {
+        page: currentPage,
+        limit: limit,
+        status: selectedStatus !== 'all' ? selectedStatus : undefined,
+        orderType: selectedOrderType !== 'all' ? selectedOrderType : undefined,
+        waiterId: selectedWaiter !== 'all' ? selectedWaiter : undefined,
+        search: searchTerm.trim() || undefined
+      };
 
-        const user = JSON.parse(userData);
-        console.log('Orders page: User role:', user.role);
-        console.log('Orders page: User restaurantId:', user.restaurantId);
-        
-        let restaurantId = null;
-
-        // For staff members, use their assigned restaurant
-        if (user.restaurantId) {
-          restaurantId = user.restaurantId;
-          console.log('Orders page: Using staff restaurant ID:', restaurantId);
-        } 
-        // For owners or customers (legacy), get selected restaurant from localStorage or first restaurant
-        else if (user.role === 'owner' || user.role === 'customer') {
-          try {
-            console.log('Orders page: Fetching restaurants for owner');
-            const restaurantsResponse = await apiClient.getRestaurants();
-            console.log('Orders page: Restaurants response:', restaurantsResponse);
-            
-            if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
-              const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
-              console.log('Orders page: Saved restaurant ID:', savedRestaurantId);
-              
-              const selectedRestaurant = restaurantsResponse.restaurants.find(r => r.id === savedRestaurantId) || 
-                                        restaurantsResponse.restaurants[0];
-              restaurantId = selectedRestaurant.id;
-              console.log('Orders page: Selected restaurant:', selectedRestaurant);
-            } else {
-              console.log('Orders page: No restaurants found');
-              setError('No restaurants found. Please add a restaurant first.');
-              setLoading(false);
-              return;
-            }
-          } catch (err) {
-            console.error('Orders page: Error fetching restaurants:', err);
-            setError('Failed to fetch restaurant information');
-            setLoading(false);
-            return;
-          }
-        } else {
-          console.log('Orders page: Unknown user role - showing empty state');
-          setError('No restaurant found. Please set up a restaurant first.');
-          setLoading(false);
-          return;
-        }
-        
-        console.log('Orders page: Making API call with restaurant ID:', restaurantId);
-        
-        // Fetch waiters for filtering
-        const waitersResponse = await apiClient.getWaiters(restaurantId);
-        setWaiters(waitersResponse.waiters || []);
-        
-        // Fetch orders with waiter filter - only include defined values
-        const filters = {};
-        
-        // For staff users, automatically filter by their own waiter ID unless they specifically select "all"
-        if (user.role === 'staff' && selectedWaiter === 'all') {
-          // Staff users see only their own orders by default
-          filters.waiterId = user.id;
-        } else if (selectedWaiter && selectedWaiter !== 'all') {
-          // Admin/owner users can filter by specific waiter
-          filters.waiterId = selectedWaiter;
-        }
-        
-        if (searchTerm && searchTerm.trim()) {
-          filters.search = searchTerm.trim();
-        }
-        
-        const response = await apiClient.getOrders(restaurantId, filters);
-        console.log('Orders page: API response:', response);
-        console.log('Orders page: Filters sent:', filters);
-        console.log('Orders page: User ID:', user.id);
-        
-        // Transform backend order data to match frontend format
-        const transformedOrders = response.orders.map(order => ({
-          id: order.id,
-          tableNumber: order.tableNumber,
-          customerName: order.customerInfo?.name || 'Customer',
-          phone: order.customerInfo?.phone,
-          address: order.customerInfo?.address,
-          items: order.items,
-          total: order.totalAmount,
-          status: order.status,
-          type: order.orderType,
-          orderTime: order.createdAt.toDate ? order.createdAt.toDate().toISOString() : order.createdAt,
-          notes: order.notes,
-          paymentMethod: order.paymentMethod || 'cash',
-          staffInfo: order.staffInfo || null
-        }));
-        
-        console.log('Orders page: Transformed orders:', transformedOrders);
-        setOrders(transformedOrders);
-      } catch (error) {
-        console.error('Orders page: Error fetching orders:', error);
-        setError('Failed to fetch orders. Please ensure you are logged in and try again.');
-        setOrders([]);
-      } finally {
-        console.log('Orders page: Setting loading to false');
-        setLoading(false);
-      }
-    };
-
-    console.log('Orders page: About to call fetchOrders');
-    fetchOrders().catch(err => {
-      console.error('Orders page: Unhandled error in fetchOrders:', err);
-      setError('Unexpected error occurred');
-      setLoading(false);
-    });
-  }, [selectedWaiter, searchTerm]);
-
-  // Listen for restaurant changes from navigation
-  useEffect(() => {
-    const handleRestaurantChange = (event) => {
-      console.log('🏪 Order History page: Restaurant changed, reloading data', event.detail);
-      // Trigger a re-fetch by updating searchTerm (which will trigger the main useEffect)
-      setSearchTerm(prev => prev + ' '); // Add space to trigger re-fetch
-      setTimeout(() => setSearchTerm(prev => prev.trim()), 100); // Remove space after fetch
-    };
-
-    window.addEventListener('restaurantChanged', handleRestaurantChange);
-
-    return () => {
-      window.removeEventListener('restaurantChanged', handleRestaurantChange);
-    };
-  }, []);
-
-  const getStatusInfo = (status) => {
-    const statusMap = {
-      'pending': { 
-        bg: '#fef3c7', 
-        text: '#92400e', 
-        label: 'Pending',
-        icon: FaClock,
-        border: '#f59e0b'
-      },
-      'confirmed': { 
-        bg: '#dbeafe', 
-        text: '#1e40af', 
-        label: 'Confirmed',
-        icon: FaCheckCircle,
-        border: '#3b82f6'
-      },
-      'preparing': { 
-        bg: '#fed7aa', 
-        text: '#c2410c', 
-        label: 'Preparing',
-        icon: FaUtensils,
-        border: '#ea580c'
-      },
-      'ready': { 
-        bg: '#dcfce7', 
-        text: '#166534', 
-        label: 'Ready',
-        icon: FaCheck,
-        border: '#22c55e'
-      },
-      'completed': { 
-        bg: '#dcfce7', 
-        text: '#166534', 
-        label: 'Completed',
-        icon: FaCheckCircle,
-        border: '#22c55e'
-      },
-      'delivered': { 
-        bg: '#f3e8ff', 
-        text: '#7c2d92', 
-        label: 'Delivered',
-        icon: FaCheckCircle,
-        border: '#a855f7'
-      },
-      'cancelled': { 
-        bg: '#fee2e2', 
-        text: '#dc2626', 
-        label: 'Cancelled',
-        icon: FaTimesCircle,
-        border: '#ef4444'
-      }
-    };
-    return statusMap[status] || statusMap.pending;
-  };
-
-  const getTypeInfo = (type) => {
-    const typeMap = {
-      'dine-in': { 
-        bg: '#f0fdf4', 
-        text: '#166534', 
-        label: 'Dine In',
-        icon: FaChair,
-        border: '#22c55e'
-      },
-      'delivery': { 
-        bg: '#eff6ff', 
-        text: '#1e40af', 
-        label: 'Delivery',
-        icon: FaTruck,
-        border: '#3b82f6'
-      },
-      'pickup': { 
-        bg: '#fef3c7', 
-        text: '#92400e', 
-        label: 'Pickup',
-        icon: FaShoppingBag,
-        border: '#f59e0b'
-      }
-    };
-    return typeMap[type] || typeMap['dine-in'];
-  };
-
-  const updateOrderStatus = async (orderId, newStatus) => {
-    try {
-      // Get current restaurant ID for validation
-      const userData = localStorage.getItem('user');
-      const user = JSON.parse(userData);
-      let restaurantId = user.restaurantId; // For staff users
+      console.log('Orders page: Fetching orders with filters:', filters);
+      const response = await apiClient.getOrders(restaurantId, filters);
       
-      if (!restaurantId && (user.role === 'owner' || user.role === 'admin')) {
-        // For owners/admins, get selected restaurant
-        restaurantId = localStorage.getItem('selectedRestaurantId');
-      }
+      console.log('Orders page: API response:', response);
       
-      await apiClient.updateOrderStatus(orderId, newStatus, restaurantId);
-      setOrders(orders.map(order => 
-        order.id === orderId ? { ...order, status: newStatus } : order
-      ));
+      setOrders(response.orders || []);
+      setTotalPages(response.pagination?.totalPages || 1);
+      setTotalOrders(response.pagination?.totalOrders || 0);
+      
     } catch (error) {
-      console.error('Error updating order status:', error);
-      alert('Failed to update order status');
+      console.error('Orders page: Error fetching orders:', error);
+      setError('Failed to fetch orders. Please try again.');
+      setOrders([]);
+    } finally {
+          setLoading(false);
+    }
+  }, [restaurantId, currentPage, limit, selectedStatus, selectedOrderType, selectedWaiter, searchTerm]);
+
+  const fetchWaiters = useCallback(async () => {
+    if (!restaurantId) return;
+
+    try {
+      const response = await apiClient.getWaiters(restaurantId);
+      setWaiters(response.waiters || []);
+    } catch (error) {
+      console.error('Error fetching waiters:', error);
+      setWaiters([]);
+    }
+  }, [restaurantId]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+              const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+    const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+
+    if (!token || !userData.id) {
+      router.push('/login');
+          return;
+        }
+        
+    setUser(userData);
+    setRestaurantId(savedRestaurantId);
+    setRestaurant(savedRestaurant);
+
+    if (savedRestaurantId) {
+      fetchWaiters();
+    }
+  }, [router, fetchWaiters]);
+
+  useEffect(() => {
+    if (restaurantId) {
+      fetchOrders();
+    }
+  }, [fetchOrders]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [selectedStatus, selectedOrderType, selectedWaiter, searchTerm]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchOrders();
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
     }
   };
 
-  const filteredOrders = orders.filter(order => {
-    const matchesStatus = selectedStatus === 'all' || order.status === selectedStatus;
-    const matchesType = selectedType === 'all' || order.type === selectedType;
-    // Search is now handled by the backend API
-    return matchesStatus && matchesType;
-  });
-
-  const getTimeAgo = (orderTime) => {
-    const now = new Date();
-    const orderDate = new Date(orderTime);
-    const diffInMinutes = Math.floor((now - orderDate) / (1000 * 60));
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    return `${Math.floor(diffInHours / 24)}d ago`;
+  const handleViewOrder = (orderId) => {
+    // Navigate to order details or open modal
+    console.log('View order:', orderId);
   };
 
-  if (loading) {
+  const handleEditOrder = (orderId) => {
+    // Navigate to edit order or open modal
+    console.log('Edit order:', orderId);
+  };
+
+  if (loading && orders.length === 0) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ 
-              width: '48px', 
-              height: '48px', 
-              border: '4px solid #fed7aa',
-              borderTop: '4px solid #f97316',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 16px auto'
-            }} />
-            <div style={{ fontSize: '18px', color: '#6b7280', fontWeight: '600' }}>Loading orders...</div>
-            <div style={{ fontSize: '14px', color: '#9ca3af', marginTop: '8px' }}>Getting order history</div>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <FaSpinner className="animate-spin text-4xl text-red-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading order history...</p>
         </div>
       </div>
     );
   }
 
-  if (error) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Background Pattern */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `
-            radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 50%)
-          `,
-          zIndex: 0
-        }} />
-        
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height: '100vh',
-          position: 'relative',
-          zIndex: 1
-        }}>
-          <div style={{ 
-            textAlign: 'center', 
-            maxWidth: '500px', 
-            padding: '40px 20px',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            borderRadius: '24px',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)'
-          }}>
-            <div style={{ 
-              width: '100px', 
-              height: '100px', 
-              backgroundColor: '#fef2f2',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 24px auto',
-              animation: 'bounce 2s infinite'
-            }}>
-              <FaUtensils size={40} style={{ color: '#ef4444' }} />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Order History</h1>
+                <p className="text-gray-600 mt-1">
+                  {restaurant?.name} • {totalOrders} total orders
+                </p>
             </div>
-            
-            <h1 style={{ 
-              fontSize: '32px', 
-              fontWeight: 'bold', 
-              color: '#1f2937', 
-              marginBottom: '16px',
-              background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
-              Order History Ready! 📋
-            </h1>
-            
-            <p style={{ 
-              fontSize: '18px', 
-              color: '#374151', 
-              marginBottom: '8px',
-              fontWeight: '500'
-            }}>
-              View Your Order History
-            </p>
-            
-            <p style={{ 
-              fontSize: '16px', 
-              color: '#6b7280', 
-              marginBottom: '32px',
-              lineHeight: '1.6'
-            }}>
-              Set up your restaurant first, then start taking orders from customers. All order history will appear here with complete transaction details.
-            </p>
-            
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-              justifyContent: 'center',
-              flexWrap: 'wrap'
-            }}>
-              <button
-                onClick={() => router.push('/dashboard')}
-                style={{
-                  padding: '16px 32px',
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  fontWeight: '600',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
-                  transform: 'translateY(0)'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
-                }}
-              >
-                Set Up Restaurant First
-              </button>
-            </div>
+              <div className="flex items-center space-x-4">
+                <div className="text-sm text-gray-500">
+                  Page {currentPage} of {totalPages}
           </div>
         </div>
-        
-        <style jsx>{`
-          @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-              transform: translateY(0);
-            }
-            40% {
-              transform: translateY(-10px);
-            }
-            60% {
-              transform: translateY(-5px);
-            }
-          }
-        `}</style>
       </div>
-    );
-  }
-
-  return (
-    <>
-      <Head>
-        <title>Order History - DineOpen</title>
-      </Head>
-      <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      
-      <div style={{ padding: isMobile ? '12px' : '16px' }}>
-        {/* Mobile Header */}
-        {isMobile && (
-          <div style={{
-            backgroundColor: 'white',
-            margin: '-12px -12px 16px -12px',
-            padding: '16px',
-            borderBottom: '1px solid #e5e7eb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <div>
-              <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: 0 }}>Order History</h1>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0 0' }}>
-                {filteredOrders.length} orders in history
-              </p>
-            </div>
-            <button
-              onClick={() => setShowMobileFilters(!showMobileFilters)}
-              style={{
-                padding: '8px 12px',
-                backgroundColor: showMobileFilters ? '#3b82f6' : '#f3f4f6',
-                color: showMobileFilters ? 'white' : '#374151',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              <FaFilter size={12} />
-              Filters
-            </button>
-          </div>
-        )}
-        
-        {/* Desktop Header */}
-        {!isMobile && (
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            marginBottom: '16px'
-          }}>
-            <div>
-              <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: 0 }}>
-                Order History
-              </h1>
-              <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 0 0' }}>
-                {filteredOrders.length} orders in history
-              </p>
             </div>
           </div>
-        )}
+            </div>
 
-        {/* Mobile Filters Modal */}
-        {isMobile && showMobileFilters && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 999,
-            display: 'flex',
-            alignItems: 'flex-end'
-          }}>
-            <div style={{
-              backgroundColor: 'white',
-              width: '100%',
-              borderTopLeftRadius: '16px',
-              borderTopRightRadius: '16px',
-              maxHeight: '70vh',
-              overflowY: 'auto',
-              padding: '20px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937', margin: 0 }}>Filter Orders</h3>
-                <button
-                  onClick={() => setShowMobileFilters(false)}
-                  style={{
-                    padding: '8px',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    borderRadius: '4px',
-                    fontSize: '18px',
-                    color: '#6b7280'
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* Mobile Search */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                    Search Orders
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <FaSearch style={{
-                      position: 'absolute',
-                      left: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: '#9ca3af',
-                      fontSize: '14px'
-                    }} />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Filters */}
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* Search */}
+            <div className="lg:col-span-2">
+              <form onSubmit={handleSearch} className="relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <input
                       type="text"
-                      placeholder="Search by ID or customer name..."
+                  placeholder="Search by order ID, table, customer..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      style={{
-                        width: '100%',
-                        paddingLeft: '36px',
-                        paddingRight: '12px',
-                        paddingTop: '12px',
-                        paddingBottom: '12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '8px',
-                        fontSize: '16px',
-                        outline: 'none',
-                        backgroundColor: 'white',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                />
+              </form>
                 </div>
                 
-                {/* Mobile Status Filter */}
+            {/* Status Filter */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                    Order Status
-                  </label>
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      backgroundColor: 'white',
-                      outline: 'none'
-                    }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   >
                     <option value="all">All Status</option>
                     <option value="pending">Pending</option>
                     <option value="confirmed">Confirmed</option>
-                    <option value="preparing">Preparing</option>
-                    <option value="ready">Ready</option>
-                    <option value="completed">Completed</option>
-                    <option value="delivered">Delivered</option>
+                <option value="completed">Completed</option>
                     <option value="cancelled">Cancelled</option>
                   </select>
                 </div>
                 
-                {/* Mobile Type Filter */}
+            {/* Order Type Filter */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                    Order Type
-                  </label>
                   <select
-                    value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      backgroundColor: 'white',
-                      outline: 'none'
-                    }}
+                value={selectedOrderType}
+                onChange={(e) => setSelectedOrderType(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   >
                     <option value="all">All Types</option>
                     <option value="dine-in">Dine In</option>
+                <option value="takeaway">Takeaway</option>
                     <option value="delivery">Delivery</option>
-                    <option value="pickup">Pickup</option>
                   </select>
                 </div>
                 
-                {/* Mobile Waiter Filter */}
+            {/* Waiter Filter */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                    Waiter
-                  </label>
                   <select
                     value={selectedWaiter}
                     onChange={(e) => setSelectedWaiter(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      backgroundColor: 'white',
-                      outline: 'none'
-                    }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   >
                     <option value="all">All Waiters</option>
-                    {waiters.map(waiter => (
+                {waiters.map((waiter) => (
                       <option key={waiter.id} value={waiter.id}>
-                        {waiter.name} ({waiter.loginId})
+                    {waiter.name}
                       </option>
                     ))}
                   </select>
+            </div>
+          </div>
                 </div>
                 
-                <button
-                  onClick={() => setShowMobileFilters(false)}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: '#3b82f6',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    marginTop: '8px'
-                  }}
-                >
-                  Apply Filters
-                </button>
+        {/* Orders Timeline */}
+        <div className="space-y-4">
+          {orders.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
+              <FaReceipt className="text-6xl text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
+              <p className="text-gray-500">
+                {searchTerm || selectedStatus !== 'all' || selectedOrderType !== 'all' || selectedWaiter !== 'all'
+                  ? 'Try adjusting your filters to see more orders.'
+                  : 'Orders will appear here once they are placed.'}
+              </p>
               </div>
+          ) : (
+            orders.map((order, index) => (
+              <div key={order.id} className="bg-white rounded-lg shadow-sm border overflow-hidden">
+                <div className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-4">
+                      {/* Timeline Icon */}
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                          {getOrderFlowIcon(order.orderFlow)}
             </div>
           </div>
-        )}
-        
-        {/* Desktop Filters */}
-        <div style={{ 
-          display: isMobile ? 'none' : 'flex', 
-          gap: '12px', 
-          alignItems: 'center',
-          marginBottom: '16px',
-          flexWrap: 'wrap'
-        }}>
-          {/* Search */}
-          <div style={{ position: 'relative', minWidth: '240px' }}>
-            <FaSearch style={{
-              position: 'absolute',
-              left: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: '#9ca3af',
-              fontSize: '14px'
-            }} />
-            <input
-              type="text"
-              placeholder="Search orders..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                paddingLeft: '36px',
-                paddingRight: '12px',
-                paddingTop: '8px',
-                paddingBottom: '8px',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '14px',
-                outline: 'none',
-                backgroundColor: 'white'
-              }}
-            />
+
+                      {/* Order Details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            Order #{order.orderNumber || order.id.slice(-8).toUpperCase()}
+                          </h3>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(order.status, order.orderFlow)}`}>
+                            {getStatusText(order.status, order.orderFlow)}
+                          </span>
           </div>
 
-          {/* Status Filter */}
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              backgroundColor: 'white',
-              outline: 'none',
-              minWidth: '120px'
-            }}
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="preparing">Preparing</option>
-            <option value="ready">Ready</option>
-            <option value="completed">Completed</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-
-          {/* Type Filter */}
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              backgroundColor: 'white',
-              outline: 'none',
-              minWidth: '120px'
-            }}
-          >
-            <option value="all">All Types</option>
-            <option value="dine-in">Dine In</option>
-            <option value="delivery">Delivery</option>
-            <option value="pickup">Pickup</option>
-          </select>
-
-          {/* Waiter Filter */}
-          <select
-            value={selectedWaiter}
-            onChange={(e) => setSelectedWaiter(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              backgroundColor: 'white',
-              outline: 'none',
-              minWidth: '120px'
-            }}
-          >
-            <option value="all">All Waiters</option>
-            {waiters.map(waiter => (
-              <option key={waiter.id} value={waiter.id}>
-                {waiter.name} ({waiter.loginId})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Orders List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '12px' : '8px' }}>
-          {filteredOrders.map((order) => {
-            const statusInfo = getStatusInfo(order.status);
-            const typeInfo = getTypeInfo(order.type);
-            const StatusIcon = statusInfo.icon;
-            const TypeIcon = typeInfo.icon;
-
-            return (
-              <div 
-                key={order.id} 
-                style={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: isMobile ? '12px' : '8px',
-                  padding: isMobile ? '16px' : '16px',
-                  display: 'flex',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  alignItems: isMobile ? 'stretch' : 'center',
-                  justifyContent: 'space-between',
-                  gap: isMobile ? '12px' : '16px',
-                  transition: 'all 0.2s',
-                  boxShadow: isMobile ? '0 2px 8px rgba(0,0,0,0.06)' : 'none'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isMobile) {
-                    e.currentTarget.style.borderColor = '#d1d5db';
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isMobile) {
-                    e.currentTarget.style.borderColor = '#e5e7eb';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }
-                }}
-              >
-                {/* Mobile Order Layout */}
-                {isMobile ? (
-                  <>
-                    {/* Mobile Order Header */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '16px', color: '#1f2937' }}>
-                            {order.id}
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                            {getTimeAgo(order.orderTime)}
-                          </div>
-                        </div>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          padding: '4px 8px',
-                          backgroundColor: typeInfo.bg,
-                          color: typeInfo.text,
-                          borderRadius: '6px',
-                          fontSize: '11px',
-                          fontWeight: '600'
-                        }}>
-                          <TypeIcon size={10} />
-                          {typeInfo.label}
-                        </div>
-                      </div>
-                      <div style={{ fontWeight: '700', fontSize: '18px', color: '#1f2937' }}>
-                        ₹{order.total}
-                      </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                          {/* Customer Info */}
+                          <div className="flex items-center space-x-2 text-sm text-gray-600">
+                            <FaUser className="text-gray-400" />
+                            <span>{order.customerDisplay?.name}</span>
+                            {order.customerDisplay?.phone && (
+                              <>
+                                <FaPhone className="text-gray-400 ml-2" />
+                                <span>{order.customerDisplay.phone}</span>
+                              </>
+                            )}
                     </div>
                     
-                    {/* Mobile Customer & Table */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div>
-                        <div style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937' }}>
-                          {order.customerName}
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                          {order.tableNumber ? `Table ${order.tableNumber}` : order.phone}
-                        </div>
-                        {order.staffInfo && (
-                          <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>
-                            Waiter: {order.staffInfo.name} ({order.staffInfo.loginId})
+                          {/* Table Info */}
+                          {order.customerDisplay?.tableNumber && (
+                            <div className="flex items-center space-x-2 text-sm text-gray-600">
+                              <FaTable className="text-gray-400" />
+                              <span>Table {order.customerDisplay.tableNumber}</span>
                           </div>
                         )}
-                      </div>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        padding: '6px 10px',
-                        backgroundColor: statusInfo.bg,
-                        color: statusInfo.text,
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                        fontWeight: '600'
-                      }}>
-                        <StatusIcon size={12} />
-                        {statusInfo.label}
-                      </div>
+
+                          {/* Staff Info */}
+                          <div className="flex items-center space-x-2 text-sm text-gray-600">
+                            <FaUser className="text-gray-400" />
+                            <span>{order.staffDisplay?.name}</span>
                     </div>
                     
-                    {/* Mobile Items Preview */}
-                    <div style={{ padding: '8px 0' }}>
-                      <div style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.4' }}>
-                        {order.items.slice(0, 2).map(item => `${item.quantity}× ${item.name}`).join(', ')}
-                        {order.items.length > 2 && (
-                          <span style={{ color: '#6b7280' }}>
-                            {' '}+{order.items.length - 2} more items
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Mobile Action Button */}
-                    <button
-                      onClick={() => setSelectedOrder(order)}
-                      style={{
-                        width: '100%',
-                        padding: '12px',
-                        backgroundColor: '#3b82f6',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      <FaEye size={12} />
-                      View Details
-                    </button>
-                  </>
-                ) : (
-                  // Desktop Order Layout
-                  <>
-                    {/* Order Info */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-                  {/* Order ID & Time */}
-                  <div style={{ minWidth: '100px' }}>
-                    <div style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937' }}>
-                      {order.id}
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                      {getTimeAgo(order.orderTime)}
+                          {/* Order Type */}
+                          <div className="flex items-center space-x-2 text-sm text-gray-600">
+                            <FaUtensils className="text-gray-400" />
+                            <span className="capitalize">{order.orderType?.replace('-', ' ')}</span>
                     </div>
                   </div>
 
-                  {/* Customer & Table */}
-                  <div style={{ minWidth: '140px' }}>
-                    <div style={{ fontWeight: '500', fontSize: '14px', color: '#1f2937' }}>
-                      {order.customerName}
+                        {/* Items */}
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">Items ({order.items?.length || 0})</h4>
+                          <div className="space-y-1">
+                            {order.items?.slice(0, 3).map((item, itemIndex) => (
+                              <div key={itemIndex} className="flex justify-between text-sm text-gray-600">
+                                <span>{item.name} x {item.quantity}</span>
+                                <span>₹{item.total}</span>
                     </div>
-                    <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                      {order.tableNumber ? `Table ${order.tableNumber}` : order.phone}
+                            ))}
+                            {order.items?.length > 3 && (
+                              <div className="text-sm text-gray-500">
+                                +{order.items.length - 3} more items
                     </div>
-                  </div>
-
-                  {/* Items */}
-                  <div style={{ flex: 1, minWidth: '200px' }}>
-                    <div style={{ fontSize: '13px', color: '#4b5563' }}>
-                      {order.items.slice(0, 2).map(item => `${item.quantity}x ${item.name}`).join(', ')}
-                      {order.items.length > 2 && ` +${order.items.length - 2} more`}
-                    </div>
-                  </div>
-
-                  {/* Staff & Payment */}
-                  <div style={{ minWidth: '120px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: '500', color: '#1f2937' }}>
-                      {order.staffInfo?.name || 'Staff'}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#6b7280' }}>
-                      {order.paymentMethod || 'cash'} • {order.staffInfo?.loginId || order.staffInfo?.role || 'waiter'}
+                            )}
                     </div>
                   </div>
 
-                  {/* Total */}
-                  <div style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937', minWidth: '60px' }}>
-                    ₹{order.total}
+                        {/* Timestamps */}
+                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                          <div className="flex items-center space-x-1">
+                            <FaClock className="text-gray-400" />
+                            <span>Created: {formatDate(order.createdAt)}</span>
+                    </div>
+                          {order.completedAt && (
+                            <div className="flex items-center space-x-1">
+                              <FaCheckCircle className="text-gray-400" />
+                              <span>Completed: {formatDate(order.completedAt)}</span>
+                    </div>
+                          )}
+                  </div>
                   </div>
                 </div>
 
-                    {/* Status & Type & Actions */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {/* Type Badge */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '4px 8px',
-                    backgroundColor: typeInfo.bg,
-                    color: typeInfo.text,
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '500'
-                  }}>
-                    <TypeIcon size={10} />
-                    {typeInfo.label}
+                    {/* Actions */}
+                    <div className="flex items-center space-x-2">
+                      <div className="text-right">
+                        <div className="text-lg font-semibold text-gray-900">
+                          ₹{order.totalAmount?.toFixed(2) || '0.00'}
                   </div>
-
-                  {/* Status Badge */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '4px 8px',
-                    backgroundColor: statusInfo.bg,
-                    color: statusInfo.text,
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    minWidth: '80px',
-                    justifyContent: 'center'
-                  }}>
-                    <StatusIcon size={10} />
-                    {statusInfo.label}
+                        <div className="text-sm text-gray-500">
+                          {order.paymentMethod?.toUpperCase() || 'CASH'}
                   </div>
-
-                  {/* View Button */}
-                  <button
-                    onClick={() => setSelectedOrder(order)}
-                    style={{
-                      padding: '6px 12px',
-                      backgroundColor: '#3b82f6',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <FaEye size={10} />
-                    View
-                  </button>
                     </div>
-                  </>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Empty State */}
-        {filteredOrders.length === 0 && !loading && !error && (
-          <div style={{
-            textAlign: 'center',
-            padding: '80px 20px',
-            background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
-            borderRadius: '24px',
-            border: '1px solid rgba(239, 68, 68, 0.1)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            {/* Background Pattern */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: `
-                radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 50%)
-              `,
-              zIndex: 0
-            }} />
-            
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{
-                width: '100px',
-                height: '100px',
-                backgroundColor: '#fef2f2',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 24px auto',
-                animation: 'bounce 2s infinite'
-              }}>
-                <FaUtensils size={40} style={{ color: '#ef4444' }} />
-              </div>
-              
-              <h3 style={{
-                fontSize: '32px',
-                fontWeight: 'bold',
-                marginBottom: '16px',
-                background: 'linear-gradient(135deg, #ef4444, #dc2626, #b91c1c)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}>
-                {searchTerm || selectedStatus !== 'all' || selectedType !== 'all' 
-                  ? 'No orders found' 
-                  : 'Order History Ready! 📋'}
-              </h3>
-              
-              <p style={{
-                fontSize: '18px',
-                color: '#374151',
-                marginBottom: '8px',
-                fontWeight: '500'
-              }}>
-                {searchTerm || selectedStatus !== 'all' || selectedType !== 'all' 
-                  ? 'Try adjusting your filters' 
-                  : 'View Your Order History'}
-              </p>
-              
-              <p style={{
-                color: '#6b7280',
-                marginBottom: '32px',
-                maxWidth: '500px',
-                margin: '0 auto 32px auto',
-                fontSize: '16px',
-                lineHeight: '1.6'
-              }}>
-                {searchTerm || selectedStatus !== 'all' || selectedType !== 'all' 
-                  ? 'Try adjusting your filters or clear them to see all orders.' 
-                  : 'Set up your restaurant first, then start taking orders from customers. All order history will appear here with complete transaction details.'
-                }
-              </p>
-              
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                justifyContent: 'center',
-                flexWrap: 'wrap'
-              }}>
-                {searchTerm || selectedStatus !== 'all' || selectedType !== 'all' ? (
+                      <div className="flex space-x-2">
                   <button
-                    onClick={() => {
-                      setSearchTerm('');
-                      setSelectedStatus('all');
-                      setSelectedType('all');
-                      setSelectedWaiter('all');
-                    }}
-                    style={{
-                      padding: '16px 32px',
-                      background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '12px',
-                      fontWeight: '600',
-                      fontSize: '16px',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
-                      transform: 'translateY(0)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
-                    }}
-                  >
-                    Clear Filters
+                          onClick={() => handleViewOrder(order.id)}
+                          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                          title="View Order"
+                        >
+                          <FaEye />
                   </button>
-                ) : (
+                        {order.status !== 'completed' && (
                   <button
-                    onClick={() => router.push('/dashboard')}
-                    style={{
-                      padding: '16px 32px',
-                      background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '12px',
-                      fontWeight: '600',
-                      fontSize: '16px',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
-                      transform: 'translateY(0)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)';
-                    }}
-                  >
-                    Set Up Restaurant First
+                            onClick={() => handleEditOrder(order.id)}
+                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                            title="Edit Order"
+                          >
+                            <FaEdit />
                   </button>
                 )}
               </div>
             </div>
-            
-            <style jsx>{`
-              @keyframes bounce {
-                0%, 20%, 50%, 80%, 100% {
-                  transform: translateY(0);
-                }
-                40% {
-                  transform: translateY(-10px);
-                }
-                60% {
-                  transform: translateY(-5px);
-                }
-              }
-            `}</style>
           </div>
+                </div>
+              </div>
+            ))
         )}
       </div>
 
-      {/* Order Details Modal - Mobile Responsive */}
-      {selectedOrder && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: isMobile ? 'flex-end' : 'center',
-          justifyContent: 'center',
-          zIndex: 50,
-          padding: isMobile ? '0' : '16px'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: isMobile ? '16px 16px 0 0' : '12px',
-            width: '100%',
-            maxWidth: isMobile ? '100%' : '500px',
-            maxHeight: isMobile ? '85vh' : '80vh',
-            overflowY: 'auto'
-          }}>
-            {/* Modal Header */}
-            <div style={{ padding: isMobile ? '16px 20px' : '20px', borderBottom: '1px solid #e5e7eb' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <h3 style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: '#1f2937', margin: 0 }}>
-                    Order {selectedOrder.id}
-                  </h3>
-                  {isMobile && (
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0 0' }}>
-                      {getTimeAgo(selectedOrder.orderTime)}
-                    </p>
-                  )}
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="bg-white rounded-lg shadow-sm border p-4 mt-6">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                Showing {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, totalOrders)} of {totalOrders} orders
                 </div>
+              <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => setSelectedOrder(null)}
-                  style={{
-                    color: '#6b7280',
-                    fontSize: isMobile ? '24px' : '20px',
-                    fontWeight: 'bold',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    cursor: 'pointer',
-                    padding: isMobile ? '8px' : '4px',
-                    borderRadius: '4px'
-                  }}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  ×
+                  <FaChevronLeft className="w-4 h-4" />
                 </button>
-              </div>
-            </div>
-
-            {/* Modal Content */}
-            <div style={{ padding: isMobile ? '16px 20px' : '20px' }}>
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Customer Information</div>
-                <div style={{ 
-                  padding: isMobile ? '12px' : '12px', 
-                  backgroundColor: '#f8fafc', 
-                  borderRadius: '8px', 
-                  border: '1px solid #e2e8f0' 
-                }}>
-                  <div style={{ fontSize: isMobile ? '15px' : '16px', fontWeight: '600', color: '#1f2937', marginBottom: '4px' }}>{selectedOrder.customerName}</div>
-                  <div style={{ fontSize: '13px', color: '#6b7280' }}>{selectedOrder.phone}</div>
-                  {selectedOrder.tableNumber && (
-                    <div style={{ fontSize: '13px', color: '#3b82f6', fontWeight: '500', marginTop: '2px' }}>Table {selectedOrder.tableNumber}</div>
-                  )}
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Order Items</div>
-                <div style={{ backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  {selectedOrder.items.map((item, index) => (
-                    <div key={index} style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      padding: isMobile ? '12px' : '12px',
-                      borderBottom: index < selectedOrder.items.length - 1 ? '1px solid #e2e8f0' : 'none'
-                    }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ 
-                            backgroundColor: '#3b82f6', 
-                            color: 'white', 
-                            padding: '2px 6px', 
-                            borderRadius: '4px', 
-                            fontSize: '11px', 
-                            fontWeight: '600',
-                            minWidth: '20px',
-                            textAlign: 'center'
-                          }}>{item.quantity}</span>
-                          <span style={{ fontSize: isMobile ? '14px' : '14px', fontWeight: '500', color: '#1f2937' }}>{item.name}</span>
-                        </div>
-                      </div>
-                      <div style={{ fontWeight: '600', fontSize: isMobile ? '14px' : '14px', color: '#1f2937' }}>₹{item.price * item.quantity}</div>
-                    </div>
-                  ))}
-                </div>
+                
+                <div className="flex space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const pageNum = i + 1;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-3 py-2 text-sm font-medium rounded-md ${
+                          currentPage === pageNum
+                            ? 'bg-red-600 text-white'
+                            : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
               </div>
 
-              {/* Staff & Payment Info */}
-              {selectedOrder.staffInfo && (
-                <div style={{ marginBottom: '16px' }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Order Details</div>
-                  <div style={{ padding: isMobile ? '12px' : '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-                    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: isMobile ? '8px' : '0' }}>
-                      <div>
-                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
-                          {selectedOrder.staffInfo.name}
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                          {selectedOrder.staffInfo.role}
-                        </div>
-                      </div>
-                      <div style={{ 
-                        backgroundColor: '#22c55e', 
-                        color: 'white', 
-                        padding: '4px 8px', 
-                        borderRadius: '4px', 
-                        fontSize: '11px', 
-                        fontWeight: '600',
-                        textTransform: 'uppercase'
-                      }}>
-                        {selectedOrder.paymentMethod || 'Cash'}
-                      </div>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FaChevronRight className="w-4 h-4" />
+                </button>
                     </div>
                   </div>
                 </div>
               )}
-
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                paddingTop: '16px',
-                borderTop: '2px solid #e5e7eb',
-                marginTop: '8px'
-              }}>
-                <span style={{ fontSize: isMobile ? '16px' : '16px', fontWeight: '700', color: '#1f2937' }}>Total Amount</span>
-                <span style={{ fontSize: isMobile ? '20px' : '18px', fontWeight: '700', color: '#059669' }}>₹{selectedOrder.total}</span>
               </div>
-
-              {selectedOrder.notes && (
-                <div style={{ marginTop: '16px' }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Special Notes</div>
-                  <div style={{ padding: '12px', backgroundColor: '#fef3c7', borderRadius: '8px', border: '1px solid #fbbf24' }}>
-                    <div style={{ fontSize: '14px', color: '#92400e', fontStyle: 'italic' }}>{selectedOrder.notes}</div>
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-    </>
   );
 };
 
