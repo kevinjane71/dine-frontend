@@ -615,14 +615,14 @@ class ApiClient {
   async createInventoryItem(restaurantId, itemData) {
     return this.request(`/api/inventory/${restaurantId}`, {
       method: 'POST',
-      body: itemData,
+      body: JSON.stringify(itemData),
     });
   }
 
   async updateInventoryItem(restaurantId, itemId, updateData) {
     return this.request(`/api/inventory/${restaurantId}/${itemId}`, {
       method: 'PATCH',
-      body: updateData,
+      body: JSON.stringify(updateData),
     });
   }
 
@@ -640,10 +640,87 @@ class ApiClient {
     return this.request(`/api/inventory/${restaurantId}/dashboard`);
   }
 
-  // Supplier Management endpoints
+  // Suppliers Management endpoints
   async getSuppliers(restaurantId) {
     return this.request(`/api/suppliers/${restaurantId}`);
   }
+
+  async createSupplier(restaurantId, supplierData) {
+    return this.request(`/api/suppliers/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify(supplierData),
+    });
+  }
+
+  async updateSupplier(restaurantId, supplierId, updateData) {
+    return this.request(`/api/suppliers/${restaurantId}/${supplierId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  async deleteSupplier(restaurantId, supplierId) {
+    return this.request(`/api/suppliers/${restaurantId}/${supplierId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Recipes Management endpoints
+  async getRecipes(restaurantId, filters = {}) {
+    const query = new URLSearchParams(filters).toString();
+    const queryString = query ? `?${query}` : '';
+    return this.request(`/api/recipes/${restaurantId}${queryString}`);
+  }
+
+  async createRecipe(restaurantId, recipeData) {
+    return this.request(`/api/recipes/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify(recipeData),
+    });
+  }
+
+  async updateRecipe(restaurantId, recipeId, updateData) {
+    return this.request(`/api/recipes/${restaurantId}/${recipeId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  async deleteRecipe(restaurantId, recipeId) {
+    return this.request(`/api/recipes/${restaurantId}/${recipeId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Purchase Orders endpoints
+  async getPurchaseOrders(restaurantId, filters = {}) {
+    const query = new URLSearchParams(filters).toString();
+    const queryString = query ? `?${query}` : '';
+    return this.request(`/api/purchase-orders/${restaurantId}${queryString}`);
+  }
+
+  async createPurchaseOrder(restaurantId, orderData) {
+    return this.request(`/api/purchase-orders/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    });
+  }
+
+  async updatePurchaseOrder(restaurantId, orderId, updateData) {
+    return this.request(`/api/purchase-orders/${restaurantId}/${orderId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  async emailPurchaseOrder(restaurantId, orderId, emailData) {
+    return this.request(`/api/purchase-orders/${restaurantId}/${orderId}/email`, {
+      method: 'POST',
+      body: JSON.stringify(emailData),
+    });
+  }
+
+  // Customer Management endpoints
 
   async createSupplier(restaurantId, supplierData) {
     return this.request(`/api/suppliers/${restaurantId}`, {
