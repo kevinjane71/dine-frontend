@@ -810,6 +810,7 @@ function RestaurantPOSContent() {
         tableNumber: selectedTable?.name || null,
         orderType,
         paymentMethod,
+        status: 'completed', // Set status to completed since payment is processed immediately
         staffInfo: {
           userId: currentUser.id,
           name: currentUser.name || 'Staff',
@@ -853,7 +854,8 @@ function RestaurantPOSContent() {
           paymentMethod: 'cash',
           amount: getTotalAmount(),
           userId: currentUser.id,
-          restaurantId: selectedRestaurant.id
+          restaurantId: selectedRestaurant.id,
+          paymentStatus: 'completed' // Mark payment as completed
         });
       } else if (paymentMethod === 'upi') {
         await apiClient.verifyPayment({
@@ -861,7 +863,8 @@ function RestaurantPOSContent() {
           paymentMethod: 'upi',
           amount: getTotalAmount(),
           userId: currentUser.id,
-          restaurantId: selectedRestaurant.id
+          restaurantId: selectedRestaurant.id,
+          paymentStatus: 'completed' // Mark payment as completed
         });
       } else if (paymentMethod === 'card') {
         await apiClient.verifyPayment({
@@ -869,7 +872,8 @@ function RestaurantPOSContent() {
           paymentMethod: 'card',
           amount: getTotalAmount(),
           userId: currentUser.id,
-          restaurantId: selectedRestaurant.id
+          restaurantId: selectedRestaurant.id,
+          paymentStatus: 'completed' // Mark payment as completed
         });
       }
 
