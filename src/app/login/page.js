@@ -279,19 +279,18 @@ const Login = () => {
       
       console.log('Google login result:', result.user);
       
-      // Call backend to get JWT token
+      // Send user data to backend (Firebase already verified the user)
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
-      const googleResponse = await fetch(`${backendUrl}/api/auth/firebase/verify`, {
+      const googleResponse = await fetch(`${backendUrl}/api/auth/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           uid: result.user.uid,
-          phoneNumber: result.user.phoneNumber,
           email: result.user.email,
-          displayName: result.user.displayName,
-          photoURL: result.user.photoURL
+          name: result.user.displayName,
+          picture: result.user.photoURL
         }),
       });
 
@@ -302,13 +301,32 @@ const Login = () => {
         localStorage.setItem('authToken', googleData.token);
         localStorage.setItem('user', JSON.stringify(googleData.user));
         
-        // Store restaurant data if available
-        if (googleData.restaurants && googleData.restaurants.length > 0) {
-          localStorage.setItem('selectedRestaurant', JSON.stringify(googleData.restaurants[0]));
-          localStorage.setItem('selectedRestaurantId', googleData.restaurants[0].id);
-        }
-        
         console.log('Google login successful:', googleData);
+        console.log('Is new user:', googleData.isNewUser);
+        console.log('Has restaurants:', googleData.hasRestaurants);
+        
+        // For new users, we'll fetch restaurants after login
+        if (googleData.hasRestaurants) {
+          try {
+            // Fetch user's restaurants
+            const restaurantsResponse = await fetch(`${backendUrl}/api/restaurants`, {
+              headers: {
+                'Authorization': `Bearer ${googleData.token}`,
+                'Content-Type': 'application/json',
+              },
+            });
+            
+            if (restaurantsResponse.ok) {
+              const restaurantsData = await restaurantsResponse.json();
+              if (restaurantsData.restaurants && restaurantsData.restaurants.length > 0) {
+                localStorage.setItem('selectedRestaurant', JSON.stringify(restaurantsData.restaurants[0]));
+                localStorage.setItem('selectedRestaurantId', restaurantsData.restaurants[0].id);
+              }
+            }
+          } catch (restaurantError) {
+            console.error('Error fetching restaurants:', restaurantError);
+          }
+        }
         
         // Redirect based on backend response
         if (googleData.redirectTo) {
