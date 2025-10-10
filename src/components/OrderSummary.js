@@ -245,6 +245,29 @@ const OrderSummary = ({
             </div>
           </div>
           
+          {/* Edit Mode Indicator */}
+          {currentOrder && (
+            <div style={{
+              position: 'absolute',
+              top: '-8px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              color: 'white',
+              padding: '4px 12px',
+              borderRadius: '12px',
+              fontSize: '10px',
+              fontWeight: '700',
+              boxShadow: '0 2px 8px rgba(245, 158, 11, 0.4)',
+              zIndex: 10,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}>
+              ✏️ EDIT MODE
+            </div>
+          )}
+          
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {/* Order Type Selector - Text Based */}
             <div style={{ display: 'flex', gap: '2px' }}>
@@ -389,9 +412,40 @@ const OrderSummary = ({
                       color: '#1f2937', 
                       margin: '0 0 2px 0', 
                       fontSize: '12px', 
-                      lineHeight: '1.3' 
+                      lineHeight: '1.3',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
                     }}>
                       {item.name}
+                      {/* Show indicator for items from original order */}
+                      {currentOrder && currentOrder.items && currentOrder.items.some(origItem => origItem.menuItemId === item.id) && (
+                        <span style={{
+                          fontSize: '8px',
+                          fontWeight: 'bold',
+                          color: '#f59e0b',
+                          backgroundColor: '#fef3c7',
+                          padding: '1px 4px',
+                          borderRadius: '3px',
+                          border: '1px solid #f59e0b'
+                        }}>
+                          ORIGINAL
+                        </span>
+                      )}
+                      {/* Show indicator for newly added items */}
+                      {currentOrder && (!currentOrder.items || !currentOrder.items.some(origItem => origItem.menuItemId === item.id)) && (
+                        <span style={{
+                          fontSize: '8px',
+                          fontWeight: 'bold',
+                          color: '#10b981',
+                          backgroundColor: '#d1fae5',
+                          padding: '1px 4px',
+                          borderRadius: '3px',
+                          border: '1px solid #10b981'
+                        }}>
+                          NEW
+                        </span>
+                      )}
                     </h4>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

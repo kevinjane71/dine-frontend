@@ -798,10 +798,21 @@ function RestaurantPOSContent() {
       // Get current user/staff info
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       
-      // Check if restaurant is selected
-      if (!selectedRestaurant?.id) {
-        setError('No restaurant selected');
-        return;
+      // Check if table number changed in edit mode
+      const tableToUse = tableNumber || selectedTable?.number;
+      let tableChanged = false;
+      
+      if (currentOrder && tableToUse && tableToUse !== currentOrder.tableNumber) {
+        tableChanged = true;
+        console.log('⚠️ Table number changed from', currentOrder.tableNumber, 'to', tableToUse);
+        
+        // Show warning but continue with order completion
+        setNotification({
+          type: 'warning',
+          title: 'Table Changed! ⚠️',
+          message: `Table changed from "${currentOrder.tableNumber || 'N/A'}" to "${tableToUse}". Order will be completed if table is available.`,
+          show: true
+        });
       }
 
       // Check if we're updating an existing order or creating a new one
@@ -817,7 +828,7 @@ function RestaurantPOSContent() {
             name: item.name,
             price: item.price
           })),
-          tableNumber: tableNumber || currentOrder.tableNumber,
+          tableNumber: tableToUse || currentOrder.tableNumber,
           orderType,
           paymentMethod,
           status: 'completed', // Mark as completed
@@ -832,7 +843,7 @@ function RestaurantPOSContent() {
           customerInfo: {
             name: customerName || currentOrder.customerInfo?.name || 'Walk-in Customer',
             phone: customerMobile || currentOrder.customerInfo?.phone || null,
-            tableNumber: tableNumber || currentOrder.tableNumber || null
+            tableNumber: tableToUse || currentOrder.tableNumber || null
           }
         };
 
@@ -873,51 +884,51 @@ function RestaurantPOSContent() {
         console.log('🆕 Creating new order for direct billing');
         
         // Create new order for direct billing
-        const orderData = {
-          restaurantId: selectedRestaurant.id,
-          tableNumber: selectedTable?.name || null,
-          orderType,
-          paymentMethod,
+      const orderData = {
+        restaurantId: selectedRestaurant.id,
+          tableNumber: tableToUse || null,
+        orderType,
+        paymentMethod,
           status: 'completed', // Set status to completed since payment is processed immediately
-          staffInfo: {
+        staffInfo: {
             userId: currentUser.id,
-            name: currentUser.name || 'Staff',
+          name: currentUser.name || 'Staff',
             loginId: currentUser.loginId || currentUser.id,
-            role: currentUser.role || 'waiter'
-          },
-          items: cart.map(item => ({
-            menuItemId: item.id,
-            quantity: item.quantity,
-            notes: '',
-            name: item.name,
-            price: item.price
-          })),
-          customerInfo: {
+          role: currentUser.role || 'waiter'
+        },
+        items: cart.map(item => ({
+          menuItemId: item.id,
+          quantity: item.quantity,
+          notes: '',
+          name: item.name,
+          price: item.price
+        })),
+        customerInfo: {
             name: customerName || 'Walk-in Customer',
             phone: customerMobile || null,
-            tableNumber: tableNumber || selectedTable?.number || null
-          },
-          notes: ''
-        };
+            tableNumber: tableToUse || null
+        },
+        notes: ''
+      };
 
         console.log('🛒 Creating order with data:', orderData);
         console.log('🛒 Order data status:', orderData.status);
         console.log('🛒 Order data staffInfo:', orderData.staffInfo);
-        const orderResponse = await apiClient.createOrder(orderData);
-        const orderId = orderResponse.order.id;
+      const orderResponse = await apiClient.createOrder(orderData);
+      const orderId = orderResponse.order.id;
         console.log('✅ Order created successfully:', orderId);
         console.log('✅ Order response:', orderResponse);
 
-        // Update table status if table is selected
-        if (selectedTable && selectedTable.id) {
-          await apiClient.updateTableStatus(selectedTable.id, 'occupied', orderId);
-        }
+      // Update table status if table is selected
+      if (selectedTable && selectedTable.id) {
+        await apiClient.updateTableStatus(selectedTable.id, 'occupied', orderId);
+      }
 
-        // Process payment based on method
+      // Process payment based on method
         console.log('💳 Processing payment for order:', orderId, 'Method:', paymentMethod);
-        if (paymentMethod === 'cash') {
+      if (paymentMethod === 'cash') {
           const paymentResult = await apiClient.verifyPayment({
-            orderId,
+          orderId,
             paymentMethod: 'cash',
             amount: getTotalAmount(),
             userId: currentUser.id,
@@ -925,9 +936,9 @@ function RestaurantPOSContent() {
             paymentStatus: 'completed' // Mark payment as completed
           });
           console.log('✅ Cash payment verified:', paymentResult);
-        } else if (paymentMethod === 'upi') {
+      } else if (paymentMethod === 'upi') {
           const paymentResult = await apiClient.verifyPayment({
-            orderId,
+          orderId,
             paymentMethod: 'upi',
             amount: getTotalAmount(),
             userId: currentUser.id,
@@ -935,9 +946,9 @@ function RestaurantPOSContent() {
             paymentStatus: 'completed' // Mark payment as completed
           });
           console.log('✅ UPI payment verified:', paymentResult);
-        } else if (paymentMethod === 'card') {
+      } else if (paymentMethod === 'card') {
           const paymentResult = await apiClient.verifyPayment({
-            orderId,
+          orderId,
             paymentMethod: 'card',
             amount: getTotalAmount(),
             userId: currentUser.id,
@@ -947,44 +958,38 @@ function RestaurantPOSContent() {
           console.log('✅ Card payment verified:', paymentResult);
         }
 
-        // Free up table if this order was assigned to a table
-        if (tableNumber) {
-          const validation = await validateTableNumber(tableNumber);
-          if (validation.valid && validation.table) {
-            await updateTableStatus(validation.table.id, 'available', null);
-            console.log(`🪑 Table ${tableNumber} freed up after order completion`);
-          }
-        }
+        // Note: Table status management is now handled by backend
+        console.log(`🪑 Table ${tableNumber || 'N/A'} - status managed by backend`);
 
-        // Show notification for billing completion
+      // Show notification for billing completion
         console.log('🎉 Order processing completed successfully:', orderId);
-        setNotification({
-          type: 'success',
-          title: 'Billing Complete! 💳',
-          message: `Order #${orderId} has been successfully completed and payment processed.`,
-          show: true
-        });
+      setNotification({
+        type: 'success',
+        title: 'Billing Complete! 💳',
+        message: `Order #${orderId} has been successfully completed and payment processed.`,
+        show: true
+      });
 
-        // Clear cart and show inline success
-        setCart([]);
-        localStorage.removeItem('dine_cart');
-        const successData = { 
-          orderId, 
-          show: true, 
-          message: 'Billing Complete! 💳' 
-        };
-        console.log('Setting order success:', successData);
-        setOrderSuccess(successData);
-        
-        // Auto-hide success message after 5 seconds
-        setTimeout(() => {
-          setOrderSuccess(null);
-          if (selectedTable && selectedTable.id) {
-            // Release table
-            apiClient.updateTableStatus(selectedTable.id, 'available');
-            setSelectedTable(null);
-          }
-        }, 5000);
+      // Clear cart and show inline success
+      setCart([]);
+      localStorage.removeItem('dine_cart');
+      const successData = { 
+        orderId, 
+        show: true, 
+        message: 'Billing Complete! 💳' 
+      };
+      console.log('Setting order success:', successData);
+      setOrderSuccess(successData);
+      
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => {
+        setOrderSuccess(null);
+        if (selectedTable && selectedTable.id) {
+          // Release table
+          apiClient.updateTableStatus(selectedTable.id, 'available');
+          setSelectedTable(null);
+        }
+      }, 5000);
 
         // Return order ID for invoice generation
         return { orderId };
@@ -992,7 +997,26 @@ function RestaurantPOSContent() {
 
     } catch (error) {
       console.error('Order processing error:', error);
-      setError('Failed to process order. Please try again.');
+      
+      // Extract error message from the API response
+      let errorMessage = 'Failed to process order. Please try again.';
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Show notification instead of full-page error
+      setNotification({
+        type: 'error',
+        title: 'Billing Failed! ❌',
+        message: errorMessage,
+        show: true
+      });
+      
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      
       return null;
     } finally {
       setProcessing(false);
@@ -1001,13 +1025,25 @@ function RestaurantPOSContent() {
 
   const saveOrder = async () => {
     if (cart.length === 0) {
-      setError('Cart is empty');
+      setNotification({
+        type: 'error',
+        title: 'Empty Cart! 🛒',
+        message: 'Please add items to cart before saving.',
+        show: true
+      });
+      setTimeout(() => setNotification(null), 3000);
       return;
     }
 
     // Check if restaurant is selected
     if (!selectedRestaurant?.id) {
-      setError('No restaurant selected. Please set up a restaurant first.');
+      setNotification({
+        type: 'error',
+        title: 'No Restaurant! 🏪',
+        message: 'Please set up a restaurant first.',
+        show: true
+      });
+      setTimeout(() => setNotification(null), 3000);
       return;
     }
 
@@ -1046,7 +1082,25 @@ function RestaurantPOSContent() {
       }
     } catch (error) {
       console.error('Save order error:', error);
-      setError('Failed to save order. Please try again.');
+      
+      // Extract error message from the API response
+      let errorMessage = 'Failed to save order. Please try again.';
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Show notification instead of full-page error
+      setNotification({
+        type: 'error',
+        title: 'Save Failed! ❌',
+        message: errorMessage,
+        show: true
+      });
+      
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
     } finally {
       setProcessing(false);
     }
@@ -1054,13 +1108,25 @@ function RestaurantPOSContent() {
 
   const placeOrder = async () => {
     if (cart.length === 0) {
-      setError('Cart is empty');
+      setNotification({
+        type: 'error',
+        title: 'Empty Cart! 🛒',
+        message: 'Please add items to cart before placing order.',
+        show: true
+      });
+      setTimeout(() => setNotification(null), 3000);
       return;
     }
 
     // Check if restaurant is selected
     if (!selectedRestaurant?.id) {
-      setError('No restaurant selected. Please set up a restaurant first.');
+      setNotification({
+        type: 'error',
+        title: 'No Restaurant! 🏪',
+        message: 'Please set up a restaurant first.',
+        show: true
+      });
+      setTimeout(() => setNotification(null), 3000);
       return;
     }
 
@@ -1068,19 +1134,21 @@ function RestaurantPOSContent() {
       setPlacingOrder(true);
       setError(null);
 
-      // Validate table number if provided
+      // Check if table number changed in edit mode
       const tableToUse = tableNumber || selectedTable?.number;
-      let validatedTable = null;
+      let tableChanged = false;
       
-      if (tableToUse) {
-        const validation = await validateTableNumber(tableToUse);
-        if (!validation.valid) {
-          setError(validation.error);
-          setPlacingOrder(false);
-          return;
-        }
-        validatedTable = validation.table;
-        console.log('✅ Table validated:', validatedTable);
+      if (currentOrder && tableToUse && tableToUse !== currentOrder.tableNumber) {
+        tableChanged = true;
+        console.log('⚠️ Table number changed from', currentOrder.tableNumber, 'to', tableToUse);
+        
+        // Show warning but continue with order placement
+        setNotification({
+          type: 'warning',
+          title: 'Table Changed! ⚠️',
+          message: `Table changed from "${currentOrder.tableNumber || 'N/A'}" to "${tableToUse}". Order will be placed if table is available.`,
+          show: true
+        });
       }
 
       // Check if we're updating an existing order or creating a new one
@@ -1092,7 +1160,7 @@ function RestaurantPOSContent() {
             quantity: item.quantity,
             notes: ''
           })),
-          tableNumber: tableNumber || currentOrder.tableNumber,
+          tableNumber: tableToUse || currentOrder.tableNumber,
           orderType,
           paymentMethod,
           updatedAt: new Date().toISOString(),
@@ -1157,14 +1225,8 @@ function RestaurantPOSContent() {
           // Update order status to confirmed (sent to kitchen)
           await apiClient.updateOrderStatus(response.order.id, 'confirmed', selectedRestaurant?.id);
 
-          // Update table status to 'serving' if table is assigned
-          if (validatedTable) {
-            console.log('🍽️ About to update table status for:', validatedTable);
-            await updateTableStatus(validatedTable.id, 'serving', response.order.id);
-            console.log('🍽️ Table status update completed');
-          } else {
-            console.log('⚠️ No validated table found for status update');
-          }
+          // Note: Table status management is now handled by backend
+          console.log(`🪑 Table ${tableNumber || 'N/A'} - status managed by backend`);
 
           // Show notification in top-right corner
           setNotification({
@@ -1192,7 +1254,25 @@ function RestaurantPOSContent() {
       }
     } catch (error) {
       console.error('Place order error:', error);
-      setError('Failed to place order. Please try again.');
+      
+      // Extract error message from the API response
+      let errorMessage = 'Failed to place order. Please try again.';
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Show notification instead of full-page error
+      setNotification({
+        type: 'error',
+        title: 'Order Failed! ❌',
+        message: errorMessage,
+        show: true
+      });
+      
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
     } finally {
       setPlacingOrder(false);
     }
@@ -2337,19 +2417,30 @@ function RestaurantPOSContent() {
               {/* Current Order Status */}
               {currentOrder && (
                 <div style={{ 
-                  padding: '4px 8px', 
-                  backgroundColor: '#dbeafe', 
-                  border: '1px solid #3b82f6',
-                  borderRadius: '6px',
-                  fontSize: '10px',
+                  padding: '8px 12px', 
+                  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                  border: '2px solid #f59e0b',
+                  borderRadius: '8px',
+                  fontSize: '12px',
                   fontWeight: '600',
-                  color: '#1e40af',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '8px',
+                  boxShadow: '0 2px 4px rgba(245, 158, 11, 0.2)',
+                  marginBottom: '8px'
                 }}>
-                  <FaEdit size={10} />
-                  Editing Order {currentOrder.id.slice(-6)}
+                  <FaEdit size={14} style={{ color: '#d97706' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ color: '#92400e', fontWeight: '700' }}>
+                      ✏️ EDITING EXISTING ORDER
+                    </div>
+                    <div style={{ color: '#a16207', fontSize: '10px' }}>
+                      Order #{currentOrder.id.slice(-8).toUpperCase()} • {currentOrder.status === 'confirmed' ? 'Kitchen Order' : 'Direct Billing'}
+                    </div>
+                    <div style={{ color: '#a16207', fontSize: '10px' }}>
+                      Table: {currentOrder.tableNumber || 'N/A'} • Items: {currentOrder.items?.length || 0}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
