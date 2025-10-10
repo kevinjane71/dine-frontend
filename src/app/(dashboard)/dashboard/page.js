@@ -803,132 +803,192 @@ function RestaurantPOSContent() {
         setError('No restaurant selected');
         return;
       }
-      
-      // Prepare order data
-      const orderData = {
-        restaurantId: selectedRestaurant.id,
-        tableNumber: selectedTable?.name || null,
-        orderType,
-        paymentMethod,
-        status: 'completed', // Set status to completed since payment is processed immediately
-        staffInfo: {
-          userId: currentUser.id,
-          name: currentUser.name || 'Staff',
-          loginId: currentUser.loginId || currentUser.id,
-          role: currentUser.role || 'waiter'
-        },
-        items: cart.map(item => ({
-          menuItemId: item.id,
-          quantity: item.quantity,
-          notes: '',
-          name: item.name,
-          price: item.price
-        })),
-        customerInfo: {
-          name: customerName || 'Walk-in Customer',
-          phone: customerMobile || null,
-          tableNumber: tableNumber || selectedTable?.number || null
-        },
-        notes: ''
-      };
 
-      console.log('📞 Dashboard Order Data - Customer Info:', {
-        customerName: customerName,
-        customerMobile: customerMobile,
-        customerInfo: orderData.customerInfo
-      });
+      // Check if we're updating an existing order or creating a new one
+      if (currentOrder) {
+        console.log('🔄 Updating existing order:', currentOrder.id);
+        
+        // Update existing order with completed status
+        const updateData = {
+          items: cart.map(item => ({
+            menuItemId: item.id,
+            quantity: item.quantity,
+            notes: '',
+            name: item.name,
+            price: item.price
+          })),
+          tableNumber: tableNumber || currentOrder.tableNumber,
+          orderType,
+          paymentMethod,
+          status: 'completed', // Mark as completed
+          paymentStatus: 'paid', // Mark payment as completed
+          completedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          lastUpdatedBy: {
+            name: currentUser.name || 'Staff',
+            id: currentUser.id,
+            role: currentUser.role || 'waiter'
+          },
+          customerInfo: {
+            name: customerName || currentOrder.customerInfo?.name || 'Walk-in Customer',
+            phone: customerMobile || currentOrder.customerInfo?.phone || null,
+            tableNumber: tableNumber || currentOrder.tableNumber || null
+          }
+        };
 
-      // Create order
-      console.log('🛒 Creating order with data:', orderData);
-      console.log('🛒 Order data status:', orderData.status);
-      console.log('🛒 Order data staffInfo:', orderData.staffInfo);
-      const orderResponse = await apiClient.createOrder(orderData);
-      const orderId = orderResponse.order.id;
-      console.log('✅ Order created successfully:', orderId);
-      console.log('✅ Order response:', orderResponse);
+        console.log('🔄 Update data for existing order:', updateData);
+        const response = await apiClient.updateOrder(currentOrder.id, updateData);
+        
+        if (response.data) {
+          // Process payment for the updated order
+          console.log('💳 Processing payment for updated order:', currentOrder.id);
+          await apiClient.verifyPayment({
+            orderId: currentOrder.id,
+            paymentMethod: paymentMethod,
+            amount: getTotalAmount(),
+            userId: currentUser.id,
+            restaurantId: selectedRestaurant.id,
+            paymentStatus: 'completed'
+          });
 
-      // Update table status if table is selected
-      if (selectedTable && selectedTable.id) {
-        await apiClient.updateTableStatus(selectedTable.id, 'occupied', orderId);
-      }
+          // Show notification for order completion
+          setNotification({
+            type: 'success',
+            title: 'Order Completed! 💳',
+            message: `Order #${currentOrder.id.slice(-8).toUpperCase()} has been completed and payment processed.`,
+            show: true
+          });
 
-      // Process payment based on method
-      console.log('💳 Processing payment for order:', orderId, 'Method:', paymentMethod);
-      if (paymentMethod === 'cash') {
-        const paymentResult = await apiClient.verifyPayment({
-          orderId,
-          paymentMethod: 'cash',
-          amount: getTotalAmount(),
-          userId: currentUser.id,
-          restaurantId: selectedRestaurant.id,
-          paymentStatus: 'completed' // Mark payment as completed
-        });
-        console.log('✅ Cash payment verified:', paymentResult);
-      } else if (paymentMethod === 'upi') {
-        const paymentResult = await apiClient.verifyPayment({
-          orderId,
-          paymentMethod: 'upi',
-          amount: getTotalAmount(),
-          userId: currentUser.id,
-          restaurantId: selectedRestaurant.id,
-          paymentStatus: 'completed' // Mark payment as completed
-        });
-        console.log('✅ UPI payment verified:', paymentResult);
-      } else if (paymentMethod === 'card') {
-        const paymentResult = await apiClient.verifyPayment({
-          orderId,
-          paymentMethod: 'card',
-          amount: getTotalAmount(),
-          userId: currentUser.id,
-          restaurantId: selectedRestaurant.id,
-          paymentStatus: 'completed' // Mark payment as completed
-        });
-        console.log('✅ Card payment verified:', paymentResult);
-      }
-
-      // Payment verification now also completes the order, no need for separate call
-
-      // Free up table if this order was assigned to a table
-      if (tableNumber) {
-        const validation = await validateTableNumber(tableNumber);
-        if (validation.valid && validation.table) {
-          await updateTableStatus(validation.table.id, 'available', null);
-          console.log(`🪑 Table ${tableNumber} freed up after order completion`);
+          setOrderSuccess({
+            orderId: currentOrder.id,
+            show: true,
+            message: 'Order Completed! 💳'
+          });
+          
+          // Clear current order and cart
+          setCurrentOrder(null);
+          clearCart();
         }
-      }
+      } else {
+        console.log('🆕 Creating new order for direct billing');
+        
+        // Create new order for direct billing
+        const orderData = {
+          restaurantId: selectedRestaurant.id,
+          tableNumber: selectedTable?.name || null,
+          orderType,
+          paymentMethod,
+          status: 'completed', // Set status to completed since payment is processed immediately
+          staffInfo: {
+            userId: currentUser.id,
+            name: currentUser.name || 'Staff',
+            loginId: currentUser.loginId || currentUser.id,
+            role: currentUser.role || 'waiter'
+          },
+          items: cart.map(item => ({
+            menuItemId: item.id,
+            quantity: item.quantity,
+            notes: '',
+            name: item.name,
+            price: item.price
+          })),
+          customerInfo: {
+            name: customerName || 'Walk-in Customer',
+            phone: customerMobile || null,
+            tableNumber: tableNumber || selectedTable?.number || null
+          },
+          notes: ''
+        };
 
-      // Show notification for billing completion
-      console.log('🎉 Order processing completed successfully:', orderId);
-      setNotification({
-        type: 'success',
-        title: 'Billing Complete! 💳',
-        message: `Order #${orderId} has been successfully completed and payment processed.`,
-        show: true
-      });
+        console.log('🛒 Creating order with data:', orderData);
+        console.log('🛒 Order data status:', orderData.status);
+        console.log('🛒 Order data staffInfo:', orderData.staffInfo);
+        const orderResponse = await apiClient.createOrder(orderData);
+        const orderId = orderResponse.order.id;
+        console.log('✅ Order created successfully:', orderId);
+        console.log('✅ Order response:', orderResponse);
 
-      // Clear cart and show inline success
-      setCart([]);
-      localStorage.removeItem('dine_cart');
-      const successData = { 
-        orderId, 
-        show: true, 
-        message: 'Billing Complete! 💳' 
-      };
-      console.log('Setting order success:', successData);
-      setOrderSuccess(successData);
-      
-      // Auto-hide success message after 5 seconds
-      setTimeout(() => {
-        setOrderSuccess(null);
+        // Update table status if table is selected
         if (selectedTable && selectedTable.id) {
-          // Release table
-          apiClient.updateTableStatus(selectedTable.id, 'available');
-          setSelectedTable(null);
+          await apiClient.updateTableStatus(selectedTable.id, 'occupied', orderId);
         }
-      }, 5000);
 
-      // Return order ID for invoice generation
-      return { orderId };
+        // Process payment based on method
+        console.log('💳 Processing payment for order:', orderId, 'Method:', paymentMethod);
+        if (paymentMethod === 'cash') {
+          const paymentResult = await apiClient.verifyPayment({
+            orderId,
+            paymentMethod: 'cash',
+            amount: getTotalAmount(),
+            userId: currentUser.id,
+            restaurantId: selectedRestaurant.id,
+            paymentStatus: 'completed' // Mark payment as completed
+          });
+          console.log('✅ Cash payment verified:', paymentResult);
+        } else if (paymentMethod === 'upi') {
+          const paymentResult = await apiClient.verifyPayment({
+            orderId,
+            paymentMethod: 'upi',
+            amount: getTotalAmount(),
+            userId: currentUser.id,
+            restaurantId: selectedRestaurant.id,
+            paymentStatus: 'completed' // Mark payment as completed
+          });
+          console.log('✅ UPI payment verified:', paymentResult);
+        } else if (paymentMethod === 'card') {
+          const paymentResult = await apiClient.verifyPayment({
+            orderId,
+            paymentMethod: 'card',
+            amount: getTotalAmount(),
+            userId: currentUser.id,
+            restaurantId: selectedRestaurant.id,
+            paymentStatus: 'completed' // Mark payment as completed
+          });
+          console.log('✅ Card payment verified:', paymentResult);
+        }
+
+        // Free up table if this order was assigned to a table
+        if (tableNumber) {
+          const validation = await validateTableNumber(tableNumber);
+          if (validation.valid && validation.table) {
+            await updateTableStatus(validation.table.id, 'available', null);
+            console.log(`🪑 Table ${tableNumber} freed up after order completion`);
+          }
+        }
+
+        // Show notification for billing completion
+        console.log('🎉 Order processing completed successfully:', orderId);
+        setNotification({
+          type: 'success',
+          title: 'Billing Complete! 💳',
+          message: `Order #${orderId} has been successfully completed and payment processed.`,
+          show: true
+        });
+
+        // Clear cart and show inline success
+        setCart([]);
+        localStorage.removeItem('dine_cart');
+        const successData = { 
+          orderId, 
+          show: true, 
+          message: 'Billing Complete! 💳' 
+        };
+        console.log('Setting order success:', successData);
+        setOrderSuccess(successData);
+        
+        // Auto-hide success message after 5 seconds
+        setTimeout(() => {
+          setOrderSuccess(null);
+          if (selectedTable && selectedTable.id) {
+            // Release table
+            apiClient.updateTableStatus(selectedTable.id, 'available');
+            setSelectedTable(null);
+          }
+        }, 5000);
+
+        // Return order ID for invoice generation
+        return { orderId };
+      }
 
     } catch (error) {
       console.error('Order processing error:', error);
