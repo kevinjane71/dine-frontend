@@ -1020,10 +1020,10 @@ const KitchenOrderTicket = () => {
                     {/* Items List - Compact Menu Style */}
                     <div style={{ padding: '12px', backgroundColor: 'white' }}>
                       <div style={{ marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#6b7280', textAlign: 'center' }}>
-                        {kot.items.length} ITEM{kot.items.length > 1 ? 'S' : ''} TO PREPARE
+                        {Array.isArray(kot.items) ? kot.items.length : 0} ITEM{(Array.isArray(kot.items) ? kot.items.length : 0) > 1 ? 'S' : ''} TO PREPARE
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        {kot.items.map((item, index) => {
+                        {Array.isArray(kot.items) && kot.items.map((item, index) => {
                           // Check if this is an updated item
                           const isUpdatedItem = kot.updateHistory && kot.updateHistory.length > 0 && item.isUpdated;
                           const isNewItem = kot.updateHistory && kot.updateHistory.length > 0 && item.isNew;
@@ -1659,7 +1659,7 @@ const KitchenOrderTicket = () => {
               <div style={{ marginBottom: '24px' }}>
                 <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '16px', fontSize: '16px' }}>Order Items</h3>
                 <div>
-                  {selectedKot.items.map((item, index) => (
+                  {Array.isArray(selectedKot.items) && selectedKot.items.map((item, index) => (
                     <div key={index} style={{ 
                       display: 'flex', 
                       alignItems: 'center', 

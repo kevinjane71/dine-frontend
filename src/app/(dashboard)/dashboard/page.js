@@ -741,13 +741,13 @@ function RestaurantPOSContent() {
           setCurrentOrder(order);
           
           // Load the order items into cart for editing
-          const orderItems = order.items.map(item => ({
+          const orderItems = Array.isArray(order.items) ? order.items.map(item => ({
             id: item.menuItemId,
             name: item.name,
             price: item.price,
             quantity: item.quantity,
             category: item.category || 'main'
-          }));
+          })) : [];
           
           setCart(orderItems);
           setTableNumber(order.tableNumber || '');

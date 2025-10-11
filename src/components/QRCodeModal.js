@@ -62,7 +62,7 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
       link.click();
     }
   };
-
+//jhbhj
   const copyQRUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
     const qrUrl = `${baseUrl}/placeorder?restaurant=${restaurantId}`;

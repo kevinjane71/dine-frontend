@@ -815,45 +815,17 @@ class ApiClient {
 
   // ==================== DINEBOT METHODS ====================
 
-  // Send query to DineBot (Legacy REST API)
+  // Send query to DineBot (Simple Intent-Based API)
   async queryDineBot(query, restaurantId) {
     console.log('🤖 DineBot queryDineBot called with:', { query, restaurantId });
     const token = this.getToken();
     console.log('🔑 Token in queryDineBot:', !!token, token ? token.substring(0, 20) + '...' : 'null');
     
-    return this.request('/api/dinebot/graphql', {
+    return this.request('/api/dinebot/query', {
       method: 'POST',
       body: {
         query: query,
         restaurantId: restaurantId
-      }
-    });
-  }
-
-  // Send query to DineBot GraphQL API (New Enhanced Version)
-  async queryDineBotGraphQL(query, restaurantId) {
-    console.log('🤖 DineBot GraphQL queryDineBotGraphQL called with:', { query, restaurantId });
-    const token = this.getToken();
-    console.log('🔑 Token in queryDineBotGraphQL:', !!token, token ? token.substring(0, 20) + '...' : 'null');
-    
-    return this.request('/api/dinebot/graphql', {
-      method: 'POST',
-      body: {
-        query: query,
-        restaurantId: restaurantId
-      }
-    });
-  }
-
-  // Direct GraphQL query execution
-  async executeGraphQLQuery(query, variables = {}) {
-    const token = this.getToken();
-    
-    return this.request('/api/graphql', {
-      method: 'POST',
-      body: {
-        query: query,
-        variables: variables
       }
     });
   }

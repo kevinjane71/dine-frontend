@@ -368,15 +368,15 @@ const OrderHistory = () => {
 
                         {/* Items */}
                         <div className="mb-4">
-                          <h4 className="text-sm font-medium text-gray-900 mb-2">Items ({order.items?.length || 0})</h4>
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">Items ({Array.isArray(order.items) ? order.items.length : 0})</h4>
                           <div className="space-y-1">
-                            {order.items?.slice(0, 3).map((item, itemIndex) => (
+                            {Array.isArray(order.items) && order.items.slice(0, 3).map((item, itemIndex) => (
                               <div key={itemIndex} className="flex justify-between text-sm text-gray-600">
                                 <span>{item.name} x {item.quantity}</span>
                                 <span>₹{item.total}</span>
                     </div>
                             ))}
-                            {order.items?.length > 3 && (
+                            {Array.isArray(order.items) && order.items.length > 3 && (
                               <div className="text-sm text-gray-500">
                                 +{order.items.length - 3} more items
                     </div>
