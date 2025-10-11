@@ -835,6 +835,34 @@ class ApiClient {
     return this.request(`/api/dinebot/status?restaurantId=${restaurantId}`);
   }
 
+  // Customer Management API methods
+  async getCustomers(restaurantId) {
+    return this.request(`/api/customers/${restaurantId}`);
+  }
+
+  async createCustomer(restaurantId, customerData) {
+    return this.request('/api/customers', {
+      method: 'POST',
+      body: {
+        ...customerData,
+        restaurantId: restaurantId
+      }
+    });
+  }
+
+  async updateCustomer(customerId, updateData) {
+    return this.request(`/api/customers/${customerId}`, {
+      method: 'PATCH',
+      body: updateData
+    });
+  }
+
+  async deleteCustomer(customerId) {
+    return this.request(`/api/customers/${customerId}`, {
+      method: 'DELETE'
+    });
+  }
+
   // ==================== EMAIL METHODS ====================
 
   // Send welcome email to new user
