@@ -4,3 +4,4 @@
   <circle cx="22" cy="20" r="3" fill="white"/>
   <path d="M20 20h4M22 18v4" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
 </svg>
+

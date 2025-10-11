@@ -315,3 +315,4 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
 };
 
 export default QRCodeModal;
+
