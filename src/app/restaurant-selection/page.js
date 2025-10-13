@@ -40,6 +40,23 @@ const RestaurantSelection = () => {
   const loadUserRestaurants = async () => {
     try {
       setLoading(true);
+      
+      // Check if user is authenticated
+      const token = localStorage.getItem('authToken');
+      const user = localStorage.getItem('user');
+      
+      console.log('🔍 Restaurant Selection - Auth Check:');
+      console.log('  Token available:', !!token);
+      console.log('  User data available:', !!user);
+      console.log('  Token preview:', token ? token.substring(0, 20) + '...' : 'null');
+      
+      if (!token || !user) {
+        console.log('🚫 User not authenticated, redirecting to login');
+        router.replace('/login');
+        return;
+      }
+      
+      console.log('✅ User authenticated, loading restaurants...');
       const response = await apiClient.getRestaurants();
       console.log('Restaurants response:', response);
       console.log('Restaurants data:', response.restaurants);
@@ -52,6 +69,15 @@ const RestaurantSelection = () => {
       }
     } catch (error) {
       console.error('Error loading restaurants:', error);
+      console.error('Error details:', error.message);
+      
+      // If it's an authentication error, redirect to login
+      if (error.message.includes('401') || error.message.includes('Access token required')) {
+        console.log('🚫 Authentication error, redirecting to login');
+        router.replace('/login');
+        return;
+      }
+      
       setError('Failed to load restaurants');
     } finally {
       setLoading(false);

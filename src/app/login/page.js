@@ -244,12 +244,18 @@ const Login = () => {
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
           
+          console.log('🔑 Token stored:', !!data.token);
+          console.log('👤 User data stored:', !!data.user);
+          console.log('🏢 User role:', data.user?.role);
+          console.log('🏢 Has restaurants:', data.hasRestaurants);
+          
           // Handle redirect after successful login
           if (data.redirectTo) {
             console.log('🏢 Backend OTP login: Redirecting to:', data.redirectTo);
             router.replace(data.redirectTo);
           } else {
             // Default redirect to dashboard
+            console.log('🏢 Backend OTP login: Default redirect to dashboard');
             router.replace('/dashboard');
           }
         } else {
