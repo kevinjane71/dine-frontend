@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BulkMenuUpload from '../../../components/BulkMenuUpload';
+import ImageCarousel from '../../../components/ImageCarousel';
+import ImageUpload from '../../../components/ImageUpload';
 import apiClient from '../../../lib/api';
 import { t } from '../../../lib/i18n';
 import { 
@@ -481,267 +483,418 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
     <div 
       style={{
         backgroundColor: '#ffffff',
-        borderRadius: '8px',
+        borderRadius: '16px',
         border: '1px solid #e5e7eb',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
         overflow: 'hidden',
-        transition: 'all 0.2s ease',
+        transition: 'all 0.3s ease',
         opacity: !item.isAvailable ? 0.6 : 1,
         position: 'relative',
-        height: '140px',
-        cursor: 'pointer'
+        minHeight: '320px',
+        cursor: 'pointer',
+        background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
+        display: 'flex',
+        flexDirection: 'column'
       }}
       onClick={() => onItemClick(item)}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        e.currentTarget.style.transform = 'translateY(-4px)';
+        e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.15)';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+        e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.05)';
       }}>
-      {/* Main Card Content */}
+      
+      {/* Image Section */}
       <div style={{
-        height: '100px',
-        background: '#ffffff',
-        padding: '12px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        height: '160px',
         position: 'relative',
-        transition: 'all 0.3s ease',
-        borderBottom: '1px solid #f3f4f6'
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
       }}>
-        {/* Left Side - Icon and Info */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-          <div style={{ fontSize: '16px' }}>
-              {getCategoryEmoji(item.category)}
-            </div>
+        {(item.images && item.images.length > 0) ? (
+          <ImageCarousel
+            images={item.images}
+            itemName={item.name}
+            maxHeight="160px"
+            showControls={false}
+            showDots={false}
+            autoPlay={true}
+            autoPlayInterval={4000}
+            className="w-full h-full"
+          />
+        ) : (
           <div style={{
-            width: '12px',
-            height: '12px',
-            borderRadius: '50%',
-            border: `2px solid ${item.isVeg ? '#22c55e' : '#ef4444'}`,
+            width: '100%',
+            height: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#ffffff'
+            background: `linear-gradient(135deg, ${getCategoryColor(item.category)} 0%, ${getCategoryColor(item.category, 0.7)} 100%)`,
+            position: 'relative',
+            overflow: 'hidden'
           }}>
+            {/* Beautiful Background Pattern */}
             <div style={{
-              width: '4px',
-              height: '4px',
-              backgroundColor: item.isVeg ? '#22c55e' : '#ef4444',
-              borderRadius: item.isVeg ? '1px' : '50%'
+              position: 'absolute',
+              top: '-50%',
+              left: '-50%',
+              width: '200%',
+              height: '200%',
+              background: `
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(255,255,255,0.05) 0%, transparent 50%)
+              `,
+              animation: 'float 6s ease-in-out infinite'
             }} />
-            </div>
-          <div style={{ flex: 1 }}>
-            <h3 style={{
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#1f2937',
-              margin: 0,
-              marginBottom: '2px',
-              lineHeight: '1.2'
-            }}>
-              {item.name}
-            </h3>
+            
+            {/* Main Icon */}
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
+              fontSize: '64px',
+              color: 'rgba(255, 255, 255, 0.9)',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              zIndex: 2,
+              position: 'relative'
             }}>
-              <span style={{
-                fontSize: '10px',
-                color: spiceInfo.color
-              }}>
-                {spiceInfo.icon}
-              </span>
-              <span style={{
-                backgroundColor: '#f3f4f6',
-                color: '#6b7280',
-                padding: '1px 4px',
-                borderRadius: '4px',
-                fontSize: '9px',
-                fontWeight: '500'
-              }}>
-                {categories.find(c => c.id === item.category)?.name || 'Main Course'}
-              </span>
+              {getCategoryEmoji(item.category)}
           </div>
+          
+            {/* Decorative Elements */}
+            <div style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.2)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: '20px',
+              left: '20px',
+              width: '30px',
+              height: '30px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }} />
+            
+            {/* Category Name Overlay */}
+            <div style={{
+              position: 'absolute',
+              bottom: '12px',
+              left: '12px',
+              right: '12px',
+              background: 'rgba(0, 0, 0, 0.3)',
+              backdropFilter: 'blur(10px)',
+              color: 'white',
+              padding: '6px 12px',
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: '600',
+              textAlign: 'center',
+              zIndex: 2
+            }}>
+              {categories.find(c => c.id === item.category)?.name || 'Main Course'}
           </div>
         </div>
+        )}
         
-        {/* Right Side - Price */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          padding: '4px 8px',
-          borderRadius: '6px',
-          border: '1px solid #e5e7eb',
-          marginLeft: '8px'
-        }}>
-          <span style={{
-            fontSize: '14px',
-            fontWeight: '700',
-            color: '#ef4444'
-          }}>
-            ₹{item.price}
-          </span>
-        </div>
-        
-        {/* Short code badge */}
+        {/* Overlay Gradient */}
         <div style={{
           position: 'absolute',
-          top: '6px',
-          left: '6px',
-          background: '#ef4444',
-          color: 'white',
-          padding: '1px 4px',
-          borderRadius: '4px',
-          fontSize: '8px',
-          fontWeight: '600'
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '40px',
+          background: 'linear-gradient(transparent, rgba(0, 0, 0, 0.1))',
+          pointerEvents: 'none'
+        }} />
+        
+        {/* Veg/Non-Veg Badge */}
+        <div style={{
+          position: 'absolute',
+          top: '12px',
+          left: '12px',
+          width: '28px',
+          height: '28px',
+          borderRadius: '50%',
+          border: `3px solid ${item.isVeg ? '#22c55e' : '#ef4444'}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#ffffff',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+          zIndex: 3
         }}>
-          {item.shortCode}
+          <div style={{
+            width: '10px',
+            height: '10px',
+            backgroundColor: item.isVeg ? '#22c55e' : '#ef4444',
+            borderRadius: item.isVeg ? '2px' : '50%'
+          }} />
         </div>
         
-        {/* Availability badge */}
+        {/* Availability Badge */}
         {!item.isAvailable && (
           <div style={{
             position: 'absolute',
-            top: '6px',
-            right: '6px',
-            background: '#dc2626',
+            top: '12px',
+            right: '12px',
+            background: 'rgba(220, 38, 38, 0.95)',
             color: 'white',
-            padding: '1px 4px',
-            borderRadius: '4px',
-            fontSize: '8px',
-            fontWeight: '600'
+            padding: '6px 12px',
+            borderRadius: '16px',
+            fontSize: '11px',
+            fontWeight: '700',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)',
+            zIndex: 3
           }}>
-            OUT
+            OUT OF STOCK
           </div>
         )}
+        
+        {/* Short Code Badge */}
+        <div style={{
+          position: 'absolute',
+          bottom: '12px',
+          right: '12px',
+          background: 'rgba(239, 68, 68, 0.95)',
+          color: 'white',
+          padding: '6px 12px',
+          borderRadius: '16px',
+          fontSize: '11px',
+          fontWeight: '700',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+          zIndex: 3
+        }}>
+          {item.shortCode}
+        </div>
       </div>
       
-      {/* Action buttons - Always visible */}
+      {/* Content Section */}
       <div style={{
-        padding: '8px 12px',
-        backgroundColor: '#ffffff',
-        borderTop: '1px solid #f3f4f6',
+        padding: '20px',
+        flex: 1,
         display: 'flex',
-        gap: '6px'
+        flexDirection: 'column',
+        justifyContent: 'space-between'
       }}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(item);
-            }}
-          style={{
-            flex: 1,
-            padding: '6px 8px',
-            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            fontWeight: '600',
-            fontSize: '10px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
+        {/* Item Info */}
+        <div style={{ flex: 1 }}>
+          <h3 style={{
+            fontSize: '18px',
+            fontWeight: '700',
+            color: '#1f2937',
+            margin: 0,
+            marginBottom: '8px',
+            lineHeight: '1.3',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+          }}>
+            {item.name}
+          </h3>
+          
+          <div style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '4px',
-            boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-1px)';
-            e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
-          }}
-        >
-          <FaEdit size={10} />
-            Edit
+            gap: '10px',
+            marginBottom: '10px'
+          }}>
+            <span style={{
+              fontSize: '14px',
+              color: spiceInfo.color,
+              fontWeight: '600'
+            }}>
+              {spiceInfo.icon}
+            </span>
+            <span style={{
+              backgroundColor: '#f3f4f6',
+              color: '#6b7280',
+              padding: '4px 8px',
+              borderRadius: '10px',
+              fontSize: '11px',
+              fontWeight: '600'
+            }}>
+              {categories.find(c => c.id === item.category)?.name || 'Main Course'}
+            </span>
+        </div>
+        
+          {item.description && (
+            <p style={{
+              fontSize: '13px',
+              color: '#6b7280',
+              margin: 0,
+              lineHeight: '1.5',
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}>
+              {item.description}
+            </p>
+          )}
+        </div>
+        
+        {/* Price and Actions */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginTop: '16px',
+          paddingTop: '16px',
+          borderTop: '1px solid #f3f4f6'
+        }}>
+          <div style={{
+            backgroundColor: '#ef4444',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '25px',
+            fontSize: '16px',
+            fontWeight: '700',
+            boxShadow: '0 4px 8px rgba(239, 68, 68, 0.3)'
+          }}>
+            ₹{item.price}
+          </div>
+          
+          <div style={{
+            display: 'flex',
+            gap: '8px'
+          }}>
+          <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(item);
+              }}
+              style={{
+                padding: '8px',
+                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 4px rgba(59, 130, 246, 0.2)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
+              }}
+            >
+              <FaEdit size={14} />
           </button>
+            
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleAvailability(item.id, item.isAvailable);
-            }}
-          style={{
-            padding: '6px 8px',
-            background: item.isAvailable 
-              ? 'linear-gradient(135deg, #f97316, #ea580c)' 
-              : 'linear-gradient(135deg, #22c55e, #16a34a)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            fontWeight: '600',
-            fontSize: '10px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minWidth: '32px',
-            boxShadow: item.isAvailable 
-              ? '0 2px 4px rgba(249, 115, 22, 0.2)' 
-              : '0 2px 4px rgba(34, 197, 94, 0.2)'
-          }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleAvailability(item.id, item.isAvailable);
+              }}
+              style={{
+                padding: '8px',
+                background: item.isAvailable 
+                  ? 'linear-gradient(135deg, #f97316, #ea580c)' 
+                  : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: item.isAvailable 
+                  ? '0 2px 4px rgba(249, 115, 22, 0.2)' 
+                  : '0 2px 4px rgba(34, 197, 94, 0.2)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                if (item.isAvailable) {
+                  e.target.style.boxShadow = '0 4px 8px rgba(249, 115, 22, 0.3)';
+                } else {
+                  e.target.style.boxShadow = '0 4px 8px rgba(34, 197, 94, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                if (item.isAvailable) {
+                  e.target.style.boxShadow = '0 2px 4px rgba(249, 115, 22, 0.2)';
+                } else {
+                  e.target.style.boxShadow = '0 2px 4px rgba(34, 197, 94, 0.2)';
+                }
+              }}
             title={item.isAvailable ? 'Mark as Out of Stock' : 'Mark as Available'}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-1px)';
-            if (item.isAvailable) {
-              e.target.style.boxShadow = '0 4px 8px rgba(249, 115, 22, 0.3)';
-            } else {
-              e.target.style.boxShadow = '0 4px 8px rgba(34, 197, 94, 0.3)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            if (item.isAvailable) {
-              e.target.style.boxShadow = '0 2px 4px rgba(249, 115, 22, 0.2)';
-            } else {
-              e.target.style.boxShadow = '0 2px 4px rgba(34, 197, 94, 0.2)';
-            }
-          }}
-        >
-          {item.isAvailable ? <FaMinus size={10} /> : <FaCheck size={10} />}
+          >
+              {item.isAvailable ? <FaMinus size={14} /> : <FaCheck size={14} />}
           </button>
+            
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(item.id);
-            }}
-          style={{
-            padding: '6px 8px',
-            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            fontWeight: '600',
-            fontSize: '10px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minWidth: '32px',
-            boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-1px)';
-            e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
-          }}
-        >
-          <FaTrash size={10} />
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(item.id);
+              }}
+              style={{
+                padding: '8px',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
+              }}
+            >
+              <FaTrash size={14} />
           </button>
+          </div>
+        </div>
       </div>
     </div>
   );
+};
+
+// Helper function to get category-specific colors
+const getCategoryColor = (category, opacity = 1) => {
+  const colors = {
+    'Pizza': `rgba(239, 68, 68, ${opacity})`,      // Red
+    'Burgers': `rgba(249, 115, 22, ${opacity})`,   // Orange
+    'Salads': `rgba(34, 197, 94, ${opacity})`,     // Green
+    'Pasta': `rgba(168, 85, 247, ${opacity})`,     // Purple
+    'Desserts': `rgba(236, 72, 153, ${opacity})`,  // Pink
+    'appetizer': `rgba(59, 130, 246, ${opacity})`, // Blue
+    'Tea': `rgba(245, 158, 11, ${opacity})`,       // Yellow
+    'Samosa': `rgba(16, 185, 129, ${opacity})`,    // Teal
+    'Main Course': `rgba(107, 114, 128, ${opacity})`, // Gray
+    'default': `rgba(99, 102, 241, ${opacity})`    // Indigo
+  };
+  return colors[category] || colors['default'];
 };
 
 // List View Item Component
@@ -964,6 +1117,27 @@ const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, 
                 Price per serving
               </div>
             </div>
+
+            {/* Images */}
+            {(item.images && item.images.length > 0) && (
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1f2937',
+                  margin: 0,
+                  marginBottom: '12px'
+                }}>
+                  Images
+                </h3>
+                <ImageCarousel
+                  images={item.images}
+                  itemName={item.name}
+                  maxHeight="200px"
+                  className="w-full"
+                />
+              </div>
+            )}
 
             {/* Description */}
             <div style={{ marginBottom: '20px' }}>
@@ -1219,6 +1393,7 @@ const MenuManagement = () => {
   const [currentRestaurant, setCurrentRestaurant] = useState({ id: 'test-restaurant', name: 'Test Restaurant' });
   const [isClient, setIsClient] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState({});
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -1228,6 +1403,7 @@ const MenuManagement = () => {
     spiceLevel: 'medium',
     shortCode: '',
     image: '',
+    images: [],
     isAvailable: true,
     stockQuantity: null
   });
@@ -1430,7 +1606,17 @@ const MenuManagement = () => {
       } else {
         // Add new item
         const response = await apiClient.createMenuItem(currentRestaurant.id, itemData);
-        setMenuItems(items => [...items, response.menuItem]);
+        const newItem = response.menuItem;
+        setMenuItems(items => [...items, newItem]);
+        
+        // Switch to edit mode so user can upload images immediately
+        setEditingItem(newItem);
+        setFormData(prev => ({
+          ...prev,
+          images: []
+        }));
+        // Don't reset form - keep it open for image upload
+        return;
       }
 
       resetForm();
@@ -1443,7 +1629,19 @@ const MenuManagement = () => {
   };
 
   const handleEdit = (item) => {
-    setFormData(item);
+    setFormData({
+      name: item.name || '',
+      description: item.description || '',
+      price: item.price?.toString() || '',
+      category: item.category || '',
+      isVeg: item.isVeg !== false,
+      spiceLevel: item.spiceLevel || 'medium',
+      shortCode: item.shortCode || '',
+      image: item.image || '',
+      images: item.images || [],
+      isAvailable: item.isAvailable !== false,
+      stockQuantity: item.stockQuantity || null
+    });
     setEditingItem(item);
     setShowAddForm(true);
   };
@@ -1546,6 +1744,79 @@ const MenuManagement = () => {
     }));
   };
 
+  // Image upload handlers
+  const handleImagesUploaded = async (files) => {
+    if (!editingItem) {
+      alert('Please save the menu item first before uploading images.');
+      return;
+    }
+
+    console.log('🖼️ Uploading images for item:', {
+      itemId: editingItem.id,
+      itemName: editingItem.name,
+      hasId: !!editingItem.id,
+      idType: typeof editingItem.id
+    });
+
+    setUploadingImages(true);
+    try {
+      const response = await apiClient.uploadMenuItemImages(editingItem.id, files);
+      
+      if (response.success) {
+        // Update form data with new images
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, ...response.images]
+        }));
+        
+        // Update menu items list
+        setMenuItems(items => items.map(item => 
+          item.id === editingItem.id 
+            ? { ...item, images: [...(item.images || []), ...response.images] }
+            : item
+        ));
+        
+        alert(`Successfully uploaded ${response.images.length} image(s)!`);
+      }
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      alert('Failed to upload images. Please try again.');
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const handleImageDeleted = async (imageIndex) => {
+    if (!editingItem) return;
+
+    try {
+      const response = await apiClient.deleteMenuItemImage(editingItem.id, imageIndex);
+      
+      if (response.success) {
+        // Update form data
+        setFormData(prev => ({
+          ...prev,
+          images: prev.images.filter((_, index) => index !== imageIndex)
+        }));
+        
+        // Update menu items list
+        setMenuItems(items => items.map(item => 
+          item.id === editingItem.id 
+            ? { 
+                ...item, 
+                images: (item.images || []).filter((_, index) => index !== imageIndex)
+              }
+            : item
+        ));
+        
+        alert('Image deleted successfully!');
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      alert('Failed to delete image. Please try again.');
+    }
+  };
+
 
   const handleMenuItemsAdded = async () => {
     // Reload menu data when new items are added
@@ -1574,6 +1845,12 @@ const MenuManagement = () => {
       position: 'relative',
       overflow: 'auto'
     }}>
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-10px) rotate(5deg); }
+        }
+      `}</style>
       <div style={{ 
         maxWidth: '1400px', 
         margin: '0 auto', 
@@ -1822,8 +2099,8 @@ const MenuManagement = () => {
           viewMode === 'grid' ? (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-              gap: '12px',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gap: '24px',
               padding: '0'
             }}>
               {filteredItems.map((item, index) => (
@@ -2328,6 +2605,43 @@ const MenuManagement = () => {
                   </div>
                 </div>
 
+                {/* Image Upload Section */}
+                <div style={{ marginTop: '20px' }}>
+                  <h4 style={{ 
+                    fontSize: '14px',
+                    fontWeight: '600', 
+                    color: '#374151',
+                    marginBottom: '12px' 
+                  }}>
+                    Item Images (Max 4)
+                  </h4>
+                  {editingItem ? (
+                    <ImageUpload
+                      onImagesUploaded={handleImagesUploaded}
+                      onImageDeleted={handleImageDeleted}
+                      existingImages={formData.images || []}
+                      maxImages={4}
+                      disabled={uploadingImages}
+                    />
+                  ) : (
+                    <div style={{
+                      border: '2px dashed #d1d5db',
+                      borderRadius: '8px',
+                      padding: '20px',
+                      textAlign: 'center',
+                      backgroundColor: '#f9fafb'
+                    }}>
+                      <p style={{ 
+                        fontSize: '14px',
+                        color: '#6b7280', 
+                        margin: 0 
+                      }}>
+                        💡 Save the menu item first, then you can upload images
+                      </p>
+                  </div>
+                  )}
+              </div>
+              
               {/* Actions - Mobile-friendly */}
               <div style={{ 
                 display: 'flex', 

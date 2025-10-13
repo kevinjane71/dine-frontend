@@ -16,7 +16,8 @@ class ApiClient {
 
     const config = {
       headers: {
-        'Content-Type': 'application/json',
+        // Only set Content-Type for non-FormData requests
+        ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
         ...options.headers,
         ...(token && { Authorization: `Bearer ${token}` }),
       },
@@ -33,7 +34,7 @@ class ApiClient {
       optionsHeaders: options.headers ? Object.keys(options.headers) : 'none'
     });
 
-    if (config.body && typeof config.body === 'object') {
+    if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
       config.body = JSON.stringify(config.body);
     }
 
@@ -889,6 +890,26 @@ class ApiClient {
       body: {
         restaurantId: restaurantId
       }
+    });
+  }
+
+  // Menu item image management
+  async uploadMenuItemImages(itemId, files) {
+    const formData = new FormData();
+    files.forEach((file, index) => {
+      formData.append('images', file);
+    });
+
+    return this.request(`/api/menu-items/${itemId}/images`, {
+      method: 'POST',
+      body: formData
+      // Don't set headers - let request method handle auth and Content-Type
+    });
+  }
+
+  async deleteMenuItemImage(itemId, imageIndex) {
+    return this.request(`/api/menu-items/${itemId}/images/${imageIndex}`, {
+      method: 'DELETE'
     });
   }
 }

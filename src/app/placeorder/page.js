@@ -3,7 +3,25 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaArrowLeft, FaPhone, FaChair, FaUtensils, FaLeaf, FaDrumstickBite, FaSpinner, FaLock } from 'react-icons/fa';
+import ImageCarousel from '../../components/ImageCarousel';
 import apiClient from '../../lib/api.js';
+
+// Helper function to get category-specific colors
+const getCategoryColor = (category, opacity = 1) => {
+  const colors = {
+    'Pizza': `rgba(239, 68, 68, ${opacity})`,      // Red
+    'Burgers': `rgba(249, 115, 22, ${opacity})`,   // Orange
+    'Salads': `rgba(34, 197, 94, ${opacity})`,     // Green
+    'Pasta': `rgba(168, 85, 247, ${opacity})`,     // Purple
+    'Desserts': `rgba(236, 72, 153, ${opacity})`,  // Pink
+    'appetizer': `rgba(59, 130, 246, ${opacity})`, // Blue
+    'Tea': `rgba(245, 158, 11, ${opacity})`,       // Yellow
+    'Samosa': `rgba(16, 185, 129, ${opacity})`,    // Teal
+    'Main Course': `rgba(107, 114, 128, ${opacity})`, // Gray
+    'default': `rgba(99, 102, 241, ${opacity})`    // Indigo
+  };
+  return colors[category] || colors['default'];
+};
 
 const PlaceOrderContent = () => {
   const router = useRouter();
@@ -495,6 +513,12 @@ const PlaceOrderContent = () => {
       backgroundColor: '#f8fafc',
       paddingBottom: showCart ? '200px' : '100px'
     }}>
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-10px) rotate(5deg); }
+        }
+      `}</style>
       {/* Header */}
       <div style={{
         position: 'sticky',
@@ -504,30 +528,50 @@ const PlaceOrderContent = () => {
         padding: '16px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          justifyContent: 'space-between',
+          width: '100%',
+          marginBottom: '16px'
+        }}>
+          {/* Restaurant Info */}
           <div>
-            <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-              {restaurant?.name || 'Restaurant'}
+            <h1 style={{ 
+              fontSize: '20px', 
+              fontWeight: 'bold', 
+              color: '#1f2937', 
+              margin: 0,
+              lineHeight: '1.2'
+            }}>
+              {restaurant?.name || 'My Restaurant'}
             </h1>
-            <p style={{ fontSize: '14px', color: '#6b7280', margin: '2px 0 0 0' }}>
-              Order from your table
-            </p>
           </div>
           
+          {/* Cart Button */}
           <button
             onClick={() => setShowCart(!showCart)}
             style={{
               position: 'relative',
-              background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
+              background: '#e53e3e',
               color: 'white',
               border: 'none',
               padding: '12px',
-              borderRadius: '12px',
+              borderRadius: '8px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(229, 62, 62, 0.3)'
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'translateY(-1px)';
+              e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
             }}
           >
             <FaShoppingCart size={18} />
@@ -539,8 +583,8 @@ const PlaceOrderContent = () => {
                 backgroundColor: '#f59e0b',
                 color: 'white',
                 borderRadius: '50%',
-                width: '20px',
-                height: '20px',
+                width: '18px',
+                height: '18px',
                 fontSize: '10px',
                 fontWeight: 'bold',
                 display: 'flex',
@@ -555,12 +599,19 @@ const PlaceOrderContent = () => {
         </div>
 
         {/* Search */}
-        <div style={{ position: 'relative', marginBottom: '16px' }}>
-          <FaSearch size={14} color="#9ca3af" style={{
+        <div style={{ 
+          position: 'relative', 
+          marginBottom: '20px',
+          maxWidth: '1200px',
+          margin: '0 auto 20px auto',
+          padding: '0 16px'
+        }}>
+          <FaSearch size={16} color="#9ca3af" style={{
             position: 'absolute',
-            left: '12px',
+            left: '22px',
             top: '50%',
-            transform: 'translateY(-50%)'
+            transform: 'translateY(-50%)',
+            zIndex: 1
           }} />
           <input
             type="text"
@@ -569,22 +620,24 @@ const PlaceOrderContent = () => {
             placeholder="Search food items..."
             style={{
               width: '100%',
-              padding: '12px 12px 12px 36px',
+              padding: '14px 14px 14px 44px',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '20px',
               fontSize: '14px',
               outline: 'none',
-              backgroundColor: '#f1f5f9',
+              backgroundColor: '#f3f4f6',
               boxSizing: 'border-box',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              lineHeight: '1.5',
+              height: '48px',
+              display: 'flex',
+              alignItems: 'center'
             }}
             onFocus={(e) => {
               e.target.style.backgroundColor = '#ffffff';
-              e.target.style.boxShadow = '0 0 0 2px rgba(229, 62, 62, 0.1)';
             }}
             onBlur={(e) => {
-              e.target.style.backgroundColor = '#f1f5f9';
-              e.target.style.boxShadow = 'none';
+              e.target.style.backgroundColor = '#f3f4f6';
             }}
           />
         </div>
@@ -594,7 +647,12 @@ const PlaceOrderContent = () => {
           display: 'flex',
           gap: '8px',
           overflowX: 'auto',
-          paddingBottom: '4px'
+          padding: '0 16px 16px 16px',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          alignItems: 'center'
         }}>
           {categories.map(category => (
             <button
@@ -602,20 +660,32 @@ const PlaceOrderContent = () => {
               onClick={() => setSelectedCategory(category)}
               style={{
                 background: selectedCategory === category 
-                  ? 'linear-gradient(135deg, #e53e3e, #dc2626)' 
+                  ? '#e53e3e' 
                   : '#ffffff',
                 color: selectedCategory === category ? 'white' : '#64748b',
                 border: 'none',
                 padding: '8px 16px',
                 borderRadius: '20px',
                 fontSize: '12px',
-                fontWeight: '600',
+                fontWeight: '500',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.2s ease',
-                boxShadow: selectedCategory === category 
-                  ? '0 2px 8px rgba(229, 62, 62, 0.3)' 
-                  : '0 1px 3px rgba(0,0,0,0.1)'
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                minWidth: 'auto',
+                width: 'auto',
+                textAlign: 'center',
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                if (selectedCategory !== category) {
+                  e.target.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedCategory !== category) {
+                  e.target.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                }
               }}
             >
               {category === 'all' ? 'All' : category}
@@ -654,13 +724,17 @@ const PlaceOrderContent = () => {
       )}
 
       {/* Menu */}
-      <div style={{ padding: '0 16px' }}>
+      <div style={{ 
+        padding: '0 16px',
+        maxWidth: '1200px',
+        margin: '0 auto'
+      }}>
         {selectedCategory === 'all' ? (
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '16px',
-            marginTop: '16px'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '20px',
+            marginTop: '20px'
           }}>
             {filteredMenu.map(item => (
               <MenuItemCard
@@ -675,24 +749,25 @@ const PlaceOrderContent = () => {
         ) : (
           <div>
             {Object.entries(groupedMenu).map(([category, items]) => (
-              <div key={category} style={{ marginTop: '16px' }}>
+              <div key={category} style={{ marginTop: '20px' }}>
                 <h2 style={{
-                  fontSize: '16px',
-                  fontWeight: 'bold',
+                  fontSize: '20px',
+                  fontWeight: '700',
                   color: '#1f2937',
-                  margin: '0 0 16px 0',
-                  padding: '12px 16px',
+                  margin: '0 0 20px 0',
+                  padding: '16px 20px',
                   backgroundColor: 'white',
-                  borderRadius: '12px',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.1)'
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                  border: '1px solid #e5e7eb'
                 }}>
                   {category}
                 </h2>
                 <div style={{ 
                   display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                  gap: '16px', 
-                  marginBottom: '24px' 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                  gap: '20px', 
+                  marginBottom: '32px' 
                 }}>
                   {items.map(item => (
                     <MenuItemCard
@@ -1161,23 +1236,96 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity }) => 
       e.currentTarget.style.transform = 'translateY(0)';
       e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
     }}>
-      {/* Food Image Placeholder */}
+      {/* Food Image */}
       <div style={{
-        width: '80px',
-        height: '80px',
-        borderRadius: '8px',
+        width: '100px',
+        height: '100px',
+        borderRadius: '12px',
         flexShrink: 0,
-        ...getImageStyle(item.category)
+        overflow: 'hidden',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
       }}>
-        {item.category === 'Pizza' && '🍕'}
-        {item.category === 'Burgers' && '🍔'}
-        {item.category === 'Salads' && '🥗'}
-        {item.category === 'Pasta' && '🍝'}
-        {item.category === 'Desserts' && '🍰'}
-        {item.category === 'appetizer' && '🥟'}
-        {item.category === 'Tea' && '☕'}
-        {item.category === 'Samosa' && '🥟'}
-        {!['Pizza', 'Burgers', 'Salads', 'Pasta', 'Desserts', 'appetizer', 'Tea', 'Samosa'].includes(item.category) && '🍽️'}
+        {(item.images && item.images.length > 0) ? (
+          <ImageCarousel
+            images={item.images}
+            itemName={item.name}
+            maxHeight="100px"
+            showControls={false}
+            showDots={false}
+            autoPlay={true}
+            autoPlayInterval={4000}
+            className="w-full h-full"
+          />
+        ) : (
+          <div style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: `linear-gradient(135deg, ${getCategoryColor(item.category)} 0%, ${getCategoryColor(item.category, 0.7)} 100%)`,
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Beautiful Background Pattern */}
+            <div style={{
+              position: 'absolute',
+              top: '-50%',
+              left: '-50%',
+              width: '200%',
+              height: '200%',
+              background: `
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(255,255,255,0.05) 0%, transparent 50%)
+              `,
+              animation: 'float 6s ease-in-out infinite'
+            }} />
+            
+            {/* Main Icon */}
+            <div style={{
+              fontSize: '36px',
+              color: 'rgba(255, 255, 255, 0.9)',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              zIndex: 2,
+              position: 'relative'
+            }}>
+              {item.category === 'Pizza' && '🍕'}
+              {item.category === 'Burgers' && '🍔'}
+              {item.category === 'Salads' && '🥗'}
+              {item.category === 'Pasta' && '🍝'}
+              {item.category === 'Desserts' && '🍰'}
+              {item.category === 'appetizer' && '🥟'}
+              {item.category === 'Tea' && '☕'}
+              {item.category === 'Samosa' && '🥟'}
+              {!['Pizza', 'Burgers', 'Salads', 'Pasta', 'Desserts', 'appetizer', 'Tea', 'Samosa'].includes(item.category) && '🍽️'}
+            </div>
+            
+            {/* Decorative Elements */}
+            <div style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.2)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: '8px',
+              left: '8px',
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }} />
+          </div>
+        )}
       </div>
 
       {/* Content */}
