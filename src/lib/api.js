@@ -118,7 +118,8 @@ class ApiClient {
       hasAuth: !!config.headers.Authorization,
       authValue: config.headers.Authorization ? config.headers.Authorization.substring(0, 20) + '...' : 'none',
       allHeaders: Object.keys(config.headers),
-      optionsHeaders: options.headers ? Object.keys(options.headers) : 'none'
+      optionsHeaders: options.headers ? Object.keys(options.headers) : 'none',
+      tokenFromGetToken: token ? token.substring(0, 20) + '...' : 'null'
     });
 
     if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
