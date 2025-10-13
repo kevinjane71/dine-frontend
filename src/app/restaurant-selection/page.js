@@ -69,6 +69,10 @@ const RestaurantSelection = () => {
       localStorage.setItem('selectedRestaurant', JSON.stringify(restaurant));
       localStorage.setItem('selectedRestaurantId', restaurant.id);
       
+      // Check if user has auth token
+      const token = localStorage.getItem('authToken');
+      console.log('Auth token available:', !!token);
+      
       // Redirect to subdomain dashboard if available, otherwise to main dashboard
       if (restaurant.subdomain) {
         // Use localhost subdomain for development, production subdomain for production
@@ -78,7 +82,13 @@ const RestaurantSelection = () => {
           : `https://${restaurant.subdomain}.dineopen.com/dashboard`;
         
         console.log('Redirecting to subdomain dashboard:', subdomainUrl);
-        window.location.href = subdomainUrl;
+        console.log('Current hostname:', window.location.hostname);
+        console.log('Is localhost:', isLocalhost);
+        
+        // Add a small delay to ensure localStorage is saved
+        setTimeout(() => {
+          window.location.href = subdomainUrl;
+        }, 100);
       } else {
         console.log('No subdomain found, redirecting to main dashboard');
         router.push('/dashboard');

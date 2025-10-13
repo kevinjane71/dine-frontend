@@ -111,6 +111,10 @@ function RestaurantPOSContent() {
   // Authentication guard
   useEffect(() => {
     const checkAuth = () => {
+      console.log('🔍 Checking authentication...');
+      console.log('Current URL:', window.location.href);
+      console.log('Current hostname:', window.location.hostname);
+      
       if (!apiClient.isAuthenticated()) {
         console.log('🚫 User not authenticated, redirecting to login');
         router.replace('/login');
@@ -125,6 +129,7 @@ function RestaurantPOSContent() {
       }
       
       console.log('✅ User authenticated:', user.role);
+      console.log('User data:', user);
     };
 
     checkAuth();
@@ -284,6 +289,10 @@ function RestaurantPOSContent() {
       setLoading(true);
       setError('');
       
+      console.log('🔄 Loading initial data...');
+      console.log('Is subdomain mode:', isSubdomainMode);
+      console.log('Restaurant from context:', restaurant);
+      
       // Use restaurant from context if available (subdomain mode)
       if (isSubdomainMode && restaurant) {
         console.log('🏢 Using restaurant from subdomain context:', restaurant.name);
@@ -299,6 +308,11 @@ function RestaurantPOSContent() {
       const userData = localStorage.getItem('user');
       const user = userData ? JSON.parse(userData) : null;
       console.log('👤 Current user:', user?.name, user?.role, 'Restaurant ID:', user?.restaurantId);
+      
+      // Check authentication token
+      const token = localStorage.getItem('authToken');
+      console.log('🔑 Auth token available:', !!token);
+      console.log('🔑 Token preview:', token ? token.substring(0, 20) + '...' : 'null');
       
       // Load restaurants
       console.log('🏢 Loading restaurants...');
