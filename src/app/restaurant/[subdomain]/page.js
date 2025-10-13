@@ -8,6 +8,13 @@ export default function RestaurantSubdomainPage() {
   const { restaurant, loading, error } = useRestaurant();
   const router = useRouter();
 
+  // Redirect to the public menu page (no need for restaurant ID since we're on subdomain)
+  useEffect(() => {
+    if (restaurant && !loading && !error) {
+      router.push('/placeorder');
+    }
+  }, [restaurant, loading, error, router]);
+
   if (loading) {
     return (
       <div style={{
@@ -103,13 +110,6 @@ export default function RestaurantSubdomainPage() {
   if (!restaurant) {
     return null;
   }
-
-  // Redirect to the public menu page (no need for restaurant ID since we're on subdomain)
-  useEffect(() => {
-    if (restaurant) {
-      router.push('/placeorder');
-    }
-  }, [restaurant, router]);
 
   return null;
 }
