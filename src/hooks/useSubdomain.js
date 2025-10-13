@@ -50,10 +50,29 @@ export const useSubdomain = () => {
           console.log(`🏢 Frontend: Subdomain detected: ${currentSubdomain}`);
           setSubdomain(currentSubdomain);
 
-          // Load restaurant data by subdomain using absolute URL
+          // Check if user is authenticated
+          const token = localStorage.getItem('token');
+          const isAuthenticated = !!token;
+
+          // Load restaurant data by subdomain
           try {
             const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
-            const response = await fetch(`${apiBaseUrl}/api/public/restaurant-by-subdomain/${currentSubdomain}`);
+            let response;
+            
+            if (isAuthenticated) {
+              // Use authenticated API for logged-in users
+              console.log(`🔐 Frontend: Using authenticated API for subdomain: ${currentSubdomain}`);
+              response = await fetch(`${apiBaseUrl}/api/restaurants/by-subdomain/${currentSubdomain}`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+            } else {
+              // Use public API for non-authenticated users (QR code scanning)
+              console.log(`🌐 Frontend: Using public API for subdomain: ${currentSubdomain}`);
+              response = await fetch(`${apiBaseUrl}/api/public/restaurant-by-subdomain/${currentSubdomain}`);
+            }
             
             if (response.ok) {
               const data = await response.json();
@@ -62,6 +81,17 @@ export const useSubdomain = () => {
             } else if (response.status === 404) {
               setError('Restaurant not found');
               console.log(`❌ Frontend: Restaurant not found for subdomain: ${currentSubdomain}`);
+            } else if (response.status === 401) {
+              // If authenticated API fails with 401, fallback to public API
+              console.log(`🔐 Frontend: Auth failed, falling back to public API for subdomain: ${currentSubdomain}`);
+              const publicResponse = await fetch(`${apiBaseUrl}/api/public/restaurant-by-subdomain/${currentSubdomain}`);
+              if (publicResponse.ok) {
+                const publicData = await publicResponse.json();
+                setRestaurant(publicData.restaurant);
+                console.log(`✅ Frontend: Restaurant loaded via public API: ${publicData.restaurant.name}`);
+              } else {
+                setError('Restaurant not found');
+              }
             } else {
               setError('Failed to load restaurant');
               console.error('Failed to load restaurant:', response.statusText);
