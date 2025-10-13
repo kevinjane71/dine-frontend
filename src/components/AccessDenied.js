@@ -65,7 +65,7 @@ export default function AccessDenied() {
           marginBottom: '2rem',
           lineHeight: '1.6'
         }}>
-          You don't have permission to access this restaurant. This could be because:
+          You don&apos;t have permission to access this restaurant. This could be because:
         </p>
 
         {/* Reasons */}
@@ -84,10 +84,10 @@ export default function AccessDenied() {
             fontSize: '14px',
             lineHeight: '1.8'
           }}>
-            <li>You're not authorized to manage this restaurant</li>
-            <li>The restaurant doesn't exist</li>
+            <li>You&apos;re not authorized to manage this restaurant</li>
+            <li>The restaurant doesn&apos;t exist</li>
             <li>Your access has been revoked</li>
-            <li>You're trying to access someone else's restaurant</li>
+            <li>You&apos;re trying to access someone else&apos;s restaurant</li>
           </ul>
         </div>
 
