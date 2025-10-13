@@ -10,6 +10,7 @@ export const RestaurantProvider = ({ children }) => {
   const [fallbackRestaurant, setFallbackRestaurant] = useState(null);
   const [accessDenied, setAccessDenied] = useState(false);
   const [accessLoading, setAccessLoading] = useState(false);
+  const [userRestaurants, setUserRestaurants] = useState([]);
 
   // Load fallback restaurant from localStorage for non-subdomain mode
   useEffect(() => {
@@ -56,22 +57,67 @@ export const RestaurantProvider = ({ children }) => {
 
         if (response.status === 403) {
           console.log('🚫 Access denied to subdomain:', subdomain);
-          setAccessDenied(true);
+          // Redirect to user's own restaurant subdomain
+          await redirectToUserRestaurant();
         } else if (response.status === 404) {
           console.log('❌ Restaurant not found for subdomain:', subdomain);
-          setAccessDenied(true);
+          // Redirect to user's own restaurant subdomain
+          await redirectToUserRestaurant();
         } else if (response.ok) {
           console.log('✅ Access granted to subdomain:', subdomain);
           setAccessDenied(false);
         } else {
           console.log('⚠️ Unexpected response:', response.status);
-          setAccessDenied(true);
+          // Redirect to user's own restaurant subdomain
+          await redirectToUserRestaurant();
         }
       } catch (error) {
         console.error('Error validating subdomain access:', error);
-        setAccessDenied(true);
+        // Redirect to user's own restaurant subdomain on error
+        await redirectToUserRestaurant();
       } finally {
         setAccessLoading(false);
+      }
+    };
+
+    // Function to redirect user to their own restaurant subdomain
+    const redirectToUserRestaurant = async () => {
+      try {
+        console.log('🔄 Redirecting user to their own restaurant subdomain...');
+        
+        // Get user's restaurants
+        const restaurantsResponse = await fetch(`${apiBaseUrl}/api/restaurants`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (restaurantsResponse.ok) {
+          const restaurantsData = await restaurantsResponse.json();
+          const userRestaurants = restaurantsData.restaurants || [];
+          
+          if (userRestaurants.length > 0) {
+            // Find restaurant with subdomain
+            const restaurantWithSubdomain = userRestaurants.find(r => r.subdomain);
+            
+            if (restaurantWithSubdomain) {
+              const redirectUrl = `https://${restaurantWithSubdomain.subdomain}.dineopen.com/dashboard`;
+              console.log('🏢 Redirecting to user restaurant:', redirectUrl);
+              window.location.href = redirectUrl;
+              return;
+            }
+          }
+        }
+        
+        // Fallback: redirect to main domain
+        console.log('🏠 No subdomain found, redirecting to main domain');
+        window.location.href = 'https://www.dineopen.com/dashboard';
+        
+      } catch (error) {
+        console.error('Error redirecting to user restaurant:', error);
+        // Final fallback
+        window.location.href = 'https://www.dineopen.com/dashboard';
       }
     };
 

@@ -5,16 +5,11 @@ import { usePathname } from 'next/navigation';
 import Navigation from '../../components/Navigation';
 import { DineBotProvider } from '../../components/DineBotProvider';
 import DineBotButton from '../../components/DineBotButton';
-import AccessDenied from '../../components/AccessDenied';
-import { useRestaurant } from '../../contexts/RestaurantContext';
 
 function DashboardLayoutContent({ children }) {
   const [isNavigationHidden, setIsNavigationHidden] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
-  
-  // Get restaurant context for access control
-  const { accessDenied, isSubdomainMode } = useRestaurant();
   
   // Check if current page is dashboard
   const isDashboardPage = pathname === '/dashboard';
@@ -39,11 +34,6 @@ function DashboardLayoutContent({ children }) {
     window.addEventListener('navigationToggle', handleNavigationToggle);
     return () => window.removeEventListener('navigationToggle', handleNavigationToggle);
   }, []);
-
-  // Show access denied page if user doesn't have access to subdomain
-  if (isSubdomainMode && accessDenied) {
-    return <AccessDenied />;
-  }
 
   return (
     <DineBotProvider>
