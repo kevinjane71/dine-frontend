@@ -1,4 +1,5 @@
 import './globals.css'
+import { RestaurantProvider } from '../contexts/RestaurantContext'
 
 export const metadata = {
   title: 'DineOpen - AI-Powered Restaurant Management System | POS, Inventory & Order Tracking',
@@ -57,7 +58,9 @@ export default function RootLayout({ children }) {
         </script>
       </head>
       <body suppressHydrationWarning={true}>
-        {children}
+        <RestaurantProvider>
+          {children}
+        </RestaurantProvider>
         <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
       </body>
     </html>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useRestaurant } from '../../../contexts/RestaurantContext';
 import Onboarding from '../../../components/Onboarding';
 import EmptyMenuPrompt from '../../../components/EmptyMenuPrompt';
 import MenuItemCard from '../../../components/MenuItemCard';
@@ -49,6 +50,9 @@ import apiClient from '../../../lib/api';
 function RestaurantPOSContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  
+  // Restaurant context
+  const { restaurant, restaurantId, isSubdomainMode, loading: restaurantLoading } = useRestaurant();
   
   // Core state
   const [selectedCategory, setSelectedCategory] = useState('all-items');
@@ -279,7 +283,18 @@ function RestaurantPOSContent() {
       setLoading(true);
       setError('');
       
-      // Get user data to determine restaurant context
+      // Use restaurant from context if available (subdomain mode)
+      if (isSubdomainMode && restaurant) {
+        console.log('🏢 Using restaurant from subdomain context:', restaurant.name);
+        setSelectedRestaurant(restaurant);
+        await loadMenuItems(restaurant.id);
+        await loadTables(restaurant.id);
+        await loadFloors(restaurant.id);
+        setLoading(false);
+        return;
+      }
+      
+      // Fallback to traditional restaurant loading for non-subdomain mode
       const userData = localStorage.getItem('user');
       const user = userData ? JSON.parse(userData) : null;
       console.log('👤 Current user:', user?.name, user?.role, 'Restaurant ID:', user?.restaurantId);

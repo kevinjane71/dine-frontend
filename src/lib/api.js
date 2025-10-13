@@ -5,11 +5,98 @@ class ApiClient {
     this.baseURL = API_BASE_URL;
   }
 
+  // Helper to detect if we're in subdomain mode
+  isSubdomainMode() {
+    if (typeof window === 'undefined') return false;
+    
+    const hostname = window.location.hostname;
+    let currentSubdomain = null;
+    
+    // Check for localhost subdomains (e.g., myrestaurant.localhost)
+    if (hostname.includes('localhost')) {
+      const localhostParts = hostname.split('.localhost');
+      if (localhostParts.length > 1) {
+        currentSubdomain = localhostParts[0];
+      }
+    }
+    // Check for production subdomains (e.g., restaurant-name.dineopen.com)
+    else {
+      const subdomainParts = hostname.split('.');
+      if (subdomainParts.length > 2) {
+        currentSubdomain = subdomainParts[0];
+      }
+    }
+    
+    const reservedSubdomains = ['www', 'api', 'admin', 'app', 'support', 'dineopen', 'localhost'];
+    return currentSubdomain && 
+           !reservedSubdomains.includes(currentSubdomain) && 
+           currentSubdomain.length > 2;
+  }
+
+  // Helper to get current subdomain
+  getCurrentSubdomain() {
+    if (typeof window === 'undefined') return null;
+    
+    const hostname = window.location.hostname;
+    
+    // Check for localhost subdomains (e.g., myrestaurant.localhost)
+    if (hostname.includes('localhost')) {
+      const localhostParts = hostname.split('.localhost');
+      if (localhostParts.length > 1) {
+        return localhostParts[0];
+      }
+    }
+    // Check for production subdomains (e.g., restaurant-name.dineopen.com)
+    else {
+      const subdomainParts = hostname.split('.');
+      if (subdomainParts.length > 2) {
+        return subdomainParts[0];
+      }
+    }
+    
+    return null;
+  }
+
+  // Helper to modify endpoint for subdomain mode
+  modifyEndpointForSubdomain(endpoint) {
+    if (!this.isSubdomainMode()) {
+      return endpoint; // No change needed for non-subdomain mode
+    }
+
+    // For subdomain mode, we can use cleaner endpoints without restaurantId
+    // The backend middleware will automatically inject the restaurantId from subdomain context
+    
+    // Remove restaurantId parameter from endpoints that support subdomain context
+    const subdomainAwareEndpoints = [
+      '/api/orders/:restaurantId',
+      '/api/tables/:restaurantId',
+      '/api/menu/:restaurantId',
+      '/api/customers/:restaurantId',
+      '/api/analytics/:restaurantId'
+    ];
+
+    for (const pattern of subdomainAwareEndpoints) {
+      if (endpoint.includes(pattern)) {
+        return endpoint.replace(pattern, pattern.replace('/:restaurantId', ''));
+      }
+    }
+
+    return endpoint; // Return original if no pattern matches
+  }
+
   async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
+    // Modify endpoint for subdomain mode
+    const modifiedEndpoint = this.modifyEndpointForSubdomain(endpoint);
+    const url = `${this.baseURL}${modifiedEndpoint}`;
     const token = this.getToken();
     
-    console.log('🌐 API Request:', { endpoint, hasToken: !!token, method: options.method || 'GET' });
+    console.log('🌐 API Request:', { 
+      originalEndpoint: endpoint, 
+      modifiedEndpoint, 
+      isSubdomainMode: this.isSubdomainMode(),
+      hasToken: !!token, 
+      method: options.method || 'GET' 
+    });
     if (token) {
       console.log('🔑 Token preview:', token.substring(0, 20) + '...');
     }
