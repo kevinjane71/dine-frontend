@@ -314,7 +314,7 @@ function RestaurantPOSContent() {
           restaurant = user.restaurant;
         } else {
           // Fallback to finding restaurant in the list
-        restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
+          restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
         }
       }
       // For owners or customers (legacy), use selected restaurant from localStorage or first restaurant
