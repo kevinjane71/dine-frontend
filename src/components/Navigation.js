@@ -35,10 +35,12 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import apiClient from '../lib/api';
 import LanguageSwitcher from './LanguageSwitcher';
+import { useSubdomain } from '../hooks/useSubdomain';
 
 function NavigationContent({ isHidden = false }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { subdomain, restaurant: subdomainRestaurant, isSubdomainMode } = useSubdomain();
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [allRestaurants, setAllRestaurants] = useState([]);
   const [showRestaurantDropdown, setShowRestaurantDropdown] = useState(false);
@@ -48,6 +50,14 @@ function NavigationContent({ isHidden = false }) {
   const [user, setUser] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [pageAccess, setPageAccess] = useState(null);
+  
+  // Sync selected restaurant with subdomain restaurant
+  useEffect(() => {
+    if (isSubdomainMode && subdomainRestaurant) {
+      console.log('🔄 Syncing selected restaurant with subdomain restaurant:', subdomainRestaurant.name);
+      setSelectedRestaurant(subdomainRestaurant);
+    }
+  }, [isSubdomainMode, subdomainRestaurant]);
   
   // Debug dropdown states
   useEffect(() => {
@@ -227,7 +237,7 @@ function NavigationContent({ isHidden = false }) {
     } else {
       // If no subdomain, stay on current domain but refresh
       console.log('🔄 Restaurant has no subdomain, staying on current domain');
-      window.location.reload();
+    window.location.reload();
     }
   };
   

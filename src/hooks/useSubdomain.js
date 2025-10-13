@@ -51,7 +51,7 @@ export const useSubdomain = () => {
           setSubdomain(currentSubdomain);
 
           // Check if user is authenticated
-          const token = localStorage.getItem('token');
+          const token = localStorage.getItem('authToken');
           const isAuthenticated = !!token;
 
           // Load restaurant data by subdomain
