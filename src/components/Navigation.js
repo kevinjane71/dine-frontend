@@ -207,6 +207,28 @@ function NavigationContent({ isHidden = false }) {
     window.dispatchEvent(new CustomEvent('restaurantChanged', { 
       detail: { restaurant } 
     }));
+    
+    // If restaurant has subdomain, redirect to subdomain
+    if (restaurant.subdomain) {
+      const currentHost = window.location.hostname;
+      const isLocalhost = currentHost.includes('localhost');
+      
+      if (isLocalhost) {
+        // For localhost development
+        const newUrl = `http://${restaurant.subdomain}.localhost:3002/dashboard`;
+        console.log('🔄 Redirecting to subdomain:', newUrl);
+        window.location.href = newUrl;
+      } else {
+        // For production
+        const newUrl = `https://${restaurant.subdomain}.dineopen.com/dashboard`;
+        console.log('🔄 Redirecting to subdomain:', newUrl);
+        window.location.href = newUrl;
+      }
+    } else {
+      // If no subdomain, stay on current domain but refresh
+      console.log('🔄 Restaurant has no subdomain, staying on current domain');
+      window.location.reload();
+    }
   };
   
   const getAllNavItems = () => [
@@ -1164,6 +1186,113 @@ function NavigationContent({ isHidden = false }) {
                 </div>
               </div>
             </div>
+
+            {/* Mobile Restaurant Switcher - For Owners/Customers */}
+            {isMobile && (user?.role === 'owner' || user?.role === 'customer') && allRestaurants.length > 1 && (
+              <div style={{ 
+                padding: '0 20px 20px 20px', 
+                borderBottom: '1px solid rgba(0, 0, 0, 0.05)' 
+              }}>
+                <div style={{ 
+                  padding: '16px', 
+                  background: 'linear-gradient(135deg, #fef7f0 0%, #fed7aa 100%)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(239, 68, 68, 0.2)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <HiSwitchHorizontal style={{ color: '#ef4444', fontSize: '16px' }} />
+                    <h4 style={{ fontSize: '14px', fontWeight: '700', color: '#1f2937', margin: 0 }}>
+                      Switch Restaurant
+                    </h4>
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 12px 0' }}>
+                    Choose your active location
+                  </p>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {allRestaurants.map((restaurant) => (
+                      <div
+                        key={restaurant.id}
+                        onClick={() => handleRestaurantChange(restaurant)}
+                        style={{
+                          padding: '12px 16px',
+                          cursor: 'pointer',
+                          backgroundColor: selectedRestaurant?.id === restaurant.id ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.8)',
+                          borderRadius: '12px',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          border: selectedRestaurant?.id === restaurant.id ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(0, 0, 0, 0.05)'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (selectedRestaurant?.id !== restaurant.id) {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedRestaurant?.id !== restaurant.id) {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                          }
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: selectedRestaurant?.id === restaurant.id 
+                              ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                              : 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: selectedRestaurant?.id === restaurant.id 
+                              ? '0 4px 12px rgba(239, 68, 68, 0.3)'
+                              : '0 2px 4px rgba(0, 0, 0, 0.1)'
+                          }}>
+                            <FaBuilding 
+                              color={selectedRestaurant?.id === restaurant.id ? 'white' : '#6b7280'} 
+                              size={12} 
+                            />
+                          </div>
+                          <div>
+                            <p style={{ 
+                              fontSize: '13px', 
+                              fontWeight: '600', 
+                              color: selectedRestaurant?.id === restaurant.id ? '#ef4444' : '#1f2937', 
+                              margin: 0 
+                            }}>
+                              {restaurant.name}
+                            </p>
+                            {restaurant.phone && (
+                              <p style={{ fontSize: '10px', color: '#6b7280', margin: '2px 0 0 0' }}>
+                                📞 {restaurant.phone}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {selectedRestaurant?.id === restaurant.id && (
+                          <div style={{ 
+                            width: '18px', 
+                            height: '18px', 
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                          }}>
+                            <FaCheck color="white" size={8} />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Mobile Navigation Items - Modern */}
             <div style={{ flex: 1, padding: '20px 0' }}>
