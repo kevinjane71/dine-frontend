@@ -35,21 +35,28 @@ export function middleware(request) {
                           subdomain.length > 2 &&
                           /^[a-z0-9-]+$/.test(subdomain);
   
-  if (isValidSubdomain) {
-    console.log(`[Middleware] Subdomain detected: ${subdomain} from ${hostname}`);
-    
-    // Only rewrite the root path to restaurant subdomain page
-    // Let other paths like /placeorder pass through normally
-    if (url.pathname === '/') {
-      url.pathname = `/restaurant/${subdomain}`;
-      console.log(`[Middleware] Rewriting ${hostname}${request.nextUrl.pathname} to ${url.pathname}`);
-      return NextResponse.rewrite(url);
-    }
-    
-    // For other paths, let them pass through normally
-    console.log(`[Middleware] Letting ${hostname}${request.nextUrl.pathname} pass through`);
-    return NextResponse.next();
-  }
+          if (isValidSubdomain) {
+            console.log(`[Middleware] Subdomain detected: ${subdomain} from ${hostname}`);
+            
+            // Redirect login requests to main domain
+            if (url.pathname === '/login') {
+              const mainDomainLogin = 'https://www.dineopen.com/login';
+              console.log(`[Middleware] Redirecting login from subdomain to main domain: ${mainDomainLogin}`);
+              return NextResponse.redirect(mainDomainLogin);
+            }
+            
+            // Only rewrite the root path to restaurant subdomain page
+            // Let other paths like /placeorder pass through normally
+            if (url.pathname === '/') {
+              url.pathname = `/restaurant/${subdomain}`;
+              console.log(`[Middleware] Rewriting ${hostname}${request.nextUrl.pathname} to ${url.pathname}`);
+              return NextResponse.rewrite(url);
+            }
+            
+            // For other paths, let them pass through normally
+            console.log(`[Middleware] Letting ${hostname}${request.nextUrl.pathname} pass through`);
+            return NextResponse.next();
+          }
   
   return NextResponse.next();
 }

@@ -215,32 +215,12 @@ const Login = () => {
           localStorage.setItem('authToken', firebaseData.token);
           localStorage.setItem('user', JSON.stringify(firebaseData.user));
           
-          // Redirect based on subdomain context or backend response
-          const hostname = window.location.hostname;
-          let currentSubdomain = null;
-          
-          // Check for localhost subdomains (e.g., myrestaurant.localhost)
-          if (hostname.includes('localhost')) {
-            const localhostParts = hostname.split('.localhost');
-            if (localhostParts.length > 1) {
-              currentSubdomain = localhostParts[0];
-            }
-          }
-          // Check for production subdomains (e.g., restaurant-name.dineopen.com)
-          else if (hostname.includes('.dineopen.com')) {
-            const subdomainParts = hostname.split('.');
-            if (subdomainParts.length > 2) {
-              currentSubdomain = subdomainParts[0];
-            }
-          }
-          
-          // If we're on a subdomain, redirect to subdomain dashboard
-          if (currentSubdomain && currentSubdomain !== 'www') {
-            console.log('🏢 Firebase OTP login: Subdomain detected, redirecting to subdomain dashboard:', currentSubdomain);
-            router.replace('/dashboard');
-          } else if (firebaseData.redirectTo) {
+          // Handle redirect after successful login
+          if (firebaseData.redirectTo) {
+            console.log('🏢 Firebase OTP login: Redirecting to:', firebaseData.redirectTo);
             router.replace(firebaseData.redirectTo);
           } else {
+            // Default redirect to dashboard
             router.replace('/dashboard');
           }
         } else {
@@ -264,32 +244,12 @@ const Login = () => {
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
           
-          // Redirect based on subdomain context or backend response
-          const hostname = window.location.hostname;
-          let currentSubdomain = null;
-          
-          // Check for localhost subdomains (e.g., myrestaurant.localhost)
-          if (hostname.includes('localhost')) {
-            const localhostParts = hostname.split('.localhost');
-            if (localhostParts.length > 1) {
-              currentSubdomain = localhostParts[0];
-            }
-          }
-          // Check for production subdomains (e.g., restaurant-name.dineopen.com)
-          else if (hostname.includes('.dineopen.com')) {
-            const subdomainParts = hostname.split('.');
-            if (subdomainParts.length > 2) {
-              currentSubdomain = subdomainParts[0];
-            }
-          }
-          
-          // If we're on a subdomain, redirect to subdomain dashboard
-          if (currentSubdomain && currentSubdomain !== 'www') {
-            console.log('🏢 Backend OTP login: Subdomain detected, redirecting to subdomain dashboard:', currentSubdomain);
-            router.replace('/dashboard');
-          } else if (data.redirectTo) {
+          // Handle redirect after successful login
+          if (data.redirectTo) {
+            console.log('🏢 Backend OTP login: Redirecting to:', data.redirectTo);
             router.replace(data.redirectTo);
           } else {
+            // Default redirect to dashboard
             router.replace('/dashboard');
           }
         } else {
@@ -398,32 +358,12 @@ const Login = () => {
           }
         }
         
-        // Redirect based on subdomain context or backend response
-        const hostname = window.location.hostname;
-        let currentSubdomain = null;
-        
-        // Check for localhost subdomains (e.g., myrestaurant.localhost)
-        if (hostname.includes('localhost')) {
-          const localhostParts = hostname.split('.localhost');
-          if (localhostParts.length > 1) {
-            currentSubdomain = localhostParts[0];
-          }
-        }
-        // Check for production subdomains (e.g., restaurant-name.dineopen.com)
-        else if (hostname.includes('.dineopen.com')) {
-          const subdomainParts = hostname.split('.');
-          if (subdomainParts.length > 2) {
-            currentSubdomain = subdomainParts[0];
-          }
-        }
-        
-        // If we're on a subdomain, redirect to subdomain dashboard
-        if (currentSubdomain && currentSubdomain !== 'www') {
-          console.log('🏢 Google login: Subdomain detected, redirecting to subdomain dashboard:', currentSubdomain);
-          router.replace('/dashboard');
-        } else if (googleData.redirectTo) {
+        // Handle redirect after successful login
+        if (googleData.redirectTo) {
+          console.log('🏢 Google login: Redirecting to:', googleData.redirectTo);
           router.replace(googleData.redirectTo);
         } else {
+          // Default redirect to dashboard
           router.replace('/dashboard');
         }
       } else {

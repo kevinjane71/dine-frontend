@@ -141,7 +141,8 @@ function RestaurantPOSContent() {
   // Logout function
   const handleLogout = () => {
     apiClient.clearToken();
-    window.location.href = '/login';
+    // Always redirect to main domain login after logout
+    window.location.href = 'https://www.dineopen.com/login';
   };
 
   // QR Code handler
@@ -314,7 +315,7 @@ function RestaurantPOSContent() {
           restaurant = user.restaurant;
         } else {
           // Fallback to finding restaurant in the list
-          restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
+        restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
         }
       }
       // For owners or customers (legacy), use selected restaurant from localStorage or first restaurant
