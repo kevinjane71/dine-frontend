@@ -8,6 +8,8 @@ const RestaurantContext = createContext();
 export const RestaurantProvider = ({ children }) => {
   const { subdomain, restaurant, loading, error, isSubdomainMode } = useSubdomain();
   const [fallbackRestaurant, setFallbackRestaurant] = useState(null);
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [accessLoading, setAccessLoading] = useState(false);
 
   // Load fallback restaurant from localStorage for non-subdomain mode
   useEffect(() => {
@@ -23,6 +25,58 @@ export const RestaurantProvider = ({ children }) => {
       }
     }
   }, [isSubdomainMode, fallbackRestaurant]);
+
+  // Validate user access to subdomain restaurant
+  useEffect(() => {
+    const validateSubdomainAccess = async () => {
+      if (!isSubdomainMode || !restaurant || !subdomain) {
+        return;
+      }
+
+      // Check if user is authenticated
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.log('🔒 No auth token found, redirecting to login');
+        window.location.href = 'https://www.dineopen.com/login';
+        return;
+      }
+
+      setAccessLoading(true);
+      setAccessDenied(false);
+
+      try {
+        // Validate user access to this specific restaurant
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
+        const response = await fetch(`${apiBaseUrl}/api/restaurants/by-subdomain/${subdomain}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.status === 403) {
+          console.log('🚫 Access denied to subdomain:', subdomain);
+          setAccessDenied(true);
+        } else if (response.status === 404) {
+          console.log('❌ Restaurant not found for subdomain:', subdomain);
+          setAccessDenied(true);
+        } else if (response.ok) {
+          console.log('✅ Access granted to subdomain:', subdomain);
+          setAccessDenied(false);
+        } else {
+          console.log('⚠️ Unexpected response:', response.status);
+          setAccessDenied(true);
+        }
+      } catch (error) {
+        console.error('Error validating subdomain access:', error);
+        setAccessDenied(true);
+      } finally {
+        setAccessLoading(false);
+      }
+    };
+
+    validateSubdomainAccess();
+  }, [isSubdomainMode, restaurant, subdomain]);
 
   // Get the current restaurant (subdomain or fallback)
   const currentRestaurant = restaurant || fallbackRestaurant;
@@ -67,8 +121,12 @@ export const RestaurantProvider = ({ children }) => {
     getRestaurantId,
     
     // State
-    loading,
+    loading: loading || accessLoading,
     error,
+    
+    // Access control
+    accessDenied,
+    accessLoading,
     
     // Actions
     updateRestaurant
