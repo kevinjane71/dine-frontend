@@ -7,6 +7,7 @@ import QRCode from 'qrcode';
 const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showCopyNotification, setShowCopyNotification] = useState(false);
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -14,6 +15,20 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
       generateQRCode();
     }
   }, [isOpen, restaurantId]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const generateQRCode = async () => {
     try {
@@ -25,7 +40,7 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
       
       // Generate QR code
       const qrDataUrl = await QRCode.toDataURL(qrUrl, {
-        width: 300,
+        width: 250,
         margin: 2,
         color: {
           dark: '#1f2937',
@@ -38,7 +53,7 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
       // Also generate for canvas (for download)
       if (canvasRef.current) {
         await QRCode.toCanvas(canvasRef.current, qrUrl, {
-          width: 300,
+          width: 250,
           margin: 2,
           color: {
             dark: '#1f2937',
@@ -67,7 +82,14 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
     const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
     const qrUrl = `${baseUrl}/placeorder?restaurant=${restaurantId}`;
     navigator.clipboard.writeText(qrUrl);
-    // You could add a toast notification here
+    
+    // Show notification
+    setShowCopyNotification(true);
+    
+    // Hide notification after 3 seconds
+    setTimeout(() => {
+      setShowCopyNotification(false);
+    }, 3000);
   };
 
   if (!isOpen) return null;
@@ -78,29 +100,38 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
   return (
     <div style={{
       position: 'fixed',
-      inset: 0,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.5)',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'center',
       zIndex: 1000,
-      padding: '16px'
+      padding: '16px 16px 48px 16px',
+      overflowY: 'auto',
+      minHeight: '100vh',
+      minWidth: '100vw'
     }}>
       <div style={{
         backgroundColor: 'white',
         borderRadius: '16px',
-        padding: '24px',
+        padding: '16px',
         maxWidth: '400px',
         width: '100%',
+        maxHeight: '90vh',
         boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-        position: 'relative'
+        position: 'relative',
+        marginTop: 'auto',
+        marginBottom: '32px'
       }}>
         {/* Header */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: '20px'
+          marginBottom: '16px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <FaQrcode size={24} color="#e53e3e" />
@@ -136,7 +167,7 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
           backgroundColor: '#f9fafb',
           padding: '16px',
           borderRadius: '12px',
-          marginBottom: '20px'
+          marginBottom: '16px'
         }}>
           <h3 style={{
             fontSize: '16px',
@@ -167,12 +198,12 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          marginBottom: '20px'
+          marginBottom: '16px'
         }}>
           {loading ? (
             <div style={{
-              width: '300px',
-              height: '300px',
+              width: '250px',
+              height: '250px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -210,8 +241,8 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
                   src={qrCodeDataUrl}
                   alt="QR Code"
                   style={{
-                    width: '300px',
-                    height: '300px',
+                    width: '250px',
+                    height: '250px',
                     display: 'block'
                   }}
                 />
@@ -230,7 +261,7 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
           backgroundColor: '#fef7f0',
           padding: '16px',
           borderRadius: '12px',
-          marginBottom: '20px'
+          marginBottom: '16px'
         }}>
           <h4 style={{
             fontSize: '14px',
@@ -303,10 +334,41 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
           </button>
         </div>
 
+        {/* Copy Notification */}
+        {showCopyNotification && (
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: '#10b981',
+            color: 'white',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '600',
+            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+            zIndex: 1001,
+            animation: 'slideDown 0.3s ease-out'
+          }}>
+            ✅ URL copied! Share with your customers
+          </div>
+        )}
+
         <style jsx>{`
           @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+          }
+          @keyframes slideDown {
+            from { 
+              opacity: 0;
+              transform: translateX(-50%) translateY(-20px);
+            }
+            to { 
+              opacity: 1;
+              transform: translateX(-50%) translateY(0);
+            }
           }
         `}</style>
       </div>

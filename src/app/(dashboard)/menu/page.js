@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import BulkMenuUpload from '../../../components/BulkMenuUpload';
 import ImageCarousel from '../../../components/ImageCarousel';
 import ImageUpload from '../../../components/ImageUpload';
+import QRCodeModal from '../../../components/QRCodeModal';
 import apiClient from '../../../lib/api';
 import { t } from '../../../lib/i18n';
 import { 
@@ -35,7 +36,8 @@ import {
   FaBars,
   FaSortAmountDown,
   FaCloudUploadAlt,
-  FaTimes
+  FaTimes,
+  FaQrcode
 } from 'react-icons/fa';
 
 // Enhanced Category Dropdown Component with Management
@@ -531,60 +533,35 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: `linear-gradient(135deg, ${getCategoryColor(item.category)} 0%, ${getCategoryColor(item.category, 0.7)} 100%)`,
+            background: `linear-gradient(135deg, ${getCategoryColor(item.category)} 0%, ${getCategoryColor(item.category, 0.8)} 100%)`,
             position: 'relative',
             overflow: 'hidden'
           }}>
-            {/* Beautiful Background Pattern */}
+            {/* Simple Background Pattern */}
             <div style={{
               position: 'absolute',
-              top: '-50%',
-              left: '-50%',
-              width: '200%',
-              height: '200%',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
               background: `
-                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 60%, rgba(255,255,255,0.05) 0%, transparent 50%)
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2) 0%, transparent 50%)
               `,
-              animation: 'float 6s ease-in-out infinite'
+              opacity: 0.6
             }} />
             
             {/* Main Icon */}
             <div style={{
-              fontSize: '64px',
-              color: 'rgba(255, 255, 255, 0.9)',
-              textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              fontSize: '48px',
+              color: 'rgba(75, 85, 99, 0.8)',
+              textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
               zIndex: 2,
               position: 'relative'
             }}>
               {getCategoryEmoji(item.category)}
           </div>
           
-            {/* Decorative Elements */}
-            <div style={{
-              position: 'absolute',
-              top: '20px',
-              right: '20px',
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.2)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)'
-            }} />
-            <div style={{
-              position: 'absolute',
-              bottom: '20px',
-              left: '20px',
-              width: '30px',
-              height: '30px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.15)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
-            }} />
-            
             {/* Category Name Overlay */}
             <div style={{
               position: 'absolute',
@@ -883,16 +860,16 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
 // Helper function to get category-specific colors
 const getCategoryColor = (category, opacity = 1) => {
   const colors = {
-    'Pizza': `rgba(239, 68, 68, ${opacity})`,      // Red
-    'Burgers': `rgba(249, 115, 22, ${opacity})`,   // Orange
-    'Salads': `rgba(34, 197, 94, ${opacity})`,     // Green
-    'Pasta': `rgba(168, 85, 247, ${opacity})`,     // Purple
-    'Desserts': `rgba(236, 72, 153, ${opacity})`,  // Pink
-    'appetizer': `rgba(59, 130, 246, ${opacity})`, // Blue
-    'Tea': `rgba(245, 158, 11, ${opacity})`,       // Yellow
-    'Samosa': `rgba(16, 185, 129, ${opacity})`,    // Teal
-    'Main Course': `rgba(107, 114, 128, ${opacity})`, // Gray
-    'default': `rgba(99, 102, 241, ${opacity})`    // Indigo
+    'Pizza': `rgba(254, 226, 226, ${opacity})`,      // Light Red
+    'Burgers': `rgba(255, 237, 213, ${opacity})`,   // Light Orange
+    'Salads': `rgba(220, 252, 231, ${opacity})`,     // Light Green
+    'Pasta': `rgba(243, 232, 255, ${opacity})`,     // Light Purple
+    'Desserts': `rgba(252, 231, 243, ${opacity})`,  // Light Pink
+    'appetizer': `rgba(219, 234, 254, ${opacity})`, // Light Blue
+    'Tea': `rgba(254, 249, 195, ${opacity})`,       // Light Yellow
+    'Samosa': `rgba(204, 251, 241, ${opacity})`,    // Light Teal
+    'Main Course': `rgba(243, 244, 246, ${opacity})`, // Light Gray
+    'default': `rgba(238, 242, 255, ${opacity})`    // Light Indigo
   };
   return colors[category] || colors['default'];
 };
@@ -902,70 +879,178 @@ const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability
   const spiceInfo = getSpiceLevel(item.spiceLevel);
   
   return (
-    <div className={`flex items-center gap-4 p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 ${!item.isAvailable ? 'opacity-60' : ''}`}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '12px',
+      borderBottom: '1px solid #e5e7eb',
+      backgroundColor: item.isAvailable ? '#ffffff' : '#f9fafb',
+      opacity: item.isAvailable ? 1 : 0.6,
+      transition: 'all 0.2s ease'
+    }}>
+      {/* Top Row - Icon, Name, Price */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        marginBottom: '8px'
+      }}>
       {/* Icon */}
-      <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl ${
-        item.isVeg ? 'bg-green-100' : 'bg-red-100'
-      }`}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '18px',
+          backgroundColor: item.isVeg ? '#dcfce7' : '#fef2f2'
+        }}>
         {getCategoryEmoji(item.category)}
       </div>
       
       {/* Veg indicator */}
-      <div className={`w-4 h-4 rounded-full border-2 ${item.isVeg ? 'border-green-500' : 'border-red-500'} flex items-center justify-center`}>
-        <div className={`w-2 h-2 ${item.isVeg ? 'bg-green-500 rounded-sm' : 'bg-red-500 rounded-full'}`}></div>
+        <div style={{
+          width: '16px',
+          height: '16px',
+          borderRadius: '50%',
+          border: `2px solid ${item.isVeg ? '#22c55e' : '#ef4444'}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{
+            width: '8px',
+            height: '8px',
+            backgroundColor: item.isVeg ? '#22c55e' : '#ef4444',
+            borderRadius: item.isVeg ? '2px' : '50%'
+          }}></div>
       </div>
       
       {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <h4 className={`font-semibold text-gray-900 truncate ${!item.isAvailable ? 'line-through' : ''}`}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginBottom: '2px',
+            flexWrap: 'wrap'
+          }}>
+            <h4 style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#1f2937',
+              margin: 0,
+              textDecoration: item.isAvailable ? 'none' : 'line-through'
+            }}>
             {item.name}
           </h4>
-          <span className="text-xs" style={{ color: spiceInfo.color }}>
+            <span style={{ 
+              fontSize: '10px', 
+              color: spiceInfo.color 
+            }}>
             {spiceInfo.icon}
           </span>
-          <span className="bg-gray-800 text-white px-2 py-1 rounded text-xs font-bold">
+            <span style={{
+              backgroundColor: '#374151',
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}>
             {item.shortCode}
           </span>
           {!item.isAvailable && (
-            <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+              <span style={{
+                backgroundColor: '#ef4444',
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '10px',
+                fontWeight: 'bold'
+              }}>
               OUT
             </span>
           )}
         </div>
-        <p className="text-sm text-gray-600 truncate">
+          <p style={{
+            fontSize: '12px',
+            color: '#6b7280',
+            margin: 0,
+            lineHeight: '1.4'
+          }}>
           {item.description || 'Delicious dish prepared with finest ingredients'}
         </p>
       </div>
       
       {/* Price */}
-      <div className="text-lg font-bold text-red-500 min-w-0">
+        <div style={{
+          fontSize: '16px',
+          fontWeight: 'bold',
+          color: '#ef4444',
+          minWidth: 'fit-content'
+        }}>
         ₹{item.price}
+        </div>
       </div>
       
-      {/* Actions */}
-      <div className="flex gap-1">
+      {/* Bottom Row - Actions */}
+      <div style={{
+        display: 'flex',
+        gap: '6px',
+        justifyContent: 'flex-end'
+      }}>
         <button
           onClick={() => onEdit(item)}
-          className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200"
+          style={{
+            padding: '6px',
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
           title="Edit"
         >
           <FaEdit size={10} />
         </button>
         <button
           onClick={() => onToggleAvailability(item.id, item.isAvailable)}
-          className={`p-2 rounded transition-colors duration-200 ${
-            item.isAvailable 
-              ? 'bg-orange-500 text-white hover:bg-orange-600' 
-              : 'bg-green-500 text-white hover:bg-green-600'
-          }`}
+          style={{
+            padding: '6px',
+            backgroundColor: item.isAvailable ? '#f97316' : '#22c55e',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
           title={item.isAvailable ? 'Mark as Out of Stock' : 'Mark as Available'}
         >
           {item.isAvailable ? <FaMinus size={10} /> : <FaCheck size={10} />}
         </button>
         <button
           onClick={() => onDelete(item.id)}
-          className="p-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200"
+          style={{
+            padding: '6px',
+            backgroundColor: '#ef4444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
           title="Delete"
         >
           <FaTrash size={10} />
@@ -1384,6 +1469,7 @@ const MenuManagement = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -1863,12 +1949,14 @@ const MenuManagement = () => {
           <div style={{ 
             display: 'flex', 
             justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px'
+            alignItems: 'flex-start',
+            marginBottom: '16px',
+            flexWrap: 'wrap',
+            gap: '12px'
           }}>
               <div>
               <h1 style={{
-                fontSize: '24px',
+                fontSize: '20px',
                 fontWeight: '700',
                 color: '#1f2937',
                 margin: 0,
@@ -1877,7 +1965,7 @@ const MenuManagement = () => {
 {t('menu.title')}
                 </h1>
               <p style={{
-                fontSize: '14px',
+                fontSize: '12px',
                 color: '#6b7280',
                 margin: 0
               }}>
@@ -1888,23 +1976,27 @@ const MenuManagement = () => {
             {/* Action Buttons */}
             <div style={{
               display: 'flex',
-              gap: '8px'
+              gap: '6px',
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end'
             }}>
             <button
                 onClick={() => setShowBulkUpload(true)}
                 style={{
-                  padding: '8px 16px',
+                  padding: '6px 12px',
                   background: 'linear-gradient(135deg, #f97316, #ef4444)',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   fontWeight: '600',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '3px',
+                  whiteSpace: 'nowrap',
+                  minWidth: 'auto'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-1px)';
@@ -1913,24 +2005,26 @@ const MenuManagement = () => {
                   e.target.style.transform = 'translateY(0)';
                 }}
               >
-                <FaCloudUploadAlt size={12} />
+                <FaCloudUploadAlt size={10} />
 {t('menu.bulkUpload')}
             </button>
             <button
               onClick={() => setShowAddForm(true)}
                 style={{
-                  padding: '8px 16px',
+                  padding: '6px 12px',
                   background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   fontWeight: '600',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '3px',
+                  whiteSpace: 'nowrap',
+                  minWidth: 'auto'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-1px)';
@@ -1939,8 +2033,36 @@ const MenuManagement = () => {
                   e.target.style.transform = 'translateY(0)';
                 }}
               >
-                <FaPlus size={12} />
+                <FaPlus size={10} />
 {t('menu.addNewDish')}
+            </button>
+            <button
+              onClick={() => setShowQRCodeModal(true)}
+              style={{
+                padding: '6px 12px',
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontWeight: '600',
+                fontSize: '12px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                whiteSpace: 'nowrap',
+                minWidth: 'auto'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <FaQrcode size={10} />
+              QR Code
             </button>
           </div>
         </div>
@@ -1956,12 +2078,11 @@ const MenuManagement = () => {
         }}>
           <div style={{
             display: 'flex',
-            gap: '12px',
-            alignItems: 'center',
-            flexWrap: 'wrap'
+            flexDirection: 'column',
+            gap: '12px'
           }}>
             {/* Search Bar */}
-            <div style={{ flex: 1, minWidth: '250px' }}>
+            <div style={{ width: '100%' }}>
               <div style={{ position: 'relative' }}>
                 <FaSearch style={{
                   position: 'absolute',
@@ -2002,7 +2123,8 @@ const MenuManagement = () => {
             <div style={{
               display: 'flex',
               gap: '8px',
-              flexWrap: 'wrap'
+              flexWrap: 'wrap',
+              justifyContent: 'space-between'
             }}>
               {/* Veg Filter */}
               <CustomDropdown
@@ -2014,7 +2136,7 @@ const MenuManagement = () => {
                   { value: 'non-veg', label: t('common.nonVeg'), icon: '🍖' }
                 ]}
                 placeholder={t('menu.allTypes')}
-                style={{ minWidth: '120px' }}
+                style={{ flex: 1, minWidth: '120px' }}
               />
 
               {/* Category Filter */}
@@ -2030,7 +2152,7 @@ const MenuManagement = () => {
                   }))
                 ]}
                 placeholder={t('menu.allCategories')}
-                style={{ minWidth: '140px' }}
+                style={{ flex: 1, minWidth: '140px' }}
               />
               
               {/* View Toggle */}
@@ -2038,23 +2160,24 @@ const MenuManagement = () => {
                 display: 'flex',
                 backgroundColor: '#f3f4f6',
                 borderRadius: '8px',
-                padding: '2px'
+                padding: '2px',
+                flexShrink: 0
               }}>
               <button
                 onClick={() => setViewMode('grid')}
                   style={{
-                    padding: '8px 12px',
+                    padding: '6px 10px',
                     borderRadius: '6px',
                     border: 'none',
                     backgroundColor: viewMode === 'grid' ? '#ef4444' : 'transparent',
                     color: viewMode === 'grid' ? 'white' : '#6b7280',
                     fontWeight: '500',
-                    fontSize: '12px',
+                    fontSize: '11px',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px'
+                    gap: '3px'
                   }}
                 >
                   <FaTh size={12} />
@@ -2063,18 +2186,18 @@ const MenuManagement = () => {
               <button
                 onClick={() => setViewMode('list')}
                   style={{
-                    padding: '8px 12px',
+                    padding: '6px 10px',
                     borderRadius: '6px',
                     border: 'none',
                     backgroundColor: viewMode === 'list' ? '#ef4444' : 'transparent',
                     color: viewMode === 'list' ? 'white' : '#6b7280',
                     fontWeight: '500',
-                    fontSize: '12px',
+                    fontSize: '11px',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px'
+                    gap: '3px'
                   }}
                 >
                   <FaList size={12} />
@@ -2700,6 +2823,14 @@ const MenuManagement = () => {
         restaurantId={currentRestaurant?.id}
         onMenuItemsAdded={handleMenuItemsAdded}
         currentMenuItems={menuItems}
+      />
+
+      {/* QR Code Modal */}
+      <QRCodeModal
+        isOpen={showQRCodeModal}
+        onClose={() => setShowQRCodeModal(false)}
+        restaurantId={currentRestaurant?.id}
+        restaurantName={currentRestaurant?.name}
       />
 
       {/* CSS Animations */}
