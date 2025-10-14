@@ -111,21 +111,24 @@ function RestaurantPOSContent() {
       console.log('Current URL:', window.location.href);
       console.log('Current hostname:', window.location.hostname);
       
-      if (!apiClient.isAuthenticated()) {
-        console.log('🚫 User not authenticated, redirecting to login');
-        router.replace('/login');
-        return;
-      }
-      
-      const user = apiClient.getUser();
-      if (!user) {
-        console.log('🚫 No user data found, redirecting to login');
-        router.replace('/login');
-        return;
-      }
-      
-      console.log('✅ User authenticated:', user.role);
-      console.log('User data:', user);
+      // Add a small delay to allow token to be stored after redirect
+      setTimeout(() => {
+        if (!apiClient.isAuthenticated()) {
+          console.log('🚫 User not authenticated, redirecting to login');
+          router.replace('/login');
+          return;
+        }
+        
+        const user = apiClient.getUser();
+        if (!user) {
+          console.log('🚫 No user data found, redirecting to login');
+          router.replace('/login');
+          return;
+        }
+        
+        console.log('✅ User authenticated:', user.role);
+        console.log('User data:', user);
+      }, 100);
     };
 
     checkAuth();
@@ -307,9 +310,9 @@ function RestaurantPOSContent() {
       // Load restaurants with better error handling
       console.log('🏢 Loading restaurants...');
       try {
-        const restaurantsResponse = await apiClient.getRestaurants();
+      const restaurantsResponse = await apiClient.getRestaurants();
         console.log('🏢 Restaurants loaded:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
-        setRestaurants(restaurantsResponse.restaurants || []);
+      setRestaurants(restaurantsResponse.restaurants || []);
       } catch (restaurantError) {
         console.error('❌ Failed to load restaurants:', restaurantError);
         
@@ -427,10 +430,10 @@ function RestaurantPOSContent() {
 
   // Load initial data
   useEffect(() => {
-    // Add a small delay to ensure token is properly stored after login redirect
+    // Add a delay to ensure token is properly stored after login redirect
     const timer = setTimeout(() => {
       loadInitialData();
-    }, 200);
+    }, 500);
     
     return () => clearTimeout(timer);
   }, [loadInitialData]);

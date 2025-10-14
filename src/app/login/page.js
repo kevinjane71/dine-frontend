@@ -256,10 +256,23 @@ const Login = () => {
             // Check if it's a subdomain redirect
             if (data.redirectTo.includes('.dineopen.com') || data.redirectTo.includes('.localhost')) {
               console.log('🌐 Subdomain redirect detected, navigating directly');
-              // Add a small delay to ensure localStorage is saved
-              setTimeout(() => {
-                window.location.href = data.redirectTo;
-              }, 100);
+              
+              // Ensure token is properly stored before redirect
+              const ensureTokenStored = () => {
+                const storedToken = localStorage.getItem('authToken');
+                const storedUser = localStorage.getItem('user');
+                
+                if (storedToken && storedUser) {
+                  console.log('✅ Token and user data confirmed stored, redirecting...');
+                  window.location.href = data.redirectTo;
+                } else {
+                  console.log('⏳ Token not yet stored, waiting...');
+                  setTimeout(ensureTokenStored, 50);
+                }
+              };
+              
+              // Start checking after a small delay
+              setTimeout(ensureTokenStored, 100);
             } else {
               router.replace(data.redirectTo);
             }
