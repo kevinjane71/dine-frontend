@@ -3,6 +3,12 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
 class ApiClient {
   constructor() {
     this.baseURL = API_BASE_URL;
+    // In-memory cache to prevent race conditions
+    this.memoryCache = {
+      authToken: null,
+      user: null,
+      lastSync: 0
+    };
   }
 
   // Helper to detect if we're in subdomain mode
@@ -165,28 +171,73 @@ class ApiClient {
   }
 
   getToken() {
+    // First try in-memory cache (fastest, prevents race conditions)
+    if (this.memoryCache.authToken) {
+      console.log('🔍 getToken() from memory cache:', {
+        hasToken: true,
+        tokenLength: this.memoryCache.authToken.length,
+        tokenPreview: this.memoryCache.authToken.substring(0, 20) + '...',
+        source: 'memory'
+      });
+      return this.memoryCache.authToken;
+    }
+
+    // Fallback to localStorage
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('authToken');
-      console.log('🔍 getToken() called:', {
+      
+      // Update memory cache if found in localStorage
+      if (token) {
+        this.memoryCache.authToken = token;
+        this.memoryCache.lastSync = Date.now();
+      }
+      
+      console.log('🔍 getToken() from localStorage:', {
         hasWindow: typeof window !== 'undefined',
         hasToken: !!token,
         tokenLength: token ? token.length : 0,
         tokenPreview: token ? token.substring(0, 20) + '...' : 'null',
-        localStorageKeys: Object.keys(localStorage)
+        localStorageKeys: Object.keys(localStorage),
+        source: 'localStorage'
       });
       return token;
     }
+    
     console.log('🔍 getToken() called: No window object');
     return null;
   }
 
   setToken(token) {
+    // Update memory cache immediately (prevents race conditions)
+    this.memoryCache.authToken = token;
+    this.memoryCache.lastSync = Date.now();
+    
+    // Also update localStorage for persistence
     if (typeof window !== 'undefined') {
       localStorage.setItem('authToken', token);
+      console.log('🔑 Token set in both memory cache and localStorage:', {
+        tokenLength: token.length,
+        tokenPreview: token.substring(0, 20) + '...',
+        memoryCacheUpdated: true,
+        localStorageUpdated: true
+      });
+    } else {
+      console.log('🔑 Token set in memory cache only (no window):', {
+        tokenLength: token.length,
+        tokenPreview: token.substring(0, 20) + '...',
+        memoryCacheUpdated: true,
+        localStorageUpdated: false
+      });
     }
   }
 
   clearToken() {
+    // Clear memory cache immediately
+    this.memoryCache.authToken = null;
+    this.memoryCache.user = null;
+    this.memoryCache.lastSync = 0;
+    
+    // Also clear localStorage for persistence
     if (typeof window !== 'undefined') {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
@@ -218,21 +269,79 @@ class ApiClient {
       
       // Clear session storage as well
       sessionStorage.clear();
+      console.log('🧹 Token cleared from both memory cache and localStorage');
+    } else {
+      console.log('🧹 Token cleared from memory cache only (no window)');
     }
   }
 
   // Authentication utilities
   isAuthenticated() {
+    // First check memory cache (fastest)
+    if (this.memoryCache.authToken && this.memoryCache.user) {
+      return true;
+    }
+    
+    // Fallback to localStorage
     if (typeof window === 'undefined') return false;
     const token = localStorage.getItem('authToken');
     const user = localStorage.getItem('user');
+    
+    // Update memory cache if found in localStorage
+    if (token && user) {
+      this.memoryCache.authToken = token;
+      this.memoryCache.user = user;
+      this.memoryCache.lastSync = Date.now();
+    }
+    
     return !!(token && user);
   }
 
   getUser() {
+    // First try memory cache (fastest)
+    if (this.memoryCache.user) {
+      return JSON.parse(this.memoryCache.user);
+    }
+    
+    // Fallback to localStorage
     if (typeof window === 'undefined') return null;
     const userData = localStorage.getItem('user');
+    
+    // Update memory cache if found in localStorage
+    if (userData) {
+      this.memoryCache.user = userData;
+      this.memoryCache.lastSync = Date.now();
+    }
+    
     return userData ? JSON.parse(userData) : null;
+  }
+
+  setUser(user) {
+    const userString = JSON.stringify(user);
+    
+    // Update memory cache immediately (prevents race conditions)
+    this.memoryCache.user = userString;
+    this.memoryCache.lastSync = Date.now();
+    
+    // Also update localStorage for persistence
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', userString);
+      console.log('👤 User set in both memory cache and localStorage:', {
+        userId: user.id,
+        userName: user.name,
+        userRole: user.role,
+        memoryCacheUpdated: true,
+        localStorageUpdated: true
+      });
+    } else {
+      console.log('👤 User set in memory cache only (no window):', {
+        userId: user.id,
+        userName: user.name,
+        userRole: user.role,
+        memoryCacheUpdated: true,
+        localStorageUpdated: false
+      });
+    }
   }
 
   getRedirectPath() {

@@ -113,21 +113,38 @@ function RestaurantPOSContent() {
       
       // Add a small delay to allow token to be stored after redirect
       setTimeout(() => {
+        const token = apiClient.getToken();
+        const user = apiClient.getUser();
+        const isFirstTimeUser = localStorage.getItem('isFirstTimeUser') === 'true';
+        
+        console.log('🔍 Auth check details:', {
+          hasToken: !!token,
+          hasUser: !!user,
+          isFirstTimeUser,
+          tokenPreview: token ? token.substring(0, 20) + '...' : 'null'
+        });
+        
+        // For first-time users, be more lenient - they might still be in the process of being created
+        if (isFirstTimeUser) {
+          console.log('🆕 First-time user detected, skipping strict auth check');
+          return; // Don't redirect, let loadInitialData handle the flow
+        }
+        
         if (!apiClient.isAuthenticated()) {
           console.log('🚫 User not authenticated, redirecting to login');
           router.replace('/login');
           return;
         }
         
-        const user = apiClient.getUser();
-        if (!user) {
+        const userData = apiClient.getUser();
+        if (!userData) {
           console.log('🚫 No user data found, redirecting to login');
           router.replace('/login');
           return;
         }
         
-        console.log('✅ User authenticated:', user.role);
-        console.log('User data:', user);
+        console.log('✅ User authenticated:', userData.role);
+        console.log('User data:', userData);
         
         // Check if we need to redirect to subdomain after login
         // But don't redirect immediately - let the data loading complete first
@@ -144,9 +161,9 @@ function RestaurantPOSContent() {
 
   // Load user data
   useEffect(() => {
-    const userData = localStorage.getItem('user');
+    const userData = apiClient.getUser();
     if (userData) {
-      setUser(JSON.parse(userData));
+      setUser(userData);
     }
   }, []);
 
@@ -260,12 +277,12 @@ function RestaurantPOSContent() {
     }
     
     // Check if user needs onboarding
-    const userData = localStorage.getItem('user');
+    const userData = apiClient.getUser();
     const onboardingSkipped = localStorage.getItem('onboarding_skipped');
     const hasCompletedOnboarding = localStorage.getItem('onboarding_completed');
     
     if (userData && !onboardingSkipped && !hasCompletedOnboarding) {
-      const user = JSON.parse(userData);
+      const user = userData;
       // Show onboarding for owners who haven't set up a restaurant
       if (user.role === 'owner' || !user.role) {
         setIsFirstTimeUser(true);
@@ -299,12 +316,12 @@ function RestaurantPOSContent() {
       console.log('🔄 Loading initial data...');
       
       // Always use user-based approach - fetch restaurants based on user's login ID
-      const userData = localStorage.getItem('user');
-      const user = userData ? JSON.parse(userData) : null;
+      const userData = apiClient.getUser();
+      const user = userData;
       console.log('👤 Current user:', user?.name, user?.role, 'Restaurant ID:', user?.restaurantId);
       
       // Check authentication token
-      const token = localStorage.getItem('authToken');
+      const token = apiClient.getToken();
       console.log('🔑 Auth token available:', !!token);
       console.log('🔑 Token preview:', token ? token.substring(0, 20) + '...' : 'null');
       
@@ -317,8 +334,10 @@ function RestaurantPOSContent() {
       
       // Load restaurants with better error handling
       console.log('🏢 Loading restaurants...');
+      let restaurantsResponse = null;
+      
       try {
-        const restaurantsResponse = await apiClient.getRestaurants();
+        restaurantsResponse = await apiClient.getRestaurants();
         console.log('🏢 Restaurants loaded:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
         setRestaurants(restaurantsResponse.restaurants || []);
       } catch (restaurantError) {
@@ -338,7 +357,7 @@ function RestaurantPOSContent() {
         
         // Set empty restaurants array to prevent further errors
         setRestaurants([]);
-        return;
+        restaurantsResponse = { restaurants: [] }; // Set empty response to prevent further errors
       }
       
       let restaurant = null;
@@ -350,11 +369,11 @@ function RestaurantPOSContent() {
           restaurant = user.restaurant;
         } else {
           // Fallback to finding restaurant in the list
-        restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
+          restaurant = restaurantsResponse?.restaurants?.find(r => r.id === user.restaurantId);
         }
       }
       // For owners or customers (legacy), use selected restaurant from localStorage or first restaurant
-      else if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
+      else if (restaurantsResponse?.restaurants && restaurantsResponse.restaurants.length > 0) {
         const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
         restaurant = restaurantsResponse.restaurants.find(r => r.id === savedRestaurantId) || 
                     restaurantsResponse.restaurants[0];
@@ -875,7 +894,7 @@ function RestaurantPOSContent() {
       setError('');
 
       // Get current user/staff info
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const currentUser = apiClient.getUser() || {};
       
       // Check if table number changed in edit mode
       const tableToUse = tableNumber || selectedTable?.number;

@@ -211,9 +211,9 @@ const Login = () => {
         const firebaseData = await firebaseResponse.json();
         
         if (firebaseResponse.ok) {
-          // Store auth token and user data
-          localStorage.setItem('authToken', firebaseData.token);
-          localStorage.setItem('user', JSON.stringify(firebaseData.user));
+          // Store auth token and user data using API client methods
+          apiClient.setToken(firebaseData.token);
+          apiClient.setUser(firebaseData.user);
           
           // Handle redirect after successful login
           if (firebaseData.redirectTo) {
@@ -240,9 +240,9 @@ const Login = () => {
         const data = await response.json();
         
         if (response.ok) {
-          // Store auth token in localStorage
-          localStorage.setItem('authToken', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
+          // Store auth token and user data using API client methods
+          apiClient.setToken(data.token);
+          apiClient.setUser(data.user);
           
           // Store first-time user flag
           if (data.isNewUser) {
@@ -360,9 +360,9 @@ const Login = () => {
       const googleData = await googleResponse.json();
       
       if (googleResponse.ok) {
-        // Store auth token and user data
-        localStorage.setItem('authToken', googleData.token);
-        localStorage.setItem('user', JSON.stringify(googleData.user));
+        // Store auth token and user data using API client methods
+        apiClient.setToken(googleData.token);
+        apiClient.setUser(googleData.user);
         
         console.log('Google login successful:', googleData);
         console.log('Is new user:', googleData.isNewUser);
@@ -464,7 +464,7 @@ const Login = () => {
       const data = await response.json();
       
       if (response.ok) {
-        localStorage.setItem('authToken', data.token);
+        apiClient.setToken(data.token);
         
         // Store user data with restaurant and owner info
         const userData = {
@@ -472,7 +472,7 @@ const Login = () => {
           restaurant: data.restaurant,
           owner: data.owner
         };
-        localStorage.setItem('user', JSON.stringify(userData));
+        apiClient.setUser(userData);
         
         // Staff goes to main POS page
         router.replace('/dashboard');
