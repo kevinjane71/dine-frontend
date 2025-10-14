@@ -117,7 +117,7 @@ const RestaurantNameModal = ({ isOpen, onClose, onSubmit, onSkip }) => {
             lineHeight: '1.6',
             margin: '0 0 8px 0'
           }}>
-            Let's personalize your restaurant experience
+            Let&apos;s personalize your restaurant experience
           </p>
         </div>
 
