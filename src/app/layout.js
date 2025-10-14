@@ -57,9 +57,7 @@ export default function RootLayout({ children }) {
         </script>
       </head>
       <body suppressHydrationWarning={true}>
-        <RestaurantProvider>
-          {children}
-        </RestaurantProvider>
+        {children}
         <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
       </body>
     </html>
