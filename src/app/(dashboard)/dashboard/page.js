@@ -297,11 +297,33 @@ function RestaurantPOSContent() {
       console.log('🔑 Auth token available:', !!token);
       console.log('🔑 Token preview:', token ? token.substring(0, 20) + '...' : 'null');
       
-      // Load restaurants
+      // Verify token is valid before making API calls
+      if (!token) {
+        console.error('❌ No auth token found, redirecting to login');
+        router.replace('/login');
+        return;
+      }
+      
+      // Load restaurants with better error handling
       console.log('🏢 Loading restaurants...');
-      const restaurantsResponse = await apiClient.getRestaurants();
-      console.log('🏢 Restaurants loaded:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
-      setRestaurants(restaurantsResponse.restaurants || []);
+      try {
+        const restaurantsResponse = await apiClient.getRestaurants();
+        console.log('🏢 Restaurants loaded:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
+        setRestaurants(restaurantsResponse.restaurants || []);
+      } catch (restaurantError) {
+        console.error('❌ Failed to load restaurants:', restaurantError);
+        
+        // If it's a 401 error, redirect to login
+        if (restaurantError.message?.includes('401') || restaurantError.message?.includes('Unauthorized')) {
+          console.log('🔒 Authentication failed, redirecting to login');
+          router.replace('/login');
+          return;
+        }
+        
+        // For other errors, show error message
+        setError(`Failed to load restaurants: ${restaurantError.message}`);
+        return;
+      }
       
       let restaurant = null;
       
@@ -405,7 +427,12 @@ function RestaurantPOSContent() {
 
   // Load initial data
   useEffect(() => {
-    loadInitialData();
+    // Add a small delay to ensure token is properly stored after login redirect
+    const timer = setTimeout(() => {
+      loadInitialData();
+    }, 200);
+    
+    return () => clearTimeout(timer);
   }, [loadInitialData]);
 
   // Listen for restaurant changes from navigation

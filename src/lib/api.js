@@ -93,12 +93,16 @@ class ApiClient {
     console.log('🌐 API Request:', { 
       originalEndpoint: endpoint, 
       modifiedEndpoint, 
+      url,
       isSubdomainMode: this.isSubdomainMode(),
       hasToken: !!token, 
       method: options.method || 'GET' 
     });
     if (token) {
       console.log('🔑 Token preview:', token.substring(0, 20) + '...');
+      console.log('🔑 Token length:', token.length);
+    } else {
+      console.log('❌ No token available for request');
     }
 
     const config = {
@@ -130,13 +134,32 @@ class ApiClient {
       const response = await fetch(url, config);
       const data = await response.json();
 
+      console.log('📥 API Response:', {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        hasData: !!data
+      });
+
       if (!response.ok) {
+        console.error('❌ API Error Response:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          error: data.message || data.error || 'API request failed',
+          data
+        });
         throw new Error(data.message || data.error || 'API request failed');
       }
 
       return data;
     } catch (error) {
-      console.error('API Error:', error);
+      console.error('❌ API Request Failed:', {
+        url,
+        error: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   }
