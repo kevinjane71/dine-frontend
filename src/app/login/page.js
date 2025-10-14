@@ -215,41 +215,17 @@ const Login = () => {
           apiClient.setToken(firebaseData.token);
           apiClient.setUser(firebaseData.user);
           
-          // Store first-time user flag
-          if (firebaseData.isNewUser) {
-            localStorage.setItem('isFirstTimeUser', 'true');
-            console.log('🆕 First-time user detected (Firebase)');
-          }
-          
           console.log('🔑 Firebase Token stored:', !!firebaseData.token);
           console.log('👤 Firebase User data stored:', !!firebaseData.user);
           console.log('🏢 Firebase User role:', firebaseData.user?.role);
           console.log('🏢 Firebase Has restaurants:', firebaseData.hasRestaurants);
           
-          // Handle redirect after successful login
+          // Always redirect based on backend response
           if (firebaseData.redirectTo) {
-            console.log('🏢 Firebase OTP login: Redirecting to:', firebaseData.redirectTo);
-            
-            // Check if it's a subdomain redirect
-            if (firebaseData.redirectTo.includes('.dineopen.com') || firebaseData.redirectTo.includes('.localhost')) {
-              console.log('🌐 Firebase Subdomain redirect detected');
-              
-              // Store subdomain info for dashboard to handle
-              if (firebaseData.restaurants && firebaseData.restaurants.length > 0) {
-                localStorage.setItem('targetSubdomain', firebaseData.restaurants[0].subdomain);
-                console.log('🎯 Firebase Target subdomain stored:', firebaseData.restaurants[0].subdomain);
-              }
-              
-              // Redirect directly to the subdomain URL
-              console.log('🌐 Firebase Redirecting directly to subdomain:', firebaseData.redirectTo);
-              window.location.href = firebaseData.redirectTo;
-            } else {
-              // For same-domain redirects, use Next.js router (no page reload)
-              console.log('🏠 Firebase Same-domain redirect, using router');
-              router.replace(firebaseData.redirectTo);
-            }
+            console.log('🌐 Firebase Redirecting to:', firebaseData.redirectTo);
+            window.location.href = firebaseData.redirectTo;
           } else {
-            // Default redirect to dashboard
+            console.log('⚠️ Firebase No redirect URL provided, using default');
             router.replace('/dashboard');
           }
         } else {
@@ -273,42 +249,17 @@ const Login = () => {
           apiClient.setToken(data.token);
           apiClient.setUser(data.user);
           
-          // Store first-time user flag
-          if (data.isNewUser) {
-            localStorage.setItem('isFirstTimeUser', 'true');
-            console.log('🆕 First-time user detected');
-          }
-          
           console.log('🔑 Token stored:', !!data.token);
           console.log('👤 User data stored:', !!data.user);
           console.log('🏢 User role:', data.user?.role);
           console.log('🏢 Has restaurants:', data.hasRestaurants);
           
-          // Handle redirect after successful login
+          // Always redirect based on backend response
           if (data.redirectTo) {
-            console.log('🏢 Backend OTP login: Redirecting to:', data.redirectTo);
-            
-            // Check if it's a subdomain redirect
-            if (data.redirectTo.includes('.dineopen.com') || data.redirectTo.includes('.localhost')) {
-              console.log('🌐 Subdomain redirect detected for existing user');
-              
-              // Store subdomain info for dashboard to handle
-              if (data.defaultRestaurant && data.defaultRestaurant.subdomain) {
-                localStorage.setItem('targetSubdomain', data.defaultRestaurant.subdomain);
-                console.log('🎯 Target subdomain stored:', data.defaultRestaurant.subdomain);
-              }
-              
-              // Redirect directly to the subdomain URL
-              console.log('🌐 Backend OTP Redirecting directly to subdomain:', data.redirectTo);
-              window.location.href = data.redirectTo;
-            } else {
-              // For same-domain redirects (including first-time users), use Next.js router (no page reload)
-              console.log('🏠 Same-domain redirect (first-time user or no subdomain), using router');
-              router.replace(data.redirectTo);
-            }
+            console.log('🌐 Backend OTP Redirecting to:', data.redirectTo);
+            window.location.href = data.redirectTo;
           } else {
-            // Default redirect to dashboard
-            console.log('🏢 Backend OTP login: Default redirect to dashboard');
+            console.log('⚠️ Backend OTP No redirect URL provided, using default');
             router.replace('/dashboard');
           }
         } else {
@@ -390,42 +341,18 @@ const Login = () => {
         apiClient.setToken(googleData.token);
         apiClient.setUser(googleData.user);
         
-        // Store first-time user flag
-        if (googleData.isNewUser) {
-          localStorage.setItem('isFirstTimeUser', 'true');
-          console.log('🆕 First-time user detected (Google)');
-        }
-        
         console.log('🔑 Google Token stored:', !!googleData.token);
         console.log('👤 Google User data stored:', !!googleData.user);
         console.log('🏢 Google User role:', googleData.user?.role);
         console.log('🏢 Google Has restaurants:', googleData.hasRestaurants);
         console.log('🏢 Google Restaurants count:', googleData.restaurants?.length || 0);
         
-        // Handle redirect after successful login
+        // Always redirect based on backend response
         if (googleData.redirectTo) {
-          console.log('🏢 Google login: Redirecting to:', googleData.redirectTo);
-          
-          // Check if it's a subdomain redirect
-          if (googleData.redirectTo.includes('.dineopen.com') || googleData.redirectTo.includes('.localhost')) {
-            console.log('🌐 Google Subdomain redirect detected');
-            
-            // Store subdomain info for dashboard to handle
-            if (googleData.defaultRestaurant && googleData.defaultRestaurant.subdomain) {
-              localStorage.setItem('targetSubdomain', googleData.defaultRestaurant.subdomain);
-              console.log('🎯 Google Target subdomain stored:', googleData.defaultRestaurant.subdomain);
-            }
-            
-            // Redirect directly to the subdomain URL
-            console.log('🌐 Google Redirecting directly to subdomain:', googleData.redirectTo);
-            window.location.href = googleData.redirectTo;
-          } else {
-            // For same-domain redirects, use Next.js router (no page reload)
-            console.log('🏠 Google Same-domain redirect, using router');
-            router.replace(googleData.redirectTo);
-          }
+          console.log('🌐 Google Redirecting to:', googleData.redirectTo);
+          window.location.href = googleData.redirectTo;
         } else {
-          // Default redirect to dashboard
+          console.log('⚠️ Google No redirect URL provided, using default');
           router.replace('/dashboard');
         }
       } else {
