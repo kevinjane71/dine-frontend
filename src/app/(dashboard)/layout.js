@@ -21,7 +21,14 @@ function DashboardLayoutContent({ children }) {
       const hostname = window.location.hostname;
       const isMainDomain = hostname === 'www.dineopen.com' || hostname === 'dineopen.com' || hostname === 'localhost:3002';
       
+      // Skip redirect check if we're already on a subdomain
       if (!isMainDomain) {
+        setRedirectChecked(true);
+        return;
+      }
+      
+      // Skip redirect for login page
+      if (pathname === '/login') {
         setRedirectChecked(true);
         return;
       }

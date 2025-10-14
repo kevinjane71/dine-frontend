@@ -30,6 +30,11 @@ export const RestaurantProvider = ({ children }) => {
   // Validate user access to subdomain restaurant
   useEffect(() => {
     const validateSubdomainAccess = async () => {
+      // Skip validation on login page
+      if (window.location.pathname === '/login') {
+        return;
+      }
+      
       if (!isSubdomainMode || !restaurant || !subdomain) {
         return;
       }
