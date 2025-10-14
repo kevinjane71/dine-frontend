@@ -179,10 +179,9 @@ function RestaurantPOSContent() {
 
   // Logout function
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('restaurant');
-    localStorage.removeItem('cart');
-    window.location.href = '/login';
+    apiClient.clearToken();
+    // Always redirect to main domain login after logout
+    window.location.href = 'https://www.dineopen.com/login';
   };
 
   // QR Code handler

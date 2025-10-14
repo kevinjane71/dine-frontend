@@ -3,15 +3,112 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
 class ApiClient {
   constructor() {
     this.baseURL = API_BASE_URL;
+    // In-memory cache to prevent race conditions
+    this.memoryCache = {
+      authToken: null,
+      user: null,
+      lastSync: 0
+    };
+  }
+
+  // Helper to detect if we're in subdomain mode
+  isSubdomainMode() {
+    if (typeof window === 'undefined') return false;
+    
+    const hostname = window.location.hostname;
+    let currentSubdomain = null;
+    
+    // Check for localhost subdomains (e.g., myrestaurant.localhost)
+    if (hostname.includes('localhost')) {
+      const localhostParts = hostname.split('.localhost');
+      if (localhostParts.length > 1) {
+        currentSubdomain = localhostParts[0];
+      }
+    }
+    // Check for production subdomains (e.g., restaurant-name.dineopen.com)
+    else {
+      const subdomainParts = hostname.split('.');
+      if (subdomainParts.length > 2) {
+        currentSubdomain = subdomainParts[0];
+      }
+    }
+    
+    const reservedSubdomains = ['www', 'api', 'admin', 'app', 'support', 'dineopen', 'localhost'];
+    return currentSubdomain && 
+           !reservedSubdomains.includes(currentSubdomain) && 
+           currentSubdomain.length > 2;
+  }
+
+  // Helper to get current subdomain
+  getCurrentSubdomain() {
+    if (typeof window === 'undefined') return null;
+    
+    const hostname = window.location.hostname;
+    
+    // Check for localhost subdomains (e.g., myrestaurant.localhost)
+    if (hostname.includes('localhost')) {
+      const localhostParts = hostname.split('.localhost');
+      if (localhostParts.length > 1) {
+        return localhostParts[0];
+      }
+    }
+    // Check for production subdomains (e.g., restaurant-name.dineopen.com)
+    else {
+      const subdomainParts = hostname.split('.');
+      if (subdomainParts.length > 2) {
+        return subdomainParts[0];
+      }
+    }
+    
+    return null;
+  }
+
+  // Helper to modify endpoint for subdomain mode
+  modifyEndpointForSubdomain(endpoint) {
+    if (!this.isSubdomainMode()) {
+      return endpoint; // No change needed for non-subdomain mode
+    }
+
+    // For subdomain mode, we can use cleaner endpoints without restaurantId
+    // The backend middleware will automatically inject the restaurantId from subdomain context
+    
+    // Remove restaurantId parameter from endpoints that support subdomain context
+    const subdomainAwareEndpoints = [
+      '/api/orders/:restaurantId',
+      '/api/tables/:restaurantId',
+      '/api/menu/:restaurantId',
+      '/api/customers/:restaurantId',
+      '/api/analytics/:restaurantId'
+    ];
+
+    for (const pattern of subdomainAwareEndpoints) {
+      if (endpoint.includes(pattern)) {
+        return endpoint.replace(pattern, pattern.replace('/:restaurantId', ''));
+      }
+    }
+
+    return endpoint; // Return original if no pattern matches
   }
 
   async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
+    // Modify endpoint for subdomain mode
+    const modifiedEndpoint = this.modifyEndpointForSubdomain(endpoint);
+    const url = `${this.baseURL}${modifiedEndpoint}`;
     const token = this.getToken();
     
-    console.log('🌐 API Request:', { endpoint, hasToken: !!token, method: options.method || 'GET' });
+    console.log('🌐 API Request:', { 
+      originalEndpoint: endpoint, 
+      modifiedEndpoint, 
+      url,
+      isSubdomainMode: this.isSubdomainMode(),
+      hasToken: !!token, 
+      method: options.method || 'GET' 
+    });
     if (token) {
       console.log('🔑 Token preview:', token.substring(0, 20) + '...');
+      console.log('🔑 Token length:', token.length);
+    } else {
+      console.log('❌ No token available for request');
     }
 
     const config = {
@@ -31,7 +128,8 @@ class ApiClient {
       hasAuth: !!config.headers.Authorization,
       authValue: config.headers.Authorization ? config.headers.Authorization.substring(0, 20) + '...' : 'none',
       allHeaders: Object.keys(config.headers),
-      optionsHeaders: options.headers ? Object.keys(options.headers) : 'none'
+      optionsHeaders: options.headers ? Object.keys(options.headers) : 'none',
+      tokenFromGetToken: token ? token.substring(0, 20) + '...' : 'null'
     });
 
     if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
@@ -42,40 +140,117 @@ class ApiClient {
       const response = await fetch(url, config);
       const data = await response.json();
 
+      console.log('📥 API Response:', {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        hasData: !!data
+      });
+
       if (!response.ok) {
+        console.error('❌ API Error Response:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          error: data.message || data.error || 'API request failed',
+          data
+        });
         throw new Error(data.message || data.error || 'API request failed');
       }
 
       return data;
     } catch (error) {
-      console.error('API Error:', error);
+      console.error('❌ API Request Failed:', {
+        url,
+        error: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   }
 
   getToken() {
+    // First try in-memory cache (fastest, prevents race conditions)
+    if (this.memoryCache.authToken) {
+      console.log('🔍 getToken() from memory cache:', {
+        hasToken: true,
+        tokenLength: this.memoryCache.authToken.length,
+        tokenPreview: this.memoryCache.authToken.substring(0, 20) + '...',
+        source: 'memory'
+      });
+      return this.memoryCache.authToken;
+    }
+
+    // Fallback to localStorage
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('authToken');
-      console.log('🔍 getToken() called:', {
+      
+      // Update memory cache if found in localStorage
+      if (token) {
+        this.memoryCache.authToken = token;
+        this.memoryCache.lastSync = Date.now();
+      }
+      
+      console.log('🔍 getToken() from localStorage:', {
         hasWindow: typeof window !== 'undefined',
         hasToken: !!token,
         tokenLength: token ? token.length : 0,
         tokenPreview: token ? token.substring(0, 20) + '...' : 'null',
-        localStorageKeys: Object.keys(localStorage)
+        localStorageKeys: Object.keys(localStorage),
+        source: 'localStorage'
       });
       return token;
     }
+    
     console.log('🔍 getToken() called: No window object');
     return null;
   }
 
   setToken(token) {
+    // Update memory cache immediately (prevents race conditions)
+    this.memoryCache.authToken = token;
+    this.memoryCache.lastSync = Date.now();
+    
+    // Also update localStorage for persistence with retry mechanism
     if (typeof window !== 'undefined') {
-      localStorage.setItem('authToken', token);
+      try {
+        localStorage.setItem('authToken', token);
+        console.log('🔑 Token set in both memory cache and localStorage:', {
+          tokenLength: token.length,
+          tokenPreview: token.substring(0, 20) + '...',
+          memoryCacheUpdated: true,
+          localStorageUpdated: true
+        });
+      } catch (error) {
+        console.error('❌ Failed to store token in localStorage:', error);
+        // Retry after a short delay
+        setTimeout(() => {
+          try {
+            localStorage.setItem('authToken', token);
+            console.log('🔑 Token retry successful');
+          } catch (retryError) {
+            console.error('❌ Token retry failed:', retryError);
+          }
+        }, 100);
+      }
+    } else {
+      console.log('🔑 Token set in memory cache only (no window):', {
+        tokenLength: token.length,
+        tokenPreview: token.substring(0, 20) + '...',
+        memoryCacheUpdated: true,
+        localStorageUpdated: false
+      });
     }
   }
 
   clearToken() {
+    // Clear memory cache immediately
+    this.memoryCache.authToken = null;
+    this.memoryCache.user = null;
+    this.memoryCache.lastSync = 0;
+    
+    // Also clear localStorage for persistence
     if (typeof window !== 'undefined') {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
@@ -107,21 +282,79 @@ class ApiClient {
       
       // Clear session storage as well
       sessionStorage.clear();
+      console.log('🧹 Token cleared from both memory cache and localStorage');
+    } else {
+      console.log('🧹 Token cleared from memory cache only (no window)');
     }
   }
 
   // Authentication utilities
   isAuthenticated() {
+    // First check memory cache (fastest)
+    if (this.memoryCache.authToken && this.memoryCache.user) {
+      return true;
+    }
+    
+    // Fallback to localStorage
     if (typeof window === 'undefined') return false;
     const token = localStorage.getItem('authToken');
     const user = localStorage.getItem('user');
+    
+    // Update memory cache if found in localStorage
+    if (token && user) {
+      this.memoryCache.authToken = token;
+      this.memoryCache.user = user;
+      this.memoryCache.lastSync = Date.now();
+    }
+    
     return !!(token && user);
   }
 
   getUser() {
+    // First try memory cache (fastest)
+    if (this.memoryCache.user) {
+      return JSON.parse(this.memoryCache.user);
+    }
+    
+    // Fallback to localStorage
     if (typeof window === 'undefined') return null;
     const userData = localStorage.getItem('user');
+    
+    // Update memory cache if found in localStorage
+    if (userData) {
+      this.memoryCache.user = userData;
+      this.memoryCache.lastSync = Date.now();
+    }
+    
     return userData ? JSON.parse(userData) : null;
+  }
+
+  setUser(user) {
+    const userString = JSON.stringify(user);
+    
+    // Update memory cache immediately (prevents race conditions)
+    this.memoryCache.user = userString;
+    this.memoryCache.lastSync = Date.now();
+    
+    // Also update localStorage for persistence
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', userString);
+      console.log('👤 User set in both memory cache and localStorage:', {
+        userId: user.id,
+        userName: user.name,
+        userRole: user.role,
+        memoryCacheUpdated: true,
+        localStorageUpdated: true
+      });
+    } else {
+      console.log('👤 User set in memory cache only (no window):', {
+        userId: user.id,
+        userName: user.name,
+        userRole: user.role,
+        memoryCacheUpdated: true,
+        localStorageUpdated: false
+      });
+    }
   }
 
   getRedirectPath() {

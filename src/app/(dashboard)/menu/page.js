@@ -7,6 +7,7 @@ import ImageCarousel from '../../../components/ImageCarousel';
 import ImageUpload from '../../../components/ImageUpload';
 import QRCodeModal from '../../../components/QRCodeModal';
 import apiClient from '../../../lib/api';
+import { extractTokenFromUrl, hasTokenInUrl } from '../../../utils/urlTokenExtractor';
 import { t } from '../../../lib/i18n';
 import { 
   FaPlus, 
@@ -1476,7 +1477,7 @@ const MenuManagement = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showItemModal, setShowItemModal] = useState(false);
   const [error, setError] = useState('');
-  const [currentRestaurant, setCurrentRestaurant] = useState({ id: 'test-restaurant', name: 'Test Restaurant' });
+  const [currentRestaurant, setCurrentRestaurant] = useState(null);
   const [isClient, setIsClient] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState({});
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -1521,21 +1522,58 @@ const MenuManagement = () => {
     const loadRestaurantContext = async () => {
       try {
         console.log('Loading restaurant context...');
-        const userData = localStorage.getItem('user');
+        
+        // First, check if there's a token in the URL
+        if (hasTokenInUrl()) {
+          console.log('🔗 Menu: Token found in URL, extracting...');
+          const urlData = extractTokenFromUrl();
+          
+          if (urlData.token) {
+            console.log('🔑 Menu: Setting token from URL');
+            apiClient.setToken(urlData.token);
+          }
+          
+          if (urlData.user) {
+            console.log('👤 Menu: Setting user data from URL');
+            apiClient.setUser(urlData.user);
+          }
+        }
+        
+        const userData = apiClient.getUser();
         if (!userData) {
           console.log('No user data found, redirecting to login');
           router.push('/login');
           return;
         }
 
-        const user = JSON.parse(userData);
+        const user = userData;
+        
+        // Get restaurant ID from user data (same approach as dashboard)
         let restaurantId = null;
-
+        let restaurant = null;
+        
+        // First, try to use default restaurant from user data
+        if (user?.defaultRestaurant) {
+          restaurant = user.defaultRestaurant;
+          restaurantId = restaurant.id;
+          console.log('🏢 Menu: Using default restaurant from user data:', restaurant.name);
+          setCurrentRestaurant(restaurant);
+        }
         // For staff members, use their assigned restaurant
-        if (user.restaurantId) {
+        else if (user?.restaurantId) {
           restaurantId = user.restaurantId;
-        } 
-        // For owners or customers, get selected restaurant
+          // Try to get restaurant data from user object
+          if (user.restaurant) {
+            restaurant = user.restaurant;
+          } else {
+            // Fallback to localStorage or create basic restaurant object
+            const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+            restaurant = savedRestaurant.id === restaurantId ? savedRestaurant : { id: restaurantId, name: 'Restaurant' };
+          }
+          console.log('👨‍💼 Menu: Staff user, using assigned restaurant:', restaurant?.name);
+          setCurrentRestaurant(restaurant);
+        }
+        // For owners/customers, try localStorage fallback
         else if (user.role === 'owner' || user.role === 'customer') {
           const restaurantsResponse = await apiClient.getRestaurants();
           if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
@@ -1544,6 +1582,7 @@ const MenuManagement = () => {
                                       restaurantsResponse.restaurants[0];
             restaurantId = selectedRestaurant.id;
             setCurrentRestaurant(selectedRestaurant);
+            console.log('🏢 Menu: Using saved restaurant from localStorage:', selectedRestaurant?.name);
           }
         }
 
@@ -1576,17 +1615,41 @@ const MenuManagement = () => {
           if (!userData) return;
 
           const user = JSON.parse(userData);
+          
+          // Get restaurant ID from user data (same approach as dashboard)
           let restaurantId = null;
-
-          if (user.restaurantId) {
+          let restaurant = null;
+          
+          // First, try to use default restaurant from user data
+          if (user?.defaultRestaurant) {
+            restaurant = user.defaultRestaurant;
+            restaurantId = restaurant.id;
+            console.log('🏢 Menu: Using default restaurant from user data:', restaurant.name);
+            setCurrentRestaurant(restaurant);
+          }
+          // For staff members, use their assigned restaurant
+          else if (user?.restaurantId) {
             restaurantId = user.restaurantId;
-          } else if (user.role === 'owner' || user.role === 'admin') {
+            // Try to get restaurant data from user object
+            if (user.restaurant) {
+              restaurant = user.restaurant;
+            } else {
+              // Fallback to localStorage or create basic restaurant object
+              const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+              restaurant = savedRestaurant.id === restaurantId ? savedRestaurant : { id: restaurantId, name: 'Restaurant' };
+            }
+            console.log('👨‍💼 Menu: Staff user, using assigned restaurant:', restaurant?.name);
+            setCurrentRestaurant(restaurant);
+          }
+          // For owners/customers, try localStorage fallback
+          else if (user.role === 'owner' || user.role === 'admin') {
             const restaurantsResponse = await apiClient.getRestaurants();
             const restaurants = restaurantsResponse.restaurants || [];
             const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
             const selectedRestaurant = restaurants.find(r => r.id === savedRestaurantId) || restaurants[0];
             restaurantId = selectedRestaurant?.id;
             setCurrentRestaurant(selectedRestaurant);
+            console.log('🏢 Menu: Using saved restaurant from localStorage:', selectedRestaurant?.name);
           }
 
           if (restaurantId) {
@@ -2831,6 +2894,7 @@ const MenuManagement = () => {
         onClose={() => setShowQRCodeModal(false)}
         restaurantId={currentRestaurant?.id}
         restaurantName={currentRestaurant?.name}
+        restaurantSubdomain={currentRestaurant?.subdomain}
       />
 
       {/* CSS Animations */}

@@ -51,8 +51,15 @@ function NavigationContent({ isHidden = false }) {
   
   // Debug dropdown states
   useEffect(() => {
-    console.log('Dropdown states:', { showRestaurantDropdown, showUserDropdown });
-  }, [showRestaurantDropdown, showUserDropdown]);
+    console.log('🔍 Navigation Debug:', { 
+      showRestaurantDropdown, 
+      showUserDropdown, 
+      isMobile, 
+      allRestaurantsLength: allRestaurants.length,
+      userRole: user?.role,
+      selectedRestaurant: selectedRestaurant?.name
+    });
+  }, [showRestaurantDropdown, showUserDropdown, isMobile, allRestaurants.length, user?.role, selectedRestaurant]);
   
   // Check for mobile screen size
   useEffect(() => {
@@ -151,20 +158,23 @@ function NavigationContent({ isHidden = false }) {
               }
             } catch (error) {
               console.error('Error fetching restaurant data:', error);
-              }
             }
-          } else if (parsedUser.role === 'owner' || parsedUser.role === 'customer') {
-            // For owners, get all their restaurants
+            }
+          } else if (parsedUser.role === 'owner' || parsedUser.role === 'customer' || parsedUser.role === 'admin') {
+            // For owners, customers, and admins, get all their restaurants
             try {
               const token = localStorage.getItem('authToken');
+              console.log('🔑 Navigation: Making API call to fetch restaurants for', parsedUser.role, 'with token:', token ? 'present' : 'missing');
               const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003'}/api/restaurants`, {
                 headers: {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type': 'application/json'
                 }
               });
+              console.log('📡 Navigation: API response status:', response.status, response.ok ? 'OK' : 'FAILED');
               if (response.ok) {
                 const data = await response.json();
+                console.log('🏢 Navigation: Fetched restaurants for', parsedUser.role, ':', data.restaurants?.length || 0, 'restaurants');
                 if (data.restaurants && data.restaurants.length > 0) {
                   setAllRestaurants(data.restaurants);
                   
@@ -180,7 +190,8 @@ function NavigationContent({ isHidden = false }) {
                 }
               }
             } catch (error) {
-              console.error('Error fetching restaurant data:', error);
+              console.error('❌ Navigation: Error fetching restaurant data:', error);
+              console.error('❌ Navigation: Error details:', error.message, error.stack);
             }
           }
         }
@@ -195,18 +206,48 @@ function NavigationContent({ isHidden = false }) {
     apiClient.clearToken();
     setShowMobileMenu(false);
     setShowUserDropdown(false);
-    router.push('/login');
+    
+    // Always redirect to main domain login after logout
+    console.log('🚪 Logging out, redirecting to main domain login');
+    window.location.href = 'https://www.dineopen.com/login';
   };
 
-  const handleRestaurantChange = (restaurant) => {
+  const handleRestaurantChange = async (restaurant) => {
+    try {
     setSelectedRestaurant(restaurant);
     localStorage.setItem('selectedRestaurantId', restaurant.id);
     setShowRestaurantDropdown(false);
     
-    // Dispatch custom event for other components to listen to
-    window.dispatchEvent(new CustomEvent('restaurantChanged', { 
-      detail: { restaurant } 
-    }));
+      // Save as default restaurant in database
+      try {
+        await apiClient.put('/api/user/default-restaurant', {
+          restaurantId: restaurant.id
+        });
+        console.log('✅ Default restaurant updated:', restaurant.name);
+      } catch (error) {
+        console.error('❌ Failed to update default restaurant:', error);
+        // Don't fail the restaurant change if default update fails
+      }
+      
+      // Dispatch custom event for other components to listen to
+      window.dispatchEvent(new CustomEvent('restaurantChanged', { 
+        detail: { restaurant } 
+      }));
+      
+      // Redirect to subdomain if restaurant has one
+      if (restaurant.subdomain) {
+        console.log('🌐 Restaurant has subdomain, redirecting to:', restaurant.subdomain);
+        const currentPath = window.location.pathname;
+        const subdomainUrl = `https://${restaurant.subdomain}.dineopen.com${currentPath}`;
+        window.location.href = subdomainUrl;
+      } else {
+        // Refresh the page to load new restaurant data
+        console.log('🔄 Restaurant changed, refreshing page');
+    window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error changing restaurant:', error);
+    }
   };
   
   const getAllNavItems = () => [
@@ -457,7 +498,7 @@ function NavigationContent({ isHidden = false }) {
                 const isActive = pathname === item.href;
                 
                 return (
-                  <Link key={item.id} href={item.href}>
+                  <Link key={item.id} href={item.href} prefetch={false}>
                     <div
                       style={{
                         padding: '6px 12px',
@@ -522,7 +563,7 @@ function NavigationContent({ isHidden = false }) {
             <LanguageSwitcher />
             
             {/* Restaurant Selector - Modern Design */}
-            {!isMobile && (user?.role === 'owner' || user?.role === 'customer') && allRestaurants.length > 1 && (
+            {!isMobile && allRestaurants.length > 0 && (
               <div style={{ position: 'relative', zIndex: 1000 }} data-restaurant-dropdown>
                 <button
                     onClick={(e) => {
@@ -584,7 +625,7 @@ function NavigationContent({ isHidden = false }) {
                           {selectedRestaurant?.name || 'Select Restaurant'}
                       </div>
                     <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '1px' }}>
-                      Switch Location
+                      {allRestaurants.length > 1 ? 'Switch Location' : 'Current Location'}
                     </div>
                   </div>
                   
@@ -710,6 +751,23 @@ function NavigationContent({ isHidden = false }) {
                           )}
                       </div>
                     ))}
+                    
+                    {/* Show message when only one restaurant */}
+                    {allRestaurants.length === 1 && (
+                      <div style={{
+                        padding: '16px 20px',
+                        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                        borderTop: '1px solid rgba(59, 130, 246, 0.1)',
+                        textAlign: 'center'
+                      }}>
+                        <p style={{ fontSize: '12px', color: '#1e40af', margin: '0 0 8px 0', fontWeight: '600' }}>
+                          🏪 You have 1 restaurant
+                        </p>
+                        <p style={{ fontSize: '10px', color: '#64748b', margin: 0 }}>
+                          Add more restaurants to switch between locations
+                        </p>
+                      </div>
+                    )}
                     </div>
                   </div>
                 )}
@@ -1165,6 +1223,132 @@ function NavigationContent({ isHidden = false }) {
               </div>
             </div>
 
+            {/* Mobile Restaurant Switcher - For All Users */}
+            {isMobile && allRestaurants.length > 0 && (
+              <div style={{ 
+                padding: '0 20px 20px 20px', 
+                borderBottom: '1px solid rgba(0, 0, 0, 0.05)' 
+              }}>
+                <div style={{ 
+                  padding: '16px', 
+                  background: 'linear-gradient(135deg, #fef7f0 0%, #fed7aa 100%)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(239, 68, 68, 0.2)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <HiSwitchHorizontal style={{ color: '#ef4444', fontSize: '16px' }} />
+                    <h4 style={{ fontSize: '14px', fontWeight: '700', color: '#1f2937', margin: 0 }}>
+                      Switch Restaurant
+                    </h4>
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 12px 0' }}>
+                    Choose your active location
+                  </p>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {allRestaurants.map((restaurant) => (
+                      <div
+                        key={restaurant.id}
+                        onClick={() => handleRestaurantChange(restaurant)}
+                        style={{
+                          padding: '12px 16px',
+                          cursor: 'pointer',
+                          backgroundColor: selectedRestaurant?.id === restaurant.id ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.8)',
+                          borderRadius: '12px',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          border: selectedRestaurant?.id === restaurant.id ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(0, 0, 0, 0.05)'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (selectedRestaurant?.id !== restaurant.id) {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedRestaurant?.id !== restaurant.id) {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                          }
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: selectedRestaurant?.id === restaurant.id 
+                              ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                              : 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: selectedRestaurant?.id === restaurant.id 
+                              ? '0 4px 12px rgba(239, 68, 68, 0.3)'
+                              : '0 2px 4px rgba(0, 0, 0, 0.1)'
+                          }}>
+                            <FaBuilding 
+                              color={selectedRestaurant?.id === restaurant.id ? 'white' : '#6b7280'} 
+                              size={12} 
+                            />
+                          </div>
+                          <div>
+                            <p style={{ 
+                              fontSize: '13px', 
+                              fontWeight: '600', 
+                              color: selectedRestaurant?.id === restaurant.id ? '#ef4444' : '#1f2937', 
+                              margin: 0 
+                            }}>
+                              {restaurant.name}
+                            </p>
+                            {restaurant.phone && (
+                              <p style={{ fontSize: '10px', color: '#6b7280', margin: '2px 0 0 0' }}>
+                                📞 {restaurant.phone}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {selectedRestaurant?.id === restaurant.id && (
+                          <div style={{ 
+                            width: '18px', 
+                            height: '18px', 
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                          }}>
+                            <FaCheck color="white" size={8} />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    
+                    {/* Show message when only one restaurant - Mobile */}
+                    {allRestaurants.length === 1 && (
+                      <div style={{
+                        padding: '12px 16px',
+                        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(59, 130, 246, 0.1)',
+                        textAlign: 'center',
+                        marginTop: '8px'
+                      }}>
+                        <p style={{ fontSize: '11px', color: '#1e40af', margin: '0 0 6px 0', fontWeight: '600' }}>
+                          🏪 You have 1 restaurant
+                        </p>
+                        <p style={{ fontSize: '9px', color: '#64748b', margin: 0 }}>
+                          Add more restaurants to switch between locations
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Mobile Navigation Items - Modern */}
             <div style={{ flex: 1, padding: '20px 0' }}>
               {navItems.map((item) => {
@@ -1172,7 +1356,7 @@ function NavigationContent({ isHidden = false }) {
                 const isActive = pathname === item.href;
                 
                 return (
-                  <Link key={item.id} href={item.href} onClick={handleNavItemClick}>
+                  <Link key={item.id} href={item.href} prefetch={false} onClick={handleNavItemClick}>
                     <div
                       style={{
                         margin: '0 20px 8px 20px',

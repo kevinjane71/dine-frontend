@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '../../../lib/api';
+import { extractTokenFromUrl, hasTokenInUrl } from '../../../utils/urlTokenExtractor';
 import { 
   FaSearch,
   FaFilter,
@@ -144,22 +145,81 @@ const OrderHistory = () => {
   }, [restaurantId]);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
-              const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
-    const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+    // First, check if there's a token in the URL
+    if (hasTokenInUrl()) {
+      console.log('🔗 Order History: Token found in URL, extracting...');
+      const urlData = extractTokenFromUrl();
+      
+      if (urlData.token) {
+        console.log('🔑 Order History: Setting token from URL');
+        apiClient.setToken(urlData.token);
+      }
+      
+      if (urlData.user) {
+        console.log('👤 Order History: Setting user data from URL');
+        apiClient.setUser(urlData.user);
+      }
+    }
+    
+    const token = apiClient.getToken();
+    const userData = apiClient.getUser();
 
-    if (!token || !userData.id) {
+    if (!token || !userData?.id) {
       router.push('/login');
-          return;
-        }
+      return;
+    }
         
     setUser(userData);
-    setRestaurantId(savedRestaurantId);
-    setRestaurant(savedRestaurant);
-
-    if (savedRestaurantId) {
+    
+    // Get restaurant ID from user data (same approach as dashboard)
+    let restaurantId = null;
+    let restaurant = null;
+    
+    // First, try to use default restaurant from user data
+    if (userData?.defaultRestaurant) {
+      restaurant = userData.defaultRestaurant;
+      restaurantId = restaurant.id;
+      console.log('🏢 Order History: Using default restaurant from user data:', restaurant.name);
+    }
+    // For staff members, use their assigned restaurant
+    else if (userData?.restaurantId) {
+      restaurantId = userData.restaurantId;
+      // Try to get restaurant data from user object
+      if (userData.restaurant) {
+        restaurant = userData.restaurant;
+      } else {
+        // Fallback to localStorage or create basic restaurant object
+        const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+        restaurant = savedRestaurant.id === restaurantId ? savedRestaurant : { id: restaurantId, name: 'Restaurant' };
+      }
+      console.log('👨‍💼 Order History: Staff user, using assigned restaurant:', restaurant?.name);
+    }
+    // For owners/customers, try localStorage fallback
+    else {
+      const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+      const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+      
+      if (savedRestaurantId && savedRestaurant.id === savedRestaurantId) {
+        restaurantId = savedRestaurantId;
+        restaurant = savedRestaurant;
+        console.log('🏢 Order History: Using saved restaurant from localStorage:', restaurant?.name);
+      } else {
+        console.log('❌ Order History: No restaurant ID found');
+        setError('No restaurant found. Please select a restaurant.');
+        setLoading(false);
+        return;
+      }
+    }
+    
+    if (restaurantId) {
+      console.log('✅ Order History: Restaurant ID found:', restaurantId);
+      setRestaurantId(restaurantId);
+      setRestaurant(restaurant);
       fetchWaiters();
+    } else {
+      console.log('❌ Order History: No restaurant ID found');
+      setError('No restaurant found. Please select a restaurant.');
+      setLoading(false);
     }
   }, [router, fetchWaiters]);
 

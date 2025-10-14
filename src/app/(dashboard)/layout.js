@@ -9,10 +9,76 @@ import DineBotButton from '../../components/DineBotButton';
 function DashboardLayoutContent({ children }) {
   const [isNavigationHidden, setIsNavigationHidden] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [redirectChecked, setRedirectChecked] = useState(false);
   const pathname = usePathname();
   
   // Check if current page is dashboard
   const isDashboardPage = pathname === '/dashboard';
+  
+  // Check if user should be redirected to their default restaurant subdomain
+  useEffect(() => {
+    const checkMainDomainRedirect = async () => {
+      const hostname = window.location.hostname;
+      const isMainDomain = hostname === 'www.dineopen.com' || hostname === 'dineopen.com' || hostname === 'localhost:3002';
+      
+      // Skip redirect check if we're already on a subdomain
+      if (!isMainDomain) {
+        setRedirectChecked(true);
+        return;
+      }
+      
+      // Skip redirect for login page
+      if (pathname === '/login') {
+        setRedirectChecked(true);
+        return;
+      }
+      
+      // Check if user is authenticated
+      const token = localStorage.getItem('authToken');
+      const user = localStorage.getItem('user');
+      
+      if (!token || !user) {
+        setRedirectChecked(true);
+        return;
+      }
+      
+      try {
+        const userData = JSON.parse(user);
+        const defaultRestaurantId = userData.defaultRestaurantId;
+        
+        if (defaultRestaurantId) {
+          // Get user's restaurants to find the default one
+          const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
+          const response = await fetch(`${apiBaseUrl}/api/restaurants`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const restaurants = data.restaurants || [];
+            const defaultRestaurant = restaurants.find(r => r.id === defaultRestaurantId && r.subdomain);
+            
+            if (defaultRestaurant) {
+              console.log('🔄 Redirecting from main domain to default restaurant subdomain');
+              const redirectUrl = `https://${defaultRestaurant.subdomain}.dineopen.com${pathname}`;
+              window.location.href = redirectUrl;
+              return;
+            }
+          }
+        }
+        
+        setRedirectChecked(true);
+      } catch (error) {
+        console.error('Error checking main domain redirect:', error);
+        setRedirectChecked(true);
+      }
+    };
+    
+    checkMainDomainRedirect();
+  }, [pathname]);
 
   // Check if device is mobile
   useEffect(() => {
@@ -34,6 +100,41 @@ function DashboardLayoutContent({ children }) {
     window.addEventListener('navigationToggle', handleNavigationToggle);
     return () => window.removeEventListener('navigationToggle', handleNavigationToggle);
   }, []);
+
+  // Show loading while checking redirect
+  if (!redirectChecked) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#f9fafb'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '4px solid #e5e7eb',
+            borderTop: '4px solid #ef4444',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p style={{ color: '#6b7280', fontSize: '14px' }}>Loading...</p>
+        </div>
+        <style jsx>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <DineBotProvider>

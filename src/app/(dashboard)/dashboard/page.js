@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Onboarding from '../../../components/Onboarding';
 import EmptyMenuPrompt from '../../../components/EmptyMenuPrompt';
 import MenuItemCard from '../../../components/MenuItemCard';
 import CategoryButton from '../../../components/CategoryButton';
@@ -44,6 +43,7 @@ import {
   FaCloudUploadAlt
 } from 'react-icons/fa';
 import apiClient from '../../../lib/api';
+import { extractTokenFromUrl, hasTokenInUrl } from '../../../utils/urlTokenExtractor';
 // import { t } from '../../../lib/i18n';
 
 function RestaurantPOSContent() {
@@ -71,10 +71,6 @@ function RestaurantPOSContent() {
   const [processing, setProcessing] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState('');
-  
-  // Onboarding state
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
   
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -107,20 +103,68 @@ function RestaurantPOSContent() {
   // Authentication guard
   useEffect(() => {
     const checkAuth = () => {
-      if (!apiClient.isAuthenticated()) {
-        console.log('🚫 User not authenticated, redirecting to login');
-        router.replace('/login');
-        return;
+      console.log('🔍 Checking authentication...');
+      console.log('Current URL:', window.location.href);
+      console.log('Current hostname:', window.location.hostname);
+      
+      // First, check if there's a token in the URL
+      if (hasTokenInUrl()) {
+        console.log('🔗 Token found in URL, extracting...');
+        const urlData = extractTokenFromUrl();
+        
+        if (urlData.token) {
+          console.log('🔑 Setting token from URL');
+          apiClient.setToken(urlData.token);
+        }
+        
+        if (urlData.user) {
+          console.log('👤 Setting user data from URL');
+          apiClient.setUser(urlData.user);
+        }
       }
       
-      const user = apiClient.getUser();
-      if (!user) {
-        console.log('🚫 No user data found, redirecting to login');
-        router.replace('/login');
-        return;
-      }
-      
-      console.log('✅ User authenticated:', user.role);
+      // Now check authentication with extracted or existing token
+      setTimeout(() => {
+        const token = apiClient.getToken();
+        const user = apiClient.getUser();
+        
+        console.log('🔍 Auth check details:', {
+          hasToken: !!token,
+          hasUser: !!user,
+          tokenPreview: token ? token.substring(0, 20) + '...' : 'null',
+          isSubdomainMode: apiClient.isSubdomainMode()
+        });
+        
+        // For subdomain mode, be very lenient with authentication check
+        if (apiClient.isSubdomainMode()) {
+          console.log('🌐 Subdomain mode detected, using very lenient auth check');
+          // In subdomain mode, if we have any indication of authentication, proceed
+          if (token || user || localStorage.getItem('authToken')) {
+            console.log('✅ Subdomain auth check passed');
+            return;
+          }
+          
+          // If no auth data found in subdomain mode, wait longer for data to load
+          console.log('⏳ Subdomain mode: No auth data yet, waiting for data to load...');
+          return; // Let loadInitialData handle the authentication
+        }
+        
+        if (!apiClient.isAuthenticated()) {
+          console.log('🚫 User not authenticated, redirecting to login');
+          router.replace('/login');
+          return;
+        }
+        
+        const userData = apiClient.getUser();
+        if (!userData) {
+          console.log('🚫 No user data found, redirecting to login');
+          router.replace('/login');
+          return;
+        }
+        
+        console.log('✅ User authenticated:', userData.role);
+        console.log('User data:', userData);
+      }, 1000);
     };
 
     checkAuth();
@@ -128,16 +172,17 @@ function RestaurantPOSContent() {
 
   // Load user data
   useEffect(() => {
-    const userData = localStorage.getItem('user');
+    const userData = apiClient.getUser();
     if (userData) {
-      setUser(JSON.parse(userData));
+      setUser(userData);
     }
   }, []);
 
   // Logout function
   const handleLogout = () => {
     apiClient.clearToken();
-    window.location.href = '/login';
+    // Always redirect to main domain login after logout
+    window.location.href = 'https://www.dineopen.com/login';
   };
 
   // QR Code handler
@@ -234,29 +279,6 @@ function RestaurantPOSContent() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Authentication check and onboarding detection
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    
-    // Check if user needs onboarding
-    const userData = localStorage.getItem('user');
-    const onboardingSkipped = localStorage.getItem('onboarding_skipped');
-    const hasCompletedOnboarding = localStorage.getItem('onboarding_completed');
-    
-    if (userData && !onboardingSkipped && !hasCompletedOnboarding) {
-      const user = JSON.parse(userData);
-      // Show onboarding for owners who haven't set up a restaurant
-      if (user.role === 'owner' || !user.role) {
-        setIsFirstTimeUser(true);
-        setShowOnboarding(true);
-      }
-    }
-  }, [router]);
-
   // Load cart from localStorage
   useEffect(() => {
     const savedCart = localStorage.getItem('dine_cart');
@@ -279,39 +301,112 @@ function RestaurantPOSContent() {
       setLoading(true);
       setError('');
       
-      // Get user data to determine restaurant context
-      const userData = localStorage.getItem('user');
-      const user = userData ? JSON.parse(userData) : null;
+      console.log('🔄 Loading initial data...');
+      
+      // Check for token in URL first
+      if (hasTokenInUrl()) {
+        console.log('🔗 Token found in URL during data loading, extracting...');
+        const urlData = extractTokenFromUrl();
+        
+        if (urlData.token) {
+          console.log('🔑 Setting token from URL in loadInitialData');
+          apiClient.setToken(urlData.token);
+        }
+        
+        if (urlData.user) {
+          console.log('👤 Setting user data from URL in loadInitialData');
+          apiClient.setUser(urlData.user);
+        }
+      }
+      
+      // Always use user-based approach - fetch restaurants based on user's login ID
+      const userData = apiClient.getUser();
+      const user = userData;
       console.log('👤 Current user:', user?.name, user?.role, 'Restaurant ID:', user?.restaurantId);
       
-      // Load restaurants
-      console.log('🏢 Loading restaurants...');
-      const restaurantsResponse = await apiClient.getRestaurants();
-      console.log('🏢 Restaurants loaded:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
-      setRestaurants(restaurantsResponse.restaurants || []);
+      // Check authentication token
+      const token = apiClient.getToken();
+      console.log('🔑 Auth token available:', !!token);
+      console.log('🔑 Token preview:', token ? token.substring(0, 20) + '...' : 'null');
+      
+      // For subdomain mode, be more lenient with token check
+      if (!token) {
+        if (apiClient.isSubdomainMode()) {
+          console.log('⏳ Subdomain mode: No token yet, waiting for data to load...');
+          // Don't redirect immediately in subdomain mode, let the data loading continue
+        } else {
+          console.error('❌ No auth token found, redirecting to login');
+          router.replace('/login');
+          return;
+        }
+      }
+      
+      // Use restaurants data from login response if available
+      let restaurantsResponse = null;
+      let userRestaurants = [];
+      
+      if (user?.restaurants && user.restaurants.length > 0) {
+        console.log('🏢 Using restaurants from login response:', user.restaurants.length);
+        userRestaurants = user.restaurants;
+        setRestaurants(userRestaurants);
+        restaurantsResponse = { restaurants: userRestaurants };
+      } else {
+        // Fallback: fetch restaurants from API if not available in user data
+        console.log('🏢 No restaurants in user data, fetching from API...');
+        try {
+          restaurantsResponse = await apiClient.getRestaurants();
+          console.log('🏢 Restaurants loaded from API:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
+          userRestaurants = restaurantsResponse.restaurants || [];
+          setRestaurants(userRestaurants);
+        } catch (restaurantError) {
+          console.error('❌ Failed to load restaurants:', restaurantError);
+          
+          if (restaurantError.message?.includes('401') || restaurantError.message?.includes('Unauthorized')) {
+            if (apiClient.isSubdomainMode()) {
+              console.log('⏳ Subdomain mode: Auth error, but continuing...');
+              setRestaurants([]);
+              restaurantsResponse = { restaurants: [] };
+            } else {
+              console.log('🔒 Authentication failed, redirecting to login');
+              router.replace('/login');
+              return;
+            }
+          } else {
+            setError(`Failed to load restaurants: ${restaurantError.message}. Please check your connection and try again.`);
+            setRestaurants([]);
+            restaurantsResponse = { restaurants: [] };
+          }
+        }
+      }
       
       let restaurant = null;
       
+      // First, try to use default restaurant from login response
+      if (user?.defaultRestaurant) {
+        restaurant = user.defaultRestaurant;
+        console.log('🏢 Using default restaurant from login response:', restaurant.name);
+      }
       // For staff members, use their assigned restaurant
-      if (user?.restaurantId) {
+      else if (user?.restaurantId) {
         // First try to use restaurant data from login response
         if (user.restaurant) {
           restaurant = user.restaurant;
         } else {
           // Fallback to finding restaurant in the list
-        restaurant = restaurantsResponse.restaurants.find(r => r.id === user.restaurantId);
+          restaurant = userRestaurants.find(r => r.id === user.restaurantId);
         }
+        console.log('👨‍💼 Staff user, using assigned restaurant:', restaurant?.name);
       }
       // For owners or customers (legacy), use selected restaurant from localStorage or first restaurant
-      else if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
+      else if (userRestaurants.length > 0) {
         const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
-        restaurant = restaurantsResponse.restaurants.find(r => r.id === savedRestaurantId) || 
-                    restaurantsResponse.restaurants[0];
+        restaurant = userRestaurants.find(r => r.id === savedRestaurantId) || userRestaurants[0];
         
         // Save the selected restaurant ID if not already saved
         if (!savedRestaurantId) {
           localStorage.setItem('selectedRestaurantId', restaurant.id);
         }
+        console.log('🏢 Owner/customer, using restaurant:', restaurant.name);
       }
       
       if (restaurant) {
@@ -392,7 +487,12 @@ function RestaurantPOSContent() {
 
   // Load initial data
   useEffect(() => {
-    loadInitialData();
+    // Small delay to ensure authentication check completes first
+    const timer = setTimeout(() => {
+      loadInitialData();
+    }, 200);
+    
+    return () => clearTimeout(timer);
   }, [loadInitialData]);
 
   // Listen for restaurant changes from navigation
@@ -417,33 +517,6 @@ function RestaurantPOSContent() {
   }, [loadInitialData]);
  
   // REMOVED - createSampleRestaurant function no longer needed
-  
-  // Handle onboarding completion
-  const handleOnboardingComplete = async (restaurant) => {
-    setShowOnboarding(false);
-    setIsFirstTimeUser(false);
-    localStorage.setItem('onboarding_completed', 'true');
-    
-    // Update restaurant list and selected restaurant
-    setSelectedRestaurant(restaurant);
-    setRestaurants(prev => [...prev, restaurant]);
-    
-    // Load menu and floors/tables for the new restaurant
-    await Promise.all([
-      loadMenu(restaurant.id),
-      loadFloors(restaurant.id)
-    ]);
-  };
-  
-  // Handle onboarding skip
-  const handleOnboardingSkip = () => {
-    setShowOnboarding(false);
-    setIsFirstTimeUser(false);
-    localStorage.setItem('onboarding_skipped', 'true');
-    
-    // Continue with loading initial data
-    loadInitialData();
-  };
 
   const loadMenu = async (restaurantId) => {
     try {
@@ -796,7 +869,7 @@ function RestaurantPOSContent() {
       setError('');
 
       // Get current user/staff info
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const currentUser = apiClient.getUser() || {};
       
       // Check if table number changed in edit mode
       const tableToUse = tableNumber || selectedTable?.number;
@@ -1390,20 +1463,6 @@ function RestaurantPOSContent() {
     };
   }, [isFullscreen]);
 
-  // Show onboarding if needed
-  if (showOnboarding) {
-    return (
-      <>
-        <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-        </div>
-        <Onboarding 
-          onComplete={handleOnboardingComplete}
-          onSkip={handleOnboardingSkip}
-        />
-      </>
-    );
-  }
-  
   // Loading state
   if (loading) {
     return (
@@ -1757,7 +1816,11 @@ function RestaurantPOSContent() {
               flexWrap: 'wrap'
             }}>
               <button
-                onClick={() => setShowOnboarding(true)}
+                onClick={() => {
+                  // Skip onboarding and continue with normal flow
+                  localStorage.setItem('onboarding_skipped', 'true');
+                  window.location.reload();
+                }}
                 style={{
                   padding: '20px 40px',
                   background: 'rgba(255, 255, 255, 0.95)',
@@ -1784,7 +1847,7 @@ function RestaurantPOSContent() {
                   e.target.style.background = 'rgba(255, 255, 255, 0.95)';
                 }}
               >
-                🚀 Launch Restaurant System
+                🚀 Continue to Dashboard
               </button>
             </div>
             

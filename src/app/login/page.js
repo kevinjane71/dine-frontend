@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import RestaurantNameModal from '../../components/RestaurantNameModal';
 import { 
   FaPhone, 
   FaKey, 
@@ -32,6 +33,10 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
+  // Restaurant name modal state
+  const [showRestaurantModal, setShowRestaurantModal] = useState(false);
+  const [pendingUserData, setPendingUserData] = useState(null);
+  
   // Firebase OTP state
   const [verificationId, setVerificationId] = useState(null);
   const [otpSent, setOtpSent] = useState(false);
@@ -41,9 +46,35 @@ const Login = () => {
   useEffect(() => {
     const checkAuthStatus = () => {
       if (apiClient.isAuthenticated()) {
-        const redirectPath = apiClient.getRedirectPath();
-        console.log('🔄 User already authenticated, redirecting to:', redirectPath);
-        router.replace(redirectPath);
+        // Check if we're on a subdomain
+        const hostname = window.location.hostname;
+        let currentSubdomain = null;
+        
+        // Check for localhost subdomains (e.g., myrestaurant.localhost)
+        if (hostname.includes('localhost')) {
+          const localhostParts = hostname.split('.localhost');
+          if (localhostParts.length > 1) {
+            currentSubdomain = localhostParts[0];
+          }
+        }
+        // Check for production subdomains (e.g., restaurant-name.dineopen.com)
+        else if (hostname.includes('.dineopen.com')) {
+          const subdomainParts = hostname.split('.');
+          if (subdomainParts.length > 2) {
+            currentSubdomain = subdomainParts[0];
+          }
+        }
+        
+        // If we're on a subdomain, redirect to subdomain dashboard
+        if (currentSubdomain && currentSubdomain !== 'www') {
+          console.log('🏢 Subdomain detected, redirecting to subdomain dashboard:', currentSubdomain);
+          router.replace('/dashboard');
+        } else {
+          // Use normal redirect logic for main domain
+          const redirectPath = apiClient.getRedirectPath();
+          console.log('🔄 User already authenticated, redirecting to:', redirectPath);
+          router.replace(redirectPath);
+        }
       }
     };
 
@@ -185,14 +216,32 @@ const Login = () => {
         const firebaseData = await firebaseResponse.json();
         
         if (firebaseResponse.ok) {
-          // Store auth token and user data
-          localStorage.setItem('authToken', firebaseData.token);
-          localStorage.setItem('user', JSON.stringify(firebaseData.user));
+          // Store auth token and user data using API client methods
+          apiClient.setToken(firebaseData.token);
+          apiClient.setUser(firebaseData.user);
           
-          // Redirect based on backend response
+          console.log('🔑 Firebase Token stored:', !!firebaseData.token);
+          console.log('👤 Firebase User data stored:', !!firebaseData.user);
+          console.log('🏢 Firebase User role:', firebaseData.user?.role);
+          console.log('🏢 Firebase Has restaurants:', firebaseData.hasRestaurants);
+          
+          // Check if this is a first-time user - show modal only for new users
+          if (firebaseData.isNewUser) {
+            console.log('🆕 First-time user detected, showing restaurant name modal');
+            setPendingUserData(firebaseData);
+            setShowRestaurantModal(true);
+            return;
+          }
+          
+          // For existing users, redirect normally
           if (firebaseData.redirectTo) {
-            router.replace(firebaseData.redirectTo);
+            console.log('🌐 Firebase Redirecting to:', firebaseData.redirectTo);
+            // Add token to URL for immediate availability
+            const urlWithToken = `${firebaseData.redirectTo}?token=${encodeURIComponent(firebaseData.token)}&user=${encodeURIComponent(JSON.stringify(firebaseData.user))}`;
+            console.log('🔗 Redirecting with token in URL');
+            window.location.href = urlWithToken;
           } else {
+            console.log('⚠️ Firebase No redirect URL provided, using default');
             router.replace('/dashboard');
           }
         } else {
@@ -212,14 +261,32 @@ const Login = () => {
         const data = await response.json();
         
         if (response.ok) {
-          // Store auth token in localStorage
-          localStorage.setItem('authToken', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
+          // Store auth token and user data using API client methods
+          apiClient.setToken(data.token);
+          apiClient.setUser(data.user);
           
-          // Redirect based on backend response
+          console.log('🔑 Token stored:', !!data.token);
+          console.log('👤 User data stored:', !!data.user);
+          console.log('🏢 User role:', data.user?.role);
+          console.log('🏢 Has restaurants:', data.hasRestaurants);
+          
+          // Check if this is a first-time user - show modal only for new users
+          if (data.isNewUser) {
+            console.log('🆕 First-time user detected, showing restaurant name modal');
+            setPendingUserData(data);
+            setShowRestaurantModal(true);
+            return;
+          }
+          
+          // For existing users, redirect normally
           if (data.redirectTo) {
-            router.replace(data.redirectTo);
+            console.log('🌐 Backend OTP Redirecting to:', data.redirectTo);
+            // Add token to URL for immediate availability
+            const urlWithToken = `${data.redirectTo}?token=${encodeURIComponent(data.token)}&user=${encodeURIComponent(JSON.stringify(data.user))}`;
+            console.log('🔗 Redirecting with token in URL');
+            window.location.href = urlWithToken;
           } else {
+            console.log('⚠️ Backend OTP No redirect URL provided, using default');
             router.replace('/dashboard');
           }
         } else {
@@ -260,6 +327,116 @@ const Login = () => {
     setStep('phone');
   };
 
+  // Restaurant name modal handlers
+  const handleRestaurantNameSubmit = async (restaurantName) => {
+    try {
+      setLoading(true);
+      
+      const response = await fetch('https://dine-backend-lake.vercel.app/api/auth/create-restaurant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: pendingUserData.user.id,
+          restaurantName: restaurantName,
+          userEmail: pendingUserData.user.email
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create restaurant');
+      }
+
+      const result = await response.json();
+      
+      // Update user data with restaurant info
+      const updatedUserData = {
+        ...pendingUserData.user,
+        restaurantId: result.restaurant.id,
+        defaultRestaurant: result.restaurant.id,
+        setupComplete: true
+      };
+
+      // Set user data and token
+      apiClient.setUser(updatedUserData);
+      apiClient.setToken(pendingUserData.token);
+
+      // Close modal and redirect
+      setShowRestaurantModal(false);
+      setPendingUserData(null);
+
+      // Redirect to subdomain dashboard
+      const redirectUrl = `https://${result.restaurant.subdomain}.dineopen.com/dashboard`;
+      const urlWithToken = `${redirectUrl}?token=${encodeURIComponent(pendingUserData.token)}&user=${encodeURIComponent(JSON.stringify(updatedUserData))}`;
+      window.location.href = urlWithToken;
+
+    } catch (error) {
+      console.error('Error creating restaurant:', error);
+      setError('Failed to create restaurant. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRestaurantNameSkip = async () => {
+    try {
+      setLoading(true);
+      
+      // Create restaurant with random name
+      const randomNames = [
+        'Golden Spoon', 'Royal Kitchen', 'Spice Garden', 'Flavor Palace', 'Taste Haven',
+        'Culinary Corner', 'Gourmet Spot', 'Foodie Hub', 'Dining Delight', 'Kitchen Magic'
+      ];
+      const randomName = randomNames[Math.floor(Math.random() * randomNames.length)];
+      
+      const response = await fetch('https://dine-backend-lake.vercel.app/api/auth/create-restaurant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: pendingUserData.user.id,
+          restaurantName: randomName,
+          userEmail: pendingUserData.user.email
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create restaurant');
+      }
+
+      const result = await response.json();
+      
+      // Update user data with restaurant info
+      const updatedUserData = {
+        ...pendingUserData.user,
+        restaurantId: result.restaurant.id,
+        defaultRestaurant: result.restaurant.id,
+        setupComplete: true
+      };
+
+      // Set user data and token
+      apiClient.setUser(updatedUserData);
+      apiClient.setToken(pendingUserData.token);
+
+      // Close modal and redirect
+      setShowRestaurantModal(false);
+      setPendingUserData(null);
+
+      // Redirect to subdomain dashboard
+      const redirectUrl = `https://${result.restaurant.subdomain}.dineopen.com/dashboard`;
+      const urlWithToken = `${redirectUrl}?token=${encodeURIComponent(pendingUserData.token)}&user=${encodeURIComponent(JSON.stringify(updatedUserData))}`;
+      window.location.href = urlWithToken;
+
+    } catch (error) {
+      console.error('Error creating restaurant:', error);
+      setError('Failed to create restaurant. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
@@ -297,41 +474,33 @@ const Login = () => {
       const googleData = await googleResponse.json();
       
       if (googleResponse.ok) {
-        // Store auth token and user data
-        localStorage.setItem('authToken', googleData.token);
-        localStorage.setItem('user', JSON.stringify(googleData.user));
+        // Store auth token and user data using API client methods
+        apiClient.setToken(googleData.token);
+        apiClient.setUser(googleData.user);
         
-        console.log('Google login successful:', googleData);
-        console.log('Is new user:', googleData.isNewUser);
-        console.log('Has restaurants:', googleData.hasRestaurants);
+        console.log('🔑 Google Token stored:', !!googleData.token);
+        console.log('👤 Google User data stored:', !!googleData.user);
+        console.log('🏢 Google User role:', googleData.user?.role);
+        console.log('🏢 Google Has restaurants:', googleData.hasRestaurants);
+        console.log('🏢 Google Restaurants count:', googleData.restaurants?.length || 0);
         
-        // For new users, we'll fetch restaurants after login
-        if (googleData.hasRestaurants) {
-          try {
-            // Fetch user's restaurants
-            const restaurantsResponse = await fetch(`${backendUrl}/api/restaurants`, {
-              headers: {
-                'Authorization': `Bearer ${googleData.token}`,
-                'Content-Type': 'application/json',
-              },
-            });
-            
-            if (restaurantsResponse.ok) {
-              const restaurantsData = await restaurantsResponse.json();
-              if (restaurantsData.restaurants && restaurantsData.restaurants.length > 0) {
-                localStorage.setItem('selectedRestaurant', JSON.stringify(restaurantsData.restaurants[0]));
-                localStorage.setItem('selectedRestaurantId', restaurantsData.restaurants[0].id);
-              }
-            }
-          } catch (restaurantError) {
-            console.error('Error fetching restaurants:', restaurantError);
-          }
+        // Check if this is a first-time user - show modal only for new users
+        if (googleData.isNewUser) {
+          console.log('🆕 First-time user detected, showing restaurant name modal');
+          setPendingUserData(googleData);
+          setShowRestaurantModal(true);
+          return;
         }
         
-        // Redirect based on backend response
+        // For existing users, redirect normally
         if (googleData.redirectTo) {
-          router.replace(googleData.redirectTo);
+          console.log('🌐 Google Redirecting to:', googleData.redirectTo);
+          // Add token to URL for immediate availability
+          const urlWithToken = `${googleData.redirectTo}?token=${encodeURIComponent(googleData.token)}&user=${encodeURIComponent(JSON.stringify(googleData.user))}`;
+          console.log('🔗 Redirecting with token in URL');
+          window.location.href = urlWithToken;
         } else {
+          console.log('⚠️ Google No redirect URL provided, using default');
           router.replace('/dashboard');
         }
       } else {
@@ -389,7 +558,7 @@ const Login = () => {
       const data = await response.json();
       
       if (response.ok) {
-        localStorage.setItem('authToken', data.token);
+        apiClient.setToken(data.token);
         
         // Store user data with restaurant and owner info
         const userData = {
@@ -397,7 +566,7 @@ const Login = () => {
           restaurant: data.restaurant,
           owner: data.owner
         };
-        localStorage.setItem('user', JSON.stringify(userData));
+        apiClient.setUser(userData);
         
         // Staff goes to main POS page
         router.replace('/dashboard');
@@ -1048,6 +1217,17 @@ const Login = () => {
           </p>
         </div>
       </div>
+      
+      {/* Restaurant Name Modal */}
+      <RestaurantNameModal
+        isOpen={showRestaurantModal}
+        onClose={() => {
+          setShowRestaurantModal(false);
+          setPendingUserData(null);
+        }}
+        onSubmit={handleRestaurantNameSubmit}
+        onSkip={handleRestaurantNameSkip}
+      />
       
       {/* Hidden reCAPTCHA container */}
       <div id="recaptcha-container" style={{ display: 'none' }}></div>

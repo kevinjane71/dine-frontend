@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '../../../lib/api';
+import { extractTokenFromUrl, hasTokenInUrl } from '../../../utils/urlTokenExtractor';
 import { t } from '../../../lib/i18n';
 import { 
   FaStore, 
@@ -414,8 +415,26 @@ const Admin = () => {
     const checkAuth = () => {
       try {
         console.log('Admin page: Checking authorization...');
-        const userData = localStorage.getItem('user');
-        const authToken = localStorage.getItem('authToken');
+        
+        // First, check if there's a token in the URL
+        if (hasTokenInUrl()) {
+          console.log('🔗 Admin: Token found in URL, extracting...');
+          const urlData = extractTokenFromUrl();
+          
+          if (urlData.token) {
+            console.log('🔑 Admin: Setting token from URL');
+            apiClient.setToken(urlData.token);
+          }
+          
+          if (urlData.user) {
+            console.log('👤 Admin: Setting user data from URL');
+            apiClient.setUser(urlData.user);
+          }
+        }
+        
+        // Now check authentication with extracted or existing token
+        const userData = apiClient.getUser();
+        const authToken = apiClient.getToken();
         
         console.log('Admin page: User data exists:', !!userData);
         console.log('Admin page: Auth token exists:', !!authToken);
@@ -426,7 +445,7 @@ const Admin = () => {
           return;
         }
 
-        const user = JSON.parse(userData);
+        const user = userData;
         console.log('Admin page: User role:', user.role);
         
         setCurrentUserRole(user.role || 'owner');

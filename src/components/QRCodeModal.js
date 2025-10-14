@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { FaQrcode, FaTimes, FaDownload, FaCopy } from 'react-icons/fa';
 import QRCode from 'qrcode';
 
-const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
+const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName, restaurantSubdomain }) => {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [showCopyNotification, setShowCopyNotification] = useState(false);
@@ -34,9 +34,13 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
     try {
       setLoading(true);
       
-      // Generate the URL for the restaurant
-      const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
-      const qrUrl = `${baseUrl}/placeorder?restaurant=${restaurantId}`;
+        // Generate the URL for the restaurant
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname.includes('localhost');
+        const qrUrl = restaurantSubdomain 
+          ? (isLocalhost 
+              ? `http://${restaurantSubdomain}.localhost:3002`
+              : `https://${restaurantSubdomain}.dineopen.com`)
+          : `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com'}/placeorder?restaurant=${restaurantId}`;
       
       // Generate QR code
       const qrDataUrl = await QRCode.toDataURL(qrUrl, {
@@ -79,8 +83,13 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
   };
 //jhbhj
   const copyQRUrl = () => {
-    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
-    const qrUrl = `${baseUrl}/placeorder?restaurant=${restaurantId}`;
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname.includes('localhost');
+    const qrUrl = restaurantSubdomain 
+      ? (isLocalhost 
+          ? `http://${restaurantSubdomain}.localhost:3002`
+          : `https://${restaurantSubdomain}.dineopen.com`)
+      : `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com'}/placeorder?restaurant=${restaurantId}`;
+    
     navigator.clipboard.writeText(qrUrl);
     
     // Show notification

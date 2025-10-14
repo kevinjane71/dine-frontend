@@ -26,6 +26,7 @@ const getCategoryColor = (category, opacity = 1) => {
 const PlaceOrderContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { restaurant: contextRestaurant, isSubdomainMode } = useRestaurant();
   
   // State variables
   const [loading, setLoading] = useState(true);
@@ -50,8 +51,10 @@ const PlaceOrderContent = () => {
   const [verificationId, setVerificationId] = useState(null);
   const [sendingOtp, setSendingOtp] = useState(false);
   
-  // Derived values
-  const restaurantId = searchParams.get('restaurant') || 'default';
+  // Derived values - use context restaurant if in subdomain mode, otherwise use URL param
+  const restaurantId = isSubdomainMode && contextRestaurant 
+    ? contextRestaurant.id 
+    : (searchParams.get('restaurant') || 'default');
   const seatNumber = searchParams.get('seat') || '';
 
   // Initialize customer info from URL params
@@ -78,7 +81,23 @@ const PlaceOrderContent = () => {
       try {
         setLoading(true);
         
-        // Mock data for testing
+        // If we have context restaurant (subdomain mode), use it
+        if (isSubdomainMode && contextRestaurant) {
+          setRestaurant(contextRestaurant);
+          
+          // Load menu for the restaurant
+          const response = await apiClient.getPublicMenu(contextRestaurant.id);
+          setMenu(response.menu || []);
+          
+          // Extract categories from menu
+          const uniqueCategories = [...new Set(response.menu?.map(item => item.category) || [])];
+          setCategories(['all', ...uniqueCategories]);
+          
+          setLoading(false);
+          return;
+        }
+        
+        // Fallback to mock data for testing (when not in subdomain mode)
         const mockRestaurant = {
           id: restaurantId,
           name: 'Dino Restaurant',
@@ -181,7 +200,7 @@ const PlaceOrderContent = () => {
     };
 
     loadData();
-  }, [restaurantId]);
+  }, [restaurantId, isSubdomainMode, contextRestaurant]);
 
   // Cart functions
   const addToCart = (item) => {
@@ -1508,3 +1527,4 @@ const PlaceOrderPage = () => {
 };
 
 export default PlaceOrderPage;
+

@@ -298,12 +298,59 @@ export default function InventoryManagement() {
 
   const loadRestaurantContext = async () => {
     try {
-      const userData = localStorage.getItem('user');
-      const selectedRestaurantId = localStorage.getItem('selectedRestaurantId');
+      // Get restaurant ID from user data (same approach as dashboard)
+      const userData = apiClient.getUser();
+      const token = apiClient.getToken();
       
-      if (userData && selectedRestaurantId) {
-        const user = JSON.parse(userData);
-        setCurrentRestaurant({ id: selectedRestaurantId, ...user });
+      if (!token || !userData?.id) {
+        router.push('/login');
+        return;
+      }
+      
+      let restaurantId = null;
+      let restaurant = null;
+      
+      // First, try to use default restaurant from user data
+      if (userData?.defaultRestaurant) {
+        restaurant = userData.defaultRestaurant;
+        restaurantId = restaurant.id;
+        console.log('🏢 Inventory: Using default restaurant from user data:', restaurant.name);
+      }
+      // For staff members, use their assigned restaurant
+      else if (userData?.restaurantId) {
+        restaurantId = userData.restaurantId;
+        // Try to get restaurant data from user object
+        if (userData.restaurant) {
+          restaurant = userData.restaurant;
+        } else {
+          // Fallback to localStorage or create basic restaurant object
+          const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+          restaurant = savedRestaurant.id === restaurantId ? savedRestaurant : { id: restaurantId, name: 'Restaurant' };
+        }
+        console.log('👨‍💼 Inventory: Staff user, using assigned restaurant:', restaurant?.name);
+      }
+      // For owners/customers, try localStorage fallback
+      else {
+        const selectedRestaurantId = localStorage.getItem('selectedRestaurantId');
+        const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+        
+        if (selectedRestaurantId && savedRestaurant.id === selectedRestaurantId) {
+          restaurantId = selectedRestaurantId;
+          restaurant = savedRestaurant;
+          console.log('🏢 Inventory: Using saved restaurant from localStorage:', restaurant?.name);
+        } else {
+          console.log('❌ Inventory: No restaurant ID found');
+          setError('No restaurant found. Please select a restaurant.');
+          return;
+        }
+      }
+      
+      if (restaurantId && restaurant) {
+        console.log('✅ Inventory: Restaurant ID found:', restaurantId);
+        setCurrentRestaurant(restaurant);
+      } else {
+        console.log('❌ Inventory: No restaurant ID found');
+        setError('No restaurant found. Please select a restaurant.');
       }
     } catch (error) {
       console.error('Error loading restaurant context:', error);
