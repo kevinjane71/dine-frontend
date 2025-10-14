@@ -552,7 +552,7 @@ function NavigationContent({ isHidden = false }) {
             <LanguageSwitcher />
             
             {/* Restaurant Selector - Modern Design */}
-            {!isMobile && (user?.role === 'owner' || user?.role === 'customer') && allRestaurants.length > 1 && (
+            {!isMobile && allRestaurants.length > 0 && (
               <div style={{ position: 'relative', zIndex: 1000 }} data-restaurant-dropdown>
                 <button
                     onClick={(e) => {
@@ -614,7 +614,7 @@ function NavigationContent({ isHidden = false }) {
                           {selectedRestaurant?.name || 'Select Restaurant'}
                       </div>
                     <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '1px' }}>
-                      Switch Location
+                      {allRestaurants.length > 1 ? 'Switch Location' : 'Current Location'}
                     </div>
                   </div>
                   
@@ -740,6 +740,23 @@ function NavigationContent({ isHidden = false }) {
                           )}
                       </div>
                     ))}
+                    
+                    {/* Show message when only one restaurant */}
+                    {allRestaurants.length === 1 && (
+                      <div style={{
+                        padding: '16px 20px',
+                        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                        borderTop: '1px solid rgba(59, 130, 246, 0.1)',
+                        textAlign: 'center'
+                      }}>
+                        <p style={{ fontSize: '12px', color: '#1e40af', margin: '0 0 8px 0', fontWeight: '600' }}>
+                          🏪 You have 1 restaurant
+                        </p>
+                        <p style={{ fontSize: '10px', color: '#64748b', margin: 0 }}>
+                          Add more restaurants to switch between locations
+                        </p>
+                      </div>
+                    )}
                     </div>
                   </div>
                 )}
@@ -1195,8 +1212,8 @@ function NavigationContent({ isHidden = false }) {
               </div>
             </div>
 
-            {/* Mobile Restaurant Switcher - For Owners/Customers */}
-            {isMobile && (user?.role === 'owner' || user?.role === 'customer') && allRestaurants.length > 1 && (
+            {/* Mobile Restaurant Switcher - For All Users */}
+            {isMobile && allRestaurants.length > 0 && (
               <div style={{ 
                 padding: '0 20px 20px 20px', 
                 borderBottom: '1px solid rgba(0, 0, 0, 0.05)' 
@@ -1297,6 +1314,25 @@ function NavigationContent({ isHidden = false }) {
                         )}
                       </div>
                     ))}
+                    
+                    {/* Show message when only one restaurant - Mobile */}
+                    {allRestaurants.length === 1 && (
+                      <div style={{
+                        padding: '12px 16px',
+                        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(59, 130, 246, 0.1)',
+                        textAlign: 'center',
+                        marginTop: '8px'
+                      }}>
+                        <p style={{ fontSize: '11px', color: '#1e40af', margin: '0 0 6px 0', fontWeight: '600' }}>
+                          🏪 You have 1 restaurant
+                        </p>
+                        <p style={{ fontSize: '9px', color: '#64748b', margin: 0 }}>
+                          Add more restaurants to switch between locations
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
