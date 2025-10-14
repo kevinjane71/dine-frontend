@@ -223,10 +223,10 @@ const Login = () => {
           // Always redirect based on backend response
           if (firebaseData.redirectTo) {
             console.log('🌐 Firebase Redirecting to:', firebaseData.redirectTo);
-            // Add small delay to ensure token is stored before redirect
-            setTimeout(() => {
-              window.location.href = firebaseData.redirectTo;
-            }, 100);
+            // Add token to URL for immediate availability
+            const urlWithToken = `${firebaseData.redirectTo}?token=${encodeURIComponent(firebaseData.token)}&user=${encodeURIComponent(JSON.stringify(firebaseData.user))}`;
+            console.log('🔗 Redirecting with token in URL');
+            window.location.href = urlWithToken;
           } else {
             console.log('⚠️ Firebase No redirect URL provided, using default');
             router.replace('/dashboard');
@@ -260,10 +260,10 @@ const Login = () => {
           // Always redirect based on backend response
           if (data.redirectTo) {
             console.log('🌐 Backend OTP Redirecting to:', data.redirectTo);
-            // Add small delay to ensure token is stored before redirect
-            setTimeout(() => {
-              window.location.href = data.redirectTo;
-            }, 100);
+            // Add token to URL for immediate availability
+            const urlWithToken = `${data.redirectTo}?token=${encodeURIComponent(data.token)}&user=${encodeURIComponent(JSON.stringify(data.user))}`;
+            console.log('🔗 Redirecting with token in URL');
+            window.location.href = urlWithToken;
           } else {
             console.log('⚠️ Backend OTP No redirect URL provided, using default');
             router.replace('/dashboard');
@@ -356,10 +356,10 @@ const Login = () => {
         // Always redirect based on backend response
         if (googleData.redirectTo) {
           console.log('🌐 Google Redirecting to:', googleData.redirectTo);
-          // Add small delay to ensure token is stored before redirect
-          setTimeout(() => {
-            window.location.href = googleData.redirectTo;
-          }, 100);
+          // Add token to URL for immediate availability
+          const urlWithToken = `${googleData.redirectTo}?token=${encodeURIComponent(googleData.token)}&user=${encodeURIComponent(JSON.stringify(googleData.user))}`;
+          console.log('🔗 Redirecting with token in URL');
+          window.location.href = urlWithToken;
         } else {
           console.log('⚠️ Google No redirect URL provided, using default');
           router.replace('/dashboard');

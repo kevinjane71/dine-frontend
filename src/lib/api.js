@@ -212,15 +212,28 @@ class ApiClient {
     this.memoryCache.authToken = token;
     this.memoryCache.lastSync = Date.now();
     
-    // Also update localStorage for persistence
+    // Also update localStorage for persistence with retry mechanism
     if (typeof window !== 'undefined') {
-      localStorage.setItem('authToken', token);
-      console.log('🔑 Token set in both memory cache and localStorage:', {
-        tokenLength: token.length,
-        tokenPreview: token.substring(0, 20) + '...',
-        memoryCacheUpdated: true,
-        localStorageUpdated: true
-      });
+      try {
+        localStorage.setItem('authToken', token);
+        console.log('🔑 Token set in both memory cache and localStorage:', {
+          tokenLength: token.length,
+          tokenPreview: token.substring(0, 20) + '...',
+          memoryCacheUpdated: true,
+          localStorageUpdated: true
+        });
+      } catch (error) {
+        console.error('❌ Failed to store token in localStorage:', error);
+        // Retry after a short delay
+        setTimeout(() => {
+          try {
+            localStorage.setItem('authToken', token);
+            console.log('🔑 Token retry successful');
+          } catch (retryError) {
+            console.error('❌ Token retry failed:', retryError);
+          }
+        }, 100);
+      }
     } else {
       console.log('🔑 Token set in memory cache only (no window):', {
         tokenLength: token.length,

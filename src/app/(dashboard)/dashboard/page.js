@@ -44,6 +44,7 @@ import {
   FaCloudUploadAlt
 } from 'react-icons/fa';
 import apiClient from '../../../lib/api';
+import { extractTokenFromUrl, hasTokenInUrl } from '../../../utils/urlTokenExtractor';
 // import { t } from '../../../lib/i18n';
 
 function RestaurantPOSContent() {
@@ -111,7 +112,23 @@ function RestaurantPOSContent() {
       console.log('Current URL:', window.location.href);
       console.log('Current hostname:', window.location.hostname);
       
-      // Add a small delay to allow token to be stored after redirect
+      // First, check if there's a token in the URL
+      if (hasTokenInUrl()) {
+        console.log('🔗 Token found in URL, extracting...');
+        const urlData = extractTokenFromUrl();
+        
+        if (urlData.token) {
+          console.log('🔑 Setting token from URL');
+          apiClient.setToken(urlData.token);
+        }
+        
+        if (urlData.user) {
+          console.log('👤 Setting user data from URL');
+          apiClient.setUser(urlData.user);
+        }
+      }
+      
+      // Now check authentication with extracted or existing token
       setTimeout(() => {
         const token = apiClient.getToken();
         const user = apiClient.getUser();
@@ -119,19 +136,20 @@ function RestaurantPOSContent() {
         console.log('🔍 Auth check details:', {
           hasToken: !!token,
           hasUser: !!user,
-          tokenPreview: token ? token.substring(0, 20) + '...' : 'null'
+          tokenPreview: token ? token.substring(0, 20) + '...' : 'null',
+          isSubdomainMode: apiClient.isSubdomainMode()
         });
         
-        // For subdomain mode, be more lenient with authentication check
+        // For subdomain mode, be very lenient with authentication check
         if (apiClient.isSubdomainMode()) {
-          console.log('🌐 Subdomain mode detected, using lenient auth check');
+          console.log('🌐 Subdomain mode detected, using very lenient auth check');
           // In subdomain mode, if we have any indication of authentication, proceed
           if (token || user || localStorage.getItem('authToken')) {
             console.log('✅ Subdomain auth check passed');
             return;
           }
           
-          // If no auth data found in subdomain mode, wait a bit longer for data to load
+          // If no auth data found in subdomain mode, wait longer for data to load
           console.log('⏳ Subdomain mode: No auth data yet, waiting for data to load...');
           return; // Let loadInitialData handle the authentication
         }
@@ -151,7 +169,7 @@ function RestaurantPOSContent() {
         
         console.log('✅ User authenticated:', userData.role);
         console.log('User data:', userData);
-      }, 100);
+      }, 1000);
     };
 
     checkAuth();
@@ -312,6 +330,22 @@ function RestaurantPOSContent() {
       setError('');
       
       console.log('🔄 Loading initial data...');
+      
+      // Check for token in URL first
+      if (hasTokenInUrl()) {
+        console.log('🔗 Token found in URL during data loading, extracting...');
+        const urlData = extractTokenFromUrl();
+        
+        if (urlData.token) {
+          console.log('🔑 Setting token from URL in loadInitialData');
+          apiClient.setToken(urlData.token);
+        }
+        
+        if (urlData.user) {
+          console.log('👤 Setting user data from URL in loadInitialData');
+          apiClient.setUser(urlData.user);
+        }
+      }
       
       // Always use user-based approach - fetch restaurants based on user's login ID
       const userData = apiClient.getUser();
