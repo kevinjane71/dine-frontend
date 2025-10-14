@@ -240,9 +240,9 @@ const Login = () => {
                 console.log('🎯 Firebase Target subdomain stored:', firebaseData.restaurants[0].subdomain);
               }
               
-              // Navigate to dashboard on main domain first (no page reload)
-              console.log('🏠 Firebase Navigating to dashboard on main domain...');
-              router.replace('/dashboard');
+              // Redirect directly to the subdomain URL
+              console.log('🌐 Firebase Redirecting directly to subdomain:', firebaseData.redirectTo);
+              window.location.href = firebaseData.redirectTo;
             } else {
               // For same-domain redirects, use Next.js router (no page reload)
               console.log('🏠 Firebase Same-domain redirect, using router');
@@ -298,12 +298,9 @@ const Login = () => {
                 console.log('🎯 Target subdomain stored:', data.defaultRestaurant.subdomain);
               }
               
-              // Navigate to dashboard on main domain first (no page reload)
-              console.log('🏠 Navigating to dashboard on main domain...');
-              router.replace('/dashboard');
-              
-              // Let dashboard handle subdomain redirect after it loads
-              // This avoids race conditions because dashboard will have the token
+              // Redirect directly to the subdomain URL
+              console.log('🌐 Backend OTP Redirecting directly to subdomain:', data.redirectTo);
+              window.location.href = data.redirectTo;
             } else {
               // For same-domain redirects (including first-time users), use Next.js router (no page reload)
               console.log('🏠 Same-domain redirect (first-time user or no subdomain), using router');
@@ -419,9 +416,9 @@ const Login = () => {
               console.log('🎯 Google Target subdomain stored:', googleData.defaultRestaurant.subdomain);
             }
             
-            // Navigate to dashboard on main domain first (no page reload)
-            console.log('🏠 Google Navigating to dashboard on main domain...');
-            router.replace('/dashboard');
+            // Redirect directly to the subdomain URL
+            console.log('🌐 Google Redirecting directly to subdomain:', googleData.redirectTo);
+            window.location.href = googleData.redirectTo;
           } else {
             // For same-domain redirects, use Next.js router (no page reload)
             console.log('🏠 Google Same-domain redirect, using router');
