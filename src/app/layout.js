@@ -1,5 +1,12 @@
 import './globals.css'
 import PrefetchErrorBoundary from '../components/PrefetchErrorBoundary'
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter'
+})
 
 export const metadata = {
   title: 'DineOpen - AI-Powered Restaurant Management System | POS, Inventory & Order Tracking',
@@ -37,30 +44,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={inter.variable}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="icon" type="image/png" href="/favicon.png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-        <link 
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" 
-          rel="stylesheet" 
-        />
         {/* Prefetch Error Handler - Must load first */}
-        <script src="/prefetch-error-handler.js"></script>
-        
-        {/* Analytics Script */}
-        <script
-          defer
-          data-website-id="dfid_XPKZbIBWhgE8AtCACES6e"
-          data-domain="dineopen.com"
-          src="https://datafa.st/js/script.js">
-        </script>
+        <script src="/prefetch-error-handler.js" async></script>
       </head>
-      <body suppressHydrationWarning={true}>
+      <body suppressHydrationWarning={true} className={inter.className}>
         <PrefetchErrorBoundary>
           {children}
         </PrefetchErrorBoundary>
