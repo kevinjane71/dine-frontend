@@ -51,8 +51,15 @@ function NavigationContent({ isHidden = false }) {
   
   // Debug dropdown states
   useEffect(() => {
-    console.log('Dropdown states:', { showRestaurantDropdown, showUserDropdown });
-  }, [showRestaurantDropdown, showUserDropdown]);
+    console.log('🔍 Navigation Debug:', { 
+      showRestaurantDropdown, 
+      showUserDropdown, 
+      isMobile, 
+      allRestaurantsLength: allRestaurants.length,
+      userRole: user?.role,
+      selectedRestaurant: selectedRestaurant?.name
+    });
+  }, [showRestaurantDropdown, showUserDropdown, isMobile, allRestaurants.length, user?.role, selectedRestaurant]);
   
   // Check for mobile screen size
   useEffect(() => {
@@ -151,20 +158,23 @@ function NavigationContent({ isHidden = false }) {
               }
             } catch (error) {
               console.error('Error fetching restaurant data:', error);
-              }
             }
-          } else if (parsedUser.role === 'owner' || parsedUser.role === 'customer') {
-            // For owners, get all their restaurants
+            }
+          } else if (parsedUser.role === 'owner' || parsedUser.role === 'customer' || parsedUser.role === 'admin') {
+            // For owners, customers, and admins, get all their restaurants
             try {
               const token = localStorage.getItem('authToken');
+              console.log('🔑 Navigation: Making API call to fetch restaurants for', parsedUser.role, 'with token:', token ? 'present' : 'missing');
               const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003'}/api/restaurants`, {
                 headers: {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type': 'application/json'
                 }
               });
+              console.log('📡 Navigation: API response status:', response.status, response.ok ? 'OK' : 'FAILED');
               if (response.ok) {
                 const data = await response.json();
+                console.log('🏢 Navigation: Fetched restaurants for', parsedUser.role, ':', data.restaurants?.length || 0, 'restaurants');
                 if (data.restaurants && data.restaurants.length > 0) {
                   setAllRestaurants(data.restaurants);
                   
@@ -180,7 +190,8 @@ function NavigationContent({ isHidden = false }) {
                 }
               }
             } catch (error) {
-              console.error('Error fetching restaurant data:', error);
+              console.error('❌ Navigation: Error fetching restaurant data:', error);
+              console.error('❌ Navigation: Error details:', error.message, error.stack);
             }
           }
         }
@@ -232,7 +243,7 @@ function NavigationContent({ isHidden = false }) {
       } else {
         // Refresh the page to load new restaurant data
         console.log('🔄 Restaurant changed, refreshing page');
-        window.location.reload();
+    window.location.reload();
       }
     } catch (error) {
       console.error('Error changing restaurant:', error);

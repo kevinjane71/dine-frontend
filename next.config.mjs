@@ -3,6 +3,11 @@ const nextConfig = {
   // Disable static optimization for dynamic routes
   trailingSlash: false,
   
+  // Environment variables
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://dine-backend-lake.vercel.app',
+  },
+  
   // Custom webpack config to handle prefetch errors
   webpack: (config, { isServer }) => {
     if (!isServer) {

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import apiClient from '../../../lib/api';
 import { 
   FaChartLine, 
   FaMoneyBillWave, 
@@ -16,6 +18,7 @@ import { FiTrendingUp } from "react-icons/fi";
 import apiClient from '../../../lib/api';
 
 const Analytics = () => {
+  const router = useRouter();
   const [selectedPeriod, setSelectedPeriod] = useState('7d');
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,14 +26,43 @@ const Analytics = () => {
   const [restaurantId, setRestaurantId] = useState(null);
 
   useEffect(() => {
-    // Get restaurant ID from localStorage
-    const selectedRestaurant = localStorage.getItem('selectedRestaurantId');
-    if (selectedRestaurant) {
-      setRestaurantId(selectedRestaurant);
-      loadAnalytics(selectedRestaurant, selectedPeriod);
-    } else {
-      setError('No restaurant selected');
-      setLoading(false);
+    // Get restaurant ID from user data (same approach as dashboard)
+    const userData = apiClient.getUser();
+    const token = apiClient.getToken();
+    
+    if (!token || !userData?.id) {
+      router.push('/login');
+      return;
+    }
+    
+    let restaurantId = null;
+    
+    // First, try to use default restaurant from user data
+    if (userData?.defaultRestaurant) {
+      restaurantId = userData.defaultRestaurant.id;
+      console.log('🏢 Analytics: Using default restaurant from user data:', userData.defaultRestaurant.name);
+    }
+    // For staff members, use their assigned restaurant
+    else if (userData?.restaurantId) {
+      restaurantId = userData.restaurantId;
+      console.log('👨‍💼 Analytics: Staff user, using assigned restaurant:', restaurantId);
+    }
+    // For owners/customers, try localStorage fallback
+    else {
+      const selectedRestaurant = localStorage.getItem('selectedRestaurantId');
+      if (selectedRestaurant) {
+        restaurantId = selectedRestaurant;
+        console.log('🏢 Analytics: Using saved restaurant from localStorage:', restaurantId);
+      } else {
+        setError('No restaurant selected');
+        setLoading(false);
+        return;
+      }
+    }
+    
+    if (restaurantId) {
+      setRestaurantId(restaurantId);
+      loadAnalytics(restaurantId, selectedPeriod);
     }
   }, []);
 

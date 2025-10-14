@@ -1547,13 +1547,33 @@ const MenuManagement = () => {
         }
 
         const user = userData;
+        
+        // Get restaurant ID from user data (same approach as dashboard)
         let restaurantId = null;
-
+        let restaurant = null;
+        
+        // First, try to use default restaurant from user data
+        if (user?.defaultRestaurant) {
+          restaurant = user.defaultRestaurant;
+          restaurantId = restaurant.id;
+          console.log('🏢 Menu: Using default restaurant from user data:', restaurant.name);
+          setCurrentRestaurant(restaurant);
+        }
         // For staff members, use their assigned restaurant
-        if (user.restaurantId) {
+        else if (user?.restaurantId) {
           restaurantId = user.restaurantId;
-        } 
-        // For owners or customers, get selected restaurant
+          // Try to get restaurant data from user object
+          if (user.restaurant) {
+            restaurant = user.restaurant;
+          } else {
+            // Fallback to localStorage or create basic restaurant object
+            const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+            restaurant = savedRestaurant.id === restaurantId ? savedRestaurant : { id: restaurantId, name: 'Restaurant' };
+          }
+          console.log('👨‍💼 Menu: Staff user, using assigned restaurant:', restaurant?.name);
+          setCurrentRestaurant(restaurant);
+        }
+        // For owners/customers, try localStorage fallback
         else if (user.role === 'owner' || user.role === 'customer') {
           const restaurantsResponse = await apiClient.getRestaurants();
           if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
@@ -1562,6 +1582,7 @@ const MenuManagement = () => {
                                       restaurantsResponse.restaurants[0];
             restaurantId = selectedRestaurant.id;
             setCurrentRestaurant(selectedRestaurant);
+            console.log('🏢 Menu: Using saved restaurant from localStorage:', selectedRestaurant?.name);
           }
         }
 
@@ -1594,17 +1615,41 @@ const MenuManagement = () => {
           if (!userData) return;
 
           const user = JSON.parse(userData);
+          
+          // Get restaurant ID from user data (same approach as dashboard)
           let restaurantId = null;
-
-          if (user.restaurantId) {
+          let restaurant = null;
+          
+          // First, try to use default restaurant from user data
+          if (user?.defaultRestaurant) {
+            restaurant = user.defaultRestaurant;
+            restaurantId = restaurant.id;
+            console.log('🏢 Menu: Using default restaurant from user data:', restaurant.name);
+            setCurrentRestaurant(restaurant);
+          }
+          // For staff members, use their assigned restaurant
+          else if (user?.restaurantId) {
             restaurantId = user.restaurantId;
-          } else if (user.role === 'owner' || user.role === 'admin') {
+            // Try to get restaurant data from user object
+            if (user.restaurant) {
+              restaurant = user.restaurant;
+            } else {
+              // Fallback to localStorage or create basic restaurant object
+              const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+              restaurant = savedRestaurant.id === restaurantId ? savedRestaurant : { id: restaurantId, name: 'Restaurant' };
+            }
+            console.log('👨‍💼 Menu: Staff user, using assigned restaurant:', restaurant?.name);
+            setCurrentRestaurant(restaurant);
+          }
+          // For owners/customers, try localStorage fallback
+          else if (user.role === 'owner' || user.role === 'admin') {
             const restaurantsResponse = await apiClient.getRestaurants();
             const restaurants = restaurantsResponse.restaurants || [];
             const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
             const selectedRestaurant = restaurants.find(r => r.id === savedRestaurantId) || restaurants[0];
             restaurantId = selectedRestaurant?.id;
             setCurrentRestaurant(selectedRestaurant);
+            console.log('🏢 Menu: Using saved restaurant from localStorage:', selectedRestaurant?.name);
           }
 
           if (restaurantId) {
