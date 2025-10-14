@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import RestaurantNameModal from '../../components/RestaurantNameModal';
 import { 
   FaPhone, 
   FaKey, 
@@ -31,6 +32,10 @@ const Login = () => {
   const [staffCredentials, setStaffCredentials] = useState({ loginId: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Restaurant name modal state
+  const [showRestaurantModal, setShowRestaurantModal] = useState(false);
+  const [pendingUserData, setPendingUserData] = useState(null);
   
   // Firebase OTP state
   const [verificationId, setVerificationId] = useState(null);
@@ -220,7 +225,15 @@ const Login = () => {
           console.log('🏢 Firebase User role:', firebaseData.user?.role);
           console.log('🏢 Firebase Has restaurants:', firebaseData.hasRestaurants);
           
-          // Always redirect based on backend response
+          // Check if this is a first-time user - show modal only for new users
+          if (firebaseData.isNewUser) {
+            console.log('🆕 First-time user detected, showing restaurant name modal');
+            setPendingUserData(firebaseData);
+            setShowRestaurantModal(true);
+            return;
+          }
+          
+          // For existing users, redirect normally
           if (firebaseData.redirectTo) {
             console.log('🌐 Firebase Redirecting to:', firebaseData.redirectTo);
             // Add token to URL for immediate availability
@@ -257,7 +270,15 @@ const Login = () => {
           console.log('🏢 User role:', data.user?.role);
           console.log('🏢 Has restaurants:', data.hasRestaurants);
           
-          // Always redirect based on backend response
+          // Check if this is a first-time user - show modal only for new users
+          if (data.isNewUser) {
+            console.log('🆕 First-time user detected, showing restaurant name modal');
+            setPendingUserData(data);
+            setShowRestaurantModal(true);
+            return;
+          }
+          
+          // For existing users, redirect normally
           if (data.redirectTo) {
             console.log('🌐 Backend OTP Redirecting to:', data.redirectTo);
             // Add token to URL for immediate availability
@@ -304,6 +325,116 @@ const Login = () => {
     setVerificationId(null);
     setIsFirebaseOTP(false);
     setStep('phone');
+  };
+
+  // Restaurant name modal handlers
+  const handleRestaurantNameSubmit = async (restaurantName) => {
+    try {
+      setLoading(true);
+      
+      const response = await fetch('https://dine-backend-lake.vercel.app/api/auth/create-restaurant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: pendingUserData.user.id,
+          restaurantName: restaurantName,
+          userEmail: pendingUserData.user.email
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create restaurant');
+      }
+
+      const result = await response.json();
+      
+      // Update user data with restaurant info
+      const updatedUserData = {
+        ...pendingUserData.user,
+        restaurantId: result.restaurant.id,
+        defaultRestaurant: result.restaurant.id,
+        setupComplete: true
+      };
+
+      // Set user data and token
+      apiClient.setUser(updatedUserData);
+      apiClient.setToken(pendingUserData.token);
+
+      // Close modal and redirect
+      setShowRestaurantModal(false);
+      setPendingUserData(null);
+
+      // Redirect to subdomain dashboard
+      const redirectUrl = `https://${result.restaurant.subdomain}.dineopen.com/dashboard`;
+      const urlWithToken = `${redirectUrl}?token=${encodeURIComponent(pendingUserData.token)}&user=${encodeURIComponent(JSON.stringify(updatedUserData))}`;
+      window.location.href = urlWithToken;
+
+    } catch (error) {
+      console.error('Error creating restaurant:', error);
+      setError('Failed to create restaurant. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRestaurantNameSkip = async () => {
+    try {
+      setLoading(true);
+      
+      // Create restaurant with random name
+      const randomNames = [
+        'Golden Spoon', 'Royal Kitchen', 'Spice Garden', 'Flavor Palace', 'Taste Haven',
+        'Culinary Corner', 'Gourmet Spot', 'Foodie Hub', 'Dining Delight', 'Kitchen Magic'
+      ];
+      const randomName = randomNames[Math.floor(Math.random() * randomNames.length)];
+      
+      const response = await fetch('https://dine-backend-lake.vercel.app/api/auth/create-restaurant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: pendingUserData.user.id,
+          restaurantName: randomName,
+          userEmail: pendingUserData.user.email
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create restaurant');
+      }
+
+      const result = await response.json();
+      
+      // Update user data with restaurant info
+      const updatedUserData = {
+        ...pendingUserData.user,
+        restaurantId: result.restaurant.id,
+        defaultRestaurant: result.restaurant.id,
+        setupComplete: true
+      };
+
+      // Set user data and token
+      apiClient.setUser(updatedUserData);
+      apiClient.setToken(pendingUserData.token);
+
+      // Close modal and redirect
+      setShowRestaurantModal(false);
+      setPendingUserData(null);
+
+      // Redirect to subdomain dashboard
+      const redirectUrl = `https://${result.restaurant.subdomain}.dineopen.com/dashboard`;
+      const urlWithToken = `${redirectUrl}?token=${encodeURIComponent(pendingUserData.token)}&user=${encodeURIComponent(JSON.stringify(updatedUserData))}`;
+      window.location.href = urlWithToken;
+
+    } catch (error) {
+      console.error('Error creating restaurant:', error);
+      setError('Failed to create restaurant. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -353,7 +484,15 @@ const Login = () => {
         console.log('🏢 Google Has restaurants:', googleData.hasRestaurants);
         console.log('🏢 Google Restaurants count:', googleData.restaurants?.length || 0);
         
-        // Always redirect based on backend response
+        // Check if this is a first-time user - show modal only for new users
+        if (googleData.isNewUser) {
+          console.log('🆕 First-time user detected, showing restaurant name modal');
+          setPendingUserData(googleData);
+          setShowRestaurantModal(true);
+          return;
+        }
+        
+        // For existing users, redirect normally
         if (googleData.redirectTo) {
           console.log('🌐 Google Redirecting to:', googleData.redirectTo);
           // Add token to URL for immediate availability
@@ -1078,6 +1217,17 @@ const Login = () => {
           </p>
         </div>
       </div>
+      
+      {/* Restaurant Name Modal */}
+      <RestaurantNameModal
+        isOpen={showRestaurantModal}
+        onClose={() => {
+          setShowRestaurantModal(false);
+          setPendingUserData(null);
+        }}
+        onSubmit={handleRestaurantNameSubmit}
+        onSkip={handleRestaurantNameSkip}
+      />
       
       {/* Hidden reCAPTCHA container */}
       <div id="recaptcha-container" style={{ display: 'none' }}></div>

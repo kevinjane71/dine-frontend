@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Onboarding from '../../../components/Onboarding';
 import EmptyMenuPrompt from '../../../components/EmptyMenuPrompt';
 import MenuItemCard from '../../../components/MenuItemCard';
 import CategoryButton from '../../../components/CategoryButton';
@@ -72,10 +71,6 @@ function RestaurantPOSContent() {
   const [processing, setProcessing] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState('');
-  
-  // Onboarding state
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
   
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -283,29 +278,6 @@ function RestaurantPOSContent() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  // Authentication check and onboarding detection
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    
-    // Check if user needs onboarding
-    const userData = apiClient.getUser();
-    const onboardingSkipped = localStorage.getItem('onboarding_skipped');
-    const hasCompletedOnboarding = localStorage.getItem('onboarding_completed');
-    
-    if (userData && !onboardingSkipped && !hasCompletedOnboarding) {
-      const user = userData;
-      // Show onboarding for owners who haven't set up a restaurant
-      if (user.role === 'owner' || !user.role) {
-        setIsFirstTimeUser(true);
-        setShowOnboarding(true);
-      }
-    }
-  }, [router]);
 
   // Load cart from localStorage
   useEffect(() => {
@@ -545,33 +517,6 @@ function RestaurantPOSContent() {
   }, [loadInitialData]);
  
   // REMOVED - createSampleRestaurant function no longer needed
-  
-  // Handle onboarding completion
-  const handleOnboardingComplete = async (restaurant) => {
-    setShowOnboarding(false);
-    setIsFirstTimeUser(false);
-    localStorage.setItem('onboarding_completed', 'true');
-    
-    // Update restaurant list and selected restaurant
-    setSelectedRestaurant(restaurant);
-    setRestaurants(prev => [...prev, restaurant]);
-    
-    // Load menu and floors/tables for the new restaurant
-    await Promise.all([
-      loadMenu(restaurant.id),
-      loadFloors(restaurant.id)
-    ]);
-  };
-  
-  // Handle onboarding skip
-  const handleOnboardingSkip = () => {
-    setShowOnboarding(false);
-    setIsFirstTimeUser(false);
-    localStorage.setItem('onboarding_skipped', 'true');
-    
-    // Continue with loading initial data
-    loadInitialData();
-  };
 
   const loadMenu = async (restaurantId) => {
     try {
@@ -1518,20 +1463,6 @@ function RestaurantPOSContent() {
     };
   }, [isFullscreen]);
 
-  // Show onboarding if needed
-  if (showOnboarding) {
-    return (
-      <>
-        <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-        </div>
-        <Onboarding 
-          onComplete={handleOnboardingComplete}
-          onSkip={handleOnboardingSkip}
-        />
-      </>
-    );
-  }
-  
   // Loading state
   if (loading) {
     return (
@@ -1885,7 +1816,11 @@ function RestaurantPOSContent() {
               flexWrap: 'wrap'
             }}>
               <button
-                onClick={() => setShowOnboarding(true)}
+                onClick={() => {
+                  // Skip onboarding and continue with normal flow
+                  localStorage.setItem('onboarding_skipped', 'true');
+                  window.location.reload();
+                }}
                 style={{
                   padding: '20px 40px',
                   background: 'rgba(255, 255, 255, 0.95)',
@@ -1912,7 +1847,7 @@ function RestaurantPOSContent() {
                   e.target.style.background = 'rgba(255, 255, 255, 0.95)';
                 }}
               >
-                🚀 Launch Restaurant System
+                🚀 Continue to Dashboard
               </button>
             </div>
             

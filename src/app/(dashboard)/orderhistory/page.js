@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '../../../lib/api';
+import { extractTokenFromUrl, hasTokenInUrl } from '../../../utils/urlTokenExtractor';
 import { 
   FaSearch,
   FaFilter,
@@ -144,15 +145,31 @@ const OrderHistory = () => {
   }, [restaurantId]);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
-              const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+    // First, check if there's a token in the URL
+    if (hasTokenInUrl()) {
+      console.log('🔗 Order History: Token found in URL, extracting...');
+      const urlData = extractTokenFromUrl();
+      
+      if (urlData.token) {
+        console.log('🔑 Order History: Setting token from URL');
+        apiClient.setToken(urlData.token);
+      }
+      
+      if (urlData.user) {
+        console.log('👤 Order History: Setting user data from URL');
+        apiClient.setUser(urlData.user);
+      }
+    }
+    
+    const token = apiClient.getToken();
+    const userData = apiClient.getUser();
+    const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
     const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
 
-    if (!token || !userData.id) {
+    if (!token || !userData?.id) {
       router.push('/login');
-          return;
-        }
+      return;
+    }
         
     setUser(userData);
     setRestaurantId(savedRestaurantId);

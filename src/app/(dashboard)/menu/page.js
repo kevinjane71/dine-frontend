@@ -7,6 +7,7 @@ import ImageCarousel from '../../../components/ImageCarousel';
 import ImageUpload from '../../../components/ImageUpload';
 import QRCodeModal from '../../../components/QRCodeModal';
 import apiClient from '../../../lib/api';
+import { extractTokenFromUrl, hasTokenInUrl } from '../../../utils/urlTokenExtractor';
 import { t } from '../../../lib/i18n';
 import { 
   FaPlus, 
@@ -1521,14 +1522,31 @@ const MenuManagement = () => {
     const loadRestaurantContext = async () => {
       try {
         console.log('Loading restaurant context...');
-        const userData = localStorage.getItem('user');
+        
+        // First, check if there's a token in the URL
+        if (hasTokenInUrl()) {
+          console.log('🔗 Menu: Token found in URL, extracting...');
+          const urlData = extractTokenFromUrl();
+          
+          if (urlData.token) {
+            console.log('🔑 Menu: Setting token from URL');
+            apiClient.setToken(urlData.token);
+          }
+          
+          if (urlData.user) {
+            console.log('👤 Menu: Setting user data from URL');
+            apiClient.setUser(urlData.user);
+          }
+        }
+        
+        const userData = apiClient.getUser();
         if (!userData) {
           console.log('No user data found, redirecting to login');
           router.push('/login');
           return;
         }
 
-        const user = JSON.parse(userData);
+        const user = userData;
         let restaurantId = null;
 
         // For staff members, use their assigned restaurant
