@@ -255,25 +255,23 @@ const Login = () => {
             
             // Check if it's a subdomain redirect
             if (data.redirectTo.includes('.dineopen.com') || data.redirectTo.includes('.localhost')) {
-              console.log('🌐 Subdomain redirect detected, navigating directly');
+              console.log('🌐 Subdomain redirect detected, using optimized approach');
               
-              // Ensure token is properly stored before redirect
-              const ensureTokenStored = () => {
-                const storedToken = localStorage.getItem('authToken');
-                const storedUser = localStorage.getItem('user');
-                
-                if (storedToken && storedUser) {
-                  console.log('✅ Token and user data confirmed stored, redirecting...');
-                  window.location.href = data.redirectTo;
-                } else {
-                  console.log('⏳ Token not yet stored, waiting...');
-                  setTimeout(ensureTokenStored, 50);
-                }
-              };
+              // Store subdomain info for dashboard to handle
+              if (data.defaultRestaurant && data.defaultRestaurant.subdomain) {
+                localStorage.setItem('targetSubdomain', data.defaultRestaurant.subdomain);
+                console.log('🎯 Target subdomain stored:', data.defaultRestaurant.subdomain);
+              }
               
-              // Start checking after a small delay
-              setTimeout(ensureTokenStored, 100);
+              // Navigate to dashboard on main domain first (no page reload)
+              console.log('🏠 Navigating to dashboard on main domain...');
+              router.replace('/dashboard');
+              
+              // Let dashboard handle subdomain redirect after it loads
+              // This avoids race conditions because dashboard will have the token
             } else {
+              // For same-domain redirects, use Next.js router (no page reload)
+              console.log('🏠 Same-domain redirect, using router');
               router.replace(data.redirectTo);
             }
           } else {

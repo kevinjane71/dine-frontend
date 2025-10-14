@@ -128,6 +128,24 @@ function RestaurantPOSContent() {
         
         console.log('✅ User authenticated:', user.role);
         console.log('User data:', user);
+        
+        // Check if we need to redirect to subdomain after login
+        const targetSubdomain = localStorage.getItem('targetSubdomain');
+        if (targetSubdomain && (window.location.hostname === 'www.dineopen.com' || window.location.hostname === 'localhost')) {
+          console.log('🎯 Redirecting to target subdomain:', targetSubdomain);
+          
+          // Determine the correct subdomain URL based on environment
+          let subdomainUrl;
+          if (window.location.hostname === 'localhost') {
+            subdomainUrl = `http://${targetSubdomain}.localhost:3002/dashboard`;
+          } else {
+            subdomainUrl = `https://${targetSubdomain}.dineopen.com/dashboard`;
+          }
+          
+          localStorage.removeItem('targetSubdomain'); // Clean up
+          window.location.replace(subdomainUrl);
+          return;
+        }
       }, 100);
     };
 
@@ -430,10 +448,10 @@ function RestaurantPOSContent() {
 
   // Load initial data
   useEffect(() => {
-    // Add a delay to ensure token is properly stored after login redirect
+    // Small delay to ensure authentication check completes first
     const timer = setTimeout(() => {
       loadInitialData();
-    }, 500);
+    }, 200);
     
     return () => clearTimeout(timer);
   }, [loadInitialData]);
