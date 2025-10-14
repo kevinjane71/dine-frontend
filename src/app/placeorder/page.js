@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaArrowLeft, FaPhone, FaChair, FaUtensils, FaLeaf, FaDrumstickBite, FaSpinner, FaLock } from 'react-icons/fa';
 import ImageCarousel from '../../components/ImageCarousel';
 import apiClient from '../../lib/api.js';
-import { useRestaurant } from '../../contexts/RestaurantContext';
 
 // Helper function to get category-specific colors
 const getCategoryColor = (category, opacity = 1) => {
@@ -1528,3 +1527,4 @@ const PlaceOrderPage = () => {
 };
 
 export default PlaceOrderPage;
+

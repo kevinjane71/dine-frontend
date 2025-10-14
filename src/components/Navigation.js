@@ -35,12 +35,10 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import apiClient from '../lib/api';
 import LanguageSwitcher from './LanguageSwitcher';
-import { useSubdomain } from '../hooks/useSubdomain';
 
 function NavigationContent({ isHidden = false }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { subdomain, restaurant: subdomainRestaurant, isSubdomainMode } = useSubdomain();
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [allRestaurants, setAllRestaurants] = useState([]);
   const [showRestaurantDropdown, setShowRestaurantDropdown] = useState(false);
@@ -50,14 +48,6 @@ function NavigationContent({ isHidden = false }) {
   const [user, setUser] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [pageAccess, setPageAccess] = useState(null);
-  
-  // Sync selected restaurant with subdomain restaurant
-  useEffect(() => {
-    if (isSubdomainMode && subdomainRestaurant) {
-      console.log('🔄 Syncing selected restaurant with subdomain restaurant:', subdomainRestaurant.name);
-      setSelectedRestaurant(subdomainRestaurant);
-    }
-  }, [isSubdomainMode, subdomainRestaurant]);
   
   // Debug dropdown states
   useEffect(() => {
@@ -230,27 +220,9 @@ function NavigationContent({ isHidden = false }) {
         detail: { restaurant } 
       }));
       
-      // If restaurant has subdomain, redirect to subdomain
-      if (restaurant.subdomain) {
-        const currentHost = window.location.hostname;
-        const isLocalhost = currentHost.includes('localhost');
-        
-        if (isLocalhost) {
-          // For localhost development
-          const newUrl = `http://${restaurant.subdomain}.localhost:3002/dashboard`;
-          console.log('🔄 Redirecting to subdomain:', newUrl);
-          window.location.href = newUrl;
-        } else {
-          // For production
-          const newUrl = `https://${restaurant.subdomain}.dineopen.com/dashboard`;
-          console.log('🔄 Redirecting to subdomain:', newUrl);
-          window.location.href = newUrl;
-        }
-      } else {
-        // If no subdomain, stay on current domain but refresh
-        console.log('🔄 Restaurant has no subdomain, staying on current domain');
-    window.location.reload();
-      }
+      // Refresh the page to load new restaurant data
+      console.log('🔄 Restaurant changed, refreshing page');
+      window.location.reload();
     } catch (error) {
       console.error('Error changing restaurant:', error);
     }

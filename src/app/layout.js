@@ -1,5 +1,4 @@
 import './globals.css'
-import { RestaurantProvider } from '../contexts/RestaurantContext'
 
 export const metadata = {
   title: 'DineOpen - AI-Powered Restaurant Management System | POS, Inventory & Order Tracking',
