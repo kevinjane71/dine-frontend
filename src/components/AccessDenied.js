@@ -68,7 +68,7 @@ export default function AccessDenied() {
           You don&apos;t have permission to access this restaurant. This could be because:
         </p>
 
-        {/* Reasons dd*/}
+        {/* Reasons ddd*/}
         <div style={{
           textAlign: 'left',
           marginBottom: '2rem',
