@@ -418,7 +418,7 @@ function RestaurantPOSContent() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isSubdomainMode, restaurant]);
 
   // Load initial data
   useEffect(() => {

@@ -13,6 +13,12 @@ export const useSubdomain = () => {
         setLoading(true);
         setError(null);
 
+        // Skip if we're on the login page
+        if (window.location.pathname === '/login') {
+          setLoading(false);
+          return;
+        }
+
         // Get hostname
         const hostname = window.location.hostname;
         
