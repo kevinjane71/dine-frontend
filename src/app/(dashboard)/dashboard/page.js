@@ -130,6 +130,10 @@ function RestaurantPOSContent() {
             console.log('✅ Subdomain auth check passed');
             return;
           }
+          
+          // If no auth data found in subdomain mode, wait a bit longer for data to load
+          console.log('⏳ Subdomain mode: No auth data yet, waiting for data to load...');
+          return; // Let loadInitialData handle the authentication
         }
         
         if (!apiClient.isAuthenticated()) {
@@ -319,11 +323,16 @@ function RestaurantPOSContent() {
       console.log('🔑 Auth token available:', !!token);
       console.log('🔑 Token preview:', token ? token.substring(0, 20) + '...' : 'null');
       
-      // Verify token is valid before making API calls
+      // For subdomain mode, be more lenient with token check
       if (!token) {
-        console.error('❌ No auth token found, redirecting to login');
-        router.replace('/login');
-        return;
+        if (apiClient.isSubdomainMode()) {
+          console.log('⏳ Subdomain mode: No token yet, waiting for data to load...');
+          // Don't redirect immediately in subdomain mode, let the data loading continue
+        } else {
+          console.error('❌ No auth token found, redirecting to login');
+          router.replace('/login');
+          return;
+        }
       }
       
       // Use restaurants data from login response if available
@@ -347,14 +356,20 @@ function RestaurantPOSContent() {
           console.error('❌ Failed to load restaurants:', restaurantError);
           
           if (restaurantError.message?.includes('401') || restaurantError.message?.includes('Unauthorized')) {
-            console.log('🔒 Authentication failed, redirecting to login');
-            router.replace('/login');
-            return;
+            if (apiClient.isSubdomainMode()) {
+              console.log('⏳ Subdomain mode: Auth error, but continuing...');
+              setRestaurants([]);
+              restaurantsResponse = { restaurants: [] };
+            } else {
+              console.log('🔒 Authentication failed, redirecting to login');
+              router.replace('/login');
+              return;
+            }
+          } else {
+            setError(`Failed to load restaurants: ${restaurantError.message}. Please check your connection and try again.`);
+            setRestaurants([]);
+            restaurantsResponse = { restaurants: [] };
           }
-          
-          setError(`Failed to load restaurants: ${restaurantError.message}. Please check your connection and try again.`);
-          setRestaurants([]);
-          restaurantsResponse = { restaurants: [] };
         }
       }
       

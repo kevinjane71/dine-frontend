@@ -223,7 +223,10 @@ const Login = () => {
           // Always redirect based on backend response
           if (firebaseData.redirectTo) {
             console.log('🌐 Firebase Redirecting to:', firebaseData.redirectTo);
-            window.location.href = firebaseData.redirectTo;
+            // Add small delay to ensure token is stored before redirect
+            setTimeout(() => {
+              window.location.href = firebaseData.redirectTo;
+            }, 100);
           } else {
             console.log('⚠️ Firebase No redirect URL provided, using default');
             router.replace('/dashboard');
@@ -257,7 +260,10 @@ const Login = () => {
           // Always redirect based on backend response
           if (data.redirectTo) {
             console.log('🌐 Backend OTP Redirecting to:', data.redirectTo);
-            window.location.href = data.redirectTo;
+            // Add small delay to ensure token is stored before redirect
+            setTimeout(() => {
+              window.location.href = data.redirectTo;
+            }, 100);
           } else {
             console.log('⚠️ Backend OTP No redirect URL provided, using default');
             router.replace('/dashboard');
@@ -350,7 +356,10 @@ const Login = () => {
         // Always redirect based on backend response
         if (googleData.redirectTo) {
           console.log('🌐 Google Redirecting to:', googleData.redirectTo);
-          window.location.href = googleData.redirectTo;
+          // Add small delay to ensure token is stored before redirect
+          setTimeout(() => {
+            window.location.href = googleData.redirectTo;
+          }, 100);
         } else {
           console.log('⚠️ Google No redirect URL provided, using default');
           router.replace('/dashboard');
