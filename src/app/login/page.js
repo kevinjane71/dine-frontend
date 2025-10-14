@@ -21,6 +21,7 @@ import {
 } from 'firebase/auth';
 import apiClient from '../../lib/api';
 import { t } from '../../lib/i18n';
+import RestaurantNameOnboarding from '../../components/RestaurantNameOnboarding';
 
 const Login = () => {
   const router = useRouter();
@@ -36,6 +37,9 @@ const Login = () => {
   const [verificationId, setVerificationId] = useState(null);
   const [otpSent, setOtpSent] = useState(false);
   const [isFirebaseOTP, setIsFirebaseOTP] = useState(false);
+  
+  // Restaurant onboarding state
+  const [showRestaurantOnboarding, setShowRestaurantOnboarding] = useState(false);
 
   // Check if user is already logged in and redirect
   useEffect(() => {
@@ -106,7 +110,7 @@ const Login = () => {
       // Check if it's dummy account
       if (isDummyAccount(phoneNumber)) {
         // Use backend OTP for dummy account
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dine-backend-lake.vercel.app';
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
         const response = await fetch(`${backendUrl}/api/auth/phone/send-otp`, {
           method: 'POST',
           headers: {
@@ -167,7 +171,7 @@ const Login = () => {
         const result = await verificationId.confirm(otp);
         
         // Call backend to get JWT token
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dine-backend-lake.vercel.app';
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
         const firebaseResponse = await fetch(`${backendUrl}/api/auth/firebase/verify`, {
           method: 'POST',
           headers: {
@@ -189,11 +193,18 @@ const Login = () => {
           localStorage.setItem('authToken', firebaseData.token);
           localStorage.setItem('user', JSON.stringify(firebaseData.user));
           
-          // Redirect based on backend response
-          if (firebaseData.redirectTo) {
-            router.replace(firebaseData.redirectTo);
+          // Handle first-time user experience
+          if (firebaseData.firstTimeUser) {
+            console.log('🎉 First-time user detected!');
+            // Show restaurant name onboarding
+            setShowRestaurantOnboarding(true);
           } else {
-            router.replace('/dashboard');
+            // Redirect existing users
+            if (firebaseData.redirectTo) {
+              router.replace(firebaseData.redirectTo);
+            } else {
+              router.replace('/dashboard');
+            }
           }
         } else {
           setError(firebaseData.message || 'Failed to verify with backend');
@@ -216,11 +227,18 @@ const Login = () => {
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
           
-          // Redirect based on backend response
-          if (data.redirectTo) {
-            router.replace(data.redirectTo);
+          // Handle first-time user experience
+          if (data.firstTimeUser) {
+            console.log('🎉 First-time phone user detected!');
+            // Show restaurant name onboarding
+            setShowRestaurantOnboarding(true);
           } else {
-            router.replace('/dashboard');
+            // Redirect existing users
+            if (data.redirectTo) {
+              router.replace(data.redirectTo);
+            } else {
+              router.replace('/dashboard');
+            }
           }
         } else {
           setError(data.message || 'Invalid OTP');
@@ -258,6 +276,21 @@ const Login = () => {
     setVerificationId(null);
     setIsFirebaseOTP(false);
     setStep('phone');
+  };
+
+  // Restaurant onboarding handlers
+  const handleRestaurantOnboardingComplete = (restaurant) => {
+    console.log('✅ Restaurant created:', restaurant);
+    setShowRestaurantOnboarding(false);
+    // Redirect to dashboard
+    router.replace('/dashboard');
+  };
+
+  const handleRestaurantOnboardingSkip = () => {
+    console.log('⏭️ Restaurant onboarding skipped');
+    setShowRestaurantOnboarding(false);
+    // Redirect to dashboard
+    router.replace('/dashboard');
   };
 
   const handleGoogleLogin = async () => {
@@ -303,36 +336,44 @@ const Login = () => {
         
         console.log('Google login successful:', googleData);
         console.log('Is new user:', googleData.isNewUser);
+        console.log('First time user:', googleData.firstTimeUser);
         console.log('Has restaurants:', googleData.hasRestaurants);
         
-        // For new users, we'll fetch restaurants after login
-        if (googleData.hasRestaurants) {
-          try {
-            // Fetch user's restaurants
-            const restaurantsResponse = await fetch(`${backendUrl}/api/restaurants`, {
-              headers: {
-                'Authorization': `Bearer ${googleData.token}`,
-                'Content-Type': 'application/json',
-              },
-            });
-            
-            if (restaurantsResponse.ok) {
-              const restaurantsData = await restaurantsResponse.json();
-              if (restaurantsData.restaurants && restaurantsData.restaurants.length > 0) {
-                localStorage.setItem('selectedRestaurant', JSON.stringify(restaurantsData.restaurants[0]));
-                localStorage.setItem('selectedRestaurantId', restaurantsData.restaurants[0].id);
-              }
-            }
-          } catch (restaurantError) {
-            console.error('Error fetching restaurants:', restaurantError);
-          }
-        }
-        
-        // Redirect based on backend response
-        if (googleData.redirectTo) {
-          router.replace(googleData.redirectTo);
+        // Handle first-time user experience
+        if (googleData.firstTimeUser) {
+          console.log('🎉 First-time Google user detected!');
+          // Show restaurant name onboarding
+          setShowRestaurantOnboarding(true);
         } else {
-          router.replace('/dashboard');
+          // For existing users, fetch restaurants if they have any
+          if (googleData.hasRestaurants) {
+            try {
+              // Fetch user's restaurants
+              const restaurantsResponse = await fetch(`${backendUrl}/api/restaurants`, {
+                headers: {
+                  'Authorization': `Bearer ${googleData.token}`,
+                  'Content-Type': 'application/json',
+                },
+              });
+              
+              if (restaurantsResponse.ok) {
+                const restaurantsData = await restaurantsResponse.json();
+                if (restaurantsData.restaurants && restaurantsData.restaurants.length > 0) {
+                  localStorage.setItem('selectedRestaurant', JSON.stringify(restaurantsData.restaurants[0]));
+                  localStorage.setItem('selectedRestaurantId', restaurantsData.restaurants[0].id);
+                }
+              }
+            } catch (restaurantError) {
+              console.error('Error fetching restaurants:', restaurantError);
+            }
+          }
+          
+          // Redirect existing users
+          if (googleData.redirectTo) {
+            router.replace(googleData.redirectTo);
+          } else {
+            router.replace('/dashboard');
+          }
         }
       } else {
         setError(googleData.error || googleData.message || 'Google login failed');
@@ -1051,6 +1092,14 @@ const Login = () => {
       
       {/* Hidden reCAPTCHA container */}
       <div id="recaptcha-container" style={{ display: 'none' }}></div>
+      
+      {/* Restaurant Name Onboarding Modal */}
+      {showRestaurantOnboarding && (
+        <RestaurantNameOnboarding
+          onComplete={handleRestaurantOnboardingComplete}
+          onSkip={handleRestaurantOnboardingSkip}
+        />
+      )}
     </div>
   );  
 };

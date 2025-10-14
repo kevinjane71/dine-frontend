@@ -5,7 +5,7 @@ const nextConfig = {
     domains: ['localhost', 'firebasestorage.googleapis.com'],
   },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003',
   },
   // Ensure proper handling of client-side features
   experimental: {
