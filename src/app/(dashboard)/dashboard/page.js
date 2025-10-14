@@ -332,56 +332,66 @@ function RestaurantPOSContent() {
         return;
       }
       
-      // Load restaurants with better error handling
-      console.log('🏢 Loading restaurants...');
+      // Use restaurants data from login response if available
       let restaurantsResponse = null;
+      let userRestaurants = [];
       
-      try {
-        restaurantsResponse = await apiClient.getRestaurants();
-        console.log('🏢 Restaurants loaded:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
-        setRestaurants(restaurantsResponse.restaurants || []);
-      } catch (restaurantError) {
-        console.error('❌ Failed to load restaurants:', restaurantError);
-        
-        // Only redirect to login if it's actually an authentication issue
-        // Don't redirect if it's a network/server error
-        if (restaurantError.message?.includes('401') || restaurantError.message?.includes('Unauthorized')) {
-          console.log('🔒 Authentication failed, redirecting to login');
-          router.replace('/login');
-          return;
+      if (user?.restaurants && user.restaurants.length > 0) {
+        console.log('🏢 Using restaurants from login response:', user.restaurants.length);
+        userRestaurants = user.restaurants;
+        setRestaurants(userRestaurants);
+        restaurantsResponse = { restaurants: userRestaurants };
+      } else {
+        // Fallback: fetch restaurants from API if not available in user data
+        console.log('🏢 No restaurants in user data, fetching from API...');
+        try {
+          restaurantsResponse = await apiClient.getRestaurants();
+          console.log('🏢 Restaurants loaded from API:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
+          userRestaurants = restaurantsResponse.restaurants || [];
+          setRestaurants(userRestaurants);
+        } catch (restaurantError) {
+          console.error('❌ Failed to load restaurants:', restaurantError);
+          
+          if (restaurantError.message?.includes('401') || restaurantError.message?.includes('Unauthorized')) {
+            console.log('🔒 Authentication failed, redirecting to login');
+            router.replace('/login');
+            return;
+          }
+          
+          setError(`Failed to load restaurants: ${restaurantError.message}. Please check your connection and try again.`);
+          setRestaurants([]);
+          restaurantsResponse = { restaurants: [] };
         }
-        
-        // For network/server errors, show error but don't redirect
-        console.log('🌐 Network/server error, showing error message instead of redirecting');
-        setError(`Failed to load restaurants: ${restaurantError.message}. Please check your connection and try again.`);
-        
-        // Set empty restaurants array to prevent further errors
-        setRestaurants([]);
-        restaurantsResponse = { restaurants: [] }; // Set empty response to prevent further errors
       }
       
       let restaurant = null;
       
+      // First, try to use default restaurant from login response
+      if (user?.defaultRestaurant) {
+        restaurant = user.defaultRestaurant;
+        console.log('🏢 Using default restaurant from login response:', restaurant.name);
+      }
       // For staff members, use their assigned restaurant
-      if (user?.restaurantId) {
+      else if (user?.restaurantId) {
         // First try to use restaurant data from login response
         if (user.restaurant) {
           restaurant = user.restaurant;
         } else {
           // Fallback to finding restaurant in the list
-          restaurant = restaurantsResponse?.restaurants?.find(r => r.id === user.restaurantId);
+          restaurant = userRestaurants.find(r => r.id === user.restaurantId);
         }
+        console.log('👨‍💼 Staff user, using assigned restaurant:', restaurant?.name);
       }
       // For owners or customers (legacy), use selected restaurant from localStorage or first restaurant
-      else if (restaurantsResponse?.restaurants && restaurantsResponse.restaurants.length > 0) {
+      else if (userRestaurants.length > 0) {
         const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
-        restaurant = restaurantsResponse.restaurants.find(r => r.id === savedRestaurantId) || 
-                    restaurantsResponse.restaurants[0];
+        restaurant = userRestaurants.find(r => r.id === savedRestaurantId) || userRestaurants[0];
         
         // Save the selected restaurant ID if not already saved
         if (!savedRestaurantId) {
           localStorage.setItem('selectedRestaurantId', restaurant.id);
         }
+        console.log('🏢 Owner/customer, using restaurant:', restaurant.name);
       }
       
       if (restaurant) {
