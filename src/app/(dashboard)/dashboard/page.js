@@ -130,21 +130,11 @@ function RestaurantPOSContent() {
         console.log('User data:', user);
         
         // Check if we need to redirect to subdomain after login
+        // But don't redirect immediately - let the data loading complete first
         const targetSubdomain = localStorage.getItem('targetSubdomain');
         if (targetSubdomain && (window.location.hostname === 'www.dineopen.com' || window.location.hostname === 'localhost')) {
-          console.log('🎯 Redirecting to target subdomain:', targetSubdomain);
-          
-          // Determine the correct subdomain URL based on environment
-          let subdomainUrl;
-          if (window.location.hostname === 'localhost') {
-            subdomainUrl = `http://${targetSubdomain}.localhost:3002/dashboard`;
-          } else {
-            subdomainUrl = `https://${targetSubdomain}.dineopen.com/dashboard`;
-          }
-          
-          localStorage.removeItem('targetSubdomain'); // Clean up
-          window.location.replace(subdomainUrl);
-          return;
+          console.log('🎯 Target subdomain found, will redirect after data loading:', targetSubdomain);
+          // Don't redirect immediately - let loadInitialData complete first
         }
       }, 100);
     };
@@ -328,21 +318,26 @@ function RestaurantPOSContent() {
       // Load restaurants with better error handling
       console.log('🏢 Loading restaurants...');
       try {
-      const restaurantsResponse = await apiClient.getRestaurants();
+        const restaurantsResponse = await apiClient.getRestaurants();
         console.log('🏢 Restaurants loaded:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
-      setRestaurants(restaurantsResponse.restaurants || []);
+        setRestaurants(restaurantsResponse.restaurants || []);
       } catch (restaurantError) {
         console.error('❌ Failed to load restaurants:', restaurantError);
         
-        // If it's a 401 error, redirect to login
+        // Only redirect to login if it's actually an authentication issue
+        // Don't redirect if it's a network/server error
         if (restaurantError.message?.includes('401') || restaurantError.message?.includes('Unauthorized')) {
           console.log('🔒 Authentication failed, redirecting to login');
           router.replace('/login');
           return;
         }
         
-        // For other errors, show error message
-        setError(`Failed to load restaurants: ${restaurantError.message}`);
+        // For network/server errors, show error but don't redirect
+        console.log('🌐 Network/server error, showing error message instead of redirecting');
+        setError(`Failed to load restaurants: ${restaurantError.message}. Please check your connection and try again.`);
+        
+        // Set empty restaurants array to prevent further errors
+        setRestaurants([]);
         return;
       }
       
@@ -443,6 +438,23 @@ function RestaurantPOSContent() {
       }
     } finally {
       setLoading(false);
+      
+      // Check if we need to redirect to subdomain after data loading is complete
+      const targetSubdomain = localStorage.getItem('targetSubdomain');
+      if (targetSubdomain && (window.location.hostname === 'www.dineopen.com' || window.location.hostname === 'localhost')) {
+        console.log('🎯 Data loading complete, redirecting to subdomain:', targetSubdomain);
+        
+        // Determine the correct subdomain URL based on environment
+        let subdomainUrl;
+        if (window.location.hostname === 'localhost') {
+          subdomainUrl = `http://${targetSubdomain}.localhost:3002/dashboard`;
+        } else {
+          subdomainUrl = `https://${targetSubdomain}.dineopen.com/dashboard`;
+        }
+        
+        localStorage.removeItem('targetSubdomain'); // Clean up
+        window.location.replace(subdomainUrl);
+      }
     }
   }, []);
 
