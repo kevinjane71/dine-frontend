@@ -15,7 +15,6 @@ import {
 } from "react-icons/fa";
 
 import { FiTrendingUp } from "react-icons/fi";
-import apiClient from '../../../lib/api';
 
 const Analytics = () => {
   const router = useRouter();
