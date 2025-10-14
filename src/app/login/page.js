@@ -244,6 +244,12 @@ const Login = () => {
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
           
+          // Store first-time user flag
+          if (data.isNewUser) {
+            localStorage.setItem('isFirstTimeUser', 'true');
+            console.log('🆕 First-time user detected');
+          }
+          
           console.log('🔑 Token stored:', !!data.token);
           console.log('👤 User data stored:', !!data.user);
           console.log('🏢 User role:', data.user?.role);
@@ -255,7 +261,7 @@ const Login = () => {
             
             // Check if it's a subdomain redirect
             if (data.redirectTo.includes('.dineopen.com') || data.redirectTo.includes('.localhost')) {
-              console.log('🌐 Subdomain redirect detected, using optimized approach');
+              console.log('🌐 Subdomain redirect detected for existing user');
               
               // Store subdomain info for dashboard to handle
               if (data.defaultRestaurant && data.defaultRestaurant.subdomain) {
@@ -270,8 +276,8 @@ const Login = () => {
               // Let dashboard handle subdomain redirect after it loads
               // This avoids race conditions because dashboard will have the token
             } else {
-              // For same-domain redirects, use Next.js router (no page reload)
-              console.log('🏠 Same-domain redirect, using router');
+              // For same-domain redirects (including first-time users), use Next.js router (no page reload)
+              console.log('🏠 Same-domain redirect (first-time user or no subdomain), using router');
               router.replace(data.redirectTo);
             }
           } else {

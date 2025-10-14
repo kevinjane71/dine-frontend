@@ -440,9 +440,12 @@ function RestaurantPOSContent() {
       setLoading(false);
       
       // Check if we need to redirect to subdomain after data loading is complete
+      // Only redirect if user is NOT a first-time user (existing users only)
       const targetSubdomain = localStorage.getItem('targetSubdomain');
-      if (targetSubdomain && (window.location.hostname === 'www.dineopen.com' || window.location.hostname === 'localhost')) {
-        console.log('🎯 Data loading complete, redirecting to subdomain:', targetSubdomain);
+      const isFirstTimeUser = localStorage.getItem('isFirstTimeUser') === 'true';
+      
+      if (targetSubdomain && !isFirstTimeUser && (window.location.hostname === 'www.dineopen.com' || window.location.hostname === 'localhost')) {
+        console.log('🎯 Data loading complete, redirecting existing user to subdomain:', targetSubdomain);
         
         // Determine the correct subdomain URL based on environment
         let subdomainUrl;
@@ -454,6 +457,9 @@ function RestaurantPOSContent() {
         
         localStorage.removeItem('targetSubdomain'); // Clean up
         window.location.replace(subdomainUrl);
+      } else if (isFirstTimeUser) {
+        console.log('🎯 First-time user detected, staying on main domain');
+        localStorage.removeItem('isFirstTimeUser'); // Clean up
       }
     }
   }, []);
