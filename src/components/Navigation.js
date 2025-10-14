@@ -223,9 +223,17 @@ function NavigationContent({ isHidden = false }) {
         detail: { restaurant } 
       }));
       
-      // Refresh the page to load new restaurant data
-      console.log('🔄 Restaurant changed, refreshing page');
-      window.location.reload();
+      // Redirect to subdomain if restaurant has one
+      if (restaurant.subdomain) {
+        console.log('🌐 Restaurant has subdomain, redirecting to:', restaurant.subdomain);
+        const currentPath = window.location.pathname;
+        const subdomainUrl = `https://${restaurant.subdomain}.dineopen.com${currentPath}`;
+        window.location.href = subdomainUrl;
+      } else {
+        // Refresh the page to load new restaurant data
+        console.log('🔄 Restaurant changed, refreshing page');
+        window.location.reload();
+      }
     } catch (error) {
       console.error('Error changing restaurant:', error);
     }

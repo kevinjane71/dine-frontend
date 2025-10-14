@@ -1477,7 +1477,7 @@ const MenuManagement = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showItemModal, setShowItemModal] = useState(false);
   const [error, setError] = useState('');
-  const [currentRestaurant, setCurrentRestaurant] = useState({ id: 'test-restaurant', name: 'Test Restaurant' });
+  const [currentRestaurant, setCurrentRestaurant] = useState(null);
   const [isClient, setIsClient] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState({});
   const [uploadingImages, setUploadingImages] = useState(false);
