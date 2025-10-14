@@ -224,16 +224,14 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
   };
 
   const handleCameraCapture = () => {
-    console.log('📷 Camera capture clicked');
-    setShowUploadModal(true); // Show modal immediately
+    console.log('📷 Camera capture clicked - opening camera/gallery directly');
     setUploadError(''); // Clear any previous errors
     setProcessingStep(''); // Clear processing step
     cameraInputRef.current?.click();
   };
 
   const handleGalleryUpload = () => {
-    console.log('🖼️ Gallery upload clicked');
-    setShowUploadModal(true); // Show modal immediately
+    console.log('🖼️ Gallery upload clicked - opening file picker directly');
     setUploadError(''); // Clear any previous errors
     setProcessingStep(''); // Clear processing step
     fileInputRef.current?.click();
