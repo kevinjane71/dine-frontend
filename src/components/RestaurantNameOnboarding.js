@@ -9,6 +9,7 @@ import {
   FaSpinner
 } from 'react-icons/fa';
 import apiClient from '../lib/api';
+import { redirectToSubdomain } from '../utils/subdomain';
 
 const RestaurantNameOnboarding = ({ onComplete, onSkip }) => {
   const [restaurantName, setRestaurantName] = useState('');
@@ -38,6 +39,18 @@ const RestaurantNameOnboarding = ({ onComplete, onSkip }) => {
       // Save restaurant to localStorage for immediate use
       localStorage.setItem('selectedRestaurantId', response.restaurant.id);
       localStorage.setItem('selectedRestaurant', JSON.stringify(response.restaurant));
+      
+      // Check if subdomain is enabled and redirect accordingly
+      if (response.restaurant.subdomainUrl) {
+        // Redirect to subdomain with token and user data
+        const token = localStorage.getItem('authToken');
+        const userData = localStorage.getItem('user');
+        if (token) {
+          const user = userData ? JSON.parse(userData) : null;
+          redirectToSubdomain(response.restaurant.subdomainUrl, token, user);
+          return; // Don't call onComplete as we're redirecting
+        }
+      }
       
       // Call onComplete callback
       onComplete(response.restaurant);
@@ -81,6 +94,18 @@ const RestaurantNameOnboarding = ({ onComplete, onSkip }) => {
       // Save restaurant to localStorage for immediate use
       localStorage.setItem('selectedRestaurantId', response.restaurant.id);
       localStorage.setItem('selectedRestaurant', JSON.stringify(response.restaurant));
+      
+      // Check if subdomain is enabled and redirect accordingly
+      if (response.restaurant.subdomainUrl) {
+        // Redirect to subdomain with token and user data
+        const token = localStorage.getItem('authToken');
+        const userData = localStorage.getItem('user');
+        if (token) {
+          const user = userData ? JSON.parse(userData) : null;
+          redirectToSubdomain(response.restaurant.subdomainUrl, token, user);
+          return; // Don't call onComplete as we're redirecting
+        }
+      }
       
       // Show notification about random name
       alert(`Great! We've created your restaurant "${randomName}". You can change this name anytime in settings.`);

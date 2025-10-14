@@ -22,6 +22,7 @@ import {
 import apiClient from '../../lib/api';
 import { t } from '../../lib/i18n';
 import RestaurantNameOnboarding from '../../components/RestaurantNameOnboarding';
+import { redirectToSubdomain } from '../../utils/subdomain';
 
 const Login = () => {
   const router = useRouter();
@@ -200,7 +201,10 @@ const Login = () => {
             setShowRestaurantOnboarding(true);
           } else {
             // Redirect existing users
-            if (firebaseData.redirectTo) {
+            if (firebaseData.subdomainUrl) {
+              // Redirect to subdomain with token and user data
+              redirectToSubdomain(firebaseData.subdomainUrl, firebaseData.token, firebaseData.user);
+            } else if (firebaseData.redirectTo) {
               router.replace(firebaseData.redirectTo);
             } else {
               router.replace('/dashboard');
@@ -234,7 +238,10 @@ const Login = () => {
             setShowRestaurantOnboarding(true);
           } else {
             // Redirect existing users
-            if (data.redirectTo) {
+            if (data.subdomainUrl) {
+              // Redirect to subdomain with token
+              redirectToSubdomain(data.subdomainUrl, data.token, data.user);
+            } else if (data.redirectTo) {
               router.replace(data.redirectTo);
             } else {
               router.replace('/dashboard');
@@ -369,7 +376,10 @@ const Login = () => {
           }
           
           // Redirect existing users
-          if (googleData.redirectTo) {
+          if (googleData.subdomainUrl) {
+            // Redirect to subdomain with token
+            redirectToSubdomain(googleData.subdomainUrl, googleData.token, googleData.user);
+          } else if (googleData.redirectTo) {
             router.replace(googleData.redirectTo);
           } else {
             router.replace('/dashboard');

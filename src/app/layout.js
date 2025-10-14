@@ -1,4 +1,5 @@
 import './globals.css'
+import TokenExtractor from '../components/TokenExtractor'
 
 export const metadata = {
   title: 'DineOpen - AI-Powered Restaurant Management System | POS, Inventory & Order Tracking',
@@ -57,6 +58,7 @@ export default function RootLayout({ children }) {
         </script>
       </head>
       <body suppressHydrationWarning={true}>
+        <TokenExtractor />
         {children}
         <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
       </body>

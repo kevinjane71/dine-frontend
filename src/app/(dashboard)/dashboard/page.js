@@ -104,23 +104,53 @@ function RestaurantPOSContent() {
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
 
-  // Authentication guard
+  // Authentication guard - simplified with URL token support
   useEffect(() => {
     const checkAuth = () => {
-      if (!apiClient.isAuthenticated()) {
-        console.log('🚫 User not authenticated, redirecting to login');
-        router.replace('/login');
-        return;
-      }
+      // Check if we have a token in URL (subdomain redirect case)
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenInUrl = urlParams.get('token');
+      const userInUrl = urlParams.get('user');
       
-      const user = apiClient.getUser();
-      if (!user) {
-        console.log('🚫 No user data found, redirecting to login');
-        router.replace('/login');
-        return;
+      if (tokenInUrl) {
+        console.log('🔄 Token found in URL, processing...');
+        
+        // Store token and user data immediately
+        localStorage.setItem('authToken', tokenInUrl);
+        if (userInUrl) {
+          try {
+            const userData = JSON.parse(decodeURIComponent(userInUrl));
+            localStorage.setItem('user', JSON.stringify(userData));
+            console.log('✅ Token and user data stored from URL');
+          } catch (error) {
+            console.error('Failed to parse user data from URL:', error);
+          }
+        }
+        
+        // Clean up URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('token');
+        url.searchParams.delete('user');
+        window.history.replaceState({}, document.title, url.toString());
+        
+        console.log('✅ User authenticated with URL data');
+      } else {
+        // Normal authentication check
+        if (!apiClient.isAuthenticated()) {
+          console.log('🚫 User not authenticated, redirecting to login');
+          router.replace('/login');
+          return;
+        }
+        
+        const user = apiClient.getUser();
+        if (!user) {
+          console.log('🚫 No user data found, redirecting to login');
+          router.replace('/login');
+          return;
+        }
+        
+        console.log('✅ User authenticated:', user.role);
       }
-      
-      console.log('✅ User authenticated:', user.role);
     };
 
     checkAuth();
