@@ -82,8 +82,30 @@ export const useSubdomain = () => {
               setError('Restaurant not found');
               console.log(`❌ Frontend: Restaurant not found for subdomain: ${currentSubdomain}`);
             } else if (response.status === 401) {
-              // If authenticated API fails with 401, fallback to public API
-              console.log(`🔐 Frontend: Auth failed, falling back to public API for subdomain: ${currentSubdomain}`);
+              // If authenticated API fails with 401, check if token is available
+              console.log(`🔐 Frontend: Auth failed for subdomain: ${currentSubdomain}`);
+              
+              // Check if token is available now (might have been set after initial check)
+              const currentToken = localStorage.getItem('authToken');
+              if (currentToken && currentToken !== token) {
+                console.log(`🔐 Frontend: Token now available, retrying authenticated API`);
+                const retryResponse = await fetch(`${apiBaseUrl}/api/restaurants/by-subdomain/${currentSubdomain}`, {
+                  headers: {
+                    'Authorization': `Bearer ${currentToken}`,
+                    'Content-Type': 'application/json'
+                  }
+                });
+                
+                if (retryResponse.ok) {
+                  const retryData = await retryResponse.json();
+                  setRestaurant(retryData.restaurant);
+                  console.log(`✅ Frontend: Restaurant loaded via retry: ${retryData.restaurant.name}`);
+                  return;
+                }
+              }
+              
+              // Fallback to public API only if no token available
+              console.log(`🌐 Frontend: Falling back to public API for subdomain: ${currentSubdomain}`);
               const publicResponse = await fetch(`${apiBaseUrl}/api/public/restaurant-by-subdomain/${currentSubdomain}`);
               if (publicResponse.ok) {
                 const publicData = await publicResponse.json();

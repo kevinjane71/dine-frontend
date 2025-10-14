@@ -38,13 +38,6 @@ export function middleware(request) {
           if (isValidSubdomain) {
             console.log(`[Middleware] Subdomain detected: ${subdomain} from ${hostname}`);
             
-            // Redirect login requests to main domain
-            if (url.pathname === '/login') {
-              const mainDomainLogin = 'https://www.dineopen.com/login';
-              console.log(`[Middleware] Redirecting login from subdomain to main domain: ${mainDomainLogin}`);
-              return NextResponse.redirect(mainDomainLogin);
-            }
-            
             // Only rewrite the root path to restaurant subdomain page
             // Let other paths like /placeorder pass through normally
             if (url.pathname === '/') {

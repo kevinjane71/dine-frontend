@@ -256,7 +256,10 @@ const Login = () => {
             // Check if it's a subdomain redirect
             if (data.redirectTo.includes('.dineopen.com') || data.redirectTo.includes('.localhost')) {
               console.log('🌐 Subdomain redirect detected, navigating directly');
-              window.location.href = data.redirectTo;
+              // Add a small delay to ensure localStorage is saved
+              setTimeout(() => {
+                window.location.href = data.redirectTo;
+              }, 100);
             } else {
               router.replace(data.redirectTo);
             }
@@ -378,7 +381,10 @@ const Login = () => {
           // Check if it's a subdomain redirect
           if (googleData.redirectTo.includes('.dineopen.com') || googleData.redirectTo.includes('.localhost')) {
             console.log('🌐 Subdomain redirect detected, navigating directly');
-            window.location.href = googleData.redirectTo;
+            // Add a small delay to ensure localStorage is saved
+            setTimeout(() => {
+              window.location.href = googleData.redirectTo;
+            }, 100);
           } else {
             router.replace(googleData.redirectTo);
           }
