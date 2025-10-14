@@ -24,7 +24,7 @@ export default function BlogDetail() {
   const [blogPost, setBlogPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Blog posts data d
+  // Blog posts data dd
   const blogPosts = {
     'why-dineopen-future-restaurant-management': {
       id: 'why-dineopen-future-restaurant-management',
