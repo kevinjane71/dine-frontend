@@ -195,7 +195,10 @@ function NavigationContent({ isHidden = false }) {
     apiClient.clearToken();
     setShowMobileMenu(false);
     setShowUserDropdown(false);
-    router.push('/login');
+    
+    // Always redirect to main domain login after logout
+    console.log('🚪 Logging out, redirecting to main domain login');
+    window.location.href = 'https://www.dineopen.com/login';
   };
 
   const handleRestaurantChange = async (restaurant) => {
@@ -476,7 +479,7 @@ function NavigationContent({ isHidden = false }) {
                 const isActive = pathname === item.href;
                 
                 return (
-                  <Link key={item.id} href={item.href}>
+                  <Link key={item.id} href={item.href} prefetch={false}>
                     <div
                       style={{
                         padding: '6px 12px',
@@ -1298,7 +1301,7 @@ function NavigationContent({ isHidden = false }) {
                 const isActive = pathname === item.href;
                 
                 return (
-                  <Link key={item.id} href={item.href} onClick={handleNavItemClick}>
+                  <Link key={item.id} href={item.href} prefetch={false} onClick={handleNavItemClick}>
                     <div
                       style={{
                         margin: '0 20px 8px 20px',

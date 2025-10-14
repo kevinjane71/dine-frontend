@@ -1,4 +1,5 @@
 import './globals.css'
+import PrefetchErrorBoundary from '../components/PrefetchErrorBoundary'
 
 export const metadata = {
   title: 'DineOpen - AI-Powered Restaurant Management System | POS, Inventory & Order Tracking',
@@ -48,6 +49,9 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" 
           rel="stylesheet" 
         />
+        {/* Prefetch Error Handler - Must load first */}
+        <script src="/prefetch-error-handler.js"></script>
+        
         {/* Analytics Script */}
         <script
           defer
@@ -57,7 +61,9 @@ export default function RootLayout({ children }) {
         </script>
       </head>
       <body suppressHydrationWarning={true}>
-        {children}
+        <PrefetchErrorBoundary>
+          {children}
+        </PrefetchErrorBoundary>
         <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
       </body>
     </html>
