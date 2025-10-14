@@ -208,36 +208,51 @@ function NavigationContent({ isHidden = false }) {
     router.push('/login');
   };
 
-  const handleRestaurantChange = (restaurant) => {
+  const handleRestaurantChange = async (restaurant) => {
+    try {
     setSelectedRestaurant(restaurant);
     localStorage.setItem('selectedRestaurantId', restaurant.id);
     setShowRestaurantDropdown(false);
     
-    // Dispatch custom event for other components to listen to
-    window.dispatchEvent(new CustomEvent('restaurantChanged', { 
-      detail: { restaurant } 
-    }));
-    
-    // If restaurant has subdomain, redirect to subdomain
-    if (restaurant.subdomain) {
-      const currentHost = window.location.hostname;
-      const isLocalhost = currentHost.includes('localhost');
-      
-      if (isLocalhost) {
-        // For localhost development
-        const newUrl = `http://${restaurant.subdomain}.localhost:3002/dashboard`;
-        console.log('🔄 Redirecting to subdomain:', newUrl);
-        window.location.href = newUrl;
-      } else {
-        // For production
-        const newUrl = `https://${restaurant.subdomain}.dineopen.com/dashboard`;
-        console.log('🔄 Redirecting to subdomain:', newUrl);
-        window.location.href = newUrl;
+      // Save as default restaurant in database
+      try {
+        await apiClient.put('/api/user/default-restaurant', {
+          restaurantId: restaurant.id
+        });
+        console.log('✅ Default restaurant updated:', restaurant.name);
+      } catch (error) {
+        console.error('❌ Failed to update default restaurant:', error);
+        // Don't fail the restaurant change if default update fails
       }
-    } else {
-      // If no subdomain, stay on current domain but refresh
-      console.log('🔄 Restaurant has no subdomain, staying on current domain');
+      
+      // Dispatch custom event for other components to listen to
+      window.dispatchEvent(new CustomEvent('restaurantChanged', { 
+        detail: { restaurant } 
+      }));
+      
+      // If restaurant has subdomain, redirect to subdomain
+      if (restaurant.subdomain) {
+        const currentHost = window.location.hostname;
+        const isLocalhost = currentHost.includes('localhost');
+        
+        if (isLocalhost) {
+          // For localhost development
+          const newUrl = `http://${restaurant.subdomain}.localhost:3002/dashboard`;
+          console.log('🔄 Redirecting to subdomain:', newUrl);
+          window.location.href = newUrl;
+        } else {
+          // For production
+          const newUrl = `https://${restaurant.subdomain}.dineopen.com/dashboard`;
+          console.log('🔄 Redirecting to subdomain:', newUrl);
+          window.location.href = newUrl;
+        }
+      } else {
+        // If no subdomain, stay on current domain but refresh
+        console.log('🔄 Restaurant has no subdomain, staying on current domain');
     window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error changing restaurant:', error);
     }
   };
   

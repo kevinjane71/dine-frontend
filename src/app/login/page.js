@@ -252,7 +252,14 @@ const Login = () => {
           // Handle redirect after successful login
           if (data.redirectTo) {
             console.log('🏢 Backend OTP login: Redirecting to:', data.redirectTo);
-            router.replace(data.redirectTo);
+            
+            // Check if it's a subdomain redirect
+            if (data.redirectTo.includes('.dineopen.com') || data.redirectTo.includes('.localhost')) {
+              console.log('🌐 Subdomain redirect detected, navigating directly');
+              window.location.href = data.redirectTo;
+            } else {
+              router.replace(data.redirectTo);
+            }
           } else {
             // Default redirect to dashboard
             console.log('🏢 Backend OTP login: Default redirect to dashboard');
@@ -367,7 +374,14 @@ const Login = () => {
         // Handle redirect after successful login
         if (googleData.redirectTo) {
           console.log('🏢 Google login: Redirecting to:', googleData.redirectTo);
-          router.replace(googleData.redirectTo);
+          
+          // Check if it's a subdomain redirect
+          if (googleData.redirectTo.includes('.dineopen.com') || googleData.redirectTo.includes('.localhost')) {
+            console.log('🌐 Subdomain redirect detected, navigating directly');
+            window.location.href = googleData.redirectTo;
+          } else {
+            router.replace(googleData.redirectTo);
+          }
         } else {
           // Default redirect to dashboard
           router.replace('/dashboard');

@@ -83,7 +83,7 @@ export const RestaurantProvider = ({ children }) => {
     // Function to redirect user to their own restaurant subdomain
     const redirectToUserRestaurant = async () => {
       try {
-        console.log('🔄 Redirecting user to their own restaurant subdomain...');
+        console.log('🔄 Redirecting user to their default restaurant subdomain...');
         
         // Get user's restaurants
         const restaurantsResponse = await fetch(`${apiBaseUrl}/api/restaurants`, {
@@ -98,12 +98,30 @@ export const RestaurantProvider = ({ children }) => {
           const userRestaurants = restaurantsData.restaurants || [];
           
           if (userRestaurants.length > 0) {
-            // Find restaurant with subdomain
-            const restaurantWithSubdomain = userRestaurants.find(r => r.subdomain);
+            // Get user's default restaurant preference
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            const defaultRestaurantId = userData.defaultRestaurantId;
             
-            if (restaurantWithSubdomain) {
-              const redirectUrl = `https://${restaurantWithSubdomain.subdomain}.dineopen.com/dashboard`;
-              console.log('🏢 Redirecting to user restaurant:', redirectUrl);
+            // Find default restaurant or use first one with subdomain
+            let targetRestaurant = null;
+            
+            if (defaultRestaurantId) {
+              targetRestaurant = userRestaurants.find(r => r.id === defaultRestaurantId && r.subdomain);
+            }
+            
+            if (!targetRestaurant) {
+              targetRestaurant = userRestaurants.find(r => r.subdomain);
+            }
+            
+            if (targetRestaurant) {
+              const currentHost = window.location.hostname;
+              const isLocalhost = currentHost.includes('localhost');
+              
+              const redirectUrl = isLocalhost
+                ? `http://${targetRestaurant.subdomain}.localhost:3002/dashboard`
+                : `https://${targetRestaurant.subdomain}.dineopen.com/dashboard`;
+              
+              console.log('🏢 Redirecting to default restaurant:', redirectUrl);
               window.location.href = redirectUrl;
               return;
             }
@@ -112,12 +130,26 @@ export const RestaurantProvider = ({ children }) => {
         
         // Fallback: redirect to main domain
         console.log('🏠 No subdomain found, redirecting to main domain');
-        window.location.href = 'https://www.dineopen.com/dashboard';
+        const currentHost = window.location.hostname;
+        const isLocalhost = currentHost.includes('localhost');
+        
+        const redirectUrl = isLocalhost
+          ? 'http://localhost:3002/dashboard'
+          : 'https://www.dineopen.com/dashboard';
+        
+        window.location.href = redirectUrl;
         
       } catch (error) {
         console.error('Error redirecting to user restaurant:', error);
         // Final fallback
-        window.location.href = 'https://www.dineopen.com/dashboard';
+        const currentHost = window.location.hostname;
+        const isLocalhost = currentHost.includes('localhost');
+        
+        const redirectUrl = isLocalhost
+          ? 'http://localhost:3002/dashboard'
+          : 'https://www.dineopen.com/dashboard';
+        
+        window.location.href = redirectUrl;
       }
     };
 

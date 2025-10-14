@@ -58,6 +58,19 @@ export function middleware(request) {
             return NextResponse.next();
           }
   
+  // Handle main domain access - redirect authenticated users to their default restaurant
+  if (hostname === 'www.dineopen.com' || hostname === 'dineopen.com' || hostname === 'localhost:3002') {
+    // Skip redirect for login page and public pages
+    if (url.pathname === '/login' || url.pathname === '/placeorder' || url.pathname.startsWith('/api/')) {
+      return NextResponse.next();
+    }
+    
+    // For authenticated users trying to access main domain, redirect to their default restaurant
+    // This will be handled by the frontend authentication guard
+    console.log(`[Middleware] Main domain access to ${url.pathname} - letting frontend handle redirect`);
+    return NextResponse.next();
+  }
+  
   return NextResponse.next();
 }
 
