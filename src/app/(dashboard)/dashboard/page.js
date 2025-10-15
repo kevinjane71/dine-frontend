@@ -3286,6 +3286,7 @@ function RestaurantPOSContent() {
         onClose={() => setShowQRCodeModal(false)}
         restaurantId={selectedRestaurant?.id}
         restaurantName={selectedRestaurant?.name}
+        restaurant={selectedRestaurant}
       />
 
       {/* Bulk Upload Modal */}

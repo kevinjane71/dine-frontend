@@ -2831,6 +2831,7 @@ const MenuManagement = () => {
         onClose={() => setShowQRCodeModal(false)}
         restaurantId={currentRestaurant?.id}
         restaurantName={currentRestaurant?.name}
+        restaurant={currentRestaurant}
       />
 
       {/* CSS Animations */}

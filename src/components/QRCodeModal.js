@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { FaQrcode, FaTimes, FaDownload, FaCopy } from 'react-icons/fa';
 import QRCode from 'qrcode';
 
-const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
+const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName, restaurant = null }) => {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [showCopyNotification, setShowCopyNotification] = useState(false);
@@ -35,7 +35,21 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
       setLoading(true);
       
       // Generate the URL for the restaurant
-      const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
+      let baseUrl;
+      if (restaurant?.subdomainEnabled && restaurant?.subdomain) {
+        // Use subdomain URL if enabled
+        if (process.env.NODE_ENV === 'production') {
+          baseUrl = `https://${restaurant.subdomain}.dineopen.com`;
+        } else {
+          baseUrl = `http://${restaurant.subdomain}.localhost:3002`;
+        }
+        console.log('🔗 Using subdomain URL for QR code:', baseUrl);
+      } else {
+        // Use default URL
+        baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
+        console.log('🔗 Using default URL for QR code:', baseUrl);
+      }
+      
       const qrUrl = `${baseUrl}/placeorder?restaurant=${restaurantId}`;
       
       // Generate QR code
@@ -79,7 +93,19 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
   };
 //jhbhj
   const copyQRUrl = () => {
-    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
+    let baseUrl;
+    if (restaurant?.subdomainEnabled && restaurant?.subdomain) {
+      // Use subdomain URL if enabled
+      if (process.env.NODE_ENV === 'production') {
+        baseUrl = `https://${restaurant.subdomain}.dineopen.com`;
+      } else {
+        baseUrl = `http://${restaurant.subdomain}.localhost:3002`;
+      }
+    } else {
+      // Use default URL
+      baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
+    }
+    
     const qrUrl = `${baseUrl}/placeorder?restaurant=${restaurantId}`;
     navigator.clipboard.writeText(qrUrl);
     
@@ -94,7 +120,20 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName }) => {
 
   if (!isOpen) return null;
 
-  const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
+  // Generate URL for display
+  let baseUrl;
+  if (restaurant?.subdomainEnabled && restaurant?.subdomain) {
+    // Use subdomain URL if enabled
+    if (process.env.NODE_ENV === 'production') {
+      baseUrl = `https://${restaurant.subdomain}.dineopen.com`;
+    } else {
+      baseUrl = `http://${restaurant.subdomain}.localhost:3002`;
+    }
+  } else {
+    // Use default URL
+    baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.dineopen.com';
+  }
+  
   const qrUrl = `${baseUrl}/placeorder?restaurant=${restaurantId}`;
 
   return (
