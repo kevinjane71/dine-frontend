@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import BulkMenuUpload from '../../../components/BulkMenuUpload';
 import ImageCarousel from '../../../components/ImageCarousel';
@@ -38,7 +38,8 @@ import {
   FaCloudUploadAlt,
   FaTimes,
   FaQrcode,
-  FaCamera
+  FaCamera,
+  FaCheckCircle
 } from 'react-icons/fa';
 
 // Enhanced Category Dropdown Component with Management
@@ -1569,7 +1570,7 @@ const MenuManagement = () => {
     };
 
     loadRestaurantContext();
-  }, [router]);
+  }, [router, loadMenuData]);
 
   // Listen for restaurant changes from navigation
   useEffect(() => {
@@ -1611,9 +1612,9 @@ const MenuManagement = () => {
     return () => {
       window.removeEventListener('restaurantChanged', handleRestaurantChange);
     };
-  }, []);
+  }, [loadMenuData]);
 
-  const loadMenuData = async (restaurantId) => {
+  const loadMenuData = useCallback(async (restaurantId) => {
     try {
       console.log('Loading menu data for restaurant:', restaurantId);
       setLoading(true);
@@ -1662,7 +1663,7 @@ const MenuManagement = () => {
       console.log('Setting loading to false');
       setLoading(false);
     }
-  };
+  }, [formData.category]);
 
   const filteredItems = menuItems.filter(item => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
@@ -2110,29 +2111,29 @@ const MenuManagement = () => {
             </button>
             <button
               onClick={handleCameraCapture}
-              style={{
-                padding: '6px 12px',
+                style={{
+                  padding: '6px 12px',
                 background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                fontWeight: '600',
-                fontSize: '12px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '3px',
-                whiteSpace: 'nowrap',
-                minWidth: 'auto'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-              }}
-            >
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontWeight: '600',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                  whiteSpace: 'nowrap',
+                  minWidth: 'auto'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
               <FaCamera size={10} />
               Take Photo
             </button>
