@@ -10,7 +10,9 @@ import {
   FaSpinner,
   FaCheck,
   FaEdit,
-  FaTimes
+  FaTimes,
+  FaChevronDown,
+  FaSearch
 } from 'react-icons/fa';
 import { auth } from '../../../firebase';
 import { 
@@ -24,6 +26,186 @@ import { t } from '../../lib/i18n';
 import RestaurantNameOnboarding from '../../components/RestaurantNameOnboarding';
 import { redirectToSubdomain } from '../../utils/subdomain';
 
+// Country data with flags and codes
+const countries = [
+  { code: 'IN', name: 'India', flag: '🇮🇳', dialCode: '+91' },
+  { code: 'US', name: 'United States', flag: '🇺🇸', dialCode: '+1' },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', dialCode: '+44' },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦', dialCode: '+1' },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺', dialCode: '+61' },
+  { code: 'DE', name: 'Germany', flag: '🇩🇪', dialCode: '+49' },
+  { code: 'FR', name: 'France', flag: '🇫🇷', dialCode: '+33' },
+  { code: 'IT', name: 'Italy', flag: '🇮🇹', dialCode: '+39' },
+  { code: 'ES', name: 'Spain', flag: '🇪🇸', dialCode: '+34' },
+  { code: 'NL', name: 'Netherlands', flag: '🇳🇱', dialCode: '+31' },
+  { code: 'BE', name: 'Belgium', flag: '🇧🇪', dialCode: '+32' },
+  { code: 'CH', name: 'Switzerland', flag: '🇨🇭', dialCode: '+41' },
+  { code: 'AT', name: 'Austria', flag: '🇦🇹', dialCode: '+43' },
+  { code: 'SE', name: 'Sweden', flag: '🇸🇪', dialCode: '+46' },
+  { code: 'NO', name: 'Norway', flag: '🇳🇴', dialCode: '+47' },
+  { code: 'DK', name: 'Denmark', flag: '🇩🇰', dialCode: '+45' },
+  { code: 'FI', name: 'Finland', flag: '🇫🇮', dialCode: '+358' },
+  { code: 'PL', name: 'Poland', flag: '🇵🇱', dialCode: '+48' },
+  { code: 'CZ', name: 'Czech Republic', flag: '🇨🇿', dialCode: '+420' },
+  { code: 'HU', name: 'Hungary', flag: '🇭🇺', dialCode: '+36' },
+  { code: 'RO', name: 'Romania', flag: '🇷🇴', dialCode: '+40' },
+  { code: 'BG', name: 'Bulgaria', flag: '🇧🇬', dialCode: '+359' },
+  { code: 'HR', name: 'Croatia', flag: '🇭🇷', dialCode: '+385' },
+  { code: 'SI', name: 'Slovenia', flag: '🇸🇮', dialCode: '+386' },
+  { code: 'SK', name: 'Slovakia', flag: '🇸🇰', dialCode: '+421' },
+  { code: 'LT', name: 'Lithuania', flag: '🇱🇹', dialCode: '+370' },
+  { code: 'LV', name: 'Latvia', flag: '🇱🇻', dialCode: '+371' },
+  { code: 'EE', name: 'Estonia', flag: '🇪🇪', dialCode: '+372' },
+  { code: 'IE', name: 'Ireland', flag: '🇮🇪', dialCode: '+353' },
+  { code: 'PT', name: 'Portugal', flag: '🇵🇹', dialCode: '+351' },
+  { code: 'GR', name: 'Greece', flag: '🇬🇷', dialCode: '+30' },
+  { code: 'CY', name: 'Cyprus', flag: '🇨🇾', dialCode: '+357' },
+  { code: 'MT', name: 'Malta', flag: '🇲🇹', dialCode: '+356' },
+  { code: 'LU', name: 'Luxembourg', flag: '🇱🇺', dialCode: '+352' },
+  { code: 'IS', name: 'Iceland', flag: '🇮🇸', dialCode: '+354' },
+  { code: 'LI', name: 'Liechtenstein', flag: '🇱🇮', dialCode: '+423' },
+  { code: 'MC', name: 'Monaco', flag: '🇲🇨', dialCode: '+377' },
+  { code: 'SM', name: 'San Marino', flag: '🇸🇲', dialCode: '+378' },
+  { code: 'VA', name: 'Vatican City', flag: '🇻🇦', dialCode: '+379' },
+  { code: 'AD', name: 'Andorra', flag: '🇦🇩', dialCode: '+376' },
+  { code: 'BR', name: 'Brazil', flag: '🇧🇷', dialCode: '+55' },
+  { code: 'AR', name: 'Argentina', flag: '🇦🇷', dialCode: '+54' },
+  { code: 'MX', name: 'Mexico', flag: '🇲🇽', dialCode: '+52' },
+  { code: 'CL', name: 'Chile', flag: '🇨🇱', dialCode: '+56' },
+  { code: 'CO', name: 'Colombia', flag: '🇨🇴', dialCode: '+57' },
+  { code: 'PE', name: 'Peru', flag: '🇵🇪', dialCode: '+51' },
+  { code: 'VE', name: 'Venezuela', flag: '🇻🇪', dialCode: '+58' },
+  { code: 'EC', name: 'Ecuador', flag: '🇪🇨', dialCode: '+593' },
+  { code: 'BO', name: 'Bolivia', flag: '🇧🇴', dialCode: '+591' },
+  { code: 'PY', name: 'Paraguay', flag: '🇵🇾', dialCode: '+595' },
+  { code: 'UY', name: 'Uruguay', flag: '🇺🇾', dialCode: '+598' },
+  { code: 'GY', name: 'Guyana', flag: '🇬🇾', dialCode: '+592' },
+  { code: 'SR', name: 'Suriname', flag: '🇸🇷', dialCode: '+597' },
+  { code: 'GF', name: 'French Guiana', flag: '🇬🇫', dialCode: '+594' },
+  { code: 'FK', name: 'Falkland Islands', flag: '🇫🇰', dialCode: '+500' },
+  { code: 'CN', name: 'China', flag: '🇨🇳', dialCode: '+86' },
+  { code: 'JP', name: 'Japan', flag: '🇯🇵', dialCode: '+81' },
+  { code: 'KR', name: 'South Korea', flag: '🇰🇷', dialCode: '+82' },
+  { code: 'KP', name: 'North Korea', flag: '🇰🇵', dialCode: '+850' },
+  { code: 'TW', name: 'Taiwan', flag: '🇹🇼', dialCode: '+886' },
+  { code: 'HK', name: 'Hong Kong', flag: '🇭🇰', dialCode: '+852' },
+  { code: 'MO', name: 'Macau', flag: '🇲🇴', dialCode: '+853' },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬', dialCode: '+65' },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇾', dialCode: '+60' },
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭', dialCode: '+66' },
+  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', dialCode: '+84' },
+  { code: 'PH', name: 'Philippines', flag: '🇵🇭', dialCode: '+63' },
+  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', dialCode: '+62' },
+  { code: 'MM', name: 'Myanmar', flag: '🇲🇲', dialCode: '+95' },
+  { code: 'KH', name: 'Cambodia', flag: '🇰🇭', dialCode: '+855' },
+  { code: 'LA', name: 'Laos', flag: '🇱🇦', dialCode: '+856' },
+  { code: 'BN', name: 'Brunei', flag: '🇧🇳', dialCode: '+673' },
+  { code: 'TL', name: 'East Timor', flag: '🇹🇱', dialCode: '+670' },
+  { code: 'BD', name: 'Bangladesh', flag: '🇧🇩', dialCode: '+880' },
+  { code: 'PK', name: 'Pakistan', flag: '🇵🇰', dialCode: '+92' },
+  { code: 'LK', name: 'Sri Lanka', flag: '🇱🇰', dialCode: '+94' },
+  { code: 'MV', name: 'Maldives', flag: '🇲🇻', dialCode: '+960' },
+  { code: 'BT', name: 'Bhutan', flag: '🇧🇹', dialCode: '+975' },
+  { code: 'NP', name: 'Nepal', flag: '🇳🇵', dialCode: '+977' },
+  { code: 'AF', name: 'Afghanistan', flag: '🇦🇫', dialCode: '+93' },
+  { code: 'IR', name: 'Iran', flag: '🇮🇷', dialCode: '+98' },
+  { code: 'IQ', name: 'Iraq', flag: '🇮🇶', dialCode: '+964' },
+  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', dialCode: '+966' },
+  { code: 'AE', name: 'United Arab Emirates', flag: '🇦🇪', dialCode: '+971' },
+  { code: 'QA', name: 'Qatar', flag: '🇶🇦', dialCode: '+974' },
+  { code: 'KW', name: 'Kuwait', flag: '🇰🇼', dialCode: '+965' },
+  { code: 'BH', name: 'Bahrain', flag: '🇧🇭', dialCode: '+973' },
+  { code: 'OM', name: 'Oman', flag: '🇴🇲', dialCode: '+968' },
+  { code: 'YE', name: 'Yemen', flag: '🇾🇪', dialCode: '+967' },
+  { code: 'JO', name: 'Jordan', flag: '🇯🇴', dialCode: '+962' },
+  { code: 'LB', name: 'Lebanon', flag: '🇱🇧', dialCode: '+961' },
+  { code: 'SY', name: 'Syria', flag: '🇸🇾', dialCode: '+963' },
+  { code: 'IL', name: 'Israel', flag: '🇮🇱', dialCode: '+972' },
+  { code: 'PS', name: 'Palestine', flag: '🇵🇸', dialCode: '+970' },
+  { code: 'TR', name: 'Turkey', flag: '🇹🇷', dialCode: '+90' },
+  { code: 'RU', name: 'Russia', flag: '🇷🇺', dialCode: '+7' },
+  { code: 'KZ', name: 'Kazakhstan', flag: '🇰🇿', dialCode: '+7' },
+  { code: 'UZ', name: 'Uzbekistan', flag: '🇺🇿', dialCode: '+998' },
+  { code: 'TM', name: 'Turkmenistan', flag: '🇹🇲', dialCode: '+993' },
+  { code: 'TJ', name: 'Tajikistan', flag: '🇹🇯', dialCode: '+992' },
+  { code: 'KG', name: 'Kyrgyzstan', flag: '🇰🇬', dialCode: '+996' },
+  { code: 'MN', name: 'Mongolia', flag: '🇲🇳', dialCode: '+976' },
+  { code: 'GE', name: 'Georgia', flag: '🇬🇪', dialCode: '+995' },
+  { code: 'AM', name: 'Armenia', flag: '🇦🇲', dialCode: '+374' },
+  { code: 'AZ', name: 'Azerbaijan', flag: '🇦🇿', dialCode: '+994' },
+  { code: 'ZA', name: 'South Africa', flag: '🇿🇦', dialCode: '+27' },
+  { code: 'EG', name: 'Egypt', flag: '🇪🇬', dialCode: '+20' },
+  { code: 'NG', name: 'Nigeria', flag: '🇳🇬', dialCode: '+234' },
+  { code: 'KE', name: 'Kenya', flag: '🇰🇪', dialCode: '+254' },
+  { code: 'GH', name: 'Ghana', flag: '🇬🇭', dialCode: '+233' },
+  { code: 'MA', name: 'Morocco', flag: '🇲🇦', dialCode: '+212' },
+  { code: 'TN', name: 'Tunisia', flag: '🇹🇳', dialCode: '+216' },
+  { code: 'DZ', name: 'Algeria', flag: '🇩🇿', dialCode: '+213' },
+  { code: 'LY', name: 'Libya', flag: '🇱🇾', dialCode: '+218' },
+  { code: 'SD', name: 'Sudan', flag: '🇸🇩', dialCode: '+249' },
+  { code: 'ET', name: 'Ethiopia', flag: '🇪🇹', dialCode: '+251' },
+  { code: 'UG', name: 'Uganda', flag: '🇺🇬', dialCode: '+256' },
+  { code: 'TZ', name: 'Tanzania', flag: '🇹🇿', dialCode: '+255' },
+  { code: 'RW', name: 'Rwanda', flag: '🇷🇼', dialCode: '+250' },
+  { code: 'BI', name: 'Burundi', flag: '🇧🇮', dialCode: '+257' },
+  { code: 'DJ', name: 'Djibouti', flag: '🇩🇯', dialCode: '+253' },
+  { code: 'SO', name: 'Somalia', flag: '🇸🇴', dialCode: '+252' },
+  { code: 'ER', name: 'Eritrea', flag: '🇪🇷', dialCode: '+291' },
+  { code: 'SS', name: 'South Sudan', flag: '🇸🇸', dialCode: '+211' },
+  { code: 'CF', name: 'Central African Republic', flag: '🇨🇫', dialCode: '+236' },
+  { code: 'TD', name: 'Chad', flag: '🇹🇩', dialCode: '+235' },
+  { code: 'CM', name: 'Cameroon', flag: '🇨🇲', dialCode: '+237' },
+  { code: 'NE', name: 'Niger', flag: '🇳🇪', dialCode: '+227' },
+  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫', dialCode: '+226' },
+  { code: 'ML', name: 'Mali', flag: '🇲🇱', dialCode: '+223' },
+  { code: 'SN', name: 'Senegal', flag: '🇸🇳', dialCode: '+221' },
+  { code: 'GM', name: 'Gambia', flag: '🇬🇲', dialCode: '+220' },
+  { code: 'GW', name: 'Guinea-Bissau', flag: '🇬🇼', dialCode: '+245' },
+  { code: 'GN', name: 'Guinea', flag: '🇬🇳', dialCode: '+224' },
+  { code: 'SL', name: 'Sierra Leone', flag: '🇸🇱', dialCode: '+232' },
+  { code: 'LR', name: 'Liberia', flag: '🇱🇷', dialCode: '+231' },
+  { code: 'CI', name: 'Ivory Coast', flag: '🇨🇮', dialCode: '+225' },
+  { code: 'GH', name: 'Ghana', flag: '🇬🇭', dialCode: '+233' },
+  { code: 'TG', name: 'Togo', flag: '🇹🇬', dialCode: '+228' },
+  { code: 'BJ', name: 'Benin', flag: '🇧🇯', dialCode: '+229' },
+  { code: 'NG', name: 'Nigeria', flag: '🇳🇬', dialCode: '+234' },
+  { code: 'CV', name: 'Cape Verde', flag: '🇨🇻', dialCode: '+238' },
+  { code: 'ST', name: 'São Tomé and Príncipe', flag: '🇸🇹', dialCode: '+239' },
+  { code: 'GQ', name: 'Equatorial Guinea', flag: '🇬🇶', dialCode: '+240' },
+  { code: 'GA', name: 'Gabon', flag: '🇬🇦', dialCode: '+241' },
+  { code: 'CG', name: 'Republic of the Congo', flag: '🇨🇬', dialCode: '+242' },
+  { code: 'CD', name: 'Democratic Republic of the Congo', flag: '🇨🇩', dialCode: '+243' },
+  { code: 'AO', name: 'Angola', flag: '🇦🇴', dialCode: '+244' },
+  { code: 'ZM', name: 'Zambia', flag: '🇿🇲', dialCode: '+260' },
+  { code: 'ZW', name: 'Zimbabwe', flag: '🇿🇼', dialCode: '+263' },
+  { code: 'BW', name: 'Botswana', flag: '🇧🇼', dialCode: '+267' },
+  { code: 'NA', name: 'Namibia', flag: '🇳🇦', dialCode: '+264' },
+  { code: 'SZ', name: 'Eswatini', flag: '🇸🇿', dialCode: '+268' },
+  { code: 'LS', name: 'Lesotho', flag: '🇱🇸', dialCode: '+266' },
+  { code: 'MG', name: 'Madagascar', flag: '🇲🇬', dialCode: '+261' },
+  { code: 'MU', name: 'Mauritius', flag: '🇲🇺', dialCode: '+230' },
+  { code: 'SC', name: 'Seychelles', flag: '🇸🇨', dialCode: '+248' },
+  { code: 'KM', name: 'Comoros', flag: '🇰🇲', dialCode: '+269' },
+  { code: 'YT', name: 'Mayotte', flag: '🇾🇹', dialCode: '+262' },
+  { code: 'RE', name: 'Réunion', flag: '🇷🇪', dialCode: '+262' },
+  { code: 'MZ', name: 'Mozambique', flag: '🇲🇿', dialCode: '+258' },
+  { code: 'MW', name: 'Malawi', flag: '🇲🇼', dialCode: '+265' },
+  { code: 'ZM', name: 'Zambia', flag: '🇿🇲', dialCode: '+260' },
+  { code: 'ZW', name: 'Zimbabwe', flag: '🇿🇼', dialCode: '+263' },
+  { code: 'BW', name: 'Botswana', flag: '🇧🇼', dialCode: '+267' },
+  { code: 'NA', name: 'Namibia', flag: '🇳🇦', dialCode: '+264' },
+  { code: 'SZ', name: 'Eswatini', flag: '🇸🇿', dialCode: '+268' },
+  { code: 'LS', name: 'Lesotho', flag: '🇱🇸', dialCode: '+266' },
+  { code: 'MG', name: 'Madagascar', flag: '🇲🇬', dialCode: '+261' },
+  { code: 'MU', name: 'Mauritius', flag: '🇲🇺', dialCode: '+230' },
+  { code: 'SC', name: 'Seychelles', flag: '🇸🇨', dialCode: '+248' },
+  { code: 'KM', name: 'Comoros', flag: '🇰🇲', dialCode: '+269' },
+  { code: 'YT', name: 'Mayotte', flag: '🇾🇹', dialCode: '+262' },
+  { code: 'RE', name: 'Réunion', flag: '🇷🇪', dialCode: '+262' },
+  { code: 'MZ', name: 'Mozambique', flag: '🇲🇿', dialCode: '+258' },
+  { code: 'MW', name: 'Malawi', flag: '🇲🇼', dialCode: '+265' }
+];
+
 const Login = () => {
   const router = useRouter();
   const [loginType, setLoginType] = useState('owner'); // 'owner' or 'staff'
@@ -33,6 +215,11 @@ const Login = () => {
   const [staffCredentials, setStaffCredentials] = useState({ loginId: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Country selection state
+  const [selectedCountry, setSelectedCountry] = useState(countries[0]); // Default to India
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [countrySearchTerm, setCountrySearchTerm] = useState('');
   
   // Firebase OTP state
   const [verificationId, setVerificationId] = useState(null);
@@ -74,6 +261,21 @@ const Login = () => {
     };
   }, [step]);
 
+  // Close country dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showCountryDropdown && !event.target.closest('[data-country-dropdown]')) {
+        setShowCountryDropdown(false);
+        setCountrySearchTerm('');
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCountryDropdown]);
+
   const setupRecaptcha = () => {
     try {
       if (!window.recaptchaVerifier) {
@@ -96,20 +298,45 @@ const Login = () => {
     return phone === '9000000000' || phone === '+919000000000';
   };
 
+  // Filter countries based on search term
+  const filteredCountries = countries.filter(country =>
+    country.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) ||
+    country.dialCode.includes(countrySearchTerm) ||
+    country.code.toLowerCase().includes(countrySearchTerm.toLowerCase())
+  );
+
+  // Format phone number - only allow digits
+  const formatPhoneNumber = (value) => {
+    const numbers = value.replace(/\D/g, '');
+    // Allow up to 15 digits (international standard)
+    return numbers.slice(0, 15);
+  };
+
+  // Validate phone number
+  const validatePhoneNumber = (phone) => {
+    if (!phone) return 'Phone number is required';
+    if (phone.length < 7) return 'Phone number is too short';
+    if (phone.length > 15) return 'Phone number is too long';
+    if (!/^\d+$/.test(phone)) return 'Phone number should only contain digits';
+    return null;
+  };
+
   const handlePhoneSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
-    if (!phoneNumber || phoneNumber.length < 10) {
-      setError('Please enter a valid 10-digit phone number');
+    // Validate phone number
+    const phoneError = validatePhoneNumber(phoneNumber);
+    if (phoneError) {
+      setError(phoneError);
       return;
     }
 
     setLoading(true);
     
     try {
-      // Check if it's dummy account
-      if (isDummyAccount(phoneNumber)) {
+      // Check if it's a dummy account (only for India +91)
+      if (selectedCountry.code === 'IN' && isDummyAccount(phoneNumber)) {
         // Use backend OTP for dummy account
         const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
         const response = await fetch(`${backendUrl}/api/auth/phone/send-otp`, {
@@ -117,7 +344,7 @@ const Login = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ phone: `+91${phoneNumber}` }),
+          body: JSON.stringify({ phone: `${selectedCountry.dialCode}${phoneNumber}` }),
         });
 
         const data = await response.json();
@@ -129,17 +356,30 @@ const Login = () => {
           setError(data.message || 'Failed to send OTP');
         }
       } else {
-        // Use Firebase OTP for real numbers
-        const formattedPhone = phoneNumber.startsWith('+91') ? phoneNumber : `+91${phoneNumber}`;
+        // Use Firebase OTP for real numbers with international format
+        const fullPhoneNumber = `${selectedCountry.dialCode}${phoneNumber}`;
         
-        const appVerifier = window.recaptchaVerifier;
-        const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-        
-        setVerificationId(confirmationResult);
-        setIsFirebaseOTP(true);
-        setOtpSent(true);
-        setStep('otp');
-        setError('');
+        try {
+          const appVerifier = window.recaptchaVerifier;
+          const confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
+          
+          setVerificationId(confirmationResult);
+          setIsFirebaseOTP(true);
+          setOtpSent(true);
+          setStep('otp');
+          setError('');
+        } catch (firebaseError) {
+          console.error('Firebase error:', firebaseError);
+          if (firebaseError.code === 'auth/invalid-phone-number') {
+            setError('Invalid phone number format');
+          } else if (firebaseError.code === 'auth/too-many-requests') {
+            setError('Too many requests. Please try again later.');
+          } else if (firebaseError.code === 'auth/invalid-app-credential') {
+            setError('App not configured for this phone number region');
+          } else {
+            setError('Failed to send verification code. Please try again.');
+          }
+        }
       }
     } catch (error) {
       console.error('Error sending OTP:', error);
@@ -259,16 +499,17 @@ const Login = () => {
     }
   };
 
-  const formatPhoneNumber = (value) => {
-    // Remove all non-digits
-    const numbers = value.replace(/\D/g, '');
-    // Limit to 10 digits
-    return numbers.slice(0, 10);
-  };
-
   const handlePhoneChange = (e) => {
     const formatted = formatPhoneNumber(e.target.value);
     setPhoneNumber(formatted);
+    setError(''); // Clear error when user starts typing
+  };
+
+  const handleCountrySelect = (country) => {
+    setSelectedCountry(country);
+    setShowCountryDropdown(false);
+    setCountrySearchTerm('');
+    setError(''); // Clear error when country changes
   };
 
   const handleOtpChange = (e) => {
@@ -464,7 +705,7 @@ const Login = () => {
 
   return (
     <div style={{ 
-      minHeight: "100vh", 
+      height: "100vh", 
       backgroundColor: "#fef7f0",
       display: "flex",
       alignItems: "center",
@@ -473,42 +714,45 @@ const Login = () => {
     }}>
       <div style={{
         backgroundColor: "white",
-        borderRadius: "24px",
-        boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+        borderRadius: "8px",
+        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
         width: "100%",
-        maxWidth: "440px",
+        maxWidth: "400px",
         overflow: "hidden",
-        border: "1px solid #fed7aa"
+        border: "1px solid #d1d5db",
+        padding: "20px"
       }}>
         {/* Header */}
         <div style={{
           background: "linear-gradient(135deg, #e53e3e, #dc2626)",
-          padding: "32px 24px",
+          padding: "20px 16px",
           textAlign: "center",
-          color: "white"
+          color: "white",
+          borderRadius: "6px 6px 0 0",
+          margin: "-20px -20px 20px -20px"
         }}>
           <div style={{
-            width: "80px",
-            height: "80px",
+            width: "60px",
+            height: "60px",
             backgroundColor: "rgba(255,255,255,0.2)",
-            borderRadius: "20px",
+            borderRadius: "12px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            margin: "0 auto 16px",
+            margin: "0 auto 12px",
             backdropFilter: "blur(10px)"
           }}>
-            <FaUtensils size={36} />
+            <FaUtensils size={24} />
           </div>
           <h1 style={{
-            fontSize: "28px",
+            fontSize: "22px",
             fontWeight: "bold",
-            margin: "0 0 8px 0"
+            margin: "0 0 4px 0"
           }}>
             {t('login.title')}
           </h1>
           <p style={{
-            fontSize: "16px",
+            fontSize: "14px",
             opacity: 0.9,
             margin: 0
           }}>
@@ -561,7 +805,7 @@ const Login = () => {
         </div>
   
         {/* Login Form */}
-        <div style={{ padding: "32px 24px" }}>
+        <div style={{ padding: "16px 0" }}>
           {error && (
             <div style={{
               backgroundColor: "#fee2e2",
@@ -610,73 +854,196 @@ const Login = () => {
               </div>
   
               <form onSubmit={handlePhoneSubmit}>
-                <div style={{ marginBottom: "24px" }}>
+                <div style={{ marginBottom: "16px" }}>
                   <label style={{
                     display: "block",
                     fontSize: "14px",
                     fontWeight: "600",
                     color: "#374151",
-                    marginBottom: "8px"
+                    marginBottom: "6px"
                   }}>
 {t('common.phone')}
                   </label>
                   <div style={{ position: "relative" }}>
+                    {/* Unified Phone Input Container */}
                     <div style={{
-                      position: "absolute",
-                      left: "16px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
                       display: "flex",
                       alignItems: "center",
-                      gap: "8px",
-                      color: "#6b7280",
-                      fontSize: "14px",
-                      fontWeight: "500"
+                      border: error ? "2px solid #ef4444" : "2px solid #d1d5db",
+                      borderRadius: "8px",
+                      backgroundColor: "white",
+                      transition: "border-color 0.2s"
                     }}>
-                      🇮🇳 +91
+                      {/* Country Code Selector */}
+                      <div style={{ position: "relative" }}>
+                        <div
+                          data-country-dropdown
+                          onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            padding: "12px 16px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            color: "#374151",
+                            minWidth: "90px",
+                            borderRight: "1px solid #e5e7eb",
+                            borderTopLeftRadius: "6px",
+                            borderBottomLeftRadius: "6px",
+                            transition: "background-color 0.2s"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#f9fafb";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "white";
+                          }}
+                        >
+                          <span style={{ fontSize: "16px" }}>{selectedCountry.flag}</span>
+                          <span style={{ fontSize: "12px", fontWeight: "600" }}>{selectedCountry.dialCode}</span>
+                          <FaChevronDown style={{ 
+                            fontSize: "10px", 
+                            color: "#6b7280",
+                            transform: showCountryDropdown ? "rotate(180deg)" : "rotate(0deg)",
+                            transition: "transform 0.2s"
+                          }} />
+                        </div>
+
+                        {/* Country Dropdown */}
+                        {showCountryDropdown && (
+                          <div 
+                            data-country-dropdown
+                            style={{
+                              position: "absolute",
+                              top: "100%",
+                              left: "0",
+                              width: "320px",
+                              backgroundColor: "white",
+                              border: "1px solid #e5e7eb",
+                              borderRadius: "8px",
+                              boxShadow: "0 10px 25px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05)",
+                              maxHeight: "280px",
+                              overflowY: "auto",
+                              zIndex: 1000,
+                              marginTop: "4px"
+                            }}>
+                            {/* Search Input */}
+                            <div style={{ padding: "8px", borderBottom: "1px solid #f3f4f6" }}>
+                              <div style={{ position: "relative" }}>
+                                <FaSearch style={{
+                                  position: "absolute",
+                                  left: "10px",
+                                  top: "50%",
+                                  transform: "translateY(-50%)",
+                                  color: "#9ca3af",
+                                  fontSize: "12px"
+                                }} />
+                                <input
+                                  type="text"
+                                  placeholder="Search countries..."
+                                  value={countrySearchTerm}
+                                  onChange={(e) => setCountrySearchTerm(e.target.value)}
+                                  style={{
+                                    width: "100%",
+                                    padding: "8px 8px 8px 28px",
+                                    border: "1px solid #e5e7eb",
+                                    borderRadius: "6px",
+                                    fontSize: "13px",
+                                    outline: "none",
+                                    backgroundColor: "#f9fafb"
+                                  }}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Country List */}
+                            <div style={{ maxHeight: "220px", overflowY: "auto" }}>
+                              {filteredCountries.map((country) => (
+                                <div
+                                  key={country.code}
+                                  onClick={() => handleCountrySelect(country)}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "10px",
+                                    padding: "10px 12px",
+                                    cursor: "pointer",
+                                    fontSize: "14px",
+                                    borderBottom: "1px solid #f8fafc",
+                                    transition: "all 0.15s ease",
+                                    color: "#374151"
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.target.style.backgroundColor = "#f1f5f9";
+                                    e.target.style.color = "#1f2937";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.target.style.backgroundColor = "white";
+                                    e.target.style.color = "#374151";
+                                  }}
+                                >
+                                  <span style={{ fontSize: "18px", minWidth: "24px" }}>{country.flag}</span>
+                                  <span style={{ flex: 1, fontWeight: "500", fontSize: "14px" }}>{country.name}</span>
+                                  <span style={{ color: "#6b7280", fontWeight: "600", fontSize: "13px" }}>{country.dialCode}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Phone Number Input */}
+                      <input
+                        type="tel"
+                        required
+                        value={phoneNumber}
+                        onChange={handlePhoneChange}
+                        placeholder="Enter phone number"
+                        style={{
+                          flex: 1,
+                          padding: "12px 16px",
+                          border: "none",
+                          fontSize: "16px",
+                          outline: "none",
+                          backgroundColor: "transparent",
+                          letterSpacing: "1px",
+                          borderTopRightRadius: "6px",
+                          borderBottomRightRadius: "6px"
+                        }}
+                      />
                     </div>
-                    <input
-                      type="tel"
-                      required
-                      value={phoneNumber}
-                      onChange={handlePhoneChange}
-                      placeholder={t('login.phonePlaceholder')}
-                      style={{
-                        width: "100%",
-                        paddingLeft: "80px",
-                        paddingRight: "16px",
-                        paddingTop: "16px",
-                        paddingBottom: "16px",
-                        border: "2px solid #e5e7eb",
-                        borderRadius: "12px",
-                        fontSize: "16px",
-                        outline: "none",
-                        backgroundColor: "#fef7f0",
-                        transition: "all 0.2s",
-                        letterSpacing: "1px"
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = "#e53e3e";
-                        e.target.style.backgroundColor = "white";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = "#e5e7eb";
-                        e.target.style.backgroundColor = "#fef7f0";
-                      }}
-                    />
                   </div>
-                  {phoneNumber && phoneNumber.length === 10 && (
+                  {/* Phone Number Validation */}
+                  {phoneNumber && ((selectedCountry.code === 'IN' && phoneNumber.length >= 10) || (selectedCountry.code !== 'IN' && phoneNumber.length >= 7)) && !error && (
                     <div style={{
                       display: "flex",
                       alignItems: "center",
                       gap: "6px",
-                      marginTop: "8px",
+                      marginTop: "4px",
                       color: "#10b981",
                       fontSize: "12px",
                       fontWeight: "500"
                     }}>
                       <FaCheck size={10} />
-{t('login.validPhone')}
+                      {selectedCountry.code === 'IN' ? 'Ready to send OTP' : 'Valid phone number'}
+                    </div>
+                  )}
+                  
+                  {/* Error Display */}
+                  {error && (
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      marginTop: "4px",
+                      color: "#ef4444",
+                      fontSize: "12px",
+                      fontWeight: "500"
+                    }}>
+                      <FaTimes size={10} />
+                      {error}
                     </div>
                   )}
                 </div>
@@ -684,24 +1051,23 @@ const Login = () => {
   
                 <button
                   type="submit"
-                  disabled={loading || phoneNumber.length !== 10}
+                  disabled={loading || (selectedCountry.code === 'IN' && phoneNumber.length < 10)}
                   style={{
                     width: "100%",
-                    background: phoneNumber.length === 10 && !loading
-                      ? "linear-gradient(135deg, #e53e3e, #dc2626)"
-                      : "#d1d5db",
-                    color: "white",
+                    backgroundColor: (selectedCountry.code === 'IN' ? phoneNumber.length >= 10 : phoneNumber.length >= 7) && !loading ? "#e53e3e" : "#e5e7eb",
+                    color: (selectedCountry.code === 'IN' ? phoneNumber.length >= 10 : phoneNumber.length >= 7) && !loading ? "white" : "#9ca3af",
                     padding: "16px",
-                    borderRadius: "12px",
-                    fontWeight: "700",
+                    borderRadius: "8px",
+                    fontWeight: "600",
                     fontSize: "16px",
-                    border: "none",
-                    cursor: phoneNumber.length === 10 && !loading ? "pointer" : "not-allowed",
+                    border: (selectedCountry.code === 'IN' ? phoneNumber.length >= 10 : phoneNumber.length >= 7) && !loading ? "2px solid #e53e3e" : "2px solid #d1d5db",
+                    cursor: (selectedCountry.code === 'IN' ? phoneNumber.length >= 10 : phoneNumber.length >= 7) && !loading ? "pointer" : "not-allowed",
                     transition: "all 0.2s",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: "8px"
+                    gap: "8px",
+                    marginTop: "16px"
                   }}
                 >
                   {loading ? (
@@ -739,10 +1105,10 @@ const Login = () => {
                   disabled={loading}
                   style={{
                     width: '100%',
-                    padding: '14px 16px',
+                    padding: '16px',
                     backgroundColor: 'white',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '8px',
                     fontSize: '16px',
                     fontWeight: '600',
                     color: '#374151',
@@ -752,23 +1118,18 @@ const Login = () => {
                     justifyContent: 'center',
                     gap: '12px',
                     transition: 'all 0.2s',
-                    opacity: loading ? 0.6 : 1,
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+                    opacity: loading ? 0.6 : 1
                   }}
                   onMouseEnter={(e) => {
                     if (!loading) {
                       e.target.style.backgroundColor = '#f9fafb';
-                      e.target.style.borderColor = '#d1d5db';
-                      e.target.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-                      e.target.style.transform = 'translateY(-1px)';
+                      e.target.style.borderColor = '#9ca3af';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!loading) {
                       e.target.style.backgroundColor = 'white';
-                      e.target.style.borderColor = '#e5e7eb';
-                      e.target.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
-                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.borderColor = '#d1d5db';
                     }
                   }}
                 >
