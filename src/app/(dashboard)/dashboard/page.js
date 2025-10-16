@@ -705,6 +705,25 @@ function RestaurantPOSContent() {
     }
   }, [searchParams]);
 
+  // Handle orderId parameter from URL (for edit mode from Order History)
+  useEffect(() => {
+    const orderId = searchParams.get('orderId');
+    const mode = searchParams.get('mode');
+    
+    if (orderId && selectedRestaurant?.id) {
+      console.log('🔄 Dashboard: Order ID from URL:', orderId, 'Mode:', mode);
+      
+      // Set the order lookup value in search box
+      setOrderLookup(orderId);
+      
+      // Add a small delay to ensure the search box is updated, then trigger search directly
+      setTimeout(async () => {
+        console.log('🔄 Auto-triggering order lookup for:', orderId);
+        await triggerOrderLookup(orderId);
+      }, 500); // 500ms delay to handle any race conditions
+    }
+  }, [searchParams, selectedRestaurant?.id]);
+
   const filteredItems = (menuItems || []).filter(item => {
     const matchesCategory = selectedCategory === 'all-items' || item.category?.toLowerCase() === selectedCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -803,217 +822,254 @@ function RestaurantPOSContent() {
     });
   };
 
-  const handleOrderLookup = async (e) => {
-    if (e.key === 'Enter' && orderLookup.trim()) {
-      try {
-        setOrderSearchLoading(true);
-        setIsLoadingOrder(true); // Set flag to prevent localStorage override
-        setError(''); // Clear any existing errors
+  // Direct order lookup function (for auto-trigger from URL)
+  const triggerOrderLookup = useCallback(async (orderId) => {
+    if (!orderId || !selectedRestaurant?.id) return;
+    
+    try {
+      setOrderSearchLoading(true);
+      setIsLoadingOrder(true); // Set flag to prevent localStorage override
+      setError(''); // Clear any existing errors
+      
+      console.log('🔍 Auto-triggered order lookup - Restaurant ID:', selectedRestaurant?.id);
+      console.log('🔍 Auto-triggered order lookup - Search value:', orderId);
+      
+      const response = await apiClient.getOrders(selectedRestaurant.id, {
+        search: orderId
+        // Don't filter by status - let backend handle filtering out completed orders
+      });
+      
+      console.log('🔍 Auto-triggered order lookup response:', response);
+      
+      if (response.orders && response.orders.length > 0) {
+        const order = response.orders[0]; // Get the first matching order
+        const mode = searchParams.get('mode');
         
-        const searchValue = orderLookup.trim();
+        setCurrentOrder(order);
         
-        console.log('🔍 Order lookup - Restaurant ID:', selectedRestaurant?.id);
-        console.log('🔍 Order lookup - Search value:', searchValue);
+        // Clear any existing cart from localStorage to avoid conflicts
+        localStorage.removeItem('dine_cart');
+        console.log('🧹 Cleared localStorage cart before loading order');
         
-        if (!selectedRestaurant?.id) {
-          setNotification({
-            type: 'error',
-            title: 'No Restaurant Selected',
-            message: 'Please select a restaurant first',
-            show: true
-          });
-          return;
-        }
-        
-        const response = await apiClient.getOrders(selectedRestaurant.id, {
-          search: searchValue
-          // Don't filter by status - let backend handle filtering out completed orders
-        });
-        
-        console.log('🔍 Order lookup response:', response);
-        
-        if (response.orders && response.orders.length > 0) {
-          const order = response.orders[0]; // Get the first matching order
-          setCurrentOrder(order);
+        // Load the order items into cart for editing
+        const orderItems = Array.isArray(order.items) ? order.items.map(item => {
+          console.log('🔍 Order item data:', item);
+          console.log('🔍 Available fields:', Object.keys(item));
           
-          // Clear any existing cart from localStorage to avoid conflicts
-          localStorage.removeItem('dine_cart');
-          console.log('🧹 Cleared localStorage cart before loading order');
-          
-          // Load the order items into cart for editing
-          const orderItems = Array.isArray(order.items) ? order.items.map(item => {
-            console.log('🔍 Order item data:', item);
-            console.log('🔍 Available fields:', Object.keys(item));
-            
-            // Try multiple possible name fields
-            let name = 'Unknown Item';
-            if (item.name) {
-              name = item.name;
-            } else if (item.menuItem?.name) {
-              name = item.menuItem.name;
-            } else if (item.itemName) {
-              name = item.itemName;
-            } else if (item.productName) {
-              name = item.productName;
-            }
-            
-            // Try multiple possible price fields
-            let price = 0;
-            if (item.price && !isNaN(parseFloat(item.price))) {
-              price = parseFloat(item.price);
-            } else if (item.total && !isNaN(parseFloat(item.total))) {
-              price = parseFloat(item.total);
-            } else if (item.unitPrice && !isNaN(parseFloat(item.unitPrice))) {
-              price = parseFloat(item.unitPrice);
-            } else if (item.itemPrice && !isNaN(parseFloat(item.itemPrice))) {
-              price = parseFloat(item.itemPrice);
-            } else if (item.menuItem?.price && !isNaN(parseFloat(item.menuItem.price))) {
-              price = parseFloat(item.menuItem.price);
-            }
-            
-            // If price is still 0 or NaN, try to calculate from total/quantity
-            if (!price || isNaN(price) || price <= 0) {
-              const total = parseFloat(item.total) || parseFloat(item.itemTotal) || parseFloat(item.subtotal) || 0;
-              const qty = parseInt(item.quantity) || 1;
-              if (total > 0 && qty > 0) {
-                price = total / qty;
-              }
-            }
-            
-            // Final fallback - if still no price, set to 0 but log warning
-            if (!price || isNaN(price) || price <= 0) {
-              console.warn(`⚠️ Could not determine price for item:`, item);
-              price = 0;
-            }
-            
-            // Try multiple possible ID fields
-            let id = item.menuItemId || item.id || item.menuItem?.id || item.itemId;
-            
-            console.log(`🔍 Parsed - Name: ${name}, Price: ${price}, ID: ${id}, Quantity: ${item.quantity}`);
-            
-            return {
-              id: id,
-              name: name,
-              price: price || 0,
-              quantity: parseInt(item.quantity) || 1,
-              category: item.category || item.menuItem?.category || 'main',
-              // Store original data for reference
-              originalData: item
-            };
-          }) : [];
-          
-          // If we have unknown items, try to fetch menu items and match them BEFORE setting cart
-          const hasUnknownItems = orderItems.some(item => item.name === 'Unknown Item');
-          if (hasUnknownItems && selectedRestaurant?.id) {
-            console.log('🔍 Found unknown items, fetching menu items to match...');
-            try {
-              const menuResponse = await apiClient.getMenuItems(selectedRestaurant.id);
-              if (menuResponse.success && menuResponse.items) {
-                const updatedItems = orderItems.map(cartItem => {
-                  if (cartItem.name === 'Unknown Item') {
-                    // Try to match by ID first
-                    let menuItem = menuResponse.items.find(menuItem => 
-                      menuItem.id === cartItem.id || 
-                      menuItem.id === cartItem.originalData?.menuItemId ||
-                      menuItem.id === cartItem.originalData?.id
-                    );
-                    
-                    // If no match by ID, try to match by name (fuzzy matching)
-                    if (!menuItem) {
-                      const originalName = cartItem.originalData?.name || 
-                                         cartItem.originalData?.menuItem?.name ||
-                                         cartItem.originalData?.itemName ||
-                                         cartItem.originalData?.productName;
-                      
-                      if (originalName) {
-                        menuItem = menuResponse.items.find(menuItem => 
-                          menuItem.name.toLowerCase().includes(originalName.toLowerCase()) ||
-                          originalName.toLowerCase().includes(menuItem.name.toLowerCase())
-                        );
-                      }
-                    }
-                    
-                    if (menuItem) {
-                      console.log(`🔍 Found menu item match: ${menuItem.name} - ${menuItem.price}`);
-                      return {
-                        ...cartItem,
-                        id: menuItem.id,
-                        name: menuItem.name,
-                        price: parseFloat(menuItem.price) || cartItem.price,
-                        category: menuItem.category || cartItem.category
-                      };
-                    }
-                  }
-                  return cartItem;
-                });
-                
-                console.log('🔍 Setting cart with matched items:', updatedItems);
-                setCart(updatedItems);
-                console.log('🔍 Cart state immediately after setCart:', updatedItems);
-                
-                // Add a small delay to ensure cart state is updated
-                setTimeout(() => {
-                  console.log('✅ Cart state should be updated with matched items');
-                }, 200);
-              } else {
-                console.log('🔍 No menu items found, setting cart with original items');
-                setCart(orderItems);
-                setTimeout(() => {
-                  console.log('✅ Cart state updated with original items');
-                }, 200);
-              }
-            } catch (error) {
-              console.error('🔍 Error fetching menu items for matching:', error);
-              console.log('🔍 Setting cart with original items due to error');
-              setCart(orderItems);
-              setTimeout(() => {
-                console.log('✅ Cart state updated with original items (error case)');
-              }, 200);
-            }
-          } else {
-            console.log('🔍 No unknown items, setting cart directly');
-            setCart(orderItems);
-            setTimeout(() => {
-              console.log('✅ Cart state updated directly');
-            }, 200);
+          // Try multiple possible name fields
+          let name = 'Unknown Item';
+          if (item.name) {
+            name = item.name;
+          } else if (item.menuItem?.name) {
+            name = item.menuItem.name;
+          } else if (item.itemName) {
+            name = item.itemName;
+          } else if (item.productName) {
+            name = item.productName;
           }
           
-          setTableNumber(order.tableNumber || '');
-          setOrderType(order.orderType || 'dine-in');
-          setPaymentMethod(order.paymentMethod || 'cash');
+          // Try multiple possible price fields
+          let price = 0;
+          if (item.price && !isNaN(parseFloat(item.price))) {
+            price = parseFloat(item.price);
+          } else if (item.total && !isNaN(parseFloat(item.total))) {
+            price = parseFloat(item.total);
+          } else if (item.unitPrice && !isNaN(parseFloat(item.unitPrice))) {
+            price = parseFloat(item.unitPrice);
+          } else if (item.itemPrice && !isNaN(parseFloat(item.itemPrice))) {
+            price = parseFloat(item.itemPrice);
+          } else if (item.menuItem?.price && !isNaN(parseFloat(item.menuItem.price))) {
+            price = parseFloat(item.menuItem.price);
+          }
           
-          // Show success notification
+          // If price is still 0 or NaN, try to calculate from total/quantity
+          if (!price || isNaN(price) || price <= 0) {
+            const total = parseFloat(item.total) || parseFloat(item.itemTotal) || parseFloat(item.subtotal) || 0;
+            const qty = parseInt(item.quantity) || 1;
+            if (total > 0 && qty > 0) {
+              price = total / qty;
+            }
+          }
+          
+          // Final fallback - if still no price, set to 0 but log warning
+          if (!price || isNaN(price) || price <= 0) {
+            console.warn(`⚠️ Could not determine price for item:`, item);
+            price = 0;
+          }
+          
+          // Try multiple possible ID fields
+          let id = item.menuItemId || item.id || item.menuItem?.id || item.itemId;
+          
+          console.log(`🔍 Parsed - Name: ${name}, Price: ${price}, ID: ${id}, Quantity: ${item.quantity}`);
+          
+          return {
+            id: id,
+            name: name,
+            price: price || 0,
+            quantity: parseInt(item.quantity) || 1,
+            category: item.category || item.menuItem?.category || 'main',
+            // Store original data for reference
+            originalData: item
+          };
+        }) : [];
+        
+        // If we have unknown items, try to fetch menu items and match them BEFORE setting cart
+        const hasUnknownItems = orderItems.some(item => item.name === 'Unknown Item');
+        if (hasUnknownItems && selectedRestaurant?.id) {
+          console.log('🔍 Found unknown items, fetching menu items to match...');
+          try {
+            const menuResponse = await apiClient.getMenuItems(selectedRestaurant.id);
+            if (menuResponse.success && menuResponse.items) {
+              const updatedItems = orderItems.map(cartItem => {
+                if (cartItem.name === 'Unknown Item') {
+                  // Try to match by ID first
+                  let menuItem = menuResponse.items.find(menuItem => 
+                    menuItem.id === cartItem.id || 
+                    menuItem.id === cartItem.originalData?.menuItemId ||
+                    menuItem.id === cartItem.originalData?.id
+                  );
+                  
+                  // If no match by ID, try to match by name (fuzzy matching)
+                  if (!menuItem) {
+                    const originalName = cartItem.originalData?.name || 
+                                       cartItem.originalData?.menuItem?.name ||
+                                       cartItem.originalData?.itemName ||
+                                       cartItem.originalData?.productName;
+                    
+                    if (originalName) {
+                      menuItem = menuResponse.items.find(menuItem => 
+                        menuItem.name.toLowerCase().includes(originalName.toLowerCase()) ||
+                        originalName.toLowerCase().includes(menuItem.name.toLowerCase())
+                      );
+                    }
+                  }
+                  
+                  if (menuItem) {
+                    console.log(`🔍 Found menu item match: ${menuItem.name} - ${menuItem.price}`);
+                    return {
+                      ...cartItem,
+                      id: menuItem.id,
+                      name: menuItem.name,
+                      price: parseFloat(menuItem.price) || cartItem.price,
+                      category: menuItem.category || cartItem.category
+                    };
+                  }
+                }
+                return cartItem;
+              });
+              
+              console.log('🔍 Setting cart with matched items:', updatedItems);
+              setCart(updatedItems);
+              console.log('🔍 Cart state immediately after setCart:', updatedItems);
+              
+              // Add a small delay to ensure cart state is updated
+              setTimeout(() => {
+                console.log('✅ Cart state should be updated with matched items');
+              }, 200);
+            } else {
+              console.log('🔍 No menu items found, setting cart with original items');
+              setCart(orderItems);
+              setTimeout(() => {
+                console.log('✅ Cart state updated with original items');
+              }, 200);
+            }
+          } catch (error) {
+            console.error('🔍 Error fetching menu items for matching:', error);
+            console.log('🔍 Setting cart with original items due to error');
+            setCart(orderItems);
+            setTimeout(() => {
+              console.log('✅ Cart state updated with original items (error case)');
+            }, 200);
+          }
+        } else {
+          console.log('🔍 No unknown items, setting cart directly');
+          setCart(orderItems);
+          setTimeout(() => {
+            console.log('✅ Cart state updated directly');
+          }, 200);
+        }
+        
+        setTableNumber(order.tableNumber || '');
+        setOrderType(order.orderType || 'dine-in');
+        setPaymentMethod(order.paymentMethod || 'cash');
+        
+        // Show appropriate notification based on mode
+        if (mode === 'view') {
+          setNotification({
+            type: 'info',
+            title: 'Order Loaded for Viewing 👁️',
+            message: `Order "${orderId}" loaded - View mode`,
+            show: true
+          });
+        } else if (mode === 'edit') {
+          // Check if order is completed
+          if (order.status === 'completed') {
+            setNotification({
+              type: 'success',
+              title: 'New Order Created 📝',
+              message: `New order created based on completed order "${orderId}" - Ready to modify!`,
+              show: true
+            });
+            // Clear current order for new order creation
+            setCurrentOrder(null);
+          } else {
+            setNotification({
+              type: 'success',
+              title: 'Order Ready for Editing ✏️',
+              message: `Order "${orderId}" loaded successfully - Ready to edit!`,
+              show: true
+            });
+          }
+        } else if (mode === 'duplicate') {
+          setNotification({
+            type: 'success',
+            title: 'New Order Created 📝',
+            message: `New order created based on completed order "${orderId}" - Ready to modify!`,
+            show: true
+          });
+          // Clear current order for new order creation
+          setCurrentOrder(null);
+        } else {
           setNotification({
             type: 'success',
             title: 'Order Found! 🎉',
-            message: `Order "${searchValue}" loaded successfully - Ready to edit!`,
-            show: true
-          });
-          
-          // Clear search input
-          setOrderLookup('');
-          
-        } else {
-          // Show not found notification instead of full-page error
-          setNotification({
-            type: 'warning',
-            title: 'Order Not Found',
-            message: `No active order found for "${searchValue}"`,
+            message: `Order "${orderId}" loaded successfully - Ready to edit!`,
             show: true
           });
         }
-      } catch (error) {
-        console.error('Order lookup error:', error);
+        
+        // Keep the search value in the input box
+        // setOrderLookup(''); // Removed this line
+        
+      } else {
         setNotification({
           type: 'error',
-          title: 'Search Failed',
-          message: 'Failed to search for order. Please try again.',
+          title: 'Order Not Found',
+          message: `No order found with ID "${orderId}"`,
           show: true
         });
-      } finally {
-        setOrderSearchLoading(false);
-        setIsLoadingOrder(false); // Clear flag to allow localStorage loading
+        // Keep the search value in the input box
+        // setOrderLookup(''); // Removed this line
       }
+    } catch (error) {
+      console.error('Auto-triggered order lookup error:', error);
+      setNotification({
+        type: 'error',
+        title: 'Error Loading Order',
+        message: error.message || 'Failed to load order',
+        show: true
+      });
+      // Keep the search value in the input box
+      // setOrderLookup(''); // Removed this line
+    } finally {
+      setOrderSearchLoading(false);
+      setIsLoadingOrder(false); // Clear flag to allow localStorage loading
+    }
+  }, [selectedRestaurant?.id, searchParams]);
+
+  const handleOrderLookup = async (e) => {
+    if (e.key === 'Enter' && orderLookup.trim()) {
+      await triggerOrderLookup(orderLookup.trim());
     }
   };
 

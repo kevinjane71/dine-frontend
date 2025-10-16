@@ -217,6 +217,9 @@ const OrderHistory = () => {
 
   const handleEditOrder = (orderId) => {
     console.log('Edit order:', orderId);
+    
+    // Redirect to dashboard with order ID in URL
+    router.push(`/dashboard?orderId=${orderId}&mode=edit`);
   };
 
   // Cool Custom Dropdown Component
@@ -496,23 +499,23 @@ const OrderHistory = () => {
                           {order.paymentMethod?.toUpperCase() || 'CASH'}
                         </div>
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                         <button
                           onClick={() => handleViewOrder(order.id)}
-                          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                          className="px-3 py-2 text-xs sm:text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center space-x-1"
                           title="View Order"
                         >
-                          <FaEye className="text-sm" />
+                          <FaEye className="text-xs" />
+                          <span>View</span>
                         </button>
-                        {order.status !== 'completed' && (
-                          <button
-                            onClick={() => handleEditOrder(order.id)}
-                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                            title="Edit Order"
-                          >
-                            <FaEdit className="text-sm" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleEditOrder(order.id)}
+                          className="px-3 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg transition-all duration-200 flex items-center justify-center space-x-1 shadow-md hover:shadow-lg"
+                          title="Edit Order"
+                        >
+                          <FaEdit className="text-xs" />
+                          <span>Edit</span>
+                        </button>
                       </div>
                     </div>
                   </div>
