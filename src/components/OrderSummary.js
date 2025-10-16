@@ -49,13 +49,27 @@ const OrderSummary = ({
   setCurrentOrder,
   onShowQRCode,
   restaurantId,
-  restaurantName
+  restaurantName,
+  taxSettings
 }) => {
   const [invoice, setInvoice] = useState(null);
   const [showInvoicePermanently, setShowInvoicePermanently] = useState(false);
   const [taxBreakdown, setTaxBreakdown] = useState([]);
   const [totalTax, setTotalTax] = useState(0);
   const [grandTotal, setGrandTotal] = useState(0);
+  
+  // Debug: Log cart prop received by OrderSummary
+  console.log('📋 OrderSummary: Received cart prop:', cart);
+  console.log('📋 OrderSummary: Cart length:', cart?.length);
+  if (cart?.length > 0) {
+    console.log('📋 OrderSummary: First cart item:', cart[0]);
+    console.log('📋 OrderSummary: All cart items:', cart.map(item => ({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity
+    })));
+  }
   
   const calculateTax = useCallback(async () => {
     console.log('Calculating tax for cart:', cart.length, 'items, restaurantId:', restaurantId);
@@ -66,81 +80,62 @@ const OrderSummary = ({
       return;
     }
 
-    try {
-      // First, get the restaurant's tax settings
-      const taxSettingsResponse = await apiClient.getTaxSettings(restaurantId);
-      console.log('Tax settings response:', taxSettingsResponse);
-      
-      if (!taxSettingsResponse.success || !taxSettingsResponse.taxSettings?.enabled) {
-        console.log('Tax not enabled for this restaurant');
-        setTaxBreakdown([]);
-        setTotalTax(0);
-        setGrandTotal(getTotalAmount());
-        return;
-      }
-
-      const taxSettings = taxSettingsResponse.taxSettings;
-      const subtotal = getTotalAmount();
-      
-      // Calculate tax based on restaurant's tax settings
-      const calculatedTaxes = [];
-      let totalTaxAmount = 0;
-
-      if (taxSettings.taxes && taxSettings.taxes.length > 0) {
-        taxSettings.taxes.forEach(tax => {
-          if (tax.enabled) {
-            const taxAmount = subtotal * (tax.rate / 100);
-            calculatedTaxes.push({
-              name: tax.name,
-              rate: tax.rate,
-              amount: taxAmount
-            });
-            totalTaxAmount += taxAmount;
-          }
-        });
-      } else if (taxSettings.defaultTaxRate) {
-        // Fallback to default tax rate
-        const taxAmount = subtotal * (taxSettings.defaultTaxRate / 100);
-        calculatedTaxes.push({
-          name: 'GST',
-          rate: taxSettings.defaultTaxRate,
-          amount: taxAmount
-        });
-        totalTaxAmount = taxAmount;
-      }
-
-      console.log('Calculated taxes:', calculatedTaxes, 'Total tax:', totalTaxAmount);
-      setTaxBreakdown(calculatedTaxes);
-      setTotalTax(totalTaxAmount);
-      setGrandTotal(subtotal + totalTaxAmount);
-
-    } catch (error) {
-      console.error('Error calculating tax:', error);
-      // Fallback: Apply 5% GST if API fails
-      const subtotal = getTotalAmount();
-      const fallbackTax = subtotal * 0.05; // 5% GST
-      setTaxBreakdown([{
-        name: 'GST',
-        rate: 5,
-        amount: fallbackTax
-      }]);
-      setTotalTax(fallbackTax);
-      setGrandTotal(subtotal + fallbackTax);
-      console.log('Using fallback tax calculation:', fallbackTax);
+    // Use cached tax settings instead of calling API
+    if (!taxSettings?.enabled) {
+      console.log('Tax not enabled for this restaurant');
+      setTaxBreakdown([]);
+      setTotalTax(0);
+      setGrandTotal(getTotalAmount());
+      return;
     }
-  }, [cart, restaurantId, getTotalAmount]);
+
+    const subtotal = getTotalAmount();
+    
+    // Calculate tax based on restaurant's tax settings
+    const calculatedTaxes = [];
+    let totalTaxAmount = 0;
+
+    if (taxSettings.taxes && taxSettings.taxes.length > 0) {
+      taxSettings.taxes.forEach(tax => {
+        if (tax.enabled) {
+          const taxAmount = subtotal * (tax.rate / 100);
+          calculatedTaxes.push({
+            name: tax.name,
+            rate: tax.rate,
+            amount: taxAmount
+          });
+          totalTaxAmount += taxAmount;
+        }
+      });
+    } else if (taxSettings.defaultTaxRate) {
+      // Fallback to default tax rate
+      const taxAmount = subtotal * (taxSettings.defaultTaxRate / 100);
+      calculatedTaxes.push({
+        name: 'GST',
+        rate: taxSettings.defaultTaxRate,
+        amount: taxAmount
+      });
+      totalTaxAmount = taxAmount;
+    }
+
+    console.log('Calculated taxes:', calculatedTaxes, 'Total tax:', totalTaxAmount);
+    setTaxBreakdown(calculatedTaxes);
+    setTotalTax(totalTaxAmount);
+    setGrandTotal(subtotal + totalTaxAmount);
+
+  }, [cart, restaurantId, getTotalAmount, taxSettings]);
   
   // Calculate tax when cart changes
   useEffect(() => {
-    console.log('useEffect triggered - cart length:', cart.length, 'restaurantId:', restaurantId);
-    if (cart.length > 0 && restaurantId) {
+    console.log('useEffect triggered - cart length:', cart.length, 'restaurantId:', restaurantId, 'taxSettings:', taxSettings);
+    if (cart.length > 0 && restaurantId && taxSettings) {
       calculateTax();
     } else {
       setTaxBreakdown([]);
       setTotalTax(0);
       setGrandTotal(getTotalAmount());
     }
-  }, [calculateTax, cart, restaurantId, getTotalAmount]);
+  }, [calculateTax, cart, restaurantId, getTotalAmount, taxSettings]);
   
   // Debug logging
   console.log('OrderSummary orderSuccess:', orderSuccess);

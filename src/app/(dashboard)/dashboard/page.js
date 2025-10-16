@@ -87,6 +87,8 @@ function RestaurantPOSContent() {
   const [orderLookup, setOrderLookup] = useState(''); // For table number or order ID lookup
   const [currentOrder, setCurrentOrder] = useState(null); // Current order being viewed/updated
   const [orderSearchLoading, setOrderSearchLoading] = useState(false); // Loading state for order search
+  const [taxSettings, setTaxSettings] = useState(null); // Tax settings for the restaurant
+  const [isLoadingOrder, setIsLoadingOrder] = useState(false); // Flag to prevent localStorage override during order loading
   
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false);
@@ -289,20 +291,77 @@ function RestaurantPOSContent() {
 
   // Load cart from localStorage
   useEffect(() => {
+    if (isLoadingOrder) {
+      console.log('🔄 Skipping localStorage cart load - order loading in progress');
+      return;
+    }
+    
     const savedCart = localStorage.getItem('dine_cart');
     if (savedCart) {
       try {
-        setCart(JSON.parse(savedCart));
+        const parsedCart = JSON.parse(savedCart);
+        console.log('🔄 Loading cart from localStorage:', parsedCart);
+        console.log('🔄 localStorage cart length:', parsedCart?.length);
+        if (parsedCart?.length > 0) {
+          console.log('🔄 localStorage cart items:', parsedCart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+          })));
+        }
+        setCart(parsedCart);
       } catch (e) {
         console.error('Error loading cart:', e);
       }
+    } else {
+      console.log('🔄 No cart found in localStorage');
     }
-  }, []);
+  }, [isLoadingOrder]);
 
   // Save cart to localStorage
   useEffect(() => {
+    console.log('💾 Saving cart to localStorage:', cart);
+    console.log('💾 Cart length being saved:', cart?.length);
+    if (cart?.length > 0) {
+      console.log('💾 Cart items being saved:', cart.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity
+      })));
+    }
     localStorage.setItem('dine_cart', JSON.stringify(cart));
   }, [cart]);
+
+  // Load tax settings for the restaurant
+  const loadTaxSettings = useCallback(async (restaurantId) => {
+    if (!restaurantId) return;
+    
+    try {
+      console.log('🏛️ Loading tax settings for restaurant:', restaurantId);
+      const taxSettingsResponse = await apiClient.getTaxSettings(restaurantId);
+      console.log('🏛️ Tax settings response:', taxSettingsResponse);
+      
+      if (taxSettingsResponse.success) {
+        setTaxSettings(taxSettingsResponse.taxSettings);
+        console.log('🏛️ Tax settings loaded and cached:', taxSettingsResponse.taxSettings);
+      } else {
+        console.log('🏛️ No tax settings found for restaurant');
+        setTaxSettings(null);
+      }
+    } catch (error) {
+      console.error('🏛️ Error loading tax settings:', error);
+      setTaxSettings(null);
+    }
+  }, []);
+
+  // Load tax settings when restaurant changes
+  useEffect(() => {
+    if (selectedRestaurant?.id) {
+      loadTaxSettings(selectedRestaurant.id);
+    }
+  }, [selectedRestaurant?.id, loadTaxSettings]);
 
   const loadInitialData = useCallback(async () => {
     try {
@@ -695,7 +754,13 @@ function RestaurantPOSContent() {
   };
 
   const getTotalAmount = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const total = cart.reduce((sum, item) => {
+      const itemTotal = item.price * item.quantity;
+      console.log(`💰 Cart item: ${item.name} - Price: ${item.price}, Qty: ${item.quantity}, Total: ${itemTotal}`);
+      return sum + itemTotal;
+    }, 0);
+    console.log(`💰 Cart total: ${total}`);
+    return total;
   };
 
   const handleQuickSearch = (e) => {
@@ -742,6 +807,7 @@ function RestaurantPOSContent() {
     if (e.key === 'Enter' && orderLookup.trim()) {
       try {
         setOrderSearchLoading(true);
+        setIsLoadingOrder(true); // Set flag to prevent localStorage override
         setError(''); // Clear any existing errors
         
         const searchValue = orderLookup.trim();
@@ -770,16 +836,148 @@ function RestaurantPOSContent() {
           const order = response.orders[0]; // Get the first matching order
           setCurrentOrder(order);
           
-          // Load the order items into cart for editing
-          const orderItems = Array.isArray(order.items) ? order.items.map(item => ({
-            id: item.menuItemId,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            category: item.category || 'main'
-          })) : [];
+          // Clear any existing cart from localStorage to avoid conflicts
+          localStorage.removeItem('dine_cart');
+          console.log('🧹 Cleared localStorage cart before loading order');
           
-          setCart(orderItems);
+          // Load the order items into cart for editing
+          const orderItems = Array.isArray(order.items) ? order.items.map(item => {
+            console.log('🔍 Order item data:', item);
+            console.log('🔍 Available fields:', Object.keys(item));
+            
+            // Try multiple possible name fields
+            let name = 'Unknown Item';
+            if (item.name) {
+              name = item.name;
+            } else if (item.menuItem?.name) {
+              name = item.menuItem.name;
+            } else if (item.itemName) {
+              name = item.itemName;
+            } else if (item.productName) {
+              name = item.productName;
+            }
+            
+            // Try multiple possible price fields
+            let price = 0;
+            if (item.price && !isNaN(parseFloat(item.price))) {
+              price = parseFloat(item.price);
+            } else if (item.total && !isNaN(parseFloat(item.total))) {
+              price = parseFloat(item.total);
+            } else if (item.unitPrice && !isNaN(parseFloat(item.unitPrice))) {
+              price = parseFloat(item.unitPrice);
+            } else if (item.itemPrice && !isNaN(parseFloat(item.itemPrice))) {
+              price = parseFloat(item.itemPrice);
+            } else if (item.menuItem?.price && !isNaN(parseFloat(item.menuItem.price))) {
+              price = parseFloat(item.menuItem.price);
+            }
+            
+            // If price is still 0 or NaN, try to calculate from total/quantity
+            if (!price || isNaN(price) || price <= 0) {
+              const total = parseFloat(item.total) || parseFloat(item.itemTotal) || parseFloat(item.subtotal) || 0;
+              const qty = parseInt(item.quantity) || 1;
+              if (total > 0 && qty > 0) {
+                price = total / qty;
+              }
+            }
+            
+            // Final fallback - if still no price, set to 0 but log warning
+            if (!price || isNaN(price) || price <= 0) {
+              console.warn(`⚠️ Could not determine price for item:`, item);
+              price = 0;
+            }
+            
+            // Try multiple possible ID fields
+            let id = item.menuItemId || item.id || item.menuItem?.id || item.itemId;
+            
+            console.log(`🔍 Parsed - Name: ${name}, Price: ${price}, ID: ${id}, Quantity: ${item.quantity}`);
+            
+            return {
+              id: id,
+              name: name,
+              price: price || 0,
+              quantity: parseInt(item.quantity) || 1,
+              category: item.category || item.menuItem?.category || 'main',
+              // Store original data for reference
+              originalData: item
+            };
+          }) : [];
+          
+          // If we have unknown items, try to fetch menu items and match them BEFORE setting cart
+          const hasUnknownItems = orderItems.some(item => item.name === 'Unknown Item');
+          if (hasUnknownItems && selectedRestaurant?.id) {
+            console.log('🔍 Found unknown items, fetching menu items to match...');
+            try {
+              const menuResponse = await apiClient.getMenuItems(selectedRestaurant.id);
+              if (menuResponse.success && menuResponse.items) {
+                const updatedItems = orderItems.map(cartItem => {
+                  if (cartItem.name === 'Unknown Item') {
+                    // Try to match by ID first
+                    let menuItem = menuResponse.items.find(menuItem => 
+                      menuItem.id === cartItem.id || 
+                      menuItem.id === cartItem.originalData?.menuItemId ||
+                      menuItem.id === cartItem.originalData?.id
+                    );
+                    
+                    // If no match by ID, try to match by name (fuzzy matching)
+                    if (!menuItem) {
+                      const originalName = cartItem.originalData?.name || 
+                                         cartItem.originalData?.menuItem?.name ||
+                                         cartItem.originalData?.itemName ||
+                                         cartItem.originalData?.productName;
+                      
+                      if (originalName) {
+                        menuItem = menuResponse.items.find(menuItem => 
+                          menuItem.name.toLowerCase().includes(originalName.toLowerCase()) ||
+                          originalName.toLowerCase().includes(menuItem.name.toLowerCase())
+                        );
+                      }
+                    }
+                    
+                    if (menuItem) {
+                      console.log(`🔍 Found menu item match: ${menuItem.name} - ${menuItem.price}`);
+                      return {
+                        ...cartItem,
+                        id: menuItem.id,
+                        name: menuItem.name,
+                        price: parseFloat(menuItem.price) || cartItem.price,
+                        category: menuItem.category || cartItem.category
+                      };
+                    }
+                  }
+                  return cartItem;
+                });
+                
+                console.log('🔍 Setting cart with matched items:', updatedItems);
+                setCart(updatedItems);
+                console.log('🔍 Cart state immediately after setCart:', updatedItems);
+                
+                // Add a small delay to ensure cart state is updated
+                setTimeout(() => {
+                  console.log('✅ Cart state should be updated with matched items');
+                }, 200);
+              } else {
+                console.log('🔍 No menu items found, setting cart with original items');
+                setCart(orderItems);
+                setTimeout(() => {
+                  console.log('✅ Cart state updated with original items');
+                }, 200);
+              }
+            } catch (error) {
+              console.error('🔍 Error fetching menu items for matching:', error);
+              console.log('🔍 Setting cart with original items due to error');
+              setCart(orderItems);
+              setTimeout(() => {
+                console.log('✅ Cart state updated with original items (error case)');
+              }, 200);
+            }
+          } else {
+            console.log('🔍 No unknown items, setting cart directly');
+            setCart(orderItems);
+            setTimeout(() => {
+              console.log('✅ Cart state updated directly');
+            }, 200);
+          }
+          
           setTableNumber(order.tableNumber || '');
           setOrderType(order.orderType || 'dine-in');
           setPaymentMethod(order.paymentMethod || 'cash');
@@ -814,6 +1012,7 @@ function RestaurantPOSContent() {
         });
       } finally {
         setOrderSearchLoading(false);
+        setIsLoadingOrder(false); // Clear flag to allow localStorage loading
       }
     }
   };
@@ -2526,6 +2725,7 @@ function RestaurantPOSContent() {
             display: 'flex',
             flexDirection: 'column'
           }}>
+          {console.log('🖥️ Dashboard: Rendering OrderSummary with cart:', cart)}
           <OrderSummary
             cart={cart}
             setCart={setCart}
@@ -2556,9 +2756,10 @@ function RestaurantPOSContent() {
             setOrderLookup={setOrderLookup}
             currentOrder={currentOrder}
             setCurrentOrder={setCurrentOrder}
-                  onShowQRCode={handleShowQRCode}
-                  restaurantId={selectedRestaurant?.id}
-                  restaurantName={selectedRestaurant?.name}
+            onShowQRCode={handleShowQRCode}
+            restaurantId={selectedRestaurant?.id}
+            restaurantName={selectedRestaurant?.name}
+            taxSettings={taxSettings}
           />
         </div>
             )}
@@ -2632,6 +2833,7 @@ function RestaurantPOSContent() {
                 </div>
                 
                 <div style={{ padding: '16px' }}>
+                  {console.log('📱 Dashboard: Rendering Mobile OrderSummary with cart:', cart)}
                   <OrderSummary
                     cart={cart}
                     orderType={orderType}
@@ -2663,6 +2865,7 @@ function RestaurantPOSContent() {
                     onShowQRCode={handleShowQRCode}
                     restaurantId={selectedRestaurant?.id}
                     restaurantName={selectedRestaurant?.name}
+                    taxSettings={taxSettings}
                     isMobile={true}
                   />
                 </div>
