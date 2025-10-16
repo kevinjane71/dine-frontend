@@ -704,24 +704,28 @@ const Login = () => {
   };
 
   return (
-    <div style={{ 
-      height: "100vh", 
+    <div style={{
+      height: "100vh",
       backgroundColor: "#fef7f0",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       padding: "20px"
-    }}>
-      <div style={{
-        backgroundColor: "white",
-        borderRadius: "8px",
-        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-        width: "100%",
-        maxWidth: "400px",
-        overflow: "hidden",
-        border: "1px solid #d1d5db",
-        padding: "20px"
-      }}>
+    }}
+    className="sm:p-5 p-4"
+    >
+            <div style={{
+              backgroundColor: "white",
+              borderRadius: "8px",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+              width: "100%",
+              maxWidth: "400px",
+              overflow: "hidden",
+              border: "1px solid #d1d5db",
+              padding: "20px"
+            }}
+            className="sm:p-5 p-3"
+            >
         {/* Header */}
         <div style={{
           background: "linear-gradient(135deg, #e53e3e, #dc2626)",
@@ -730,7 +734,9 @@ const Login = () => {
           color: "white",
           borderRadius: "6px 6px 0 0",
           margin: "-20px -20px 20px -20px"
-        }}>
+        }}
+        className="sm:p-5 p-3 sm:-m-5 -m-3 sm:mb-5 mb-3"
+        >
           <div style={{
             width: "60px",
             height: "60px",
@@ -741,21 +747,27 @@ const Login = () => {
             justifyContent: "center",
             margin: "0 auto 12px",
             backdropFilter: "blur(10px)"
-          }}>
-            <FaUtensils size={24} />
+          }}
+          className="sm:w-15 sm:h-15 w-10 h-10"
+          >
+            <FaUtensils size={24} className="sm:text-2xl text-lg" />
           </div>
           <h1 style={{
             fontSize: "22px",
             fontWeight: "bold",
             margin: "0 0 4px 0"
-          }}>
+          }}
+          className="sm:text-xl text-lg"
+          >
             {t('login.title')}
           </h1>
           <p style={{
             fontSize: "14px",
             opacity: 0.9,
             margin: 0
-          }}>
+          }}
+          className="sm:text-sm text-xs"
+          >
             {t('login.subtitle')}
           </p>
         </div>
@@ -779,6 +791,7 @@ const Login = () => {
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
+            className="sm:text-base text-sm"
           >
 {t('login.restaurantOwner')}
           </button>
@@ -799,6 +812,7 @@ const Login = () => {
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
+            className="sm:text-base text-sm"
           >
 {t('login.staffMember')}
           </button>
@@ -822,7 +836,9 @@ const Login = () => {
 
           {loginType === 'owner' && step === "phone" ? (
             <>
-              <div style={{ textAlign: "center", marginBottom: "32px" }}>
+              <div style={{ textAlign: "center", marginBottom: "32px" }}
+              className="sm:mb-8 mb-4"
+              >
                 <div style={{
                   width: "60px",
                   height: "60px",
@@ -833,35 +849,45 @@ const Login = () => {
                   justifyContent: "center",
                   margin: "0 auto 16px",
                   border: "2px solid #fed7aa"
-                }}>
-                  <FaPhone size={24} style={{ color: "#e53e3e" }} />
+                }}
+                className="sm:w-15 sm:h-15 w-10 h-10"
+                >
+                  <FaPhone size={24} className="sm:text-2xl text-lg" />
                 </div>
                 <h2 style={{
                   fontSize: "24px",
                   fontWeight: "bold",
                   color: "#1f2937",
                   margin: "0 0 8px 0"
-                }}>
+                }}
+                className="sm:text-2xl text-lg"
+                >
                   {t('login.phoneLogin')}
                 </h2>
                 <p style={{
                   color: "#6b7280",
                   margin: 0,
                   fontSize: "14px"
-                }}>
+                }}
+                className="sm:text-sm text-xs sm:block hidden"
+                >
                   {t('login.enterPhone')}
                 </p>
               </div>
   
               <form onSubmit={handlePhoneSubmit}>
-                <div style={{ marginBottom: "16px" }}>
+                <div style={{ marginBottom: "16px" }}
+                className="sm:mb-4 mb-3"
+                >
                   <label style={{
                     display: "block",
                     fontSize: "14px",
                     fontWeight: "600",
                     color: "#374151",
                     marginBottom: "6px"
-                  }}>
+                  }}
+                  className="sm:text-sm text-xs"
+                  >
 {t('common.phone')}
                   </label>
                   <div style={{ position: "relative" }}>
@@ -1069,6 +1095,7 @@ const Login = () => {
                     gap: "8px",
                     marginTop: "16px"
                   }}
+                  className="sm:p-4 p-3 sm:text-base text-sm sm:mt-4 mt-3"
                 >
                   {loading ? (
                     <FaSpinner className="animate-spin" size={16} />
@@ -1080,12 +1107,16 @@ const Login = () => {
               </form>
 
               {/* Google Login Button */}
-              <div style={{ marginTop: '24px' }}>
+              <div style={{ marginTop: '24px' }}
+              className="sm:mt-6 mt-4"
+              >
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   marginBottom: '16px'
-                }}>
+                }}
+                className="sm:mb-4 mb-3"
+                >
                   <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
                   <span style={{
                     padding: '0 16px',
@@ -1093,7 +1124,9 @@ const Login = () => {
                     color: '#6b7280',
                     backgroundColor: 'white',
                     fontWeight: '500'
-                  }}>
+                  }}
+                  className="sm:text-sm text-xs"
+                  >
 {t('login.orContinueWith')}
                   </span>
                   <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
@@ -1120,6 +1153,7 @@ const Login = () => {
                     transition: 'all 0.2s',
                     opacity: loading ? 0.6 : 1
                   }}
+                  className="sm:p-4 p-3 sm:text-base text-sm"
                   onMouseEnter={(e) => {
                     if (!loading) {
                       e.target.style.backgroundColor = '#f9fafb';
