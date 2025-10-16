@@ -1570,7 +1570,7 @@ const MenuManagement = () => {
     };
 
     loadRestaurantContext();
-  }, [router, loadMenuData]);
+  }, [router]);
 
   // Listen for restaurant changes from navigation
   useEffect(() => {
@@ -1612,7 +1612,7 @@ const MenuManagement = () => {
     return () => {
       window.removeEventListener('restaurantChanged', handleRestaurantChange);
     };
-  }, [loadMenuData]);
+  }, []);
 
   const loadMenuData = useCallback(async (restaurantId) => {
     try {
@@ -2002,11 +2002,58 @@ const MenuManagement = () => {
       
       if (response.success) {
         console.log('✅ Photo upload successful:', response);
-        setPhotoSuccess(true);
         
-        if (response.menuItems && response.menuItems.length > 0) {
-          setMenuItems(prev => [...prev, ...response.menuItems]);
-          console.log('📋 Menu items added from photo:', response.menuItems.length);
+        // Process extraction results
+        if (response.data && response.data.length > 0) {
+          const allMenuItems = response.data.flatMap(menu => menu.menuItems);
+          const extractionResults = response.data;
+          
+          // Check extraction status for each file
+          const noMenuDataFiles = extractionResults.filter(result => result.extractionStatus === 'no_menu_data');
+          const failedFiles = extractionResults.filter(result => result.extractionStatus === 'failed');
+          const successfulFiles = extractionResults.filter(result => result.extractionStatus === 'success');
+          
+          if (allMenuItems.length > 0) {
+            setMenuItems(prev => [...prev, ...allMenuItems]);
+            console.log('📋 Menu items added from photo:', allMenuItems.length);
+            
+            // Create detailed success message
+            let successMessage = `✅ ${allMenuItems.length} menu items extracted successfully!`;
+            
+            if (successfulFiles.length > 0) {
+              successMessage += `\n📄 Files processed: ${successfulFiles.map(f => f.file).join(', ')}`;
+            }
+            
+            if (noMenuDataFiles.length > 0) {
+              successMessage += `\n⚠️ No menu data found in: ${noMenuDataFiles.map(f => f.file).join(', ')}`;
+            }
+            
+            if (failedFiles.length > 0) {
+              successMessage += `\n❌ Failed to process: ${failedFiles.map(f => f.file).join(', ')}`;
+            }
+            
+            setPhotoSuccess(true);
+            console.log('📋 Success message:', successMessage);
+          } else {
+            // No menu items found
+            let errorMessage = 'No menu data found in the uploaded files.\n\n';
+            
+            if (noMenuDataFiles.length > 0) {
+              errorMessage += `Files with no menu data:\n${noMenuDataFiles.map(f => `• ${f.file}: ${f.message}`).join('\n')}\n\n`;
+            }
+            
+            if (failedFiles.length > 0) {
+              errorMessage += `Files that failed to process:\n${failedFiles.map(f => `• ${f.file}: ${f.message}`).join('\n')}\n\n`;
+            }
+            
+            errorMessage += 'Please try uploading:\n• Clear menu images\n• PDF files with menu content\n• Document files with menu data';
+            
+            setPhotoError(errorMessage);
+            return;
+          }
+        } else {
+          setPhotoError('No files were processed. Please try uploading menu files.');
+          return;
         }
         
         // Reset camera input
@@ -2018,7 +2065,7 @@ const MenuManagement = () => {
         setTimeout(() => {
           setShowPhotoCapture(false);
           setPhotoSuccess(false);
-        }, 2000);
+        }, 3000); // Longer timeout to read the detailed message
       } else {
         setPhotoError(response.error || 'Photo upload failed. Please try again.');
       }

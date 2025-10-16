@@ -159,8 +159,14 @@ const BulkMenuUpload = ({
       if (response.data && response.data.length > 0) {
         setExtractedMenus(response.data);
         
-        // Automatically save all extracted items to database
+        // Process extraction results
         const allMenuItems = response.data.flatMap(menu => menu.menuItems);
+        const extractionResults = response.data;
+        
+        // Check extraction status for each file
+        const noMenuDataFiles = extractionResults.filter(result => result.extractionStatus === 'no_menu_data');
+        const failedFiles = extractionResults.filter(result => result.extractionStatus === 'failed');
+        const successfulFiles = extractionResults.filter(result => result.extractionStatus === 'success');
         
         if (allMenuItems.length > 0) {
           try {
@@ -170,18 +176,22 @@ const BulkMenuUpload = ({
             const saveResponse = await apiClient.bulkSaveMenuItems(restaurantId, allMenuItems);
             
             if (saveResponse.savedCount > 0) {
-              // Show appropriate success message based on results
-              if (response.summary) {
-                const { totalFiles, uploadedSuccessfully, extractionErrors, uploadErrors } = response.summary;
-                
-                if (extractionErrors > 0 || uploadErrors > 0) {
-                  setSuccess(`Partially successful: ${uploadedSuccessfully}/${totalFiles} files uploaded, ${saveResponse.savedCount} menu items saved to database. Some files had issues.`);
-                } else {
-                  setSuccess(`Successfully processed ${uploadedSuccessfully} files and saved ${saveResponse.savedCount} menu items to database!`);
-                }
-              } else {
-                setSuccess(`Successfully processed ${response.uploadedFiles} files and saved ${saveResponse.savedCount} menu items to database!`);
+              // Create detailed success message
+              let successMessage = `✅ ${saveResponse.savedCount} menu items extracted and saved successfully!`;
+              
+              if (successfulFiles.length > 0) {
+                successMessage += `\n📄 Files processed: ${successfulFiles.map(f => f.file).join(', ')}`;
               }
+              
+              if (noMenuDataFiles.length > 0) {
+                successMessage += `\n⚠️ No menu data found in: ${noMenuDataFiles.map(f => f.file).join(', ')}`;
+              }
+              
+              if (failedFiles.length > 0) {
+                successMessage += `\n❌ Failed to process: ${failedFiles.map(f => f.file).join(', ')}`;
+              }
+              
+              setSuccess(successMessage);
               
               // Refresh the menu page
               onMenuItemsAdded && onMenuItemsAdded();
@@ -203,7 +213,20 @@ const BulkMenuUpload = ({
             setProcessing(false); // Reset processing state
           }
         } else {
-          setError('No menu items were extracted from the uploaded files. Please try with clearer menu images.');
+          // No menu items found in any file
+          let errorMessage = 'No menu data found in any of the uploaded files.\n\n';
+          
+          if (noMenuDataFiles.length > 0) {
+            errorMessage += `Files with no menu data:\n${noMenuDataFiles.map(f => `• ${f.file}: ${f.message}`).join('\n')}\n\n`;
+          }
+          
+          if (failedFiles.length > 0) {
+            errorMessage += `Files that failed to process:\n${failedFiles.map(f => `• ${f.file}: ${f.message}`).join('\n')}\n\n`;
+          }
+          
+          errorMessage += 'Please try uploading:\n• Clear menu images\n• PDF files with menu content\n• Document files with menu data';
+          
+          setError(errorMessage);
         }
       } else {
         setError('No menu items were extracted from the uploaded files. Please try with clearer menu images.');

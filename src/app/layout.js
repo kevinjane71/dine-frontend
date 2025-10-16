@@ -31,7 +31,11 @@ export const metadata = {
     description: 'Complete AI-powered restaurant management solution with multi-restaurant support, POS system, inventory management, and order tracking.',
     images: ['/og-image.jpg'],
   },
-  viewport: 'width=device-width, initial-scale=1',
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
   themeColor: '#ef4444',
 }
 

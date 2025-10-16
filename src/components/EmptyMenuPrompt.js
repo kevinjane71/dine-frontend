@@ -147,9 +147,15 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
         setProcessingStep('AI is analyzing your menu...');
         console.log('🤖 AI is processing the uploaded menu images...');
         
-        // If we have extracted menu items, save them to the database
+        // Process extraction results
         if (response.data && response.data.length > 0) {
           const allMenuItems = response.data.flatMap(menu => menu.menuItems);
+          const extractionResults = response.data;
+          
+          // Check extraction status for each file
+          const noMenuDataFiles = extractionResults.filter(result => result.extractionStatus === 'no_menu_data');
+          const failedFiles = extractionResults.filter(result => result.extractionStatus === 'failed');
+          const successfulFiles = extractionResults.filter(result => result.extractionStatus === 'success');
           
           if (allMenuItems.length > 0) {
             // Step 3: Save to database
@@ -164,8 +170,23 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
               if (saveResponse.savedCount > 0) {
                 console.log(`✅ Successfully saved ${saveResponse.savedCount} menu items to database`);
                 
+                // Create detailed success message
+                let successMessage = `✅ ${saveResponse.savedCount} menu items extracted and saved successfully!`;
+                
+                if (successfulFiles.length > 0) {
+                  successMessage += `\n📄 Files processed: ${successfulFiles.map(f => f.file).join(', ')}`;
+                }
+                
+                if (noMenuDataFiles.length > 0) {
+                  successMessage += `\n⚠️ No menu data found in: ${noMenuDataFiles.map(f => f.file).join(', ')}`;
+                }
+                
+                if (failedFiles.length > 0) {
+                  successMessage += `\n❌ Failed to process: ${failedFiles.map(f => f.file).join(', ')}`;
+                }
+                
                 // Step 4: Final success
-                setProcessingStep('Menu is ready!');
+                setProcessingStep(successMessage);
                 setUploadSuccess(true);
                 setUploading(false);
                 
@@ -202,7 +223,20 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
               return;
             }
           } else {
-            setUploadError('No menu items were extracted from the uploaded files. Please try with clearer menu images.');
+            // No menu items found in any file
+            let errorMessage = 'No menu data found in any of the uploaded files.\n\n';
+            
+            if (noMenuDataFiles.length > 0) {
+              errorMessage += `Files with no menu data:\n${noMenuDataFiles.map(f => `• ${f.file}: ${f.message}`).join('\n')}\n\n`;
+            }
+            
+            if (failedFiles.length > 0) {
+              errorMessage += `Files that failed to process:\n${failedFiles.map(f => `• ${f.file}: ${f.message}`).join('\n')}\n\n`;
+            }
+            
+            errorMessage += 'Please try uploading:\n• Clear menu images\n• PDF files with menu content\n• Document files with menu data';
+            
+            setUploadError(errorMessage);
             setUploading(false);
             return;
           }
