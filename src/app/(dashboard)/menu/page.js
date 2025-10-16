@@ -1936,30 +1936,48 @@ const MenuManagement = () => {
     const files = Array.from(event.target.files);
     if (files.length === 0) return;
 
-    const maxFileSize = 300 * 1024 * 1024; // 300MB max
-    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
-    
-    let errors = [];
-    let validFiles = [];
-    
-    files.forEach((file) => {
-      if (!validTypes.includes(file.type)) {
-        errors.push(`${file.name}: Invalid file type. Only images are allowed.`);
-        return;
-      }
-      
-      if (file.size > maxFileSize) {
-        errors.push(`${file.name}: File too large (${Math.round(file.size / (1024 * 1024))}MB). Maximum 300MB per file.`);
-        return;
-      }
-      
-      if (file.size === 0) {
-        errors.push(`${file.name}: Empty file.`);
-        return;
-      }
-      
-      validFiles.push(file);
-    });
+        const maxFileSize = 300 * 1024 * 1024; // 300MB max
+        const supportedTypes = [
+          'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/tiff',
+          'application/pdf',
+          'text/csv', 'application/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain',
+          'application/octet-stream' // For live photos and unknown types
+        ];
+        
+        let errors = [];
+        let validFiles = [];
+        
+        files.forEach((file) => {
+          // More lenient validation - accept any file type but warn about unsupported ones
+          const isSupportedType = supportedTypes.some(type => 
+            file.type.includes(type.split('/')[1]) || 
+            file.type === type ||
+            file.type.startsWith('image/') || // Accept any image type
+            file.type.includes('pdf') || // Accept any PDF variant
+            file.type.includes('csv') || // Accept any CSV variant
+            file.type.includes('excel') || // Accept any Excel variant
+            file.type.includes('document') || // Accept any document variant
+            file.type.includes('text') // Accept any text variant
+          );
+          
+          if (!isSupportedType) {
+            console.log(`⚠️ Unsupported file type: ${file.type} for ${file.name}, but will attempt extraction anyway`);
+            // Don't reject the file, just log a warning
+          }
+          
+          if (file.size > maxFileSize) {
+            errors.push(`${file.name}: File too large (${Math.round(file.size / (1024 * 1024))}MB). Maximum 300MB per file.`);
+            return;
+          }
+          
+          if (file.size === 0) {
+            errors.push(`${file.name}: Empty file.`);
+            return;
+          }
+          
+          validFiles.push(file);
+        });
     
     if (errors.length > 0) {
       setPhotoError(errors.join(' '));
@@ -2978,7 +2996,7 @@ const MenuManagement = () => {
       <input
         ref={cameraInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,application/pdf,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
         capture="environment"
         multiple
         onChange={handlePhotoUpload}

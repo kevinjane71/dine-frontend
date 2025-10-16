@@ -54,13 +54,32 @@ const BulkMenuUpload = ({
       errors.push(`Total file size exceeds ${maxTotalSize / (1024 * 1024)}MB limit.`);
     }
     
-    // Check individual files
+    // Check individual files - now support all file types
     files.slice(0, maxFiles).forEach((file, index) => {
-      const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'application/pdf'];
+      // Support all file types for menu extraction
+      const supportedTypes = [
+        'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/tiff',
+        'application/pdf',
+        'text/csv', 'application/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain',
+        'application/octet-stream' // For live photos and unknown types
+      ];
       
-      if (!validTypes.includes(file.type)) {
-        errors.push(`${file.name}: Invalid file type. Only images and PDFs are allowed.`);
-        return;
+      // More lenient validation - accept any file type but warn about unsupported ones
+      const isSupportedType = supportedTypes.some(type => 
+        file.type.includes(type.split('/')[1]) || 
+        file.type === type ||
+        file.type.startsWith('image/') || // Accept any image type
+        file.type.includes('pdf') || // Accept any PDF variant
+        file.type.includes('csv') || // Accept any CSV variant
+        file.type.includes('excel') || // Accept any Excel variant
+        file.type.includes('document') || // Accept any document variant
+        file.type.includes('text') // Accept any text variant
+      );
+      
+      if (!isSupportedType) {
+        console.log(`⚠️ Unsupported file type: ${file.type} for ${file.name}, but will attempt extraction anyway`);
+        // Don't reject the file, just log a warning
       }
       
       if (file.size > maxFileSize) {
@@ -432,13 +451,13 @@ const BulkMenuUpload = ({
                   Upload Menu Files
                 </h4>
                 <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
-                  Drag & drop or click to upload images or PDFs (Max 10 files, 300MB total)
+                  Drag & drop or click to upload any file type: images, PDFs, documents, CSV, Excel, live photos (Max 10 files, 300MB total)
                 </p>
                 <input
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept=".jpg,.jpeg,.png,.webp,.pdf"
+                  accept="image/*,application/pdf,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
                   onChange={handleFileSelect}
                   style={{
                     width: '100%',

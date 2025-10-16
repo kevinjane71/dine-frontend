@@ -567,7 +567,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
           margin: '0',
           fontStyle: 'italic'
         }}>
-          💡 Upload your menu photo and let AI do the work for you!
+          💡 Upload any file type (images, PDFs, documents, CSV, live photos) and let AI extract your menu!
         </p>
       </div>
 
@@ -575,7 +575,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,application/pdf,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
         multiple
         onChange={handleFileSelect}
         style={{ display: 'none' }}
@@ -583,7 +583,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
       <input
         ref={cameraInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,application/pdf,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
         onChange={handleFileSelect}
         style={{ display: 'none' }}
       />
