@@ -433,7 +433,7 @@ const CustomDropdown = ({ value, onChange, options, placeholder, style = {} }) =
           borderRadius: '8px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           border: '1px solid #e5e7eb',
-          zIndex: 50,
+          zIndex: 10000, // Higher than navigation (1000)
           marginTop: '4px',
           overflow: 'hidden'
         }}>
@@ -1080,7 +1080,7 @@ const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, 
           right: 0,
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 1000,
+          zIndex: 10000, // Higher than navigation (1000)
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -2648,7 +2648,7 @@ const MenuManagement = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 50,
+          zIndex: 10000, // Higher than navigation (1000)
           padding: '20px'
         }}>
           <div style={{
@@ -3062,7 +3062,7 @@ const MenuManagement = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 1000,
+          zIndex: 10000, // Higher than navigation (1000)
           padding: '20px'
         }}>
           <div style={{

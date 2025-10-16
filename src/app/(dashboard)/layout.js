@@ -50,7 +50,7 @@ function DashboardLayoutContent({ children }) {
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 1000,
+          zIndex: 1000, // Lower than modals (which should be 10000+)
           height: isNavigationHidden ? '0px' : 'auto',
           overflow: 'visible',
           transition: 'height 0.3s ease'
@@ -91,7 +91,7 @@ function DashboardLayoutFallback({ children }) {
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 1000,
+          zIndex: 1000, // Lower than modals (which should be 10000+)
           backgroundColor: '#ffffff',
           borderBottom: '1px solid #f1f5f9',
           padding: '12px 24px',

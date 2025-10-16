@@ -298,7 +298,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
           borderRadius: '8px',
           fontSize: '14px',
           fontWeight: '500',
-          zIndex: 1000,
+          zIndex: 10000, // Higher than navigation (1000)
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
@@ -634,7 +634,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 9999,
+          zIndex: 10000, // Higher than navigation (1000)
           padding: '20px'
         }}>
           <div style={{

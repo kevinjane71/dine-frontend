@@ -147,7 +147,7 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName, restaurant
       display: 'flex',
       alignItems: 'flex-start',
       justifyContent: 'center',
-      zIndex: 1000,
+      zIndex: 10000, // Higher than navigation (1000)
       padding: '16px 16px 48px 16px',
       overflowY: 'auto',
       minHeight: '100vh',
@@ -387,7 +387,7 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName, restaurant
             fontSize: '14px',
             fontWeight: '600',
             boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-            zIndex: 1001,
+            zIndex: 10001, // Higher than modal overlay
             animation: 'slideDown 0.3s ease-out'
           }}>
             ✅ URL copied! Share with your customers

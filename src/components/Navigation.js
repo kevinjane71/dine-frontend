@@ -327,7 +327,7 @@ function NavigationContent({ isHidden = false }) {
       bottom: 0,
       backgroundColor: 'rgba(0, 0, 0, 0.6)',
       backdropFilter: 'blur(4px)',
-      zIndex: 998,
+      zIndex: 9998, // Higher z-index to be above navigation
       opacity: showMobileMenu ? 1 : 0,
       visibility: showMobileMenu ? 'visible' : 'hidden',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -339,13 +339,14 @@ function NavigationContent({ isHidden = false }) {
       height: '100vh',
       width: '320px',
       backgroundColor: '#ffffff',
-      zIndex: 999,
+      zIndex: 9999, // Higher z-index to be above navigation
       boxShadow: '-8px 0 32px rgba(0, 0, 0, 0.12)',
       transform: showMobileMenu ? 'translateX(0)' : 'translateX(100%)',
       transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       display: 'flex',
       flexDirection: 'column',
-      overflowY: 'auto'
+      overflowY: 'auto',
+      overflowX: 'hidden' // Prevent horizontal scroll
     }
   };
 
@@ -358,22 +359,22 @@ function NavigationContent({ isHidden = false }) {
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
         position: 'sticky',
         top: 0,
-        zIndex: 1000,
+        zIndex: 1000, // Lower than modals (which should be 10000+)
         backdropFilter: 'blur(12px)',
         height: '64px', // Fixed shorter height
         display: 'flex',
         alignItems: 'center'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-          {/* Logo - Modern Design */}
+          {/* Logo - Modern Design - Always visible */}
           <div 
             onClick={() => router.push('/dashboard')}
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '12px',
+              gap: isMobile ? '8px' : '12px',
               cursor: 'pointer',
-              padding: '6px 12px',
+              padding: isMobile ? '4px 8px' : '6px 12px',
               borderRadius: '12px',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               background: 'transparent'
@@ -390,10 +391,10 @@ function NavigationContent({ isHidden = false }) {
             }}
           >
             <div style={{ 
-              width: '40px', 
-              height: '40px', 
+              width: isMobile ? '32px' : '40px', 
+              height: isMobile ? '32px' : '40px', 
               background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)', 
-              borderRadius: '14px', 
+              borderRadius: isMobile ? '10px' : '14px', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
@@ -411,32 +412,34 @@ function NavigationContent({ isHidden = false }) {
                 transform: 'rotate(45deg)',
                 animation: 'shine 3s infinite'
               }} />
-              <FaUtensils color="white" size={20} />
+              <FaUtensils color="white" size={isMobile ? 16 : 20} />
             </div>
-            <div style={{ display: isMobile ? 'none' : 'block' }}>
-              <h1 style={{ 
-                fontSize: '22px', 
-                fontWeight: '800', 
-                background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                margin: 0,
-                letterSpacing: '-0.02em'
-              }}>
-                DineOpen
-              </h1>
-              <p style={{ 
-                fontSize: '10px', 
-                color: '#9ca3af', 
-                margin: 0,
-                fontWeight: '500',
-                letterSpacing: '0.5px',
-                textTransform: 'uppercase'
-              }}>
-                Restaurant OS
-              </p>
-            </div>
+            {!isMobile && (
+              <div>
+                <h1 style={{ 
+                  fontSize: '22px', 
+                  fontWeight: '800', 
+                  background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  margin: 0,
+                  letterSpacing: '-0.02em'
+                }}>
+                  DineOpen
+                </h1>
+                <p style={{ 
+                  fontSize: '10px', 
+                  color: '#9ca3af', 
+                  margin: 0,
+                  fontWeight: '500',
+                  letterSpacing: '0.5px',
+                  textTransform: 'uppercase'
+                }}>
+                  Restaurant OS
+                </p>
+              </div>
+            )}
           </div>
           
           {/* Desktop Navigation - Modern Pills */}
@@ -517,11 +520,82 @@ function NavigationContent({ isHidden = false }) {
           )}
         
           {/* Right Side - Modern Design */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {/* Language Switcher */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px' }}>
+            {/* Language Switcher - Always visible */}
             <LanguageSwitcher />
             
-            {/* Restaurant Selector - Modern Design */}
+            {/* Mobile Staff Restaurant Chip */}
+            {isMobile && (user?.role === 'waiter' || user?.role === 'manager' || user?.role === 'employee') && selectedRestaurant && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                background: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(0, 0, 0, 0.05)',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: '600',
+                color: '#374151',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                cursor: 'default',
+                maxWidth: '200px'
+              }}>
+                <div style={{
+                  width: '20px',
+                  height: '20px',
+                  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
+                }}>
+                  <BiRestaurant color="white" size={10} />
+                </div>
+                
+                <div style={{ textAlign: 'left', overflow: 'hidden' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#1f2937', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {selectedRestaurant.name}
+                  </div>
+                  <div style={{ fontSize: '9px', color: '#6b7280', marginTop: '1px' }}>
+                    Current Location
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Mobile Menu Button - Modern Design - Always on the right */}
+            {isMobile && (
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                style={{
+                  padding: '10px',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(0, 0, 0, 0.05)',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
+                }}
+              >
+                <FaBars size={18} color="#374151" />
+              </button>
+            )}
+            
+            {/* Restaurant Selector - Desktop Only */}
             {!isMobile && (user?.role === 'owner' || user?.role === 'customer') && allRestaurants.length > 1 && (
               <div style={{ position: 'relative', zIndex: 1000 }} data-restaurant-dropdown>
                 <button
@@ -972,76 +1046,6 @@ function NavigationContent({ isHidden = false }) {
               </div>
             )}
 
-            {/* Mobile Staff Restaurant Chip */}
-            {isMobile && (user?.role === 'waiter' || user?.role === 'manager' || user?.role === 'employee') && selectedRestaurant && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 12px',
-                background: 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(0, 0, 0, 0.05)',
-                borderRadius: '12px',
-                fontSize: '12px',
-                fontWeight: '600',
-                color: '#374151',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-                cursor: 'default',
-                maxWidth: '200px'
-              }}>
-                <div style={{
-                  width: '20px',
-                  height: '20px',
-                  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                  borderRadius: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
-                }}>
-                  <BiRestaurant color="white" size={10} />
-                </div>
-                
-                <div style={{ textAlign: 'left', overflow: 'hidden' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#1f2937', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {selectedRestaurant.name}
-                  </div>
-                  <div style={{ fontSize: '9px', color: '#6b7280', marginTop: '1px' }}>
-                    Current Location
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Mobile Menu Button - Modern Design */}
-            {isMobile && (
-              <button
-                onClick={() => setShowMobileMenu(!showMobileMenu)}
-                style={{
-                  padding: '10px',
-                  background: 'rgba(255, 255, 255, 0.8)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(0, 0, 0, 0.05)',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.08)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
-                }}
-              >
-                <FaBars size={18} color="#374151" />
-              </button>
-            )}
           </div>
         </div>
       </nav>
