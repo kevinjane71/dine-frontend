@@ -284,7 +284,7 @@ function RestaurantPOSContent() {
       // Show onboarding for owners who haven't set up a restaurant
       if (user.role === 'owner' || !user.role) {
         setIsFirstTimeUser(true);
-        setShowOnboarding(true);
+        //setShowOnboarding(true);
       }
     }
   }, [router]);
