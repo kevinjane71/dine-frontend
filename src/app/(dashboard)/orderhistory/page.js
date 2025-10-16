@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import apiClient from '../../../lib/api';
 import { 
   FaSearch,
-  FaFilter,
   FaChevronLeft, 
   FaChevronRight,
   FaClock,
@@ -16,10 +15,10 @@ import {
   FaUtensils,
   FaReceipt,
   FaSpinner,
-  FaCalendarAlt,
-  FaSortAmountDown,
   FaEye,
-  FaEdit
+  FaEdit,
+  FaChevronDown,
+  FaFilter
 } from 'react-icons/fa';
 
 const OrderHistory = () => {
@@ -30,11 +29,29 @@ const OrderHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedOrderType, setSelectedOrderType] = useState('all');
-  const [selectedWaiter, setSelectedWaiter] = useState('all');
-  const [waiters, setWaiters] = useState([]);
+  const [myOrdersOnly, setMyOrdersOnly] = useState(false);
   const [restaurantId, setRestaurantId] = useState(null);
   const [restaurant, setRestaurant] = useState(null);
   const [user, setUser] = useState(null);
+  
+  // Custom dropdown states
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.custom-dropdown')) {
+        setStatusDropdownOpen(false);
+        setTypeDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,17 +59,40 @@ const OrderHistory = () => {
   const [totalOrders, setTotalOrders] = useState(0);
   const [limit] = useState(10);
 
-  // Format date for display
+  // Improved date formatting
   const formatDate = (date) => {
     if (!date) return 'N/A';
-    const d = date.toDate ? date.toDate() : new Date(date);
-    return d.toLocaleString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    
+    try {
+      let d;
+      if (date.toDate && typeof date.toDate === 'function') {
+        // Firestore timestamp
+        d = date.toDate();
+      } else if (date instanceof Date) {
+        d = date;
+      } else if (typeof date === 'string' || typeof date === 'number') {
+        d = new Date(date);
+      } else {
+        return 'N/A';
+      }
+      
+      // Check if date is valid
+      if (isNaN(d.getTime())) {
+        return 'N/A';
+      }
+      
+      return d.toLocaleString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return 'N/A';
+    }
   };
 
   // Get status badge color
@@ -100,16 +140,16 @@ const OrderHistory = () => {
   const fetchOrders = useCallback(async () => {
     if (!restaurantId) return;
 
-      try {
-        setLoading(true);
-        setError(null);
-        
+    try {
+      setLoading(true);
+      setError(null);
+      
       const filters = {
         page: currentPage,
         limit: limit,
         status: selectedStatus !== 'all' ? selectedStatus : undefined,
         orderType: selectedOrderType !== 'all' ? selectedOrderType : undefined,
-        waiterId: selectedWaiter !== 'all' ? selectedWaiter : undefined,
+        myOrdersOnly: myOrdersOnly ? user?.id : undefined,
         search: searchTerm.trim() || undefined
       };
 
@@ -127,41 +167,25 @@ const OrderHistory = () => {
       setError('Failed to fetch orders. Please try again.');
       setOrders([]);
     } finally {
-          setLoading(false);
+      setLoading(false);
     }
-  }, [restaurantId, currentPage, limit, selectedStatus, selectedOrderType, selectedWaiter, searchTerm]);
-
-  const fetchWaiters = useCallback(async () => {
-    if (!restaurantId) return;
-
-    try {
-      const response = await apiClient.getWaiters(restaurantId);
-      setWaiters(response.waiters || []);
-    } catch (error) {
-      console.error('Error fetching waiters:', error);
-      setWaiters([]);
-    }
-  }, [restaurantId]);
+  }, [restaurantId, currentPage, limit, selectedStatus, selectedOrderType, myOrdersOnly, searchTerm, user?.id]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
-              const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+    const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
     const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
 
     if (!token || !userData.id) {
       router.push('/login');
-          return;
-        }
+      return;
+    }
         
     setUser(userData);
     setRestaurantId(savedRestaurantId);
     setRestaurant(savedRestaurant);
-
-    if (savedRestaurantId) {
-      fetchWaiters();
-    }
-  }, [router, fetchWaiters]);
+  }, [router]);
 
   useEffect(() => {
     if (restaurantId) {
@@ -174,7 +198,7 @@ const OrderHistory = () => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [selectedStatus, selectedOrderType, selectedWaiter, searchTerm]);
+  }, [selectedStatus, selectedOrderType, myOrdersOnly, searchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -188,14 +212,65 @@ const OrderHistory = () => {
   };
 
   const handleViewOrder = (orderId) => {
-    // Navigate to order details or open modal
     console.log('View order:', orderId);
   };
 
   const handleEditOrder = (orderId) => {
-    // Navigate to edit order or open modal
     console.log('Edit order:', orderId);
   };
+
+  // Cool Custom Dropdown Component
+  const CustomDropdown = ({ 
+    isOpen, 
+    onToggle, 
+    selectedValue, 
+    options, 
+    onSelect, 
+    placeholder,
+    className = ""
+  }) => (
+    <div className={`relative custom-dropdown ${className}`}>
+      <button
+        onClick={onToggle}
+        className="w-full px-4 py-3 text-left bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 flex items-center justify-between text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:border-gray-300"
+      >
+        <span className="truncate text-gray-700">
+          {options.find(opt => opt.value === selectedValue)?.label || placeholder}
+        </span>
+        <div className={`ml-3 transition-all duration-300 ${isOpen ? 'rotate-180' : ''}`}>
+          <FaChevronDown className="text-gray-500 text-xs" />
+        </div>
+      </button>
+      
+      {isOpen && (
+        <div className="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-auto backdrop-blur-sm">
+          <div className="py-2">
+            {options.map((option, index) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  onSelect(option.value);
+                  onToggle();
+                }}
+                className={`w-full px-4 py-3 text-left text-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 ${
+                  selectedValue === option.value 
+                    ? 'bg-gradient-to-r from-red-100 to-pink-100 text-red-700 font-semibold border-l-4 border-red-500' 
+                    : 'text-gray-700 hover:text-gray-900'
+                } ${index === 0 ? 'rounded-t-lg' : ''} ${index === options.length - 1 ? 'rounded-b-lg' : ''}`}
+              >
+                <div className="flex items-center space-x-3">
+                  {selectedValue === option.value && (
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  )}
+                  <span>{option.label}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   if (loading && orders.length === 0) {
     return (
@@ -208,242 +283,253 @@ const OrderHistory = () => {
     );
   }
 
-    return (
+  const statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'confirmed', label: 'Confirmed' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'cancelled', label: 'Cancelled' }
+  ];
+
+  const typeOptions = [
+    { value: 'all', label: 'All Types' },
+    { value: 'dine-in', label: 'Dine In' },
+    { value: 'takeaway', label: 'Takeaway' },
+    { value: 'delivery', label: 'Delivery' }
+  ];
+
+  return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Order History</h1>
-                <p className="text-gray-600 mt-1">
+          <div className="py-4 sm:py-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div className="mb-4 sm:mb-0">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Order History</h1>
+                <p className="text-sm sm:text-base text-gray-600 mt-1">
                   {restaurant?.name} • {totalOrders} total orders
                 </p>
-            </div>
+              </div>
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500">
                   Page {currentPage} of {totalPages}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-            </div>
-          </div>
-            </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6 backdrop-blur-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
             {/* Search */}
-            <div className="lg:col-span-2">
+            <div className="sm:col-span-2">
               <form onSubmit={handleSearch} className="relative">
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
+                <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
+                <input
+                  type="text"
                   placeholder="Search by order ID, table, customer..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 text-sm bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-sm hover:shadow-md transition-all duration-200 hover:border-gray-300 font-medium"
                 />
               </form>
-                </div>
-                
+            </div>
+            
             {/* Status Filter */}
-                <div>
-                  <select
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-                </div>
-                
+            <CustomDropdown
+              isOpen={statusDropdownOpen}
+              onToggle={() => setStatusDropdownOpen(!statusDropdownOpen)}
+              selectedValue={selectedStatus}
+              options={statusOptions}
+              onSelect={setSelectedStatus}
+              placeholder="All Status"
+            />
+            
             {/* Order Type Filter */}
-                <div>
-                  <select
-                value={selectedOrderType}
-                onChange={(e) => setSelectedOrderType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="dine-in">Dine In</option>
-                <option value="takeaway">Takeaway</option>
-                    <option value="delivery">Delivery</option>
-                  </select>
+            <CustomDropdown
+              isOpen={typeDropdownOpen}
+              onToggle={() => setTypeDropdownOpen(!typeDropdownOpen)}
+              selectedValue={selectedOrderType}
+              options={typeOptions}
+              onSelect={setSelectedOrderType}
+              placeholder="All Types"
+            />
+            
+            {/* My Orders Checkbox */}
+            <div className="flex items-center justify-center lg:justify-start">
+              <label className="flex items-center space-x-3 cursor-pointer group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={myOrdersOnly}
+                    onChange={(e) => setMyOrdersOnly(e.target.checked)}
+                    className="w-5 h-5 text-red-600 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 group-hover:border-red-400"
+                  />
+                  {myOrdersOnly && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-3 h-3 bg-red-600 rounded-sm"></div>
+                    </div>
+                  )}
                 </div>
-                
-            {/* Waiter Filter */}
-                <div>
-                  <select
-                    value={selectedWaiter}
-                    onChange={(e) => setSelectedWaiter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  >
-                    <option value="all">All Waiters</option>
-                {waiters.map((waiter) => (
-                      <option key={waiter.id} value={waiter.id}>
-                    {waiter.name}
-                      </option>
-                    ))}
-                  </select>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+                  My Orders
+                </span>
+              </label>
             </div>
           </div>
-                </div>
-                
+        </div>
+        
         {/* Orders Timeline */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {orders.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
-              <FaReceipt className="text-6xl text-gray-300 mx-auto mb-4" />
+            <div className="bg-white rounded-lg shadow-sm border p-8 sm:p-12 text-center">
+              <FaReceipt className="text-4xl sm:text-6xl text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
-              <p className="text-gray-500">
-                {searchTerm || selectedStatus !== 'all' || selectedOrderType !== 'all' || selectedWaiter !== 'all'
+              <p className="text-sm sm:text-base text-gray-500">
+                {searchTerm || selectedStatus !== 'all' || selectedOrderType !== 'all' || myOrdersOnly
                   ? 'Try adjusting your filters to see more orders.'
                   : 'Orders will appear here once they are placed.'}
               </p>
-              </div>
+            </div>
           ) : (
-            orders.map((order, index) => (
+            orders.map((order) => (
               <div key={order.id} className="bg-white rounded-lg shadow-sm border overflow-hidden">
-                <div className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4">
+                <div className="p-4 sm:p-6">
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex items-start space-x-3 sm:space-x-4 mb-4 lg:mb-0 lg:flex-1">
                       {/* Timeline Icon */}
                       <div className="flex-shrink-0">
-                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center">
                           {getOrderFlowIcon(order.orderFlow)}
-            </div>
-          </div>
+                        </div>
+                      </div>
 
                       {/* Order Details */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 mb-3">
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">
                             Order #{order.orderNumber || order.id.slice(-8).toUpperCase()}
                           </h3>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(order.status, order.orderFlow)}`}>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border w-fit ${getStatusColor(order.status, order.orderFlow)}`}>
                             {getStatusText(order.status, order.orderFlow)}
                           </span>
-          </div>
+                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                        {/* Compact Info Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3">
                           {/* Customer Info */}
-                          <div className="flex items-center space-x-2 text-sm text-gray-600">
-                            <FaUser className="text-gray-400" />
-                            <span>{order.customerDisplay?.name}</span>
-                            {order.customerDisplay?.phone && (
-                              <>
-                                <FaPhone className="text-gray-400 ml-2" />
-                                <span>{order.customerDisplay.phone}</span>
-                              </>
-                            )}
-                    </div>
-                    
+                          <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
+                            <FaUser className="text-gray-400 flex-shrink-0" />
+                            <span className="truncate">{order.customerDisplay?.name || 'Walk-in Customer'}</span>
+                          </div>
+                          
+                          {/* Phone */}
+                          {order.customerDisplay?.phone && (
+                            <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
+                              <FaPhone className="text-gray-400 flex-shrink-0" />
+                              <span className="truncate">{order.customerDisplay.phone}</span>
+                            </div>
+                          )}
+                          
                           {/* Table Info */}
                           {order.customerDisplay?.tableNumber && (
-                            <div className="flex items-center space-x-2 text-sm text-gray-600">
-                              <FaTable className="text-gray-400" />
+                            <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
+                              <FaTable className="text-gray-400 flex-shrink-0" />
                               <span>Table {order.customerDisplay.tableNumber}</span>
-                          </div>
-                        )}
+                            </div>
+                          )}
 
                           {/* Staff Info */}
-                          <div className="flex items-center space-x-2 text-sm text-gray-600">
-                            <FaUser className="text-gray-400" />
-                            <span>{order.staffDisplay?.name}</span>
-                    </div>
-                    
-                          {/* Order Type */}
-                          <div className="flex items-center space-x-2 text-sm text-gray-600">
-                            <FaUtensils className="text-gray-400" />
-                            <span className="capitalize">{order.orderType?.replace('-', ' ')}</span>
-                    </div>
-                  </div>
+                          <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
+                            <FaUser className="text-gray-400 flex-shrink-0" />
+                            <span className="truncate">{order.staffDisplay?.name || 'Restaurant Owner'}</span>
+                          </div>
+                        </div>
 
-                        {/* Items */}
-                        <div className="mb-4">
-                          <h4 className="text-sm font-medium text-gray-900 mb-2">Items ({Array.isArray(order.items) ? order.items.length : 0})</h4>
+                        {/* Items - Compact */}
+                        <div className="mb-3">
+                          <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">
+                            Items ({Array.isArray(order.items) ? order.items.length : 0})
+                          </h4>
                           <div className="space-y-1">
-                            {Array.isArray(order.items) && order.items.slice(0, 3).map((item, itemIndex) => (
-                              <div key={itemIndex} className="flex justify-between text-sm text-gray-600">
-                                <span>{item.name} x {item.quantity}</span>
-                                <span>₹{item.total}</span>
-                    </div>
+                            {Array.isArray(order.items) && order.items.slice(0, 2).map((item, itemIndex) => (
+                              <div key={itemIndex} className="flex justify-between text-xs sm:text-sm text-gray-600">
+                                <span className="truncate">{item.name} x {item.quantity}</span>
+                                <span className="ml-2 flex-shrink-0">₹{item.total}</span>
+                              </div>
                             ))}
-                            {Array.isArray(order.items) && order.items.length > 3 && (
-                              <div className="text-sm text-gray-500">
-                                +{order.items.length - 3} more items
-                    </div>
+                            {Array.isArray(order.items) && order.items.length > 2 && (
+                              <div className="text-xs sm:text-sm text-gray-500">
+                                +{order.items.length - 2} more items
+                              </div>
                             )}
-                    </div>
-                  </div>
+                          </div>
+                        </div>
 
-                        {/* Timestamps */}
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                        {/* Timestamps - Compact */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-xs sm:text-sm text-gray-500">
                           <div className="flex items-center space-x-1">
-                            <FaClock className="text-gray-400" />
+                            <FaClock className="text-gray-400 flex-shrink-0" />
                             <span>Created: {formatDate(order.createdAt)}</span>
-                    </div>
+                          </div>
                           {order.completedAt && (
                             <div className="flex items-center space-x-1">
-                              <FaCheckCircle className="text-gray-400" />
+                              <FaCheckCircle className="text-gray-400 flex-shrink-0" />
                               <span>Completed: {formatDate(order.completedAt)}</span>
-                    </div>
+                            </div>
                           )}
-                  </div>
-                  </div>
-                </div>
+                        </div>
+                      </div>
+                    </div>
 
                     {/* Actions */}
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center justify-between lg:flex-col lg:items-end lg:space-y-2 mt-4 lg:mt-0">
                       <div className="text-right">
-                        <div className="text-lg font-semibold text-gray-900">
+                        <div className="text-base sm:text-lg font-semibold text-gray-900">
                           ₹{order.totalAmount?.toFixed(2) || '0.00'}
-                  </div>
-                        <div className="text-sm text-gray-500">
+                        </div>
+                        <div className="text-xs sm:text-sm text-gray-500">
                           {order.paymentMethod?.toUpperCase() || 'CASH'}
-                  </div>
-                    </div>
+                        </div>
+                      </div>
                       <div className="flex space-x-2">
-                  <button
+                        <button
                           onClick={() => handleViewOrder(order.id)}
                           className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                           title="View Order"
                         >
-                          <FaEye />
-                  </button>
+                          <FaEye className="text-sm" />
+                        </button>
                         {order.status !== 'completed' && (
-                  <button
+                          <button
                             onClick={() => handleEditOrder(order.id)}
                             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                             title="Edit Order"
                           >
-                            <FaEdit />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+                            <FaEdit className="text-sm" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))
-        )}
-      </div>
+          )}
+        </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-white rounded-lg shadow-sm border p-4 mt-6">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700">
+          <div className="bg-white rounded-lg shadow-sm border p-4 mt-4 sm:mt-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm text-gray-700 mb-4 sm:mb-0">
                 Showing {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, totalOrders)} of {totalOrders} orders
-                </div>
-              <div className="flex items-center space-x-2">
+              </div>
+              <div className="flex items-center justify-center sm:justify-end space-x-2">
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
@@ -469,7 +555,7 @@ const OrderHistory = () => {
                       </button>
                     );
                   })}
-              </div>
+                </div>
 
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
@@ -478,12 +564,12 @@ const OrderHistory = () => {
                 >
                   <FaChevronRight className="w-4 h-4" />
                 </button>
-                    </div>
-                  </div>
-                </div>
-              )}
               </div>
-                  </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
