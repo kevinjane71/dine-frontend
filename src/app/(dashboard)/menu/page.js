@@ -37,7 +37,8 @@ import {
   FaSortAmountDown,
   FaCloudUploadAlt,
   FaTimes,
-  FaQrcode
+  FaQrcode,
+  FaCamera
 } from 'react-icons/fa';
 
 // Enhanced Category Dropdown Component with Management
@@ -1480,6 +1481,11 @@ const MenuManagement = () => {
   const [isClient, setIsClient] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState({});
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [showPhotoCapture, setShowPhotoCapture] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState('');
+  const [photoSuccess, setPhotoSuccess] = useState(false);
+  const cameraInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -1911,6 +1917,100 @@ const MenuManagement = () => {
     }
   };
 
+  // Photo capture handlers
+  const handleCameraCapture = () => {
+    console.log('📷 Camera capture clicked - opening photo capture modal');
+    setPhotoError(''); // Clear any previous errors
+    setPhotoSuccess(false);
+    setShowPhotoCapture(true);
+  };
+
+  const handleTakePhoto = () => {
+    console.log('📷 Take photo clicked - opening camera/gallery directly');
+    setPhotoError(''); // Clear any previous errors
+    cameraInputRef.current?.click();
+  };
+
+  const handlePhotoUpload = async (event) => {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+
+    const maxFileSize = 300 * 1024 * 1024; // 300MB max
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    
+    let errors = [];
+    let validFiles = [];
+    
+    files.forEach((file) => {
+      if (!validTypes.includes(file.type)) {
+        errors.push(`${file.name}: Invalid file type. Only images are allowed.`);
+        return;
+      }
+      
+      if (file.size > maxFileSize) {
+        errors.push(`${file.name}: File too large (${Math.round(file.size / (1024 * 1024))}MB). Maximum 300MB per file.`);
+        return;
+      }
+      
+      if (file.size === 0) {
+        errors.push(`${file.name}: Empty file.`);
+        return;
+      }
+      
+      validFiles.push(file);
+    });
+    
+    if (errors.length > 0) {
+      setPhotoError(errors.join(' '));
+      return;
+    }
+
+    if (validFiles.length === 0) return;
+
+    try {
+      setPhotoUploading(true);
+      setPhotoError('');
+      setPhotoSuccess(false);
+
+      console.log('📸 Uploading photo files:', validFiles.length);
+
+      const formData = new FormData();
+      validFiles.forEach((file, index) => {
+        formData.append('menuFiles', file);
+      });
+
+      const response = await apiClient.bulkUploadMenu(currentRestaurant.id, formData);
+      
+      if (response.success) {
+        console.log('✅ Photo upload successful:', response);
+        setPhotoSuccess(true);
+        
+        if (response.menuItems && response.menuItems.length > 0) {
+          setMenuItems(prev => [...prev, ...response.menuItems]);
+          console.log('📋 Menu items added from photo:', response.menuItems.length);
+        }
+        
+        // Reset camera input
+        if (cameraInputRef.current) {
+          cameraInputRef.current.value = '';
+        }
+        
+        // Auto-close after success
+        setTimeout(() => {
+          setShowPhotoCapture(false);
+          setPhotoSuccess(false);
+        }, 2000);
+      } else {
+        setPhotoError(response.error || 'Photo upload failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Photo upload error:', error);
+      setPhotoError(error.message || 'Photo upload failed. Please try again.');
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -2009,32 +2109,32 @@ const MenuManagement = () => {
 {t('menu.bulkUpload')}
             </button>
             <button
-              onClick={() => setShowAddForm(true)}
-                style={{
-                  padding: '6px 12px',
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '3px',
-                  whiteSpace: 'nowrap',
-                  minWidth: 'auto'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                }}
-              >
-                <FaPlus size={10} />
-{t('menu.addNewDish')}
+              onClick={handleCameraCapture}
+              style={{
+                padding: '6px 12px',
+                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontWeight: '600',
+                fontSize: '12px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                whiteSpace: 'nowrap',
+                minWidth: 'auto'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <FaCamera size={10} />
+              Take Photo
             </button>
             <button
               onClick={() => setShowQRCodeModal(true)}
@@ -2218,6 +2318,45 @@ const MenuManagement = () => {
         )}
 
         {/* Ultra Compact Menu Items Grid */}
+        {/* Add New Dish Button */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginBottom: '24px'
+        }}>
+          <button
+            onClick={() => setShowAddForm(true)}
+            style={{
+              padding: '12px 24px',
+              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              fontWeight: '600',
+              fontSize: '16px',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+              minWidth: '160px',
+              justifyContent: 'center'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'translateY(-2px)';
+              e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+            }}
+          >
+            <FaPlus size={16} />
+            {t('menu.addNewDish')}
+          </button>
+        </div>
+
         {filteredItems.length > 0 ? (
           viewMode === 'grid' ? (
             <div style={{
@@ -2833,6 +2972,192 @@ const MenuManagement = () => {
         restaurantName={currentRestaurant?.name}
         restaurant={currentRestaurant}
       />
+
+      {/* Hidden Camera Input */}
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        multiple
+        onChange={handlePhotoUpload}
+        style={{ display: 'none' }}
+      />
+
+      {/* Photo Capture Modal */}
+      {showPhotoCapture && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
+          }}>
+            {photoSuccess ? (
+              <>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  backgroundColor: '#10b981',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px'
+                }}>
+                  <FaCheckCircle size={40} style={{ color: 'white' }} />
+                </div>
+                <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: '0 0 16px 0' }}>
+                  Photo Uploaded Successfully!
+                </h3>
+                <p style={{ fontSize: '16px', color: '#6b7280', margin: '0' }}>
+                  Your menu items have been processed and added.
+                </p>
+              </>
+            ) : photoError ? (
+              <>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  backgroundColor: '#ef4444',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px'
+                }}>
+                  <FaTimes size={40} style={{ color: 'white' }} />
+                </div>
+                <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: '0 0 16px 0' }}>
+                  Upload Failed
+                </h3>
+                <p style={{ fontSize: '16px', color: '#6b7280', margin: '0 0 24px 0' }}>
+                  {photoError}
+                </p>
+                <button
+                  onClick={() => {
+                    setPhotoError('');
+                    setShowPhotoCapture(false);
+                  }}
+                  style={{
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    color: 'white',
+                    padding: '12px 24px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: '14px'
+                  }}
+                >
+                  Try Again
+                </button>
+              </>
+            ) : photoUploading ? (
+              <>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  backgroundColor: '#3b82f6',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px'
+                }}>
+                  <FaSpinner size={40} style={{ color: 'white', animation: 'spin 1s linear infinite' }} />
+                </div>
+                <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: '0 0 16px 0' }}>
+                  Processing Photo...
+                </h3>
+                <p style={{ fontSize: '16px', color: '#6b7280', margin: '0' }}>
+                  Please wait while we extract menu items from your photo.
+                </p>
+              </>
+            ) : (
+              <>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  backgroundColor: '#f59e0b',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px'
+                }}>
+                  <FaCamera size={40} style={{ color: 'white' }} />
+                </div>
+                <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: '0 0 16px 0' }}>
+                  Take Menu Photo
+                </h3>
+                <p style={{ fontSize: '16px', color: '#6b7280', margin: '0 0 32px 0' }}>
+                  Use your camera to capture menu photos. The AI will automatically extract menu items.
+                </p>
+                <div style={{
+                  display: 'flex',
+                  gap: '16px',
+                  justifyContent: 'center',
+                  flexWrap: 'wrap'
+                }}>
+                  <button
+                    onClick={handleTakePhoto}
+                    style={{
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      color: 'white',
+                      padding: '16px 24px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      fontSize: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      minWidth: '140px',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <FaCamera size={18} />
+                    Take Photo
+                  </button>
+                  <button
+                    onClick={() => setShowPhotoCapture(false)}
+                    style={{
+                      background: 'linear-gradient(135deg, #6b7280, #4b5563)',
+                      color: 'white',
+                      padding: '16px 24px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      fontSize: '16px',
+                      minWidth: '140px'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* CSS Animations */}
       <style jsx>{`
