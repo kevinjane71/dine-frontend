@@ -1463,6 +1463,56 @@ const MenuManagement = () => {
     setIsClient(true);
   }, []);
 
+  const loadMenuData = useCallback(async (restaurantId) => {
+    try {
+      console.log('Loading menu data for restaurant:', restaurantId);
+      setLoading(true);
+      setError('');
+
+      // Load menu items and categories in parallel
+      const [menuResponse, categoriesResponse] = await Promise.all([
+        apiClient.getMenu(restaurantId),
+        apiClient.getCategories(restaurantId)
+      ]);
+      
+      setMenuItems(menuResponse.menuItems || []);
+
+      // Use categories from backend, fallback to generic categories if none exist
+      const backendCategories = categoriesResponse.categories || [];
+      if (backendCategories.length > 0) {
+        setCategories(backendCategories);
+      } else {
+        // If no categories exist, create default categories
+        const defaultCategories = [
+          { id: 'appetizer', name: 'Appetizers', emoji: '🥗', description: 'Starters and appetizers' },
+          { id: 'main-course', name: 'Main Course', emoji: '🍽️', description: 'Main dishes' },
+          { id: 'dessert', name: 'Desserts', emoji: '🍰', description: 'Sweet treats' },
+          { id: 'beverages', name: 'Beverages', emoji: '🥤', description: 'Drinks and beverages' }
+        ];
+        setCategories(defaultCategories);
+        
+        // Create default categories in backend
+        try {
+          for (const category of defaultCategories) {
+            await apiClient.createCategory(restaurantId, category);
+          }
+        } catch (error) {
+          console.error('Error creating default categories:', error);
+        }
+      }
+
+      if (backendCategories.length > 0 && !formData.category) {
+        setFormData(prev => ({ ...prev, category: backendCategories[0].id }));
+      }
+
+    } catch (error) {
+      console.error('Error loading menu data:', error);
+      setError('Failed to load menu items');
+    } finally {
+      console.log('Setting loading to false');
+      setLoading(false);
+    }
+  }, [formData.category]);
 
   // Get current restaurant context
   useEffect(() => {
@@ -1555,56 +1605,6 @@ const MenuManagement = () => {
     };
   }, [loadMenuData]);
 
-  const loadMenuData = useCallback(async (restaurantId) => {
-    try {
-      console.log('Loading menu data for restaurant:', restaurantId);
-      setLoading(true);
-      setError('');
-
-      // Load menu items and categories in parallel
-      const [menuResponse, categoriesResponse] = await Promise.all([
-        apiClient.getMenu(restaurantId),
-        apiClient.getCategories(restaurantId)
-      ]);
-      
-      setMenuItems(menuResponse.menuItems || []);
-
-      // Use categories from backend, fallback to generic categories if none exist
-      const backendCategories = categoriesResponse.categories || [];
-      if (backendCategories.length > 0) {
-        setCategories(backendCategories);
-      } else {
-        // If no categories exist, create default categories
-        const defaultCategories = [
-          { id: 'appetizer', name: 'Appetizers', emoji: '🥗', description: 'Starters and appetizers' },
-          { id: 'main-course', name: 'Main Course', emoji: '🍽️', description: 'Main dishes' },
-          { id: 'dessert', name: 'Desserts', emoji: '🍰', description: 'Sweet treats' },
-          { id: 'beverages', name: 'Beverages', emoji: '🥤', description: 'Drinks and beverages' }
-        ];
-        setCategories(defaultCategories);
-        
-        // Create default categories in backend
-        try {
-          for (const category of defaultCategories) {
-            await apiClient.createCategory(restaurantId, category);
-          }
-        } catch (error) {
-          console.error('Error creating default categories:', error);
-        }
-      }
-
-      if (backendCategories.length > 0 && !formData.category) {
-        setFormData(prev => ({ ...prev, category: backendCategories[0].id }));
-      }
-
-    } catch (error) {
-      console.error('Error loading menu data:', error);
-      setError('Failed to load menu items');
-    } finally {
-      console.log('Setting loading to false');
-      setLoading(false);
-    }
-  }, [formData.category]);
 
   const filteredItems = menuItems.filter(item => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
