@@ -893,6 +893,35 @@ class ApiClient {
     });
   }
 
+  // Generic image upload
+  async uploadImage(formData) {
+    const url = `${this.baseURL}/api/upload/image`;
+    const token = this.getToken();
+
+    const config = {
+      method: 'POST',
+      body: formData,
+      headers: {
+        // Don't set Content-Type, let the browser set it for FormData
+        ...(token && { Authorization: `Bearer ${token}` }),
+      }
+    };
+
+    try {
+      const response = await fetch(url, config);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'API request failed');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  }
+
   // Menu item image management
   async uploadMenuItemImages(itemId, files) {
     const formData = new FormData();

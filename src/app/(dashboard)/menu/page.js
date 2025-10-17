@@ -480,8 +480,7 @@ const CustomDropdown = ({ value, onChange, options, placeholder, style = {} }) =
 };
 
 // Ultra Compact Menu Item Card Component
-const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability, getSpiceLevel, getCategoryEmoji, onItemClick }) => {
-  const spiceInfo = getSpiceLevel(item.spiceLevel);
+const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability, getCategoryEmoji, onItemClick }) => {
   
   return (
     <div 
@@ -691,13 +690,6 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
             marginBottom: '10px'
           }}>
             <span style={{
-              fontSize: '14px',
-              color: spiceInfo.color,
-              fontWeight: '600'
-            }}>
-              {spiceInfo.icon}
-            </span>
-            <span style={{
               backgroundColor: '#f3f4f6',
               color: '#6b7280',
               padding: '4px 8px',
@@ -877,8 +869,7 @@ const getCategoryColor = (category, opacity = 1) => {
 };
 
 // List View Item Component
-const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability, getSpiceLevel, getCategoryEmoji }) => {
-  const spiceInfo = getSpiceLevel(item.spiceLevel);
+const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability, getCategoryEmoji }) => {
   
   return (
     <div style={{
@@ -947,12 +938,6 @@ const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability
             }}>
             {item.name}
           </h4>
-            <span style={{ 
-              fontSize: '10px', 
-              color: spiceInfo.color 
-            }}>
-            {spiceInfo.icon}
-          </span>
             <span style={{
               backgroundColor: '#374151',
               color: 'white',
@@ -1063,10 +1048,8 @@ const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability
 };
 
 // Item Detail Modal Component
-const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, onToggleAvailability, getSpiceLevel, getCategoryEmoji }) => {
+const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, onToggleAvailability, getCategoryEmoji }) => {
   if (!isOpen || !item) return null;
-
-  const spiceInfo = getSpiceLevel(item.spiceLevel);
   const category = categories.find(c => c.id === item.category);
 
   return (
@@ -1263,12 +1246,6 @@ const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, 
                   <span style={{ fontSize: '14px', color: '#6b7280' }}>Category</span>
                   <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>
                     {category?.name || 'Main Course'}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '14px', color: '#6b7280' }}>Spice Level</span>
-                  <span style={{ fontSize: '14px', fontWeight: '500', color: spiceInfo.color }}>
-                    {spiceInfo.icon} {spiceInfo.label}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1478,6 +1455,7 @@ const MenuManagement = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showItemModal, setShowItemModal] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [currentRestaurant, setCurrentRestaurant] = useState({ id: 'test-restaurant', name: 'Test Restaurant' });
   const [isClient, setIsClient] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState({});
@@ -1493,10 +1471,10 @@ const MenuManagement = () => {
     price: '',
     category: '',
     isVeg: true,
-    spiceLevel: 'medium',
     shortCode: '',
     image: '',
     images: [],
+    tempImages: [],
     isAvailable: true,
     stockQuantity: null
   });
@@ -1702,17 +1680,32 @@ const MenuManagement = () => {
         const newItem = response.menuItem;
         setMenuItems(items => [...items, newItem]);
         
-        // Switch to edit mode so user can upload images immediately
-        setEditingItem(newItem);
-        setFormData(prev => ({
-          ...prev,
-          images: []
-        }));
-        // Don't reset form - keep it open for image upload
-        return;
-      }
+        // If there are temporary images, upload them now
+        if (formData.tempImages && formData.tempImages.length > 0) {
+          try {
+            const files = formData.tempImages.map(temp => temp.file);
+            const uploadResponse = await apiClient.uploadMenuItemImages(newItem.id, files);
+            
+            if (uploadResponse.success) {
+              // Update the new item with uploaded images
+              setMenuItems(items => items.map(item => 
+                item.id === newItem.id 
+                  ? { ...item, images: uploadResponse.images }
+                  : item
+              ));
+            }
+          } catch (uploadError) {
+            console.error('Error uploading temporary images:', uploadError);
+            // Don't show alert, just log the error
+          }
+        }
+        
+        // Show success notification
+        setSuccessMessage(`Menu item "${formData.name}" added successfully!`);
+        setTimeout(() => setSuccessMessage(''), 3000);
 
       resetForm();
+      }
     } catch (error) {
       console.error('Error saving menu item:', error);
       setError(`Failed to ${editingItem ? 'update' : 'add'} menu item: ${error.message}`);
@@ -1728,7 +1721,6 @@ const MenuManagement = () => {
       price: item.price?.toString() || '',
       category: item.category || '',
       isVeg: item.isVeg !== false,
-      spiceLevel: item.spiceLevel || 'medium',
       shortCode: item.shortCode || '',
       image: item.image || '',
       images: item.images || [],
@@ -1787,9 +1779,10 @@ const MenuManagement = () => {
       price: '',
       category: categories[0]?.id || '',
       isVeg: true,
-      spiceLevel: 'medium',
       shortCode: '',
       image: '',
+      images: [],
+      tempImages: [],
       isAvailable: true,
       stockQuantity: null
     });
@@ -1839,20 +1832,38 @@ const MenuManagement = () => {
 
   // Image upload handlers
   const handleImagesUploaded = async (files) => {
-    if (!editingItem) {
-      alert('Please save the menu item first before uploading images.');
-      return;
-    }
-
     console.log('🖼️ Uploading images for item:', {
-      itemId: editingItem.id,
-      itemName: editingItem.name,
-      hasId: !!editingItem.id,
-      idType: typeof editingItem.id
+      editingItem: !!editingItem,
+      itemId: editingItem?.id,
+      itemName: editingItem?.name || formData.name,
+      hasId: !!editingItem?.id,
+      idType: typeof editingItem?.id
     });
 
     setUploadingImages(true);
     try {
+      // For new items (not yet saved), we'll store the files temporarily
+      // and upload them when the menu item is saved
+      if (!editingItem) {
+        // Store files in form data for later upload
+        const tempImages = files.map(file => ({
+          file: file,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          tempId: Date.now() + Math.random() // Temporary ID
+        }));
+        
+        setFormData(prev => ({
+          ...prev,
+          tempImages: [...(prev.tempImages || []), ...tempImages]
+        }));
+        
+        console.log('✅ Files stored temporarily for later upload:', tempImages.length);
+        return;
+      }
+
+      // For existing items, use the existing API
       const response = await apiClient.uploadMenuItemImages(editingItem.id, files);
       
       if (response.success) {
@@ -1869,20 +1880,41 @@ const MenuManagement = () => {
             : item
         ));
         
-        alert(`Successfully uploaded ${response.images.length} image(s)!`);
+        // Don't show alert, just update the UI silently
       }
     } catch (error) {
-      console.error('Error uploading images:', error);
-      alert('Failed to upload images. Please try again.');
+      console.error('❌ Error uploading images:', error);
+      alert(`Failed to upload images: ${error.message}`);
     } finally {
       setUploadingImages(false);
     }
   };
 
   const handleImageDeleted = async (imageIndex) => {
-    if (!editingItem) return;
-
     try {
+      // Check if it's a temporary image
+      const existingImagesCount = (formData.images || []).length;
+      
+      if (imageIndex >= existingImagesCount) {
+        // It's a temporary image
+        const tempIndex = imageIndex - existingImagesCount;
+        setFormData(prev => ({
+          ...prev,
+          tempImages: prev.tempImages.filter((_, index) => index !== tempIndex)
+        }));
+        return;
+      }
+
+      // For new items (not yet saved), just remove from form data
+      if (!editingItem) {
+        setFormData(prev => ({
+          ...prev,
+          images: prev.images.filter((_, index) => index !== imageIndex)
+        }));
+        return;
+      }
+
+      // For existing items, call the API to delete
       const response = await apiClient.deleteMenuItemImage(editingItem.id, imageIndex);
       
       if (response.success) {
@@ -1902,7 +1934,7 @@ const MenuManagement = () => {
             : item
         ));
         
-        alert('Image deleted successfully!');
+        // Don't show alert, just update the UI silently
       }
     } catch (error) {
       console.error('Error deleting image:', error);
@@ -2383,6 +2415,14 @@ const MenuManagement = () => {
           </div>
         )}
 
+        {/* Success Message */}
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+            <FaCheckCircle size={16} />
+            {successMessage}
+          </div>
+        )}
+
         {/* Ultra Compact Menu Items Grid */}
         {/* Add New Dish Button */}
         <div style={{
@@ -2444,7 +2484,7 @@ const MenuManagement = () => {
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                   onToggleAvailability={handleToggleAvailability}
-                  getSpiceLevel={getSpiceLevel}
+                  getCategoryEmoji={getCategoryEmoji}
                   getCategoryEmoji={getCategoryEmoji}
                   onItemClick={handleItemClick}
                 />
@@ -2486,7 +2526,7 @@ const MenuManagement = () => {
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onToggleAvailability={handleToggleAvailability}
-                        getSpiceLevel={getSpiceLevel}
+                        getCategoryEmoji={getCategoryEmoji}
                         getCategoryEmoji={getCategoryEmoji}
                       />
                     ))}
@@ -2861,19 +2901,6 @@ const MenuManagement = () => {
                   />
                 </div>
                 
-                {/* Spice Level */}
-                <div>
-                  <CustomDropdown
-                    value={formData.spiceLevel}
-                    onChange={(value) => setFormData({...formData, spiceLevel: value})}
-                    options={[
-                      { value: 'mild', label: 'Mild' },
-                      { value: 'medium', label: 'Medium' },
-                      { value: 'hot', label: 'Hot' }
-                    ]}
-                    placeholder="Select spice level"
-                  />
-                </div>
               </div>
               
               {/* Food Type - Mobile-friendly */}
@@ -2933,7 +2960,7 @@ const MenuManagement = () => {
                   </div>
                 </div>
 
-                {/* Image Upload Section */}
+                {/* Image Upload Section - Always Available */}
                 <div style={{ marginTop: '20px' }}>
                   <h4 style={{ 
                     fontSize: '14px',
@@ -2943,31 +2970,25 @@ const MenuManagement = () => {
                   }}>
                     Item Images (Max 4)
                   </h4>
-                  {editingItem ? (
                     <ImageUpload
                       onImagesUploaded={handleImagesUploaded}
                       onImageDeleted={handleImageDeleted}
-                      existingImages={formData.images || []}
+                    existingImages={[...(formData.images || []), ...(formData.tempImages || []).map(temp => ({
+                      url: URL.createObjectURL(temp.file),
+                      originalName: temp.name,
+                      tempId: temp.tempId
+                    }))]}
                       maxImages={4}
                       disabled={uploadingImages}
                     />
-                  ) : (
-                    <div style={{
-                      border: '2px dashed #d1d5db',
-                      borderRadius: '8px',
-                      padding: '20px',
-                      textAlign: 'center',
-                      backgroundColor: '#f9fafb'
-                    }}>
                       <p style={{ 
-                        fontSize: '14px',
+                    fontSize: '12px',
                         color: '#6b7280', 
-                        margin: 0 
+                    margin: '8px 0 0 0',
+                    fontStyle: 'italic'
                       }}>
-                        💡 Save the menu item first, then you can upload images
+                    💡 You can upload images anytime - they'll be saved when you submit the form
                       </p>
-                  </div>
-                  )}
               </div>
               
               {/* Actions - Mobile-friendly */}
@@ -3267,7 +3288,6 @@ const MenuManagement = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onToggleAvailability={handleToggleAvailability}
-        getSpiceLevel={getSpiceLevel}
         getCategoryEmoji={getCategoryEmoji}
       />
     </div>
