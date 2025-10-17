@@ -208,29 +208,16 @@ const QRCodeModal = ({ isOpen, onClose, restaurantId, restaurantName, restaurant
           borderRadius: '12px',
           marginBottom: '16px'
         }}>
-          <h3 style={{
+          {/* <h3 style={{
             fontSize: '16px',
             fontWeight: '600',
             color: '#1f2937',
             margin: '0 0 8px 0'
           }}>
             {restaurantName || 'Restaurant'}
-          </h3>
-          <p style={{
-            fontSize: '14px',
-            color: '#6b7280',
-            margin: '0 0 8px 0'
-          }}>
-            Customers can scan this QR code to place orders directly from their table.
-          </p>
-          <p style={{
-            fontSize: '12px',
-            color: '#9ca3af',
-            margin: 0,
-            wordBreak: 'break-all'
-          }}>
-            {qrUrl}
-          </p>
+          </h3> */}
+         
+          
         </div>
 
         {/* QR Code */}

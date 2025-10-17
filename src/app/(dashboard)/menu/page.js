@@ -493,7 +493,7 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
         transition: 'all 0.3s ease',
         opacity: !item.isAvailable ? 0.6 : 1,
         position: 'relative',
-        minHeight: '320px',
+        minHeight: '200px',
         cursor: 'pointer',
         background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
         display: 'flex',
@@ -511,16 +511,16 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
       
       {/* Image Section */}
       <div style={{
-        height: '160px',
+        height: '120px',
         position: 'relative',
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
+        background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)'
       }}>
         {(item.images && item.images.length > 0) ? (
           <ImageCarousel
             images={item.images}
             itemName={item.name}
-            maxHeight="160px"
+            maxHeight="120px"
             showControls={false}
             showDots={false}
             autoPlay={true}
@@ -534,52 +534,18 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: `linear-gradient(135deg, ${getCategoryColor(item.category)} 0%, ${getCategoryColor(item.category, 0.8)} 100%)`,
+            background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
             position: 'relative',
             overflow: 'hidden'
           }}>
-            {/* Simple Background Pattern */}
+            {/* Category Icon */}
             <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: `
-                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3) 0%, transparent 50%),
-                radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2) 0%, transparent 50%)
-              `,
-              opacity: 0.6
-            }} />
-            
-            {/* Main Icon */}
-            <div style={{
-              fontSize: '48px',
-              color: 'rgba(75, 85, 99, 0.8)',
-              textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+              fontSize: '32px',
+              color: 'rgba(75, 85, 99, 0.6)',
               zIndex: 2,
               position: 'relative'
             }}>
               {getCategoryEmoji(item.category)}
-          </div>
-          
-            {/* Category Name Overlay */}
-            <div style={{
-              position: 'absolute',
-              bottom: '12px',
-              left: '12px',
-              right: '12px',
-              background: 'rgba(0, 0, 0, 0.3)',
-              backdropFilter: 'blur(10px)',
-              color: 'white',
-              padding: '6px 12px',
-              borderRadius: '12px',
-              fontSize: '12px',
-              fontWeight: '600',
-              textAlign: 'center',
-              zIndex: 2
-            }}>
-              {categories.find(c => c.id === item.category)?.name || 'Main Course'}
           </div>
         </div>
         )}
@@ -660,7 +626,7 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
       
       {/* Content Section */}
       <div style={{
-        padding: '20px',
+        padding: '16px',
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
@@ -669,8 +635,8 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
         {/* Item Info */}
         <div style={{ flex: 1 }}>
           <h3 style={{
-            fontSize: '18px',
-            fontWeight: '700',
+            fontSize: '16px',
+            fontWeight: '600',
             color: '#1f2937',
             margin: 0,
             marginBottom: '8px',
@@ -727,13 +693,10 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
           borderTop: '1px solid #f3f4f6'
         }}>
           <div style={{
-            backgroundColor: '#ef4444',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '25px',
-            fontSize: '16px',
+            color: '#000000',
+            fontSize: '14px',
             fontWeight: '700',
-            boxShadow: '0 4px 8px rgba(239, 68, 68, 0.3)'
+            padding: '4px 0'
           }}>
             ₹{item.price}
           </div>
@@ -748,11 +711,11 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
                 onEdit(item);
               }}
               style={{
-                padding: '8px',
+                padding: '6px',
                 background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
                 color: 'white',
                 border: 'none',
-                borderRadius: '10px',
+                borderRadius: '8px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 display: 'flex',
@@ -769,7 +732,7 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
                 e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
               }}
             >
-              <FaEdit size={14} />
+              <FaEdit size={12} />
           </button>
             
           <button
@@ -812,7 +775,7 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
               }}
             title={item.isAvailable ? 'Mark as Out of Stock' : 'Mark as Available'}
           >
-              {item.isAvailable ? <FaMinus size={14} /> : <FaCheck size={14} />}
+              {item.isAvailable ? <FaMinus size={12} /> : <FaCheck size={12} />}
           </button>
             
           <button
@@ -842,7 +805,7 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
                 e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
               }}
             >
-              <FaTrash size={14} />
+              <FaTrash size={12} />
           </button>
           </div>
         </div>
@@ -1309,7 +1272,7 @@ const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, 
                 e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
               }}
             >
-              <FaEdit size={14} />
+              <FaEdit size={12} />
               Edit Item
             </button>
             <button
@@ -1355,7 +1318,7 @@ const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, 
                 }
               }}
             >
-              {item.isAvailable ? <FaMinus size={14} /> : <FaCheck size={14} />}
+              {item.isAvailable ? <FaMinus size={12} /> : <FaCheck size={12} />}
               {item.isAvailable ? 'Mark Out' : 'Mark Available'}
             </button>
             <button
@@ -1389,7 +1352,7 @@ const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, 
                 e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
               }}
             >
-              <FaTrash size={14} />
+              <FaTrash size={12} />
               Delete
             </button>
           </div>
@@ -2427,38 +2390,38 @@ const MenuManagement = () => {
         {/* Add New Dish Button */}
         <div style={{
           display: 'flex',
-          justifyContent: 'center',
+          justifyContent: 'flex-end',
           marginBottom: '24px'
         }}>
           <button
             onClick={() => setShowAddForm(true)}
             style={{
-              padding: '12px 24px',
+              padding: '8px 16px',
               background: 'linear-gradient(135deg, #ef4444, #dc2626)',
               color: 'white',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '8px',
               fontWeight: '600',
-              fontSize: '16px',
+              fontSize: '14px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
-              minWidth: '160px',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+              minWidth: '120px',
               justifyContent: 'center'
             }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
+              e.target.style.transform = 'translateY(-1px)';
+              e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
             }}
             onMouseLeave={(e) => {
               e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+              e.target.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3)';
             }}
           >
-            <FaPlus size={16} />
+            <FaPlus size={12} />
             {t('menu.addNewDish')}
           </button>
         </div>
