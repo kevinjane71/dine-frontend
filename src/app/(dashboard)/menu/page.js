@@ -1511,7 +1511,7 @@ const MenuManagement = () => {
     };
 
     loadRestaurantContext();
-  }, [router]);
+  }, [router, loadMenuData]);
 
   // Listen for restaurant changes from navigation
   useEffect(() => {
@@ -1553,7 +1553,7 @@ const MenuManagement = () => {
     return () => {
       window.removeEventListener('restaurantChanged', handleRestaurantChange);
     };
-  }, []);
+  }, [loadMenuData]);
 
   const loadMenuData = useCallback(async (restaurantId) => {
     try {
@@ -2448,7 +2448,6 @@ const MenuManagement = () => {
                   onDelete={handleDelete}
                   onToggleAvailability={handleToggleAvailability}
                   getCategoryEmoji={getCategoryEmoji}
-                  getCategoryEmoji={getCategoryEmoji}
                   onItemClick={handleItemClick}
                 />
                 </div>
@@ -2489,7 +2488,6 @@ const MenuManagement = () => {
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onToggleAvailability={handleToggleAvailability}
-                        getCategoryEmoji={getCategoryEmoji}
                         getCategoryEmoji={getCategoryEmoji}
                       />
                     ))}
@@ -2950,7 +2948,7 @@ const MenuManagement = () => {
                     margin: '8px 0 0 0',
                     fontStyle: 'italic'
                       }}>
-                    💡 You can upload images anytime - they'll be saved when you submit the form
+                    💡 You can upload images anytime - they&apos;ll be saved when you submit the form
                       </p>
               </div>
               
