@@ -36,10 +36,10 @@ export default function BillingPage() {
         description: 'Perfect for small cafes and food stalls',
         popular: false,
         features: [
-          'Up to 50 menu items',
+          'Up to 500 menu items',
           '1 restaurant location', 
           'Basic POS system',
-          'Table management (up to 20 tables)',
+          'Table management (up to 200 tables)',
           'Kitchen order tracking',
           'Mobile app access',
           'Email support'
@@ -93,10 +93,10 @@ export default function BillingPage() {
         description: 'Perfect for small cafes and food stalls',
         popular: false,
         features: [
-          'Up to 50 menu items',
+          'Up to 500 menu items',
           '1 restaurant location',
           'Basic POS system',
-          'Table management (up to 20 tables)',
+          'Table management (up to 200 tables)',
           'Kitchen order tracking',
           'Mobile app access',
           'Email support'

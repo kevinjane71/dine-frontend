@@ -91,10 +91,10 @@ export default function LandingPage() {
       period: "per month",
       description: "Perfect for small cafes and food stalls",
       features: [
-        "Up to 50 menu items",
+        "Up to 500 menu items",
         "1 restaurant location",
         "Basic POS system",
-        "Table management (up to 20 tables)",
+        "Table management (up to 200 tables)",
         "Kitchen order tracking",
         "Mobile app access",
         "Email support"
@@ -1085,15 +1085,17 @@ export default function LandingPage() {
             <div style={{
               display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-            gap: '32px'
+            gap: isMobile ? '20px' : '32px',
+            maxWidth: isMobile ? '400px' : 'none',
+            margin: isMobile ? '0 auto' : '0'
           }}>
             {features.map((feature, index) => (
               <div
                 key={index}
                     style={{
-                  padding: '32px 24px',
+                  padding: isMobile ? '24px 20px' : '32px 24px',
                   backgroundColor: '#f8fafc',
-                  borderRadius: '16px',
+                  borderRadius: isMobile ? '12px' : '16px',
                   textAlign: 'center',
                       transition: 'all 0.3s ease',
                   border: '1px solid #e5e7eb'
@@ -1110,10 +1112,10 @@ export default function LandingPage() {
                     }}
                   >
                         <div style={{
-                  width: '60px',
-                  height: '60px',
+                  width: isMobile ? '50px' : '60px',
+                  height: isMobile ? '50px' : '60px',
                   background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  borderRadius: '16px',
+                  borderRadius: isMobile ? '12px' : '16px',
                           display: 'flex',
                           alignItems: 'center',
                             justifyContent: 'center',
@@ -1123,16 +1125,18 @@ export default function LandingPage() {
                   {feature.icon}
                         </div>
                 <h3 style={{
-                  fontSize: '20px',
+                  fontSize: isMobile ? '18px' : '20px',
                         fontWeight: 'bold',
                   color: '#1f2937',
-                  marginBottom: '12px'
+                  marginBottom: isMobile ? '8px' : '12px',
+                  lineHeight: '1.3'
                 }}>
                   {feature.title}
                 </h3>
                 <p style={{
                   color: '#6b7280',
-                  lineHeight: '1.6'
+                  lineHeight: '1.6',
+                  fontSize: isMobile ? '14px' : '16px'
                 }}>
                   {feature.description}
                 </p>
@@ -1170,15 +1174,17 @@ export default function LandingPage() {
                     <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(350px, 1fr))',
-            gap: '32px',
-            marginBottom: '40px'
+            gap: isMobile ? '20px' : '32px',
+            marginBottom: '40px',
+            maxWidth: isMobile ? '400px' : 'none',
+            margin: isMobile ? '0 auto 40px auto' : '0 0 40px 0'
           }}>
             {/* Featured Blog Post */}
             <div 
               onClick={() => router.push('/blog/why-dineopen-future-restaurant-management')}
             style={{
                 backgroundColor: 'white',
-                borderRadius: '16px',
+                borderRadius: isMobile ? '12px' : '16px',
                 overflow: 'hidden',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -1197,7 +1203,7 @@ export default function LandingPage() {
               }}>
           <div style={{
                 background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                padding: '24px',
+                padding: isMobile ? '20px' : '24px',
                 color: 'white'
               }}>
                       <div style={{
@@ -1217,7 +1223,7 @@ export default function LandingPage() {
                         </span>
                   </div>
                 <h3 style={{
-                  fontSize: '24px',
+                  fontSize: isMobile ? '18px' : '24px',
                   fontWeight: 'bold',
                   marginBottom: '8px',
                   lineHeight: '1.3'
@@ -1225,7 +1231,7 @@ export default function LandingPage() {
                   Why DineOpen is the Future of Restaurant Management
                 </h3>
                 <p style={{
-                  fontSize: '16px',
+                  fontSize: isMobile ? '14px' : '16px',
                   opacity: '0.9',
                   lineHeight: '1.5',
                   marginBottom: '16px'
@@ -1245,7 +1251,7 @@ export default function LandingPage() {
                 </div>
             </div>
 
-              <div style={{ padding: '24px' }}>
+              <div style={{ padding: isMobile ? '20px' : '24px' }}>
                 <div style={{ 
                       display: 'flex',
                       alignItems: 'center',
@@ -1416,7 +1422,7 @@ export default function LandingPage() {
               onClick={() => router.push('/blog/restaurant-analytics-data-driven-success')}
                         style={{
             backgroundColor: 'white',
-                borderRadius: '16px',
+                borderRadius: isMobile ? '12px' : '16px',
                 overflow: 'hidden',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -1432,7 +1438,7 @@ export default function LandingPage() {
               }}>
             <div style={{
                 background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-              padding: '20px',
+              padding: isMobile ? '16px' : '20px',
                 color: 'white'
               }}>
                 <div style={{
@@ -1452,7 +1458,7 @@ export default function LandingPage() {
                   </span>
                 </div>
                 <h3 style={{
-                  fontSize: '20px',
+                  fontSize: isMobile ? '16px' : '20px',
                   fontWeight: 'bold',
                   marginBottom: '8px',
                   lineHeight: '1.3'
@@ -1460,7 +1466,7 @@ export default function LandingPage() {
                   Restaurant Analytics: Data-Driven Success
                 </h3>
                 <p style={{
-                  fontSize: '14px',
+                  fontSize: isMobile ? '12px' : '14px',
                   opacity: '0.9',
                   lineHeight: '1.5'
                 }}>
@@ -1509,7 +1515,7 @@ export default function LandingPage() {
               onClick={() => router.push('/blog/bellas-kitchen-revenue-increase')}
             style={{
             backgroundColor: 'white',
-                borderRadius: '16px',
+                borderRadius: isMobile ? '12px' : '16px',
                 overflow: 'hidden',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
