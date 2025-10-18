@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLoading } from '../../../contexts/LoadingContext';
 import apiClient from '../../../lib/api';
 import { useNotification } from '../../../components/Notification.js';
 import { 
@@ -27,6 +28,7 @@ import {
 
 const TableManagement = () => {
   const router = useRouter();
+  const { isLoading } = useLoading();
   const { showSuccess, showError, showWarning, NotificationContainer } = useNotification();
   const [floors, setFloors] = useState([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
@@ -211,48 +213,60 @@ const TableManagement = () => {
         text: '#166534', 
         label: 'Available',
         icon: FaCheck,
-        border: '#86efac',
-        pulse: false
+        border: '#22c55e',
+        pulse: false,
+        gradient: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+        shadow: '0 4px 12px rgba(34, 197, 94, 0.2)'
       },
       occupied: { 
         bg: '#fef2f2', 
         text: '#dc2626', 
         label: 'Occupied',
         icon: FaUsers,
-        border: '#fca5a5',
-        pulse: false
+        border: '#ef4444',
+        pulse: false,
+        gradient: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+        shadow: '0 4px 12px rgba(239, 68, 68, 0.2)'
       },
       serving: { 
         bg: '#fefce8', 
         text: '#ca8a04', 
         label: 'Serving',
         icon: FaUtensils,
-        border: '#fde047',
-        pulse: true
+        border: '#f59e0b',
+        pulse: true,
+        gradient: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
+        shadow: '0 4px 12px rgba(245, 158, 11, 0.2)'
       },
       reserved: { 
-        bg: '#f0f9ff', 
-        text: '#0369a1', 
+        bg: '#eff6ff', 
+        text: '#2563eb', 
         label: 'Reserved',
         icon: FaClock,
-        border: '#7dd3fc',
-        pulse: false
+        border: '#3b82f6',
+        pulse: false,
+        gradient: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+        shadow: '0 4px 12px rgba(59, 130, 246, 0.2)'
       },
       cleaning: { 
         bg: '#f8fafc', 
         text: '#475569', 
         label: 'Cleaning',
         icon: FaUtensils,
-        border: '#cbd5e1',
-        pulse: false
+        border: '#64748b',
+        pulse: false,
+        gradient: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+        shadow: '0 4px 12px rgba(100, 116, 139, 0.2)'
       },
       'out-of-service': { 
         bg: '#faf5ff', 
         text: '#7c3aed', 
         label: 'Out of Service',
         icon: FaBan,
-        border: '#c4b5fd',
-        pulse: false
+        border: '#8b5cf6',
+        pulse: false,
+        gradient: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)',
+        shadow: '0 4px 12px rgba(139, 92, 246, 0.2)'
       }
     };
     return statusMap[status] || statusMap.available;
@@ -704,799 +718,661 @@ const TableManagement = () => {
   }
 
   return (
-    <div style={{ height: '100vh', backgroundColor: '#fef7f0', overflow: 'hidden' }}>
-            
-      <div style={{ height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
-        {/* Mobile Top Bar */}
+    <div 
+      className={`page-transition ${isLoading ? 'loading' : ''}`}
+      style={{ 
+        height: '100vh', 
+        backgroundColor: '#f8fafc', 
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      {/* Modern Header */}
+      <div style={{
+        backgroundColor: 'white',
+        borderBottom: '1px solid #e2e8f0',
+        padding: isMobile ? '16px' : '24px',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+      }}>
+        {/* Title Section */}
         <div style={{
-          backgroundColor: 'white',
-          borderBottom: '1px solid #e5e7eb',
-          padding: '12px 16px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px'
-        }} className="block md:hidden">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ 
-              width: '32px', 
-              height: '32px', 
-              backgroundColor: '#e53e3e', 
-              borderRadius: '8px', 
-              display: 'flex', 
-              alignItems: 'center', 
+          marginBottom: isMobile ? '16px' : '20px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: isMobile ? '40px' : '48px',
+              height: isMobile ? '40px' : '48px',
+              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 2px 6px rgba(229, 62, 62, 0.3)'
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
             }}>
-              <FaChair color="white" size={16} />
+              <FaChair color="white" size={isMobile ? 18 : 20} />
             </div>
             <div>
-              <h1 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Tables</h1>
-              <p style={{ fontSize: '10px', color: '#6b7280', margin: 0 }}>{selectedRestaurant?.name}</p>
+              <h1 style={{
+                fontSize: isMobile ? '20px' : '24px',
+                fontWeight: 'bold',
+                color: '#1e293b',
+                margin: 0,
+                background: 'linear-gradient(135deg, #1e293b, #334155)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                Table Management
+              </h1>
+              <p style={{
+                fontSize: isMobile ? '12px' : '14px',
+                color: '#64748b',
+                margin: '4px 0 0 0',
+                fontWeight: '500'
+              }}>
+                {selectedRestaurant?.name} • Manage your restaurant seating
+              </p>
             </div>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              onClick={() => setShowMobileFilters(!showMobileFilters)}
-              style={{
-                padding: '8px 10px',
-                backgroundColor: showMobileFilters ? '#e53e3e' : '#f3f4f6',
-                color: showMobileFilters ? 'white' : '#374151',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              <FaChevronDown size={10} />
-              Floors
-            </button>
-            
-            <button
-              onClick={() => setShowAddModal(true)}
-              style={{
-                padding: '8px 10px',
-                backgroundColor: '#e53e3e',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              <FaPlus size={10} />
-              Add
-            </button>
-          </div>
-        </div>
-        
-        {/* Mobile Floors Filter Modal */}
-        {isMobile && showMobileFilters && (
+          {/* Compact Status Legend */}
           <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 999,
             display: 'flex',
-            alignItems: 'flex-end'
+            alignItems: 'center',
+            gap: isMobile ? '8px' : '12px',
+            marginRight: '16px'
           }}>
             <div style={{
-              backgroundColor: 'white',
-              width: '100%',
-              borderTopLeftRadius: '16px',
-              borderTopRightRadius: '16px',
-              maxHeight: '60vh',
-              overflowY: 'auto',
-              padding: '20px',
-              transform: showMobileFilters ? 'translateY(0)' : 'translateY(100%)',
-              transition: 'transform 0.3s ease'
+              fontSize: isMobile ? '10px' : '12px',
+              fontWeight: '600',
+              color: '#64748b',
+              whiteSpace: 'nowrap'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Select Floor</h3>
-                <button
-                  onClick={() => setShowMobileFilters(false)}
-                  style={{
-                    padding: '6px',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    borderRadius: '4px'
-                  }}
-                >
-                  <FaTimes size={16} color="#6b7280" />
-                </button>
+              Status:
+            </div>
+            {Object.entries({
+              available: getTableStatusInfo('available'),
+              occupied: getTableStatusInfo('occupied'),
+              reserved: getTableStatusInfo('reserved'),
+              serving: getTableStatusInfo('serving'),
+              cleaning: getTableStatusInfo('cleaning'),
+              'out-of-service': getTableStatusInfo('out-of-service')
+            }).map(([status, info]) => (
+              <div key={status} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: isMobile ? '4px 6px' : '6px 8px',
+                backgroundColor: info.bg,
+                borderRadius: '6px',
+                border: `1px solid ${info.border}`
+              }}>
+                <div style={{
+                  width: isMobile ? '6px' : '8px',
+                  height: isMobile ? '6px' : '8px',
+                  borderRadius: '50%',
+                  backgroundColor: info.border
+                }} />
+                <span style={{
+                  fontSize: isMobile ? '9px' : '10px',
+                  fontWeight: '600',
+                  color: info.text,
+                  whiteSpace: 'nowrap'
+                }}>
+                  {info.label}
+                </span>
               </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {floors.map((floor) => (
-                  <button
-                    key={floor.id}
-                    onClick={() => {
-                      scrollToFloor(floor.id);
-                      setShowMobileFilters(false);
-                    }}
-                    style={{
-                      padding: '12px 16px',
-                      backgroundColor: '#fef7f0',
-                      border: '1px solid #fed7aa',
-                      borderRadius: '8px',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <FaHome size={14} color="#e53e3e" />
-                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>{floor.name}</span>
-                    </div>
-                    <div style={{
-                      backgroundColor: '#e53e3e',
-                      color: 'white',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      fontWeight: 'bold'
-                    }}>
-                      {(floor.tables || []).length}
-                    </div>
-                  </button>
-                ))}
-                
+            ))}
+          </div>
+
+          {/* Add Button */}
+          <button
+            onClick={() => setShowAddModal(true)}
+            style={{
+              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+              color: 'white',
+              padding: isMobile ? '10px 16px' : '12px 20px',
+              borderRadius: '10px',
+              fontWeight: '600',
+              fontSize: isMobile ? '14px' : '16px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'translateY(-2px)';
+              e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+            }}
+          >
+            <FaPlus size={isMobile ? 14 : 16} />
+            Add Table
+          </button>
+        </div>
+
+        {/* Compact Floor Navigation */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          backgroundColor: '#f1f5f9',
+          padding: '8px',
+          borderRadius: '12px',
+          overflowX: 'auto'
+        }}>
+          <div style={{
+            fontSize: isMobile ? '12px' : '14px',
+            fontWeight: '600',
+            color: '#64748b',
+            whiteSpace: 'nowrap',
+            marginRight: '8px'
+          }}>
+            Floors:
+          </div>
+          {floors.map((floor) => (
+            <button
+              key={floor.id}
+              onClick={() => scrollToFloor(floor.id)}
+              style={{
+                padding: isMobile ? '8px 12px' : '10px 16px',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: isMobile ? '12px' : '14px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                backgroundColor: 'white',
+                color: '#475569',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#3b82f6';
+                e.target.style.color = 'white';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'white';
+                e.target.style.color = '#475569';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <FaHome size={isMobile ? 10 : 12} />
+              {floor.name}
+              <span style={{
+                backgroundColor: '#e2e8f0',
+                color: '#475569',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: isMobile ? '10px' : '11px',
+                fontWeight: 'bold'
+              }}>
+                {(floor.tables || []).length}
+              </span>
+            </button>
+          ))}
+          <button
+            onClick={() => setShowAddFloor(true)}
+            style={{
+              padding: isMobile ? '8px 12px' : '10px 16px',
+              borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: isMobile ? '12px' : '14px',
+              border: 'none',
+              cursor: 'pointer',
+              backgroundColor: '#f1f5f9',
+              color: '#64748b',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#e2e8f0';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#f1f5f9';
+            }}
+          >
+            <FaPlus size={isMobile ? 10 : 12} />
+            Add Floor
+          </button>
+        </div>
+      </div>
+
+
+      {/* Scrollable Floor Content */}
+      <div 
+        ref={scrollContainerRef}
+        style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          backgroundColor: '#f8fafc',
+          padding: isMobile ? '20px 16px' : '32px 24px'
+        }}
+      >
+        {floors.map((floor) => (
+          <div key={floor.id} id={`floor-${floor.id}`} style={{ marginBottom: isMobile ? '32px' : '48px', position: 'relative' }}>
+            {/* Floor Info Badge - Top Left */}
+            <div style={{
+              position: 'absolute',
+              top: '0',
+              left: '0',
+              zIndex: 10,
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: isMobile ? '6px 10px' : '8px 12px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e2e8f0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: isMobile ? '6px' : '8px'
+            }}>
+              {/* Floor Icon & Name */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{
+                  width: isMobile ? '16px' : '18px',
+                  height: isMobile ? '16px' : '18px',
+                  background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                  borderRadius: '3px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 1px 3px rgba(99, 102, 241, 0.3)'
+                }}>
+                  <FaHome color="white" size={isMobile ? 6 : 8} />
+                </div>
+                <span style={{
+                  fontSize: isMobile ? '11px' : '12px',
+                  fontWeight: '600',
+                  color: '#1e293b'
+                }}>
+                  {floor.name}
+                </span>
+              </div>
+
+              {/* Stats */}
+              <div style={{
+                display: 'flex',
+                gap: isMobile ? '4px' : '6px',
+                alignItems: 'center'
+              }}>
+                <div style={{
+                  fontSize: isMobile ? '10px' : '11px',
+                  fontWeight: 'bold',
+                  color: '#1e293b',
+                  backgroundColor: '#f1f5f9',
+                  padding: '2px 4px',
+                  borderRadius: '3px'
+                }}>
+                  {(floor.tables || []).length}T
+                </div>
+                <div style={{
+                  fontSize: isMobile ? '10px' : '11px',
+                  fontWeight: 'bold',
+                  color: '#22c55e',
+                  backgroundColor: '#f0fdf4',
+                  padding: '2px 4px',
+                  borderRadius: '3px'
+                }}>
+                  {(floor.tables || []).filter(t => t.status === 'available').length}F
+                </div>
+                <div style={{
+                  fontSize: isMobile ? '10px' : '11px',
+                  fontWeight: 'bold',
+                  color: '#ef4444',
+                  backgroundColor: '#fef2f2',
+                  padding: '2px 4px',
+                  borderRadius: '3px'
+                }}>
+                  {(floor.tables || []).filter(t => t.status === 'occupied').length}B
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: '2px', marginLeft: '4px' }}>
                 <button
-                  onClick={() => {
-                    setShowAddFloor(true);
-                    setShowMobileFilters(false);
-                  }}
+                  onClick={() => startEditFloor(floor)}
                   style={{
-                    padding: '12px 16px',
-                    backgroundColor: '#e53e3e',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
+                    padding: '2px 4px',
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '3px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
-                    marginTop: '8px'
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#e2e8f0';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#f8fafc';
                   }}
                 >
-                  <FaPlus size={12} />
-                  Add New Floor
+                  <FaEdit size={isMobile ? 6 : 8} color="#64748b" />
                 </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Desktop Header */}
-        <div style={{ 
-          backgroundColor: 'white', 
-          padding: '12px 20px', 
-          borderBottom: '1px solid #f3e8ff', 
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)' 
-        }} className="hidden md:block">
-          {/* Status Legend */}
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: '16px', 
-            flexWrap: 'wrap',
-            marginBottom: '16px',
-            padding: '12px 16px',
-            backgroundColor: '#fef7f0',
-            borderRadius: '12px',
-            border: '1px solid #fed7aa'
-          }}>
-            {Object.entries({
-              available: getTableStatusInfo('available'),
-              occupied: getTableStatusInfo('occupied'),
-              reserved: getTableStatusInfo('reserved'),
-              cleaning: getTableStatusInfo('cleaning'),
-              'out-of-service': getTableStatusInfo('out-of-service')
-            }).map(([status, info]) => (
-              <div key={status} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '3px',
-                  backgroundColor: info.bg,
-                  border: `2px solid ${info.border}`
-                }} />
-                <span style={{ fontSize: '12px', fontWeight: '600', color: '#374151' }}>
-                  {info.label}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ 
-                  width: '40px', 
-                  height: '40px', 
-                  backgroundColor: '#e53e3e', 
-                  borderRadius: '10px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  boxShadow: '0 3px 10px rgba(229, 62, 62, 0.3)'
-                }}>
-                  <FaChair color="white" size={18} />
-                </div>
-                <div>
-                  <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>
-                    Table Management
-                  </h1>
-                  <p style={{ color: '#6b7280', margin: 0, fontSize: '12px' }}>
-                    {selectedRestaurant?.name} • Interactive table actions
-                  </p>
-                </div>
-              </div>
-              
-              {/* Floor Navigation */}
-              <div style={{ display: 'flex', backgroundColor: '#f8f9fa', borderRadius: '10px', padding: '3px', gap: '2px' }}>
-                {floors.map((floor) => (
-                  <button
-                    key={floor.id}
-                    onClick={() => scrollToFloor(floor.id)}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '7px',
-                      fontWeight: '600',
-                      fontSize: '12px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      backgroundColor: 'transparent',
-                      color: '#6b7280',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = '#e53e3e';
-                      e.target.style.color = 'white';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = 'transparent';
-                      e.target.style.color = '#6b7280';
-                    }}
-                  >
-                    <FaHome size={10} />
-                    {floor.name}
-                    <span style={{
-                      backgroundColor: '#e0e7ff',
-                      color: '#3730a3',
-                      padding: '1px 5px',
-                      borderRadius: '6px',
-                      fontSize: '10px',
-                      fontWeight: 'bold'
-                    }}>
-                      {(floor.tables || []).length}
-                    </span>
-                  </button>
-                ))}
+                
                 <button
-                  onClick={() => setShowAddFloor(true)}
+                  onClick={() => deleteFloor(floor.id)}
                   style={{
-                    padding: '6px 10px',
-                    borderRadius: '7px',
-                    fontWeight: '600',
-                    fontSize: '11px',
-                    border: 'none',
+                    padding: '2px 4px',
+                    backgroundColor: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '3px',
                     cursor: 'pointer',
-                    backgroundColor: 'transparent',
-                    color: '#6b7280',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '3px'
+                    justifyContent: 'center',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#fee2e2';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#fef2f2';
                   }}
                 >
-                  <FaPlus size={8} />
-                  Add Floor
+                  <FaTrash size={isMobile ? 6 : 8} color="#dc2626" />
                 </button>
               </div>
             </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <button
-                onClick={() => setShowAddModal(true)}
-                style={{
-                  background: 'linear-gradient(135deg, #e53e3e, #dc2626)',
-                  color: 'white',
-                  padding: '8px 14px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  boxShadow: '0 2px 6px rgba(229, 62, 62, 0.3)'
-                }}
-              >
-                <FaPlus size={12} />
-                Add
-              </button>
-            </div>
-          </div>
-        </div>
 
-        {/* Mobile Status Legend */}
-        <div style={{
-          backgroundColor: 'white',
-          padding: '12px 16px',
-          borderBottom: '1px solid #e5e7eb',
-          overflowX: 'auto'
-        }} className="block md:hidden">
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            minWidth: 'max-content'
-          }}>
-            {Object.entries({
-              available: getTableStatusInfo('available'),
-              occupied: getTableStatusInfo('occupied'),
-              reserved: getTableStatusInfo('reserved'),
-              cleaning: getTableStatusInfo('cleaning'),
-              'out-of-service': getTableStatusInfo('out-of-service')
-            }).map(([status, info]) => (
-              <div key={status} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <div style={{
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '2px',
-                  backgroundColor: info.bg,
-                  border: `1px solid ${info.border}`
-                }} />
-                <span style={{ fontSize: '10px', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>
-                  {info.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+            {/* Tables Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile 
+                ? 'repeat(auto-fit, minmax(100px, max-content))' 
+                : 'repeat(auto-fit, minmax(120px, max-content))',
+              gap: isMobile ? '12px' : '16px',
+              justifyContent: 'center',
+              justifyItems: 'center',
+              paddingTop: isMobile ? '40px' : '50px', // Add top padding to avoid overlap with floor badge
+              maxWidth: '100%',
+              margin: '0 auto'
+            }}>
+              {(floor.tables || []).map((table) => {
+                const statusInfo = getTableStatusInfo(table.status);
+                const isDropdownOpen = activeDropdown === table.id;
+                
+                return (
+                  <div key={table.id} style={{ position: 'relative' }} className="table-dropdown">
+                    {/* Table Card */}
+                    <div
+                      onClick={() => setActiveDropdown(isDropdownOpen ? null : table.id)}
+                      style={{
+                        width: isMobile ? '80px' : '100px',
+                        height: isMobile ? '80px' : '100px',
+                        background: statusInfo.gradient,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                        border: `2px solid ${statusInfo.border}`,
+                        boxShadow: statusInfo.shadow,
+                        animation: statusInfo.pulse ? 'pulse 2s infinite' : 'none'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                        e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                        e.currentTarget.style.boxShadow = statusInfo.shadow;
+                      }}
+                    >
+                      {/* Table Number */}
+                      <div style={{ 
+                        fontSize: isMobile ? '20px' : '24px', 
+                        fontWeight: 'bold', 
+                        color: statusInfo.text,
+                        marginBottom: '2px'
+                      }}>
+                        {table.name}
+                      </div>
 
-        {/* Scrollable Floor Content */}
-        <div 
-          ref={scrollContainerRef}
-          style={{ 
-            flex: 1, 
-            overflowY: 'auto', 
-            backgroundColor: '#fef7f0',
-            padding: isMobile ? '16px' : '20px'
-          }}
-        >
-          {floors.map((floor) => (
-            <div key={floor.id} id={`floor-${floor.id}`} style={{ marginBottom: '40px' }}>
-              <div style={{ position: 'relative' }}>
-                {/* Floor Label & Stats Row */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: isMobile ? '20px' : '30px',
-                  padding: isMobile ? '0 4px' : '0 20px'
-                }}>
-                  {/* Floor Label with Actions */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <div style={{
-                      backgroundColor: '#e53e3e',
-                      color: 'white',
-                      padding: isMobile ? '6px 12px' : '8px 16px',
-                      borderRadius: isMobile ? '6px' : '8px',
-                      fontSize: isMobile ? '12px' : '14px',
-                      fontWeight: 'bold',
-                      boxShadow: '0 2px 8px rgba(229, 62, 62, 0.3)'
-                    }}>
-                      {floor.name}
-                    </div>
-                    
-                    {/* Floor Actions */}
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button
-                        onClick={() => startEditFloor(floor)}
-                        style={{
-                          padding: isMobile ? '4px 6px' : '6px 8px',
-                          backgroundColor: '#f3f4f6',
-                          border: 'none',
-                          borderRadius: isMobile ? '4px' : '6px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#e5e7eb';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = '#f3f4f6';
-                        }}
-                      >
-                        <FaEdit size={isMobile ? 10 : 12} color="#6b7280" />
-                      </button>
-                      
-                      <button
-                        onClick={() => deleteFloor(floor.id)}
-                        style={{
-                          padding: isMobile ? '4px 6px' : '6px 8px',
-                          backgroundColor: '#fef2f2',
-                          border: 'none',
-                          borderRadius: isMobile ? '4px' : '6px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#fee2e2';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = '#fef2f2';
-                        }}
-                      >
-                        <FaTrash size={isMobile ? 10 : 12} color="#dc2626" />
-                      </button>
-                    </div>
-                  </div>
+                      {/* Table Capacity */}
+                      <div style={{
+                        fontSize: isMobile ? '9px' : '10px',
+                        color: statusInfo.text,
+                        fontWeight: '600',
+                        opacity: 0.8
+                      }}>
+                        {table.capacity}
+                      </div>
 
-                  {/* Compact Stats */}
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: isMobile ? '6px' : '8px',
-                    backgroundColor: 'white',
-                    padding: isMobile ? '6px 8px' : '8px 12px',
-                    borderRadius: isMobile ? '6px' : '8px',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
-                  }}>
-                    <div style={{ 
-                      textAlign: 'center',
-                      minWidth: isMobile ? '24px' : '32px'
-                    }}>
-                      <div style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 'bold', color: '#1f2937' }}>
-                        {(floor.tables || []).length}
+                      {/* Status Icon */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: '4px',
+                        width: isMobile ? '16px' : '18px',
+                        height: isMobile ? '16px' : '18px',
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                      }}>
+                        <statusInfo.icon size={isMobile ? 8 : 10} color={statusInfo.text} />
                       </div>
-                      <div style={{ fontSize: isMobile ? '8px' : '9px', color: '#6b7280', fontWeight: '500' }}>
-                        Total
-                      </div>
-                    </div>
-                    <div style={{ width: '1px', backgroundColor: '#e5e7eb' }} />
-                    <div style={{ 
-                      textAlign: 'center',
-                      minWidth: isMobile ? '24px' : '32px'
-                    }}>
-                      <div style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 'bold', color: '#10b981' }}>
-                        {(floor.tables || []).filter(t => t.status === 'available').length}
-                      </div>
-                      <div style={{ fontSize: isMobile ? '8px' : '9px', color: '#6b7280', fontWeight: '500' }}>
-                        Free
-                      </div>
-                    </div>
-                    <div style={{ width: '1px', backgroundColor: '#e5e7eb' }} />
-                    <div style={{ 
-                      textAlign: 'center',
-                      minWidth: isMobile ? '24px' : '32px'
-                    }}>
-                      <div style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 'bold', color: '#ef4444' }}>
-                        {(floor.tables || []).filter(t => t.status === 'occupied').length}
-                      </div>
-                      <div style={{ fontSize: isMobile ? '8px' : '9px', color: '#6b7280', fontWeight: '500' }}>
-                        Busy
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Tables Grid */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: isMobile 
-                    ? 'repeat(auto-fill, minmax(120px, 1fr))' 
-                    : 'repeat(auto-fill, minmax(110px, 1fr))',
-                  gap: isMobile ? '20px' : '16px',
-                  maxWidth: isMobile ? '100%' : 'calc(100% - 160px)',
-                  margin: '0 auto',
-                  justifyContent: 'center',
-                  justifyItems: 'center',
-                  padding: isMobile ? '0 4px' : '0'
-                }}>
-                  {(floor.tables || []).map((table) => {
-                    const statusInfo = getTableStatusInfo(table.status);
-                    const isDropdownOpen = activeDropdown === table.id;
-                    
-                    return (
-                      <div key={table.id} style={{ position: 'relative' }} className="table-dropdown">
-                        {/* Table Card */}
-                        <div
-                          onClick={() => setActiveDropdown(isDropdownOpen ? null : table.id)}
-                          style={{
-                            width: isMobile ? '100px' : '90px',
-                            height: isMobile ? '100px' : '90px',
-                            backgroundColor: statusInfo.bg,
-                            borderRadius: isMobile ? '16px' : '12px',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            position: 'relative',
-                            border: `2px dashed ${statusInfo.border}`,
-                            boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.08)',
-                            animation: statusInfo.pulse ? 'pulse 2s infinite' : 'none'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
-                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                          }}
-                        >
-                          {/* Table Number */}
-                          <div style={{ 
-                            fontSize: isMobile ? '24px' : '22px', 
-                            fontWeight: 'bold', 
-                            color: statusInfo.text
-                          }}>
-                            {table.name}
-                          </div>
-
-                          {/* Enhanced Dropdown indicator */}
-                          <div style={{
-                            position: 'absolute',
-                            bottom: isMobile ? '3px' : '2px',
-                            right: isMobile ? '3px' : '2px',
-                            width: isMobile ? '24px' : '20px',
-                            height: isMobile ? '24px' : '20px',
-                            backgroundColor: 'rgba(255,255,255,0.9)',
-                            borderRadius: isMobile ? '8px' : '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                            border: '1px solid rgba(0,0,0,0.1)',
-                            transition: 'all 0.2s ease'
-                          }}>
-                            <div style={{
-                              width: '8px',
-                              height: '2px',
-                              backgroundColor: '#4b5563',
-                              borderRadius: '1px',
-                              position: 'relative'
-                            }}>
-                              <div style={{
-                                position: 'absolute',
-                                top: '-3px',
-                                left: '0',
-                                width: '8px',
-                                height: '2px',
-                                backgroundColor: '#4b5563',
-                                borderRadius: '1px'
-                              }} />
-                              <div style={{
-                                position: 'absolute',
-                                top: '3px',
-                                left: '0',
-                                width: '8px',
-                                height: '2px',
-                                backgroundColor: '#4b5563',
-                                borderRadius: '1px'
-                              }} />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Table Info */}
-                        <div style={{ 
-                          marginTop: isMobile ? '8px' : '6px',
-                          fontSize: isMobile ? '11px' : '9px',
-                          color: '#6b7280',
+                      {/* Customer Name */}
+                      {table.customerName && (
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '2px',
+                          left: '2px',
+                          right: '2px',
+                          backgroundColor: 'rgba(0,0,0,0.7)',
+                          color: 'white',
+                          padding: '2px 4px',
+                          borderRadius: '4px',
+                          fontSize: isMobile ? '7px' : '8px',
+                          fontWeight: '600',
                           textAlign: 'center',
-                          lineHeight: '1.2'
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
                         }}>
-                          <div>{table.capacity} seats</div>
-                          {table.customerName && (
-                            <div style={{ color: '#ef4444', fontWeight: '600', marginTop: '2px' }}>
-                              {table.customerName.length > 10 ? table.customerName.substring(0, 10) + '...' : table.customerName}
-                            </div>
-                          )}
+                          {table.customerName}
                         </div>
+                      )}
+                    </div>
 
-                        {/* Action Dropdown */}
-                        {isDropdownOpen && (
-                          <div style={{
-                            position: 'absolute',
-                            top: isMobile ? '90px' : '80px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            backgroundColor: 'white',
-                            borderRadius: isMobile ? '12px' : '8px',
-                            boxShadow: isMobile ? '0 12px 32px rgba(0,0,0,0.2)' : '0 8px 25px rgba(0,0,0,0.15)',
-                            border: '1px solid #e5e7eb',
-                            zIndex: 20,
-                            minWidth: isMobile ? '160px' : '140px',
-                            overflow: 'hidden'
-                          }}>
-                            {table.status === 'available' && (
-                              <>
-                                <button
-                                  onClick={() => handleTableAction('take-order', table)}
-                                  style={{
-                                    width: '100%',
-                                    padding: isMobile ? '14px 16px' : '10px 12px',
-                                    border: 'none',
-                                    backgroundColor: 'white',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: isMobile ? '14px' : '12px',
-                                    fontWeight: '600',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: isMobile ? '10px' : '8px',
-                                    color: '#059669'
-                                  }}
-                                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
-                                  onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                                >
-                                  <FaUtensils size={isMobile ? 14 : 12} />
-                                  Take Order
-                                </button>
-                                <button
-                                  onClick={() => handleTableAction('book-table', table)}
-                                  style={{
-                                    width: '100%',
-                                    padding: '10px 12px',
-                                    border: 'none',
-                                    backgroundColor: 'white',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: '12px',
-                                    fontWeight: '600',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    color: '#d97706'
-                                  }}
-                                  onMouseEnter={(e) => e.target.style.backgroundColor = '#fefbf0'}
-                                  onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                                >
-                                  <FaCalendarAlt size={isMobile ? 14 : 12} />
-                                  Book Table
-                                </button>
-                              </>
-                            )}
-                            
+                    {/* Action Dropdown */}
+                    {isDropdownOpen && (
+                      <div style={{
+                        position: 'absolute',
+                        top: isMobile ? '110px' : '130px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        backgroundColor: 'white',
+                        borderRadius: '12px',
+                        boxShadow: '0 12px 32px rgba(0,0,0,0.2)',
+                        border: '1px solid #e2e8f0',
+                        zIndex: 20,
+                        minWidth: isMobile ? '180px' : '160px',
+                        overflow: 'hidden'
+                      }}>
+                        {table.status === 'available' && (
+                          <>
                             <button
-                              onClick={() => handleTableAction('out-of-service', table)}
+                              onClick={() => handleTableAction('take-order', table)}
                               style={{
                                 width: '100%',
-                                padding: '10px 12px',
+                                padding: isMobile ? '16px 20px' : '12px 16px',
                                 border: 'none',
                                 backgroundColor: 'white',
                                 textAlign: 'left',
                                 cursor: 'pointer',
-                                fontSize: '12px',
+                                fontSize: isMobile ? '14px' : '13px',
                                 fontWeight: '600',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
-                                color: '#7c3aed'
+                                gap: isMobile ? '12px' : '10px',
+                                color: '#059669',
+                                transition: 'all 0.2s'
                               }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f3ff'}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
                               onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                             >
-                              <FaTools size={isMobile ? 14 : 12} />
-                              Out of Service
+                              <FaUtensils size={isMobile ? 16 : 14} />
+                              Take Order
                             </button>
-                            
                             <button
-                              onClick={() => handleTableAction('cleaning', table)}
+                              onClick={() => handleTableAction('book-table', table)}
                               style={{
                                 width: '100%',
-                                padding: '10px 12px',
+                                padding: isMobile ? '16px 20px' : '12px 16px',
                                 border: 'none',
                                 backgroundColor: 'white',
                                 textAlign: 'left',
                                 cursor: 'pointer',
-                                fontSize: '12px',
+                                fontSize: isMobile ? '14px' : '13px',
                                 fontWeight: '600',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
-                                color: '#4b5563'
+                                gap: isMobile ? '12px' : '10px',
+                                color: '#d97706',
+                                transition: 'all 0.2s'
                               }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#fefbf0'}
                               onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                             >
-                              <FaUtensils size={12} />
-                              Cleaning
+                              <FaCalendarAlt size={isMobile ? 16 : 14} />
+                              Book Table
                             </button>
-                            
-                            {table.status !== 'available' && (
-                              <button
-                                onClick={() => handleTableAction('make-available', table)}
-                                style={{
-                                  width: '100%',
-                                  padding: '10px 12px',
-                                  border: 'none',
-                                  backgroundColor: 'white',
-                                  textAlign: 'left',
-                                  cursor: 'pointer',
-                                  fontSize: '12px',
-                                  fontWeight: '600',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  color: '#059669'
-                                }}
-                                onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
-                                onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                              >
-                                <FaCheck size={isMobile ? 14 : 12} />
-                                Make Available
-                              </button>
-                            )}
-                            
-                            <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
-                            
-                            <button
-                              onClick={() => deleteTable(table.id)}
-                              style={{
-                                width: '100%',
-                                padding: '10px 12px',
-                                border: 'none',
-                                backgroundColor: 'white',
-                                textAlign: 'left',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                                fontWeight: '600',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                color: '#dc2626'
-                              }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                            >
-                              <FaTrash size={isMobile ? 14 : 12} />
-                              Delete Table
-                            </button>
-                          </div>
+                          </>
                         )}
+                        
+                        <button
+                          onClick={() => handleTableAction('out-of-service', table)}
+                          style={{
+                            width: '100%',
+                            padding: isMobile ? '16px 20px' : '12px 16px',
+                            border: 'none',
+                            backgroundColor: 'white',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            fontSize: isMobile ? '14px' : '13px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: isMobile ? '12px' : '10px',
+                            color: '#7c3aed',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f3ff'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                        >
+                          <FaTools size={isMobile ? 16 : 14} />
+                          Out of Service
+                        </button>
+                        
+                        <button
+                          onClick={() => handleTableAction('cleaning', table)}
+                          style={{
+                            width: '100%',
+                            padding: isMobile ? '16px 20px' : '12px 16px',
+                            border: 'none',
+                            backgroundColor: 'white',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            fontSize: isMobile ? '14px' : '13px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: isMobile ? '12px' : '10px',
+                            color: '#4b5563',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                        >
+                          <FaUtensils size={isMobile ? 16 : 14} />
+                          Cleaning
+                        </button>
+                        
+                        {table.status !== 'available' && (
+                          <button
+                            onClick={() => handleTableAction('make-available', table)}
+                            style={{
+                              width: '100%',
+                              padding: isMobile ? '16px 20px' : '12px 16px',
+                              border: 'none',
+                              backgroundColor: 'white',
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                              fontSize: isMobile ? '14px' : '13px',
+                              fontWeight: '600',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: isMobile ? '12px' : '10px',
+                              color: '#059669',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                          >
+                            <FaCheck size={isMobile ? 16 : 14} />
+                            Make Available
+                          </button>
+                        )}
+                        
+                        <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid #e2e8f0' }} />
+                        
+                        <button
+                          onClick={() => deleteTable(table.id)}
+                          style={{
+                            width: '100%',
+                            padding: isMobile ? '16px 20px' : '12px 16px',
+                            border: 'none',
+                            backgroundColor: 'white',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            fontSize: isMobile ? '14px' : '13px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: isMobile ? '12px' : '10px',
+                            color: '#dc2626',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                        >
+                          <FaTrash size={isMobile ? 16 : 14} />
+                          Delete Table
+                        </button>
                       </div>
-                    );
-                  })}
-                </div>
-
-              </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       {/* Unified Add Modal */}
