@@ -46,10 +46,12 @@ import {
 import apiClient from '../../../lib/api';
 import { performLogout } from '../../../lib/logout';
 import { t } from '../../../lib/i18n';
+import { useLoading } from '../../../contexts/LoadingContext';
 
 function RestaurantPOSContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { isLoading } = useLoading();
   
   // Core state
   const [selectedCategory, setSelectedCategory] = useState('all-items');
@@ -2132,7 +2134,9 @@ function RestaurantPOSContent() {
   // Removed full screen success - using inline success instead
 
   return (
-    <div style={{ 
+    <div 
+      className={`page-transition ${isLoading ? 'loading' : ''}`}
+      style={{ 
       height: isMobile ? 'auto' : 'calc(100vh - 80px)', // Full height minus navigation on desktop
       backgroundColor: '#f8fafc', 
       display: 'flex', 

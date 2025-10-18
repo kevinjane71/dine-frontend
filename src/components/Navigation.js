@@ -37,10 +37,12 @@ import apiClient from '../lib/api';
 import LanguageSwitcher from './LanguageSwitcher';
 import { t } from '../lib/i18n';
 import { performLogout } from '../lib/logout';
+import { useLoading } from '../contexts/LoadingContext';
 
 function NavigationContent({ isHidden = false }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { startLoading } = useLoading();
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [allRestaurants, setAllRestaurants] = useState([]);
   const [showRestaurantDropdown, setShowRestaurantDropdown] = useState(false);
@@ -192,6 +194,17 @@ function NavigationContent({ isHidden = false }) {
     };
     loadData();
   }, []);
+
+  // Smooth navigation handler
+  const handleNavigation = (href, e) => {
+    e.preventDefault();
+    startLoading('Loading page...', 'content'); // Content-only loading
+    
+    // Small delay to show loading state
+    setTimeout(() => {
+      router.push(href);
+    }, 100);
+  };
 
   const handleLogout = () => {
     // Clear all localStorage data
@@ -359,7 +372,9 @@ function NavigationContent({ isHidden = false }) {
 
   return (
     <>
-      <nav style={{
+      <nav 
+        className="nav-container"
+        style={{
         background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
         borderBottom: '1px solid #e5e7eb',
         padding: isMobile ? '8px 16px' : '8px 24px', // Reduced padding for shorter height
@@ -472,7 +487,7 @@ function NavigationContent({ isHidden = false }) {
                 const isActive = pathname === item.href;
                 
                 return (
-                  <Link key={item.id} href={item.href}>
+                  <Link key={item.id} href={item.href} onClick={(e) => handleNavigation(item.href, e)}>
                     <div
                       className="nav-item"
                       style={{
@@ -494,8 +509,9 @@ function NavigationContent({ isHidden = false }) {
                         position: 'relative',
                         overflow: 'hidden',
                         whiteSpace: 'nowrap',
-                        minHeight: '28px', // Prevent height changes
-                        minWidth: '60px' // Prevent width changes
+                        minHeight: '28px',
+                        minWidth: '60px',
+                        justifyContent: 'center'
                       }}
                       onMouseEnter={(e) => {
                         if (!isActive) {
@@ -1191,7 +1207,10 @@ function NavigationContent({ isHidden = false }) {
                 const isActive = pathname === item.href;
                 
                 return (
-                  <Link key={item.id} href={item.href} onClick={handleNavItemClick}>
+                  <Link key={item.id} href={item.href} onClick={(e) => {
+                    handleNavigation(item.href, e);
+                    setShowMobileMenu(false);
+                  }}>
                     <div
                       style={{
                         margin: '0 20px 8px 20px',

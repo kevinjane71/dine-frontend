@@ -1,6 +1,7 @@
 import './globals.css'
 import TokenExtractor from '../components/TokenExtractor'
 import { Analytics } from "@vercel/analytics/next"
+import { LoadingProvider } from '../contexts/LoadingContext'
 export const metadata = {
   title: 'DineOpen - AI-Powered Restaurant Management System | POS, Inventory & Order Tracking',
   description: 'Complete AI-powered restaurant management solution with multi-restaurant support, POS system, inventory management, order tracking, QR menus, and real-time analytics. Streamline your restaurant operations with DineOpen.',
@@ -62,8 +63,10 @@ export default function RootLayout({ children }) {
         </script>
       </head>
       <body suppressHydrationWarning={true}>
-        <TokenExtractor />
-        {children}
+        <LoadingProvider>
+          <TokenExtractor />
+          {children}
+        </LoadingProvider>
         <Analytics />
         <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
       </body>

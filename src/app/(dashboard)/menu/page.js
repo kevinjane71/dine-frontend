@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLoading } from '../../../contexts/LoadingContext';
 import BulkMenuUpload from '../../../components/BulkMenuUpload';
 import ImageCarousel from '../../../components/ImageCarousel';
 import ImageUpload from '../../../components/ImageUpload';
@@ -1410,6 +1411,7 @@ const ItemDetailModal = ({ item, categories, isOpen, onClose, onEdit, onDelete, 
 };
 
 const MenuManagement = () => {
+  const { isLoading } = useLoading();
   const router = useRouter();
   const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([
@@ -2117,7 +2119,9 @@ const MenuManagement = () => {
   }
 
   return (
-    <div style={{ 
+    <div 
+      className={`page-transition ${isLoading ? 'loading' : ''}`}
+      style={{ 
       minHeight: '100vh', 
       backgroundColor: '#ffffff',
       position: 'relative',
