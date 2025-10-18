@@ -157,6 +157,10 @@ export default function LandingPage() {
     }
   };
 
+  const handleDemoLogin = () => {
+    router.push('/login?demo=true');
+  };
+
     return (
     <div style={{ minHeight: '100vh', backgroundColor: 'white' }}>
       {/* Navigation */}
@@ -713,6 +717,7 @@ export default function LandingPage() {
                 🚀 Start Free Trial
               </button>
               <button
+                onClick={handleDemoLogin}
                 style={{
                   padding: '18px 36px',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',

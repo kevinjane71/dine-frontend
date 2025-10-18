@@ -228,6 +228,12 @@ const Login = () => {
   
   // Restaurant onboarding state
   const [showRestaurantOnboarding, setShowRestaurantOnboarding] = useState(false);
+  
+  // Demo auto-login state
+  const [demoAutoLoginTriggered, setDemoAutoLoginTriggered] = useState(false);
+  
+  // Auto-submit state to prevent multiple submissions
+  const [autoSubmitTriggered, setAutoSubmitTriggered] = useState(false);
 
   // Check if user is already logged in and redirect
   useEffect(() => {
@@ -247,6 +253,77 @@ const Login = () => {
     
     return () => clearTimeout(timeoutId);
   }, [router]);
+
+  // Demo auto-login functionality
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isDemo = urlParams.get('demo') === 'true';
+      
+      if (isDemo && !loading && !demoAutoLoginTriggered && step === 'phone') {
+        console.log('🎭 Demo mode detected, skipping to OTP verification');
+        setDemoAutoLoginTriggered(true);
+        
+        // Auto-fill demo credentials and go directly to OTP step
+        setSelectedCountry(countries[0]); // India
+        setPhoneNumber('9000000000');
+        setStep('otp'); // Skip directly to OTP verification step
+        setIsFirebaseOTP(false); // Use backend OTP for demo
+        
+        console.log('🎭 Demo credentials set:', { 
+          country: countries[0].name, 
+          dialCode: countries[0].dialCode, 
+          phoneNumber: '9000000000',
+          fullPhone: `${countries[0].dialCode}9000000000`
+        });
+        
+        // Auto-submit after OTP is filled by the separate useEffect
+        setTimeout(() => {
+          if (!loading) {
+            console.log('🎭 Auto-submitting demo login');
+            console.log('🎭 Current phone state:', { phoneNumber, selectedCountry });
+            
+            // Use override OTP to bypass state timing issues
+            console.log('🎭 Submitting with override OTP: 1234');
+            handleOtpSubmit({ preventDefault: () => {} }, '1234');
+          }
+        }, 2000); // Wait for OTP to be filled by the other useEffect
+      }
+    }
+  }, [loading, demoAutoLoginTriggered, step]);
+
+  // Demo OTP auto-fill when step changes to OTP
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isDemo = urlParams.get('demo') === 'true';
+      
+      if (isDemo && step === 'otp' && !loading && demoAutoLoginTriggered && otp === '') {
+        console.log('🎭 Demo mode: Step changed to OTP, filling OTP field');
+        setOtp('1234');
+      }
+    }
+  }, [step, loading, demoAutoLoginTriggered, otp]);
+
+  // Auto-submit OTP when fully entered (for all accounts except demo)
+  useEffect(() => {
+    const isOtpComplete = isFirebaseOTP ? otp.length === 6 : otp.length === 4;
+    const isDemoMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === 'true';
+    
+    if (isOtpComplete && !loading && !demoAutoLoginTriggered && !autoSubmitTriggered && !isDemoMode) {
+      console.log('🎯 Auto-submitting OTP after full digits entered');
+      setAutoSubmitTriggered(true); // Prevent multiple triggers
+      
+      // Add longer delay to ensure button is fully active and avoid race conditions
+      setTimeout(() => {
+        // Double-check that we're still in the right state before submitting
+        if (!loading && isOtpComplete) {
+          console.log('🎯 Executing auto-submit after delay');
+          handleOtpSubmit({ preventDefault: () => {} });
+        }
+      }, 1000); // Increased delay to 1 second to avoid race conditions
+    }
+  }, [otp, isFirebaseOTP, loading, demoAutoLoginTriggered, autoSubmitTriggered]);
 
   // Setup Firebase reCAPTCHA
   useEffect(() => {
@@ -395,11 +472,15 @@ const Login = () => {
     }
   };
 
-  const handleOtpSubmit = async (e) => {
+  const handleOtpSubmit = async (e, overrideOtp = null) => {
     e.preventDefault();
     setError('');
     
-    if (!otp || (isFirebaseOTP ? otp.length !== 6 : otp.length !== 4)) {
+    const currentOtp = overrideOtp || otp;
+    console.log('🔍 OTP Submit Debug:', { otp: currentOtp, otpLength: currentOtp.length, isFirebaseOTP, expectedLength: isFirebaseOTP ? 6 : 4 });
+    
+    if (!currentOtp || (isFirebaseOTP ? currentOtp.length !== 6 : currentOtp.length !== 4)) {
+      console.log('❌ OTP validation failed:', { otp: currentOtp, otpLength: currentOtp.length, isFirebaseOTP });
       setError(`Please enter a valid ${isFirebaseOTP ? '6' : '4'}-digit OTP`);
       return;
     }
@@ -456,12 +537,27 @@ const Login = () => {
       } else {
         // Verify backend OTP (for dummy account)
         const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
+        
+        // Ensure we have the correct phone number for demo mode
+        const actualPhoneNumber = phoneNumber || '9000000000';
+        const fullPhoneNumber = `${selectedCountry?.dialCode || '+91'}${actualPhoneNumber}`;
+        
+        console.log('🔍 Backend OTP verification:', { 
+          phoneNumber, 
+          actualPhoneNumber,
+          fullPhoneNumber, 
+          otp: currentOtp, 
+          selectedCountry,
+          dialCode: selectedCountry?.dialCode,
+          countryCode: selectedCountry?.code
+        });
+        
         const response = await fetch(`${backendUrl}/api/auth/phone/verify-otp`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ phone: `+91${phoneNumber}`, otp }),
+          body: JSON.stringify({ phone: fullPhoneNumber, otp: currentOtp }),
         });
 
         const data = await response.json();
@@ -524,6 +620,7 @@ const Login = () => {
     setVerificationId(null);
     setIsFirebaseOTP(false);
     setStep('phone');
+    setAutoSubmitTriggered(false); // Reset auto-submit state
   };
 
   // Restaurant onboarding handlers
@@ -726,14 +823,31 @@ const Login = () => {
             }}
             className="sm:p-5 p-3"
             >
+        {/* Demo Mode Banner */}
+        {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === 'true' && (
+          <div style={{
+            backgroundColor: "#3b82f6",
+            color: "white",
+            padding: "12px 16px",
+            textAlign: "center",
+            fontSize: "14px",
+            fontWeight: "600",
+            borderRadius: "6px 6px 0 0",
+            margin: "-20px -20px 0 -20px",
+            borderBottom: "2px solid #2563eb"
+          }}>
+            🎭 Demo Mode - Auto-login to OTP verification...
+          </div>
+        )}
+
         {/* Header */}
         <div style={{
           background: "linear-gradient(135deg, #e53e3e, #dc2626)",
           padding: "20px 16px",
           textAlign: "center",
           color: "white",
-          borderRadius: "6px 6px 0 0",
-          margin: "-20px -20px 20px -20px"
+          borderRadius: typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === 'true' ? "0" : "6px 6px 0 0",
+          margin: typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === 'true' ? "-20px -20px 20px -20px" : "-20px -20px 20px -20px"
         }}
         className="sm:p-5 p-3 sm:-m-5 -m-3 sm:mb-5 mb-3"
         >
