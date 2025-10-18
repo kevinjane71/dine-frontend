@@ -44,6 +44,7 @@ import {
   FaCloudUploadAlt
 } from 'react-icons/fa';
 import apiClient from '../../../lib/api';
+import { performLogout } from '../../../lib/logout';
 import { t } from '../../../lib/i18n';
 
 function RestaurantPOSContent() {
@@ -168,8 +169,11 @@ function RestaurantPOSContent() {
 
   // Logout function
   const handleLogout = () => {
+    // Clear all localStorage data
     apiClient.clearToken();
-    window.location.href = '/login';
+    
+    // Perform logout with redirect to main domain
+    performLogout();
   };
 
   // QR Code handler

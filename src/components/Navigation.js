@@ -36,6 +36,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import apiClient from '../lib/api';
 import LanguageSwitcher from './LanguageSwitcher';
 import { t } from '../lib/i18n';
+import { performLogout } from '../lib/logout';
 
 function NavigationContent({ isHidden = false }) {
   const pathname = usePathname();
@@ -193,10 +194,15 @@ function NavigationContent({ isHidden = false }) {
   }, []);
 
   const handleLogout = () => {
+    // Clear all localStorage data
     apiClient.clearToken();
+    
+    // Close dropdowns
     setShowMobileMenu(false);
     setShowUserDropdown(false);
-    router.push('/login');
+    
+    // Perform logout with redirect to main domain
+    performLogout();
   };
 
   const handleRestaurantChange = (restaurant) => {
