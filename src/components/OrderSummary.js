@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import apiClient from '../lib/api';
+import { t } from '../lib/i18n';
 import { 
   FaShoppingCart, 
   FaTimes, 
@@ -232,10 +233,10 @@ const OrderSummary = ({
             </div>
             <div style={{ flex: 1 }}>
               <h2 style={{ fontSize: '13px', fontWeight: 'bold', margin: 0 }}>
-                Order Summary
+                {t('dashboard.orderSummary')}
               </h2>
               <p style={{ fontSize: '9px', margin: '1px 0 0 0', opacity: 0.8 }}>
-                {cart.reduce((sum, item) => sum + item.quantity, 0)} items
+                {cart.reduce((sum, item) => sum + item.quantity, 0)} {t('common.items')}
               </p>
             </div>
           </div>
@@ -282,7 +283,7 @@ const OrderSummary = ({
                 }}
                 title="Dine In"
               >
-                DINE IN
+                {t('dashboard.dineIn')}
               </button>
               <button
                 onClick={() => setOrderType('takeaway')}
@@ -300,7 +301,7 @@ const OrderSummary = ({
                 }}
                 title="Takeaway"
               >
-                TAKEAWAY
+                {t('dashboard.takeaway')}
               </button>
             </div>
             
@@ -681,7 +682,7 @@ const OrderSummary = ({
                   
                   <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '8px', marginTop: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span>Subtotal:</span>
+                      <span>{t('common.subtotal')}:</span>
                       <span>₹{invoice.subtotal?.toFixed(2) || '0.00'}</span>
                     </div>
                     {invoice.taxBreakdown && invoice.taxBreakdown.map((tax, index) => (
@@ -691,7 +692,7 @@ const OrderSummary = ({
                       </div>
                     ))}
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', borderTop: '1px solid #e5e7eb', paddingTop: '4px', marginTop: '4px' }}>
-                      <span>Total:</span>
+                      <span>{t('common.total')}:</span>
                       <span>₹{((invoice.subtotal || 0) + (invoice.taxBreakdown?.reduce((sum, tax) => sum + (tax.amount || 0), 0) || 0)).toFixed(2)}</span>
                     </div>
                   </div>
@@ -882,7 +883,7 @@ const OrderSummary = ({
               boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Grand Total</span>
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{t('common.total')}</span>
                 <span style={{ fontSize: '20px', fontWeight: 'bold' }}>₹{grandTotal > 0 ? grandTotal.toFixed(2) : getTotalAmount().toFixed(2)}</span>
               </div>
             </div>
@@ -902,7 +903,7 @@ const OrderSummary = ({
                   alignItems: 'center',
                   gap: '6px'
                 }}>
-                  Customer Details
+                  {t('dashboard.customerName')}
                 </div>
                 
                 <div style={{ 
@@ -913,7 +914,7 @@ const OrderSummary = ({
                   {/* Customer Name */}
                   <input
                     type="text"
-                    placeholder="Customer Name"
+                    placeholder={t('dashboard.customerName')}
                     value={customerName || ''}
                     style={{
                       flex: 1,
@@ -996,13 +997,13 @@ const OrderSummary = ({
                   gap: '6px'
                 }}>
                   <FaCreditCard size={12} />
-                  Payment Method
+                  {t('dashboard.paymentMethod')}
                 </div>
                 <div style={{ display: 'flex', gap: '4px' }}>
                   {[
-                    { id: 'cash', label: 'Cash' },
-                    { id: 'upi', label: 'UPI' },
-                    { id: 'card', label: 'Card' }
+                    { id: 'cash', label: t('dashboard.cash') },
+                    { id: 'upi', label: t('dashboard.upi') },
+                    { id: 'card', label: t('dashboard.card') }
                   ].map((method) => {
                     const isSelected = paymentMethod === method.id;
                     return (
@@ -1058,7 +1059,7 @@ const OrderSummary = ({
                     }}
                   >
                         <FaSave size={10} />
-                    SAVE ORDER
+                    {t('dashboard.saveOrder')}
                   </button>
                   
                   <button 
@@ -1091,12 +1092,12 @@ const OrderSummary = ({
                     {placingOrder ? (
                       <>
                         <FaSpinner size={10} style={{ animation: 'spin 1s linear infinite' }} />
-                        PLACING...
+                        {t('dashboard.orderProcessing')}
                       </>
                     ) : (
                       <>
                         <FaUtensils size={10} />
-                        PLACE ORDER
+                        {t('dashboard.placeOrder')}
                       </>
                     )}
                   </button>
@@ -1130,12 +1131,12 @@ const OrderSummary = ({
                     {processing ? (
                       <>
                         <FaSpinner size={10} style={{ animation: 'spin 1s linear infinite' }} />
-                        PROCESSING...
+                        {t('dashboard.paymentProcessing')}
                       </>
                     ) : (
                       <>
                         <FaCheckCircle size={10} />
-                        COMPLETE BILLING
+                        {t('dashboard.completeBilling')}
                       </>
                     )}
                   </button>

@@ -44,7 +44,7 @@ import {
   FaCloudUploadAlt
 } from 'react-icons/fa';
 import apiClient from '../../../lib/api';
-// import { t } from '../../../lib/i18n';
+import { t } from '../../../lib/i18n';
 
 function RestaurantPOSContent() {
   const searchParams = useSearchParams();
@@ -138,20 +138,20 @@ function RestaurantPOSContent() {
         console.log('✅ User authenticated with URL data');
       } else {
         // Normal authentication check
-        if (!apiClient.isAuthenticated()) {
-          console.log('🚫 User not authenticated, redirecting to login');
-          router.replace('/login');
-          return;
-        }
-        
-        const user = apiClient.getUser();
-        if (!user) {
-          console.log('🚫 No user data found, redirecting to login');
-          router.replace('/login');
-          return;
-        }
-        
-        console.log('✅ User authenticated:', user.role);
+      if (!apiClient.isAuthenticated()) {
+        console.log('🚫 User not authenticated, redirecting to login');
+        router.replace('/login');
+        return;
+      }
+      
+      const user = apiClient.getUser();
+      if (!user) {
+        console.log('🚫 No user data found, redirecting to login');
+        router.replace('/login');
+        return;
+      }
+      
+      console.log('✅ User authenticated:', user.role);
       }
     };
 
@@ -196,6 +196,19 @@ function RestaurantPOSContent() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showLogoutDropdown]);
+
+  // Language change listener
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force re-render when language changes
+      setUser(prevUser => ({ ...prevUser }));
+    };
+
+    window.addEventListener('languageChanged', handleLanguageChange);
+    return () => {
+      window.removeEventListener('languageChanged', handleLanguageChange);
+    };
+  }, []);
 
   // Generate dynamic categories based on actual menu items
   const getDynamicCategories = () => {
@@ -826,32 +839,32 @@ function RestaurantPOSContent() {
   const triggerOrderLookup = useCallback(async (orderId) => {
     if (!orderId || !selectedRestaurant?.id) return;
     
-    try {
-      setOrderSearchLoading(true);
+      try {
+        setOrderSearchLoading(true);
       setIsLoadingOrder(true); // Set flag to prevent localStorage override
-      setError(''); // Clear any existing errors
-      
+        setError(''); // Clear any existing errors
+        
       console.log('🔍 Auto-triggered order lookup - Restaurant ID:', selectedRestaurant?.id);
       console.log('🔍 Auto-triggered order lookup - Search value:', orderId);
-      
-      const response = await apiClient.getOrders(selectedRestaurant.id, {
+        
+        const response = await apiClient.getOrders(selectedRestaurant.id, {
         search: orderId
-        // Don't filter by status - let backend handle filtering out completed orders
-      });
-      
+          // Don't filter by status - let backend handle filtering out completed orders
+        });
+        
       console.log('🔍 Auto-triggered order lookup response:', response);
-      
-      if (response.orders && response.orders.length > 0) {
-        const order = response.orders[0]; // Get the first matching order
+        
+        if (response.orders && response.orders.length > 0) {
+          const order = response.orders[0]; // Get the first matching order
         const mode = searchParams.get('mode');
         
-        setCurrentOrder(order);
+          setCurrentOrder(order);
         
         // Clear any existing cart from localStorage to avoid conflicts
         localStorage.removeItem('dine_cart');
         console.log('🧹 Cleared localStorage cart before loading order');
-        
-        // Load the order items into cart for editing
+          
+          // Load the order items into cart for editing
         const orderItems = Array.isArray(order.items) ? order.items.map(item => {
           console.log('🔍 Order item data:', item);
           console.log('🔍 Available fields:', Object.keys(item));
@@ -968,7 +981,7 @@ function RestaurantPOSContent() {
               }, 200);
             } else {
               console.log('🔍 No menu items found, setting cart with original items');
-              setCart(orderItems);
+          setCart(orderItems);
               setTimeout(() => {
                 console.log('✅ Cart state updated with original items');
               }, 200);
@@ -989,10 +1002,10 @@ function RestaurantPOSContent() {
           }, 200);
         }
         
-        setTableNumber(order.tableNumber || '');
-        setOrderType(order.orderType || 'dine-in');
-        setPaymentMethod(order.paymentMethod || 'cash');
-        
+          setTableNumber(order.tableNumber || '');
+          setOrderType(order.orderType || 'dine-in');
+          setPaymentMethod(order.paymentMethod || 'cash');
+          
         // Show appropriate notification based on mode
         if (mode === 'view') {
           setNotification({
@@ -1037,34 +1050,34 @@ function RestaurantPOSContent() {
             show: true
           });
         }
-        
+          
         // Keep the search value in the input box
         // setOrderLookup(''); // Removed this line
-        
-      } else {
+          
+        } else {
+          setNotification({
+          type: 'error',
+            title: 'Order Not Found',
+          message: `No order found with ID "${orderId}"`,
+            show: true
+          });
+        // Keep the search value in the input box
+        // setOrderLookup(''); // Removed this line
+        }
+      } catch (error) {
+      console.error('Auto-triggered order lookup error:', error);
         setNotification({
           type: 'error',
-          title: 'Order Not Found',
-          message: `No order found with ID "${orderId}"`,
-          show: true
-        });
-        // Keep the search value in the input box
-        // setOrderLookup(''); // Removed this line
-      }
-    } catch (error) {
-      console.error('Auto-triggered order lookup error:', error);
-      setNotification({
-        type: 'error',
         title: 'Error Loading Order',
         message: error.message || 'Failed to load order',
-        show: true
-      });
+          show: true
+        });
       // Keep the search value in the input box
       // setOrderLookup(''); // Removed this line
-    } finally {
-      setOrderSearchLoading(false);
+      } finally {
+        setOrderSearchLoading(false);
       setIsLoadingOrder(false); // Clear flag to allow localStorage loading
-    }
+      }
   }, [selectedRestaurant?.id, searchParams]);
 
   const handleOrderLookup = async (e) => {
@@ -1706,7 +1719,7 @@ function RestaurantPOSContent() {
               animation: 'spin 1s linear infinite',
               marginBottom: '16px'
             }} />
-            <p style={{ fontSize: '18px', color: '#6b7280' }}>Loading your restaurant...</p>
+            <p style={{ fontSize: '18px', color: '#6b7280' }}>{t('common.loading')}</p>
           </div>
         </div>
       </div>
@@ -2314,13 +2327,13 @@ function RestaurantPOSContent() {
               alignItems: 'center', 
               gap: '8px'
             }}>
-              Menu Categories
+              {t('dashboard.menuCategories')}
             </h2>
             <div style={{ position: 'relative' }}>
               <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={14} />
               <input
                 type="text"
-                placeholder="Search menu items..."
+                placeholder={t('dashboard.searchOrder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{
@@ -2556,7 +2569,7 @@ function RestaurantPOSContent() {
                 )}
                 <input
                   type="text"
-                  placeholder="Search by Table No. or Order ID..."
+                  placeholder={t('dashboard.searchOrder')}
                   value={orderLookup}
                   onChange={(e) => setOrderLookup(e.target.value)}
                   onKeyPress={handleOrderLookup}
@@ -2665,7 +2678,7 @@ function RestaurantPOSContent() {
                   }}
                 >
                   <FaPlus size={12} />
-                  Fresh Order
+                  {t('menu.freshOrder')}
                 </button>
 
                 {/* Upload Menu Button */}
@@ -2695,7 +2708,7 @@ function RestaurantPOSContent() {
                   }}
                 >
                   <FaCloudUploadAlt size={12} />
-                  Upload Menu
+                  {t('menu.uploadMenu')}
                 </button>
               </div>
 
@@ -2812,9 +2825,9 @@ function RestaurantPOSContent() {
             setOrderLookup={setOrderLookup}
             currentOrder={currentOrder}
             setCurrentOrder={setCurrentOrder}
-            onShowQRCode={handleShowQRCode}
-            restaurantId={selectedRestaurant?.id}
-            restaurantName={selectedRestaurant?.name}
+                  onShowQRCode={handleShowQRCode}
+                  restaurantId={selectedRestaurant?.id}
+                  restaurantName={selectedRestaurant?.name}
             taxSettings={taxSettings}
           />
         </div>
@@ -2855,7 +2868,7 @@ function RestaurantPOSContent() {
                     gap: '8px'
                   }}>
                     <FaShoppingCart size={16} />
-                    Order Summary
+                    {t('dashboard.orderSummary')}
                     {cart.length > 0 && (
                       <span style={{
                         backgroundColor: '#ef4444',
@@ -3091,8 +3104,8 @@ function RestaurantPOSContent() {
                   color: '#6b7280'
                 }}>
                   <FaShoppingCart size={48} style={{ marginBottom: '16px', color: '#d1d5db' }} />
-                  <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Your cart is empty</p>
-                  <p style={{ fontSize: '14px' }}>Add some delicious items to get started!</p>
+                  <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>{t('dashboard.noItems')}</p>
+                  <p style={{ fontSize: '14px' }}>{t('dashboard.addItemsFirst')}</p>
                 </div>
               ) : (
                 cart.map((item, index) => (
@@ -3205,7 +3218,7 @@ function RestaurantPOSContent() {
                   marginBottom: '16px'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 'bold' }}>Grand Total</span>
+                    <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{t('common.total')}</span>
                     <span style={{ fontSize: '24px', fontWeight: 'bold' }}>Rs.{getTotalAmount()}</span>
                   </div>
                 </div>
@@ -3239,12 +3252,12 @@ function RestaurantPOSContent() {
                   {processing ? (
                     <>
                       <FaSpinner style={{ animation: 'spin 1s linear infinite' }} size={16} />
-                      Processing Order...
+                      {t('dashboard.orderProcessing')}
                     </>
                   ) : (
                     <>
                       <FaCheckCircle size={16} />
-                      COMPLETE ORDER • Rs.{getTotalAmount()}
+                      {t('dashboard.completeBilling')} • Rs.{getTotalAmount()}
                     </>
                   )}
                 </button>
@@ -3274,14 +3287,14 @@ function RestaurantPOSContent() {
             maxWidth: '400px'
           }}>
             <div style={{ padding: '24px', borderBottom: '1px solid #e5e7eb' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Select Table</h2>
-              <p style={{ color: '#6b7280', margin: '4px 0 0 0', fontSize: '14px' }}>Choose a table for this order</p>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{t('dashboard.tableNumber')}</h2>
+              <p style={{ color: '#6b7280', margin: '4px 0 0 0', fontSize: '14px' }}>{t('dashboard.enterTableNumber')}</p>
             </div>
             
             <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                  Enter Table Number/Name
+                  {t('dashboard.tableNumber')}
                 </label>
                 <input
                   type="text"
@@ -3329,7 +3342,7 @@ function RestaurantPOSContent() {
                   fontSize: '14px'
                 }}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleManualTableSelection}
@@ -3351,7 +3364,7 @@ function RestaurantPOSContent() {
                 }}
               >
                 <FaChair size={14} />
-                Select Table
+                {t('dashboard.tableNumber')}
               </button>
             </div>
           </div>
@@ -3585,7 +3598,7 @@ function LoadingFallback() {
           animation: 'spin 1s linear infinite',
           margin: '0 auto 16px'
         }} />
-        <p style={{ color: '#6b7280', margin: 0 }}>Loading restaurant system...</p>
+        <p style={{ color: '#6b7280', margin: 0 }}>{t('common.loading')}</p>
       </div>
     </div>
   );

@@ -81,8 +81,8 @@ const translations = {
       analytics: 'Analytics',
       billing: 'Billing',
       admin: 'Admin',
-      history: 'History',
-      kot: 'KOT'
+      history: 'Orders',
+      kot: 'Kitchen'
     },
     
     // Login Page
@@ -130,6 +130,7 @@ const translations = {
       yourOrder: 'Your Order',
       clearOrder: 'Clear Order',
       placeOrder: 'Place Order',
+      saveOrder: 'Save Order',
       completeBilling: 'Complete Billing',
       tableNumber: 'Table Number',
       customerName: 'Customer Name',
@@ -197,6 +198,7 @@ const translations = {
       categoryInUse: 'Cannot delete category. Some dishes are using this category.',
       noCategories: 'No categories found',
       uploadMenu: 'Upload Menu',
+      freshOrder: 'Fresh Order',
       uploadFromDevice: 'Upload from Device',
       takePhoto: 'Take Photo',
       menuUploaded: 'Menu uploaded successfully!',
@@ -217,7 +219,7 @@ const translations = {
       addRestaurant: 'Add Restaurant',
       adding: 'Adding...',
       addNewStaff: 'Add New Staff Member',
-      selectPageAccess: 'Select which pages this staff member can access. Default access includes Dashboard, History, Tables, and Menu.',
+      selectPageAccess: 'Select which pages this staff member can access. Default access includes Dashboard, Orders, Tables, and Menu.',
       startDate: 'Start Date',
       selectRestaurantFirst: 'Select a restaurant first',
       noStaffFound: 'No staff members found',
@@ -342,8 +344,8 @@ const translations = {
       analytics: 'विश्लेषण',
       billing: 'बिलिंग',
       admin: 'एडमिन',
-      history: 'इतिहास',
-      kot: 'केओटी'
+      history: 'ऑर्डर',
+      kot: 'रसोई'
     },
     
     // Login Page
@@ -391,6 +393,7 @@ const translations = {
       yourOrder: 'आपका ऑर्डर',
       clearOrder: 'ऑर्डर साफ करें',
       placeOrder: 'ऑर्डर दें',
+      saveOrder: 'ऑर्डर सहेजें',
       completeBilling: 'बिलिंग पूर्ण करें',
       tableNumber: 'टेबल नंबर',
       customerName: 'ग्राहक का नाम',
@@ -458,6 +461,7 @@ const translations = {
       categoryInUse: 'श्रेणी हटा नहीं सकते। कुछ व्यंजन इस श्रेणी का उपयोग कर रहे हैं।',
       noCategories: 'कोई श्रेणी नहीं मिली',
       uploadMenu: 'मेन्यू अपलोड करें',
+      freshOrder: 'नया ऑर्डर',
       uploadFromDevice: 'डिवाइस से अपलोड करें',
       takePhoto: 'फोटो लें',
       menuUploaded: 'मेन्यू सफलतापूर्वक अपलोड हुआ!',
@@ -478,7 +482,7 @@ const translations = {
       addRestaurant: 'रेस्टोरेंट जोड़ें',
       adding: 'जोड़ा जा रहा है...',
       addNewStaff: 'नया स्टाफ सदस्य जोड़ें',
-      selectPageAccess: 'चुनें कि यह स्टाफ सदस्य किन पेजों तक पहुंच सकता है। डिफ़ॉल्ट पहुंच में डैशबोर्ड, इतिहास, टेबल और मेन्यू शामिल हैं।',
+      selectPageAccess: 'चुनें कि यह स्टाफ सदस्य किन पेजों तक पहुंच सकता है। डिफ़ॉल्ट पहुंच में डैशबोर्ड, ऑर्डर, टेबल और मेन्यू शामिल हैं।',
       startDate: 'शुरुआती तारीख',
       selectRestaurantFirst: 'पहले एक रेस्टोरेंट चुनें',
       noStaffFound: 'कोई स्टाफ सदस्य नहीं मिला',
@@ -598,3 +602,5 @@ export default {
   setLanguage,
   getAvailableLanguages
 };
+
+
