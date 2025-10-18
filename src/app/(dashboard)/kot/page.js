@@ -60,6 +60,9 @@ const KitchenOrderTicket = () => {
         setRefreshing(true);
       }
       setError('');
+      
+      // Prevent layout shift by maintaining current state during refresh
+      const currentOrders = kotOrders;
 
       // Get current restaurant from localStorage or user data
       const userData = localStorage.getItem('user');
@@ -854,7 +857,9 @@ const KitchenOrderTicket = () => {
                 overflowX: 'auto',
                 paddingBottom: '2px',
                 scrollBehavior: 'smooth',
-                marginTop: '8px'
+                marginTop: '8px',
+                minHeight: '32px', // Prevent height changes
+                alignItems: 'center' // Center align
               }}>
                 {[
                   { key: 'all', label: 'All', count: kotOrders.length },
@@ -880,7 +885,9 @@ const KitchenOrderTicket = () => {
                       alignItems: 'center',
                       gap: '3px',
                       whiteSpace: 'nowrap',
-                      minWidth: 'fit-content'
+                      minWidth: 'fit-content',
+                      minHeight: '24px', // Prevent height changes
+                      justifyContent: 'center' // Center content
                     }}
                   >
                     {status.label}
@@ -932,12 +939,14 @@ const KitchenOrderTicket = () => {
                 </div>
                 
                 {/* Desktop Status Filter Tabs */}
-                <div style={{ 
+                <div className="filter-container" style={{ 
                   display: 'flex', 
                   backgroundColor: '#fef7f0', 
                   borderRadius: '16px', 
                   padding: '4px',
-                  border: '1px solid #fed7aa'
+                  border: '1px solid #fed7aa',
+                  minHeight: '48px', // Prevent height changes
+                  alignItems: 'center' // Center align to prevent vertical shifts
                 }}>
                   {[
                     { key: 'all', label: 'All Orders', count: kotOrders.length },
@@ -962,7 +971,10 @@ const KitchenOrderTicket = () => {
                         boxShadow: selectedStatus === status.key ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px'
+                        gap: '6px',
+                        minHeight: '32px', // Prevent height changes
+                        minWidth: '80px', // Prevent width changes
+                        justifyContent: 'center' // Center content
                       }}
                     >
                       {status.label}

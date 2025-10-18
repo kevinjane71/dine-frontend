@@ -363,8 +363,11 @@ function NavigationContent({ isHidden = false }) {
         zIndex: 1000, // Lower than modals (which should be 10000+)
         backdropFilter: 'blur(12px)',
         height: '64px', // Fixed shorter height
+        minHeight: '64px', // Prevent height changes
+        maxHeight: '64px', // Prevent height changes
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        overflow: 'hidden' // Prevent content overflow
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
           {/* Logo - Modern Design - Always visible */}
@@ -454,7 +457,9 @@ function NavigationContent({ isHidden = false }) {
               padding: '6px',
               borderRadius: '16px',
               border: '1px solid rgba(255, 255, 255, 0.2)',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+              minHeight: '40px', // Prevent height changes
+              overflow: 'hidden' // Prevent content overflow
             }}>
               {navItems.map((item) => { // Show all navigation items
                 const IconComponent = item.icon;
@@ -463,6 +468,7 @@ function NavigationContent({ isHidden = false }) {
                 return (
                   <Link key={item.id} href={item.href}>
                     <div
+                      className="nav-item"
                       style={{
                         padding: '6px 12px',
                         borderRadius: '12px',
@@ -481,7 +487,9 @@ function NavigationContent({ isHidden = false }) {
                         transform: isActive ? 'translateY(-1px)' : 'none',
                         position: 'relative',
                         overflow: 'hidden',
-                        whiteSpace: 'nowrap'
+                        whiteSpace: 'nowrap',
+                        minHeight: '28px', // Prevent height changes
+                        minWidth: '60px' // Prevent width changes
                       }}
                       onMouseEnter={(e) => {
                         if (!isActive) {

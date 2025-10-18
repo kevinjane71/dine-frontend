@@ -157,3 +157,53 @@ body {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Prevent layout shifts and flickering */
+* {
+  box-sizing: border-box;
+}
+
+/* Prevent layout shifts during page transitions */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Prevent navigation flickering */
+nav {
+  contain: layout style; /* CSS containment for better performance */
+}
+
+/* Prevent button and input flickering */
+button, input, select, textarea {
+  contain: layout; /* Prevent layout shifts */
+}
+
+/* Smooth transitions for all interactive elements */
+button, a, input, select, textarea {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Prevent content jumping during loading */
+.loading-container {
+  min-height: 200px; /* Reserve space during loading */
+}
+
+/* Prevent filter button shifts */
+.filter-container {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+/* Prevent navigation item shifts */
+.nav-item {
+  min-height: 28px;
+  min-width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
