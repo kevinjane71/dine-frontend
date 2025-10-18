@@ -458,7 +458,7 @@ function RestaurantPOSContent() {
             updatedAt: new Date()
           };
 
-          const response = await apiClient.post('/api/restaurants', defaultRestaurant);
+          const response = await apiClient.createRestaurant(defaultRestaurant);
           const newRestaurant = response.data.restaurant;
           
           // Update local storage

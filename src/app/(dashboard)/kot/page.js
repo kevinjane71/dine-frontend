@@ -48,6 +48,8 @@ const KitchenOrderTicket = () => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [notification, setNotification] = useState({ show: false });
+  const [isPollingActive, setIsPollingActive] = useState(false);
+  const [pollCount, setPollCount] = useState(0);
 
   // Load restaurant and KOT data
   const loadKotData = useCallback(async (showSpinner = true) => {
@@ -110,11 +112,32 @@ const KitchenOrderTicket = () => {
         return;
       }
 
-      // Get KOT orders for this restaurant
-      const response = await apiClient.getKotOrders(restaurantId);
+      // Get KOT orders for this restaurant using the specific API endpoint
+      const kotApiUrl = `https://dine-backend-lake.vercel.app/api/kot/${restaurantId}`;
+      console.log('🌐 Making KOT API call to:', kotApiUrl);
+      console.log('🔑 Auth token present:', !!localStorage.getItem('authToken'));
       
-      if (response.orders) {
-        setKotOrders(response.orders);
+      const response = await fetch(kotApiUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('📡 KOT API response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ KOT API error response:', errorText);
+        throw new Error(`Failed to fetch KOT orders: ${response.status} - ${errorText}`);
+      }
+
+      const kotData = await response.json();
+      console.log('📦 KOT API response data:', kotData);
+      
+      if (kotData.orders) {
+        setKotOrders(kotData.orders);
       } else {
         setKotOrders([]);
       }
@@ -140,16 +163,71 @@ const KitchenOrderTicket = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Initial load and auto-refresh setup
+  // Initial load and auto-refresh setup with page visibility detection
   useEffect(() => {
+    console.log('🚀 KOT page useEffect - setting up polling');
     loadKotData();
 
-    // Set up auto-refresh every 1 minute
-    const interval = setInterval(() => {
-      loadKotData(false); // Refresh without showing loader
-    }, 60000); // 60 seconds
+    let interval = null;
+    
+    // Function to start polling
+    const startPolling = () => {
+      console.log('🔄 Starting KOT polling...');
+      if (interval) clearInterval(interval);
+      setIsPollingActive(true);
+      interval = setInterval(() => {
+        console.log('⏰ Polling interval triggered');
+        console.log('📊 Page visibility check:', {
+          documentHidden: document.hidden,
+          documentHasFocus: document.hasFocus(),
+          windowFocused: document.hasFocus()
+        });
+        
+        // Simplified visibility check - just check if document is not hidden
+        if (!document.hidden) {
+          console.log('🔄 Polling KOT data...');
+          setPollCount(prev => prev + 1);
+          loadKotData(false); // Refresh without showing loader
+        } else {
+          console.log('⏸️ Page hidden, skipping poll');
+        }
+      }, 10000); // 10 seconds as requested
+      console.log('✅ Polling started with interval:', interval);
+    };
 
-    return () => clearInterval(interval);
+    // Function to stop polling
+    const stopPolling = () => {
+      console.log('⏹️ Stopping KOT polling...');
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+      setIsPollingActive(false);
+    };
+
+    // Start polling initially
+    startPolling();
+
+    // Handle page visibility changes
+    const handleVisibilityChange = () => {
+      console.log('👁️ Visibility changed:', document.hidden ? 'hidden' : 'visible');
+      if (document.hidden) {
+        console.log('🔍 KOT page hidden - stopping polling');
+        stopPolling();
+      } else {
+        console.log('🔍 KOT page visible - starting polling');
+        startPolling();
+      }
+    };
+
+    // Add event listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      console.log('🧹 Cleaning up KOT polling...');
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [loadKotData]);
 
   // Listen for restaurant changes from navigation
@@ -166,6 +244,30 @@ const KitchenOrderTicket = () => {
       window.removeEventListener('restaurantChanged', handleRestaurantChange);
     };
   }, [loadKotData]);
+
+  // Cleanup on route changes to prevent memory leaks
+  useEffect(() => {
+    const handleRouteChange = () => {
+      console.log('🔍 KOT page route change detected - cleaning up polling');
+      // Clear any ongoing timers/intervals
+      setKotOrders([]);
+      setSelectedKot(null);
+      setError('');
+    };
+
+    // Listen for route changes (Next.js router events)
+    const handleBeforeUnload = () => {
+      console.log('🔍 KOT page unloading - cleaning up polling');
+      handleRouteChange();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      handleRouteChange();
+    };
+  }, []);
 
   // Update cooking timers every second
   useEffect(() => {
@@ -684,11 +786,30 @@ const KitchenOrderTicket = () => {
                     <p style={{ color: '#6b7280', margin: 0, fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {filteredOrders.length} orders{currentRestaurant?.name && ` • ${currentRestaurant.name}`}
                       {refreshing && <span style={{ color: '#f97316' }}> • Syncing...</span>}
+                      {isPollingActive && <span style={{ color: '#10b981' }}> • Live ({pollCount})</span>}
                     </p>
                   </div>
                 </div>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                  <button
+                    onClick={() => {
+                      console.log('🔄 Manual refresh clicked');
+                      loadKotData(false);
+                    }}
+                    style={{
+                      padding: '6px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      backgroundColor: '#3b82f6',
+                      color: 'white'
+                    }}
+                    title="Manual Refresh"
+                  >
+                    <FaSync size={12} />
+                  </button>
                   <button
                     onClick={() => setSoundEnabled(!soundEnabled)}
                     style={{
@@ -805,6 +926,7 @@ const KitchenOrderTicket = () => {
                     <p style={{ color: '#6b7280', margin: 0, fontSize: '14px' }}>
                       {currentRestaurant?.name || 'Restaurant'} • {filteredOrders.length} orders in queue
                       {refreshing && <span style={{ color: '#f97316' }}> • Refreshing...</span>}
+                      {isPollingActive && <span style={{ color: '#10b981' }}> • Live ({pollCount})</span>}
                     </p>
                   </div>
                 </div>
@@ -862,6 +984,24 @@ const KitchenOrderTicket = () => {
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <button
+                  onClick={() => {
+                    console.log('🔄 Manual refresh clicked (desktop)');
+                    loadKotData(false);
+                  }}
+                  style={{
+                    padding: '10px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    backgroundColor: '#3b82f6',
+                    color: 'white'
+                  }}
+                  title="Manual Refresh"
+                >
+                  <FaSync size={16} />
+                </button>
                 <button
                   onClick={() => setSoundEnabled(!soundEnabled)}
                   style={{

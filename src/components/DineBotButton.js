@@ -42,7 +42,7 @@ const DineBotButton = () => {
         if (restaurantId) {
           try {
             // Try to get restaurant data from API
-            const response = await apiClient.get(`/api/restaurants/${restaurantId}`);
+            const response = await apiClient.request(`/api/restaurants/${restaurantId}`);
             if (response.success && response.data) {
               const restaurant = response.data;
               setCurrentRestaurantId(restaurant.id);
@@ -149,3 +149,4 @@ const DineBotButton = () => {
 };
 
 export default DineBotButton;
+
