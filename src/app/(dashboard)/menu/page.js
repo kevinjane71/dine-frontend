@@ -706,8 +706,10 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
             gap: '8px'
           }}>
           <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 onEdit(item);
               }}
               style={{
@@ -736,8 +738,10 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
           </button>
             
           <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 onToggleAvailability(item.id, item.isAvailable);
               }}
               style={{
@@ -779,8 +783,10 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
           </button>
             
           <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 onDelete(item.id);
               }}
               style={{
@@ -952,7 +958,12 @@ const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability
         justifyContent: 'flex-end'
       }}>
         <button
-          onClick={() => onEdit(item)}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onEdit(item);
+          }}
           style={{
             padding: '6px',
             backgroundColor: '#3b82f6',
@@ -970,7 +981,12 @@ const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability
           <FaEdit size={10} />
         </button>
         <button
-          onClick={() => onToggleAvailability(item.id, item.isAvailable)}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onToggleAvailability(item.id, item.isAvailable);
+          }}
           style={{
             padding: '6px',
             backgroundColor: item.isAvailable ? '#f97316' : '#22c55e',
@@ -988,7 +1004,12 @@ const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability
           {item.isAvailable ? <FaMinus size={10} /> : <FaCheck size={10} />}
         </button>
         <button
-          onClick={() => onDelete(item.id)}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onDelete(item.id);
+          }}
           style={{
             padding: '6px',
             backgroundColor: '#ef4444',
@@ -1415,6 +1436,7 @@ const MenuManagement = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [operationLoading, setOperationLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showItemModal, setShowItemModal] = useState(false);
   const [error, setError] = useState('');
@@ -1424,6 +1446,7 @@ const MenuManagement = () => {
   const [collapsedCategories, setCollapsedCategories] = useState({});
   const [uploadingImages, setUploadingImages] = useState(false);
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
+  const hasLoadedData = useRef(false);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const [photoSuccess, setPhotoSuccess] = useState(false);
@@ -1511,6 +1534,7 @@ const MenuManagement = () => {
     } finally {
       console.log('Setting loading to false');
       setLoading(false);
+      hasLoadedData.current = true;
     }
   }, [formData.category]);
 
@@ -1545,10 +1569,10 @@ const MenuManagement = () => {
           }
         }
 
-        if (restaurantId) {
+        if (restaurantId && !hasLoadedData.current) {
           console.log('Restaurant ID found:', restaurantId);
           await loadMenuData(restaurantId);
-        } else {
+        } else if (!restaurantId) {
           console.log('No restaurant found - showing empty state');
           setError('No restaurant found. Please set up a restaurant first.');
           setLoading(false);
@@ -1561,12 +1585,15 @@ const MenuManagement = () => {
     };
 
     loadRestaurantContext();
-  }, [router, loadMenuData]);
+  }, [router]); // Removed loadMenuData dependency to prevent unnecessary reloads
 
   // Listen for restaurant changes from navigation
   useEffect(() => {
     const handleRestaurantChange = (event) => {
       console.log('🏪 Menu page: Restaurant changed, reloading data', event.detail);
+      // Reset the loaded data flag to allow reloading
+      hasLoadedData.current = false;
+      
       // Reload restaurant context and menu data
       const loadRestaurantContext = async () => {
         try {
@@ -1603,7 +1630,7 @@ const MenuManagement = () => {
     return () => {
       window.removeEventListener('restaurantChanged', handleRestaurantChange);
     };
-  }, [loadMenuData]);
+  }, []); // Removed loadMenuData dependency
 
 
   const filteredItems = menuItems.filter(item => {
@@ -1678,6 +1705,7 @@ const MenuManagement = () => {
   };
 
   const handleEdit = (item) => {
+    console.log('Editing item:', item);
     setFormData({
       name: item.name || '',
       description: item.description || '',
@@ -1692,26 +1720,27 @@ const MenuManagement = () => {
     });
     setEditingItem(item);
     setShowAddForm(true);
+    // Don't trigger any loading states - just open the form
   };
 
   const handleDelete = async (itemId) => {
     if (!confirm('Are you sure you want to delete this menu item?')) return;
 
     try {
-      setProcessing(true);
+      setOperationLoading(true);
       await apiClient.deleteMenuItem(itemId);
       setMenuItems(items => items.filter(item => item.id !== itemId));
     } catch (error) {
       console.error('Error deleting menu item:', error);
       setError('Failed to delete menu item');
     } finally {
-      setProcessing(false);
+      setOperationLoading(false);
     }
   };
 
   const handleToggleAvailability = async (itemId, currentStatus) => {
     try {
-      setProcessing(true);
+      setOperationLoading(true);
       const updatedData = { isAvailable: !currentStatus };
       await apiClient.updateMenuItem(itemId, updatedData);
       setMenuItems(items => items.map(item => 
@@ -1721,7 +1750,7 @@ const MenuManagement = () => {
       console.error('Error updating availability:', error);
       setError('Failed to update item availability');
     } finally {
-      setProcessing(false);
+      setOperationLoading(false);
     }
   };
 
@@ -1731,8 +1760,10 @@ const MenuManagement = () => {
   };
 
   const handleCloseModal = () => {
+    console.log('Closing modal');
     setShowItemModal(false);
     setSelectedItem(null);
+    // Don't trigger any loading states - just close the modal
   };
 
   const resetForm = () => {
@@ -2092,10 +2123,37 @@ const MenuManagement = () => {
       position: 'relative',
       overflow: 'auto'
     }}>
+      {/* Top Operation Loader */}
+      {operationLoading && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          background: 'linear-gradient(90deg, #ef4444, #dc2626)',
+          height: '3px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+            animation: 'shimmer 1.5s infinite'
+          }}></div>
+        </div>
+      )}
+
       <style jsx>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
         }
       `}</style>
       <div style={{ 

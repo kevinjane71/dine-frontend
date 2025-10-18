@@ -54,33 +54,33 @@ export default function LandingPage() {
   const features = [
     {
       icon: <FaUtensils size={24} />,
-      title: "Digital Menu Management",
-      description: "Create beautiful digital menus with photos, categories, and real-time updates"
-    },
-    {
-      icon: <FaTable size={24} />,
-      title: "Table Management",
-      description: "Track table status, manage floor layouts, and optimize seating arrangements"
+      title: "Menu Management",
+      description: "Create and manage your restaurant menu with photos, prices, and categories. Update items instantly."
     },
     {
       icon: <FaChartBar size={24} />,
-      title: "Kitchen Order Tracking",
-      description: "Real-time KOT system with cooking timers and order status updates"
+      title: "Kitchen Orders",
+      description: "Send orders directly to kitchen. Track cooking progress and order status in real-time."
+    },
+    {
+      icon: <FaTable size={24} />,
+      title: "Order Management",
+      description: "Handle customer orders, track table status, and manage your restaurant operations smoothly."
+    },
+    {
+      icon: <FaUsers size={24} />,
+      title: "Staff Management",
+      description: "Manage your team, assign roles, and track staff performance easily."
     },
     {
       icon: <FaMobile size={24} />,
-      title: "Mobile-First Design",
-      description: "Works perfectly on tablets, phones, and POS terminals"
+      title: "Mobile Friendly",
+      description: "Works on any device - phones, tablets, computers. Access your restaurant data anywhere."
     },
     {
       icon: <FaCloud size={24} />,
-      title: "Cloud-Based",
-      description: "Access your restaurant data from anywhere, anytime with automatic backups"
-    },
-    {
-      icon: <FaClock size={24} />,
-      title: "Real-Time Updates",
-      description: "Live order updates between kitchen, waitstaff, and management"
+      title: "Cloud Storage",
+      description: "All your data is safely stored in the cloud. No need to worry about losing information."
     }
   ];
 
@@ -511,17 +511,17 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section style={{
         background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)',
-        padding: isMobile ? '60px 16px' : '120px 20px',
+        padding: isMobile ? '40px 16px' : '80px 20px',
         textAlign: 'center',
         position: 'relative',
         overflow: 'hidden',
         minHeight: isMobile ? '80vh' : '100vh',
-                      display: 'flex', 
-                      alignItems: 'center',
+        display: 'flex', 
+        alignItems: 'center',
         justifyContent: 'center'
       }}>
         {/* Background Pattern */}
-                    <div style={{ 
+        <div style={{ 
           position: 'absolute',
           top: 0,
           left: 0,
@@ -567,194 +567,276 @@ export default function LandingPage() {
           animation: 'float 10s ease-in-out infinite'
         }} />
         
-        <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          {/* Hero Icon */}
+        <div style={{ 
+          maxWidth: '1400px', 
+          margin: '0 auto', 
+          position: 'relative', 
+          zIndex: 1,
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: 'center',
+          gap: isMobile ? '40px' : '80px',
+          width: '100%'
+        }}>
+          {/* Left Side: Text Content */}
           <div style={{
-            fontSize: isMobile ? '80px' : '120px',
-            marginBottom: isMobile ? '24px' : '32px',
-            animation: 'pulse 2s ease-in-out infinite',
-            filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2))'
+            flex: 0.8,
+            textAlign: isMobile ? 'center' : 'left',
+            maxWidth: isMobile ? '100%' : '500px'
           }}>
-            🍽️
-                    </div>
                     
-          {/* Main Heading */}
-          <h1 style={{
-            fontSize: isMobile ? '28px' : '56px',
-            fontWeight: '900',
-            color: 'white',
-            marginBottom: isMobile ? '20px' : '24px',
-            textShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
-            lineHeight: '1.2'
-          }}>
-            Restaurant Management
-            <br />
-                      <span style={{
-              background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              display: 'block',
-              marginTop: '8px'
+            {/* Main Heading */}
+            <h1 style={{
+              fontSize: isMobile ? '28px' : '48px',
+              fontWeight: '900',
+              color: 'white',
+              marginBottom: isMobile ? '20px' : '24px',
+              textShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+              lineHeight: '1.2'
             }}>
-              Revolution 🚀
-                      </span>
-          </h1>
-          
-          {/* Subtitle */}
-          <p style={{
-            fontSize: isMobile ? '16px' : '24px',
-            color: 'rgba(255, 255, 255, 0.9)',
-            marginBottom: isMobile ? '12px' : '16px',
-            fontWeight: '600',
-            textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-            lineHeight: '1.4'
-          }}>
-            The Future of Dining is Here
-          </p>
-          
-          {/* Description */}
-          <p style={{
-            fontSize: isMobile ? '16px' : '18px',
-            color: 'rgba(255, 255, 255, 0.8)',
-            marginBottom: '40px',
-            lineHeight: '1.6',
-            maxWidth: '600px',
-            margin: '0 auto 40px auto'
-          }}>
-            Join thousands of restaurants already using our AI-powered POS system. 
-            Transform your business with intelligent order management, real-time analytics, 
-            and seamless customer experiences.
-          </p>
-          
-          {/* Stats */}
-                      <div style={{
-                        display: 'flex',
-              justifyContent: 'center', 
-            gap: isMobile ? '20px' : '40px',
-            marginBottom: '40px',
-            flexWrap: 'wrap'
-          }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
-                1000+
-                      </div>
-              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
-                Restaurants
-                    </div>
-                  </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
-                30%
-            </div>
-              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
-                More Savings
-          </div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
-                24/7
+              Complete Restaurant
+              <br />
+              <span style={{
+                background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                display: 'block',
+                marginTop: '8px'
+              }}>
+                Management System
+              </span>
+            </h1>
+            
+            {/* Subtitle */}
+            <p style={{
+              fontSize: isMobile ? '18px' : '24px',
+              color: 'rgba(255, 255, 255, 0.9)',
+              marginBottom: isMobile ? '16px' : '20px',
+              fontWeight: '600',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+              lineHeight: '1.4'
+            }}>
+              Menu Management • Kitchen Orders • Order Tracking
+            </p>
+            
+            {/* Description */}
+            <p style={{
+              fontSize: isMobile ? '16px' : '18px',
+              color: 'rgba(255, 255, 255, 0.8)',
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 30px auto'
+            }}>
+              Everything you need to run your restaurant efficiently. 
+              Manage your menu, track kitchen orders, handle customer orders, 
+              and get real-time insights - all in one simple platform.
+            </p>
+            
+            {/* Stats */}
+            <div style={{
+              display: 'flex',
+              justifyContent: isMobile ? 'center' : 'flex-start', 
+              gap: isMobile ? '20px' : '40px',
+              marginBottom: '40px',
+              flexWrap: 'wrap'
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
+                  1000+
+                </div>
+                <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                  Restaurants
+                </div>
               </div>
-              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
-                Support
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
+                  30%
+                </div>
+                <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                  More Savings
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
+                  24/7
+                </div>
+                <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                  Support
+                </div>
               </div>
             </div>
-        </div>
 
-          {/* CTA Buttons */}
-          <div style={{ 
-            display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-            gap: '20px',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexWrap: 'wrap'
-          }}>
+            {/* CTA Buttons */}
+            <div style={{ 
+              display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: '16px',
+              justifyContent: isMobile ? 'center' : 'flex-start',
+              alignItems: 'center',
+              flexWrap: 'nowrap'
+            }}>
               <button
-              onClick={handleGetStarted}
+                onClick={handleGetStarted}
                 style={{
-                padding: '20px 40px',
-                background: 'rgba(255, 255, 255, 0.95)',
-                color: '#dc2626',
+                  padding: '18px 36px',
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  color: '#dc2626',
                   border: 'none',
-                borderRadius: '16px',
-                fontWeight: '700',
-                fontSize: isMobile ? '18px' : '20px',
+                  borderRadius: '16px',
+                  fontWeight: '700',
+                  fontSize: isMobile ? '16px' : '18px',
                   cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
-                transform: 'translateY(0)',
-                backdropFilter: 'blur(10px)',
-                border: '2px solid rgba(255, 255, 255, 0.3)',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
+                  transform: 'translateY(0)',
+                  backdropFilter: 'blur(10px)',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
-                gap: '8px',
-                width: isMobile ? '100%' : 'auto'
-              }}
-                    onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-4px)';
-                e.target.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.3)';
-                e.target.style.background = 'white';
-                    }}
-                    onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
-                e.target.style.background = 'rgba(255, 255, 255, 0.95)';
-              }}
-            >
-              <FaRocket size={20} />
-              🚀 Start Free Trial
+                  gap: '8px',
+                  width: isMobile ? '100%' : 'auto'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-4px)';
+                  e.target.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.3)';
+                  e.target.style.background = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.95)';
+                }}
+              >
+                <FaRocket size={20} />
+                🚀 Start Free Trial
               </button>
               <button
                 style={{
-                padding: '20px 40px',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  padding: '18px 36px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
                   color: 'white',
-                border: '2px solid rgba(255, 255, 255, 0.3)',
-                borderRadius: '16px',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: '16px',
                   fontWeight: '600',
-                fontSize: isMobile ? '18px' : '20px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                backdropFilter: 'blur(10px)',
-                        display: 'flex',
-                        alignItems: 'center',
-                gap: '8px',
-                width: isMobile ? '100%' : 'auto'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-              }}
-            >
-              <FaPlay size={16} />
-              Watch Demo
+                  fontSize: isMobile ? '16px' : '18px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  width: isMobile ? '100%' : 'auto'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                }}
+              >
+                <FaPlay size={16} />
+                See Real Demo
               </button>
             </div>
             
-          {/* Trust Indicators */}
-                    <div style={{ 
-            marginTop: '40px',
-            padding: '20px',
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <p style={{
-              fontSize: isMobile ? '12px' : '14px',
-              color: 'rgba(255, 255, 255, 0.8)',
-              margin: 0,
-              fontWeight: '500'
+            {/* Trust Indicators */}
+            <div style={{ 
+              marginTop: '40px',
+              padding: '20px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
             }}>
-              ✨ Bank-Level Security • 🛡️ GDPR Compliant • ⚡ Lightning Fast
-            </p>
+              <p style={{
+                fontSize: isMobile ? '12px' : '14px',
+                color: 'rgba(255, 255, 255, 0.8)',
+                margin: 0,
+                fontWeight: '500'
+              }}>
+                ✨ Bank-Level Security • 🛡️ GDPR Compliant • ⚡ Lightning Fast
+              </p>
+            </div>
           </div>
+
+          {/* Right Side: Product Image */}
+          <div style={{
+            flex: 1.2,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            maxWidth: isMobile ? '100%' : '100%'
+          }}>
+            <div style={{
+              position: 'relative',
+              borderRadius: '20px',
+              overflow: 'hidden',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+              border: '3px solid rgba(255, 255, 255, 0.2)',
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              padding: '20px',
+              minHeight: '650px'
+            }}>
+              <img
+                src="https://storage.googleapis.com/demoimage-7189/menu-items/LUETVd1eMwu4Bm7PvP9K/item_1760637762769_df90sl6pe/1760767605179-0-Screenshot%202025-10-18%20at%2011.36.31%C3%A2%C2%80%C2%AFAM.png"
+                alt="DineOpen Restaurant Management Dashboard - Complete POS System"
+                style={{
+                  width: '100%',
+                  height: '600px',
+                  objectFit: 'cover',
+                  borderRadius: '15px',
+                  maxWidth: '100%',
+                  display: 'block'
+                }}
+                onError={(e) => {
+                  // Fallback if image doesn't load
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = `
+                    <div style="
+                      width: 100%; 
+                      height: 600px; 
+                      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
+                      border-radius: 15px; 
+                      display: flex; 
+                      flex-direction: column; 
+                      align-items: center; 
+                      justify-content: center; 
+                      color: #6b7280;
+                      text-align: center;
+                      padding: 40px;
+                    ">
+                      <div style="font-size: 48px; margin-bottom: 16px;">🍽️</div>
+                      <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">DineOpen Dashboard</div>
+                      <div style="font-size: 16px;">Complete Restaurant Management System</div>
+                      <div style="font-size: 14px; margin-top: 16px; opacity: 0.7;">Menu • Orders • Kitchen • Billing</div>
+                    </div>
+                  `;
+                }}
+              />
+              
+              {/* Live Demo Badge */}
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                background: 'rgba(239, 68, 68, 0.9)',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                backdropFilter: 'blur(10px)'
+              }}>
+                LIVE DEMO
+              </div>
+            </div>
           </div>
+        </div>
       </section>
 
       {/* Social Proof Banner */}
@@ -922,28 +1004,6 @@ export default function LandingPage() {
               gap: isMobile ? '15px' : '30px',
               flexWrap: 'wrap'
             }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                gap: '6px',
-                fontSize: '13px',
-                color: '#6b7280',
-                fontWeight: '500'
-              }}>
-                <div style={{
-                  width: '14px',
-                  height: '14px',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      borderRadius: '50%', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center' 
-                    }}>
-                  <FaCheckCircle color="white" size={8} />
-                    </div>
-                <span>Trusted by 1000+ Restaurants</span>
-                  </div>
-                    
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1005,7 +1065,7 @@ export default function LandingPage() {
                           color: '#1f2937',
               marginBottom: '16px'
             }}>
-              Everything You Need to Run Your Restaurant
+              What DineOpen Offers
                 </h2>
             <p style={{
               fontSize: '18px',
@@ -1013,7 +1073,7 @@ export default function LandingPage() {
               maxWidth: '600px',
               margin: '0 auto'
             }}>
-              From order management to kitchen operations, our platform handles it all seamlessly
+              Simple tools to manage your restaurant better. Everything you need in one place.
             </p>
               </div>
               
