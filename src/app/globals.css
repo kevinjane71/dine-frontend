@@ -20,11 +20,22 @@
 .nav-container {
   contain: layout style;
   will-change: auto;
+  transform: translateZ(0); /* Force hardware acceleration */
+  backface-visibility: hidden; /* Prevent flickering */
 }
 
 .nav-item {
   contain: layout;
   will-change: auto;
+  transform: translateZ(0); /* Force hardware acceleration */
+  backface-visibility: hidden; /* Prevent flickering */
+}
+
+/* Prevent layout shifts on dropdowns */
+.nav-container [data-restaurant-dropdown],
+.nav-container [data-user-dropdown] {
+  contain: layout;
+  transform: translateZ(0);
 }
 
 @keyframes pulse {

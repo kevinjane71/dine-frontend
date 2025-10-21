@@ -388,9 +388,18 @@ function NavigationContent({ isHidden = false }) {
         maxHeight: '64px', // Prevent height changes
         display: 'flex',
         alignItems: 'center',
-        overflow: 'hidden' // Prevent content overflow
+        overflow: 'visible', // Allow dropdowns to be visible
+        contain: 'layout style', // Prevent layout shifts
+        willChange: 'auto' // Optimize for stability
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          width: '100%',
+          position: 'relative', // Ensure proper positioning context for dropdowns
+          contain: 'layout' // Prevent layout shifts
+        }}>
           {/* Logo - Modern Design - Always visible */}
           <div 
             onClick={() => router.push('/dashboard')}
