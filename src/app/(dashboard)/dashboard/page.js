@@ -1285,15 +1285,8 @@ function RestaurantPOSContent() {
       console.log('Setting order success:', successData);
       setOrderSuccess(successData);
       
-      // Auto-hide success message after 5 seconds
-      setTimeout(() => {
-        setOrderSuccess(null);
-        if (selectedTable && selectedTable.id) {
-          // Release table
-          apiClient.updateTableStatus(selectedTable.id, 'available');
-          setSelectedTable(null);
-        }
-      }, 5000);
+      // Don't auto-hide - let user manually close invoice or start new order
+      // Table will be released when user starts a new order or manually closes
 
         // Return order ID for invoice generation
         return { orderId };
@@ -1589,10 +1582,13 @@ function RestaurantPOSContent() {
     setOrderLookup('');
     localStorage.removeItem('dine_cart');
     
-    // Clear success message after 3 seconds
-    setTimeout(() => {
+    // Clear order success and release table when starting new order
       setOrderSuccess(null);
-    }, 3000);
+    if (selectedTable && selectedTable.id) {
+      // Release table
+      apiClient.updateTableStatus(selectedTable.id, 'available');
+      setSelectedTable(null);
+    }
   };
 
   const navigateToPage = (page) => {
@@ -2663,38 +2659,6 @@ function RestaurantPOSContent() {
                   style={{
                     height: '40px',
                     padding: '0 16px',
-                    backgroundColor: '#f3f4f6',
-                    color: '#374151',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    transition: 'all 0.2s ease',
-                    minWidth: 'fit-content'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = '#e5e7eb';
-                    e.target.style.borderColor = '#9ca3af';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = '#f3f4f6';
-                    e.target.style.borderColor = '#d1d5db';
-                  }}
-                >
-                  <FaPlus size={12} />
-                  {t('menu.freshOrder')}
-                </button>
-
-                {/* Upload Menu Button */}
-                <button
-                  onClick={() => setShowBulkUpload(true)}
-                  style={{
-                    height: '40px',
-                    padding: '0 16px',
                     backgroundColor: '#ef4444',
                     color: 'white',
                     border: 'none',
@@ -2710,14 +2674,17 @@ function RestaurantPOSContent() {
                   }}
                   onMouseEnter={(e) => {
                     e.target.style.backgroundColor = '#dc2626';
+                    e.target.style.transform = 'translateY(-1px)';
                   }}
                   onMouseLeave={(e) => {
                     e.target.style.backgroundColor = '#ef4444';
+                    e.target.style.transform = 'translateY(0)';
                   }}
                 >
-                  <FaCloudUploadAlt size={12} />
-                  {t('menu.uploadMenu')}
+                  <FaPlus size={12} />
+                  {t('menu.freshOrder')}
                 </button>
+
               </div>
 
               {/* Current Order Status */}

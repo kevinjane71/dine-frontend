@@ -15,7 +15,8 @@ import {
   FaCheckCircle, 
   FaSpinner,
   FaQrcode,
-  FaTrash
+  FaTrash,
+  FaPrint
 } from 'react-icons/fa';
 
 const OrderSummary = ({ 
@@ -649,58 +650,97 @@ const OrderSummary = ({
           </div>
           
           {/* Show invoice content inline for billing completion */}
-          {((orderSuccess?.message?.includes('successfully completed') && invoice) || showInvoicePermanently) && (
+          {((orderSuccess?.message?.includes('Billing Complete') && invoice) || showInvoicePermanently) && (
             <div style={{ 
-              backgroundColor: '#f8fafc', 
-              border: '1px solid #e2e8f0', 
-              borderRadius: '12px', 
-              padding: '16px', 
-              marginBottom: '12px',
-              marginTop: '12px'
+              backgroundColor: '#f0fdf4', 
+              border: '2px solid #22c55e', 
+              borderRadius: '16px', 
+              padding: '20px', 
+              marginBottom: '16px',
+              marginTop: '16px',
+              boxShadow: '0 4px 12px rgba(34, 197, 94, 0.2)'
             }}>
               <div style={{ 
-                fontSize: '16px', 
+                fontSize: '18px', 
                 fontWeight: '700', 
-                color: '#1f2937', 
-                marginBottom: '12px',
-                textAlign: 'center'
+                color: '#166534', 
+                marginBottom: '16px',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
               }}>
-                Invoice #{invoice?.invoiceNumber || 'N/A'}
+                <FaCheckCircle color="#22c55e" size={20} />
+                Invoice #{invoice?.id || 'N/A'}
               </div>
               
               {invoice && (
-                <div style={{ fontSize: '12px', color: '#374151', lineHeight: '1.4' }}>
-                  <div style={{ marginBottom: '8px', fontWeight: '600' }}>
-                    Restaurant: {invoice.restaurantName || 'N/A'}
+                <div style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5' }}>
+                  <div style={{ marginBottom: '10px', fontWeight: '600', color: '#1f2937' }}>
+                    🏪 Restaurant: {invoice.restaurantName || 'N/A'}
                   </div>
-                  <div style={{ marginBottom: '8px' }}>
-                    Order ID: {invoice.orderId || 'N/A'}
+                  <div style={{ marginBottom: '10px' }}>
+                    📋 Order ID: {invoice.orderId || 'N/A'}
                   </div>
-                  <div style={{ marginBottom: '8px' }}>
-                    Date: {invoice.generatedAt ? new Date(invoice.generatedAt).toLocaleString() : 'N/A'}
+                  <div style={{ marginBottom: '10px' }}>
+                    📅 Date: {invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleString() : 'N/A'}
                   </div>
+                  {invoice.customerName && (
+                    <div style={{ marginBottom: '10px' }}>
+                      👤 Customer: {invoice.customerName}
+                    </div>
+                  )}
+                  {invoice.tableNumber && (
+                    <div style={{ marginBottom: '10px' }}>
+                      🪑 Table: {invoice.tableNumber}
+                    </div>
+                  )}
                   
-                  <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '8px', marginTop: '8px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span>{t('common.subtotal')}:</span>
+                  <div style={{ borderTop: '2px solid #e5e7eb', paddingTop: '12px', marginTop: '12px', backgroundColor: '#f9fafb', borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontWeight: '600' }}>
+                      <span>💰 Subtotal:</span>
                       <span>₹{invoice.subtotal?.toFixed(2) || '0.00'}</span>
                     </div>
                     {invoice.taxBreakdown && invoice.taxBreakdown.map((tax, index) => (
-                      <div key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '11px' }}>
-                        <span>{tax.name} ({tax.rate}%):</span>
+                      <div key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '12px', color: '#6b7280' }}>
+                        <span>📊 {tax.name} ({tax.rate}%):</span>
                         <span>₹{tax.amount?.toFixed(2) || '0.00'}</span>
                       </div>
                     ))}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', borderTop: '1px solid #e5e7eb', paddingTop: '4px', marginTop: '4px' }}>
-                      <span>{t('common.total')}:</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', borderTop: '2px solid #22c55e', paddingTop: '8px', marginTop: '8px', fontSize: '16px', color: '#166534' }}>
+                      <span>💳 Total:</span>
                       <span>₹{((invoice.subtotal || 0) + (invoice.taxBreakdown?.reduce((sum, tax) => sum + (tax.amount || 0), 0) || 0)).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
               )}
               
-              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '16px', justifyContent: 'center' }}>
                 <button
+                  style={{
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '10px 16px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#2563eb';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#3b82f6';
+                    e.target.style.transform = 'translateY(0)';
+                  }}
                   onClick={() => {
                     // Create a new window with just the invoice content
                     const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -708,7 +748,7 @@ const OrderSummary = ({
                       <!DOCTYPE html>
                       <html>
                         <head>
-                          <title>Invoice #${invoice?.invoiceNumber || 'N/A'}</title>
+                          <title>Invoice #${invoice?.id || 'N/A'}</title>
                           <style>
                             body { font-family: Arial, sans-serif; margin: 20px; }
                             .invoice-header { text-align: center; margin-bottom: 20px; }
@@ -721,7 +761,7 @@ const OrderSummary = ({
                         </head>
                         <body>
                           <div class="invoice-header">
-                            <h1>Invoice #${invoice?.invoiceNumber || 'N/A'}</h1>
+                            <h1>Invoice #${invoice?.id || 'N/A'}</h1>
                             <h2>${invoice?.restaurantName || 'Restaurant'}</h2>
                           </div>
                           
@@ -786,6 +826,7 @@ const OrderSummary = ({
                     gap: '4px'
                   }}
                 >
+                  <FaPrint size={14} />
                   Print Invoice
                 </button>
                 <button
@@ -794,17 +835,30 @@ const OrderSummary = ({
                     setInvoice(null);
                   }}
                   style={{
-                    flex: 1,
-                    backgroundColor: '#6b7280',
+                    backgroundColor: '#ef4444',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
-                    padding: '8px 12px',
-                    fontSize: '12px',
+                    padding: '10px 16px',
+                    fontSize: '14px',
                     fontWeight: '600',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#dc2626';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#ef4444';
+                    e.target.style.transform = 'translateY(0)';
                   }}
                 >
+                  <FaTimes size={14} />
                   Clear Invoice
                 </button>
               </div>

@@ -2204,10 +2204,40 @@ const MenuManagement = () => {
               justifyContent: 'flex-end'
             }}>
             <button
+              onClick={() => router.push('/dashboard')}
+              style={{
+                padding: '6px 12px',
+                backgroundColor: '#f3f4f6',
+                color: '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontWeight: '600',
+                fontSize: '12px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                whiteSpace: 'nowrap',
+                minWidth: 'auto'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.backgroundColor = '#e5e7eb';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.backgroundColor = '#f3f4f6';
+              }}
+            >
+              <FaPlus size={10} />
+              {t('menu.freshOrder')}
+            </button>
+            <button
                 onClick={() => setShowBulkUpload(true)}
                 style={{
                   padding: '6px 12px',
-                  background: 'linear-gradient(135deg, #f97316, #ef4444)',
+                  backgroundColor: '#ef4444',
                   color: 'white',
                   border: 'none',
                   borderRadius: '6px',
@@ -2223,9 +2253,11 @@ const MenuManagement = () => {
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.backgroundColor = '#dc2626';
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.transform = 'translateY(0)';
+                  e.target.style.backgroundColor = '#ef4444';
                 }}
               >
                 <FaCloudUploadAlt size={10} />
