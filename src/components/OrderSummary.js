@@ -718,29 +718,6 @@ const OrderSummary = ({
               
               <div style={{ display: 'flex', gap: '12px', marginTop: '16px', justifyContent: 'center' }}>
                 <button
-                  style={{
-                    backgroundColor: '#3b82f6',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '10px 16px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    transition: 'all 0.2s ease',
-                    boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = '#2563eb';
-                    e.target.style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = '#3b82f6';
-                    e.target.style.transform = 'translateY(0)';
-                  }}
                   onClick={() => {
                     // Create a new window with just the invoice content
                     const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -812,18 +789,27 @@ const OrderSummary = ({
                   }}
                   style={{
                     flex: 1,
-                    backgroundColor: '#10b981',
+                    backgroundColor: '#3b82f6',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
-                    padding: '8px 12px',
-                    fontSize: '12px',
+                    padding: '10px 16px',
+                    fontSize: '14px',
                     fontWeight: '600',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px'
+                    gap: '6px',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#2563eb';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#3b82f6';
+                    e.target.style.transform = 'translateY(0)';
                   }}
                 >
                   <FaPrint size={14} />

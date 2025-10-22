@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaArrowLeft, FaPhone, FaChair, FaUtensils, FaLeaf, FaDrumstickBite, FaSpinner, FaLock } from 'react-icons/fa';
+import { FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaArrowLeft, FaPhone, FaChair, FaUtensils, FaLeaf, FaDrumstickBite, FaSpinner, FaLock, FaTimes } from 'react-icons/fa';
 import ImageCarousel from '../../components/ImageCarousel';
 import apiClient from '../../lib/api.js';
 
@@ -49,6 +49,7 @@ const PlaceOrderContent = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [verificationId, setVerificationId] = useState(null);
   const [sendingOtp, setSendingOtp] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   
   // Derived values
   const restaurantId = searchParams.get('restaurant') || 'default';
@@ -61,6 +62,25 @@ const PlaceOrderContent = () => {
       seatNumber
     }));
   }, [seatNumber]);
+
+  // Handle scroll for compact header with throttling to prevent flickering
+  useEffect(() => {
+    let ticking = false;
+    
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          setIsScrolled(scrollTop > 100);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Cleanup reCAPTCHA on unmount
   useEffect(() => {
@@ -467,15 +487,41 @@ const PlaceOrderContent = () => {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(-10px) rotate(5deg); }
         }
+        
+        /* Prevent flickering and improve performance */
+        * {
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Smooth scrolling */
+        html {
+          scroll-behavior: smooth;
+        }
+        
+        /* Hardware acceleration for smooth animations */
+        .header-container {
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          perspective: 1000px;
+        }
+        
+        /* Optimize transitions */
+        .transition-optimized {
+          will-change: transform, opacity;
+          transform: translateZ(0);
+        }
       `}</style>
       {/* Header */}
-      <div style={{
+      <div className="header-container" style={{
         position: 'sticky',
         top: 0,
         backgroundColor: 'white',
         zIndex: 100,
-        padding: '16px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        padding: isScrolled ? '8px 16px' : '16px',
+        boxShadow: isScrolled ? '0 2px 8px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.1)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        willChange: 'transform, box-shadow'
       }}>
         <div style={{ 
           display: 'flex', 
@@ -487,11 +533,13 @@ const PlaceOrderContent = () => {
           {/* Restaurant Info */}
           <div>
             <h1 style={{ 
-              fontSize: '20px', 
+              fontSize: isScrolled ? '16px' : '20px', 
               fontWeight: 'bold', 
               color: '#1f2937', 
               margin: 0,
-              lineHeight: '1.2'
+              lineHeight: '1.2',
+              transition: 'font-size 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              willChange: 'font-size'
             }}>
               {restaurant?.name || 'My Restaurant'}
             </h1>
@@ -505,14 +553,15 @@ const PlaceOrderContent = () => {
               background: '#e53e3e',
               color: 'white',
               border: 'none',
-              padding: '12px',
+              padding: isScrolled ? '8px' : '12px',
               borderRadius: '8px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              willChange: 'transform, padding'
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = 'translateY(-1px)';
@@ -523,7 +572,7 @@ const PlaceOrderContent = () => {
               e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
             }}
           >
-            <FaShoppingCart size={18} />
+            <FaShoppingCart size={isScrolled ? 14 : 18} />
             {getCartItemCount() > 0 && (
               <span style={{
                 position: 'absolute',
@@ -547,20 +596,22 @@ const PlaceOrderContent = () => {
           </button>
         </div>
 
-        {/* Search */}
+        {/* Search - Always visible but compact when scrolled */}
         <div style={{ 
           position: 'relative', 
-          marginBottom: '20px',
+          marginBottom: isScrolled ? '8px' : '20px',
           maxWidth: '1200px',
-          margin: '0 auto 20px auto',
-          padding: '0 16px'
+          margin: `0 auto ${isScrolled ? '8px' : '20px'} auto`,
+          padding: '0 16px',
+          transition: 'margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}>
-          <FaSearch size={16} color="#9ca3af" style={{
+          <FaSearch size={isScrolled ? 12 : 16} color="#9ca3af" style={{
             position: 'absolute',
-            left: '22px',
+            left: isScrolled ? '16px' : '22px',
             top: '50%',
             transform: 'translateY(-50%)',
-            zIndex: 1
+            zIndex: 1,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
           }} />
           <input
             type="text"
@@ -569,16 +620,16 @@ const PlaceOrderContent = () => {
             placeholder="Search food items..."
             style={{
               width: '100%',
-              padding: '14px 14px 14px 44px',
+              padding: isScrolled ? '8px 8px 8px 32px' : '14px 14px 14px 44px',
               border: 'none',
-              borderRadius: '20px',
-              fontSize: '14px',
+              borderRadius: isScrolled ? '12px' : '20px',
+              fontSize: isScrolled ? '12px' : '14px',
               outline: 'none',
               backgroundColor: '#f3f4f6',
               boxSizing: 'border-box',
-              transition: 'all 0.2s ease',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               lineHeight: '1.5',
-              height: '48px',
+              height: isScrolled ? '32px' : '48px',
               display: 'flex',
               alignItems: 'center'
             }}
@@ -591,17 +642,18 @@ const PlaceOrderContent = () => {
           />
         </div>
 
-        {/* Category Filter */}
+        {/* Category Filter - Always visible but compact when scrolled */}
         <div style={{
           display: 'flex',
-          gap: '8px',
+          gap: isScrolled ? '4px' : '8px',
           overflowX: 'auto',
-          padding: '0 16px 16px 16px',
+          padding: `0 16px ${isScrolled ? '8px' : '16px'} 16px`,
           maxWidth: '1200px',
           margin: '0 auto',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
-          alignItems: 'center'
+          alignItems: 'center',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}>
           {categories.map(category => (
             <button
@@ -613,13 +665,13 @@ const PlaceOrderContent = () => {
                   : '#ffffff',
                 color: selectedCategory === category ? 'white' : '#64748b',
                 border: 'none',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '12px',
+                padding: isScrolled ? '4px 8px' : '8px 16px',
+                borderRadius: isScrolled ? '12px' : '20px',
+                fontSize: isScrolled ? '10px' : '12px',
                 fontWeight: '500',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                 minWidth: 'auto',
                 width: 'auto',
@@ -862,29 +914,54 @@ const PlaceOrderContent = () => {
               <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
                 Order ({getCartItemCount()} items)
               </h3>
-              <button
-                onClick={() => setShowCart(false)}
-                style={{
-                  background: '#f1f5f9',
-                  border: 'none',
-                  padding: '8px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  color: '#64748b',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#e2e8f0';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#f1f5f9';
-                }}
-              >
-                <FaTrash size={14} />
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setShowCart(false)}
+                  style={{
+                    background: '#f1f5f9',
+                    border: 'none',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    color: '#64748b',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#e2e8f0';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#f1f5f9';
+                  }}
+                >
+                  <FaTimes size={14} />
+                </button>
+                <button
+                  onClick={() => setCart([])}
+                  style={{
+                    background: '#fef2f2',
+                    border: 'none',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    color: '#dc2626',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#fee2e2';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#fef2f2';
+                  }}
+                >
+                  <FaTrash size={14} />
+                </button>
+              </div>
             </div>
 
             {cart.length === 0 ? (
@@ -1565,5 +1642,6 @@ const PlaceOrderPage = () => {
 };
 
 export default PlaceOrderPage;
+
 
 
