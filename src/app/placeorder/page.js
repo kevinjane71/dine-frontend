@@ -78,98 +78,47 @@ const PlaceOrderContent = () => {
       try {
         setLoading(true);
         
-        // Mock data for testing
-        const mockRestaurant = {
-          id: restaurantId,
-          name: 'Dino Restaurant',
-          description: 'Delicious food and great service'
-        };
-        
-        const mockMenu = [
-          {
-            id: '1',
-            name: 'Margherita Pizza',
-            description: 'Classic tomato and mozzarella pizza',
-            price: 299,
-            category: 'Pizza',
-            isVeg: true,
-            shortCode: 'MP',
-            spiceLevel: 'Mild',
-            available: true
-          },
-          {
-            id: '2',
-            name: 'Chicken Burger',
-            description: 'Juicy chicken patty with fresh vegetables',
-            price: 199,
-            category: 'Burgers',
-            isVeg: false,
-            shortCode: 'CB',
-            spiceLevel: 'Medium',
-            available: true
-          },
-          {
-            id: '3',
-            name: 'Caesar Salad',
-            description: 'Fresh lettuce with caesar dressing',
-            price: 149,
-            category: 'Salads',
-            isVeg: true,
-            shortCode: 'CS',
-            spiceLevel: 'Mild',
-            available: true
-          },
-          {
-            id: '4',
-            name: 'Pasta Carbonara',
-            description: 'Creamy pasta with bacon and cheese',
-            price: 249,
-            category: 'Pasta',
-            isVeg: false,
-            shortCode: 'PC',
-            spiceLevel: 'Mild',
-            available: true
-          },
-          {
-            id: '5',
-            name: 'Chocolate Cake',
-            description: 'Rich chocolate cake with vanilla ice cream',
-            price: 179,
-            category: 'Desserts',
-            isVeg: true,
-            shortCode: 'CC',
-            spiceLevel: 'Sweet',
-            available: true
-          }
-        ];
-        
-        // Try to load from API first, fallback to mock data
+        // Load from API
         try {
+          console.log('🔍 Fetching public menu for restaurant:', restaurantId);
           const response = await apiClient.getPublicMenu(restaurantId);
-          setRestaurant(response.restaurant);
-          setMenu(response.menu);
+          console.log('✅ API response:', response);
           
-          // Extract categories
-          const uniqueCategories = [...new Set(response.menu.map(item => item.category))];
-          setCategories(['all', ...uniqueCategories]);
+          if (response.success && response.restaurant && response.menu) {
+            setRestaurant(response.restaurant);
+            setMenu(response.menu);
+            
+            // Extract categories from real menu data
+            const uniqueCategories = [...new Set(response.menu.map(item => item.category).filter(Boolean))];
+            setCategories(['all', ...uniqueCategories]);
+            
+            console.log('✅ Loaded restaurant:', response.restaurant.name);
+            console.log('✅ Loaded menu items:', response.menu.length);
+            console.log('✅ Categories:', uniqueCategories);
+          } else {
+            throw new Error('Invalid API response format');
+          }
         } catch (apiError) {
-          console.log('API error:', apiError);
+          console.error('❌ API error:', apiError);
           
           // Check if it's a 404 error (restaurant not found)
-          if (apiError.status === 404 || apiError.message?.includes('Restaurant not found')) {
-            setError(`Restaurant not found. The restaurant ID "${restaurantId}" does not exist in our database. Please check the URL or contact the restaurant.`);
+          if (apiError.status === 404 || apiError.message?.includes('Restaurant not found') || apiError.message?.includes('not found')) {
+            setError(`Restaurant not found. The restaurant ID "${restaurantId}" does not exist in our database. Please check the QR code or contact the restaurant.`);
             setLoading(false);
             return;
           }
           
-          // For other errors, fall back to mock data
-          console.log('API not available, using mock data:', apiError.message);
-          setRestaurant(mockRestaurant);
-          setMenu(mockMenu);
+          // Check if it's a 500 error (server error)
+          if (apiError.status === 500 || apiError.message?.includes('Internal Server Error')) {
+            setError(`Server error occurred while loading restaurant data. Please try again later or contact support.`);
+            setLoading(false);
+            return;
+          }
           
-          // Extract categories from mock data
-          const uniqueCategories = [...new Set(mockMenu.map(item => item.category))];
-          setCategories(['all', ...uniqueCategories]);
+          // For other errors, show generic error message
+          setError(`Failed to load restaurant data: ${apiError.message || 'Unknown error'}. Please check your internet connection and try again.`);
+          setLoading(false);
+          return;
         }
         
       } catch (err) {
@@ -511,7 +460,7 @@ const PlaceOrderContent = () => {
     <div style={{
       minHeight: '100vh',
       backgroundColor: '#f8fafc',
-      paddingBottom: showCart ? '200px' : '100px'
+      paddingBottom: showCart ? '20px' : '100px'
     }}>
       <style jsx>{`
         @keyframes float {
@@ -736,51 +685,159 @@ const PlaceOrderContent = () => {
             gap: '20px',
             marginTop: '20px'
           }}>
-            {filteredMenu.map(item => (
-              <MenuItemCard
-                key={item.id}
-                item={item}
-                onAddToCart={addToCart}
-                onRemoveFromCart={removeFromCart}
-                cartQuantity={cart.find(cartItem => cartItem.id === item.id)?.quantity || 0}
-              />
-            ))}
+            {filteredMenu.length > 0 ? (
+              filteredMenu.map(item => (
+                <MenuItemCard
+                  key={item.id}
+                  item={item}
+                  onAddToCart={addToCart}
+                  onRemoveFromCart={removeFromCart}
+                  cartQuantity={cart.find(cartItem => cartItem.id === item.id)?.quantity || 0}
+                />
+              ))
+            ) : (
+              <div style={{
+                gridColumn: '1 / -1',
+                textAlign: 'center',
+                padding: '60px 20px',
+                backgroundColor: 'white',
+                borderRadius: '16px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                border: '1px solid #e5e7eb'
+              }}>
+                <div style={{
+                  fontSize: '48px',
+                  marginBottom: '16px'
+                }}>
+                  🍽️
+                </div>
+                <h3 style={{
+                  fontSize: '20px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  margin: '0 0 8px 0'
+                }}>
+                  {searchTerm ? 'No items found' : 'No menu items available'}
+                </h3>
+                <p style={{
+                  fontSize: '16px',
+                  color: '#6b7280',
+                  margin: '0 0 16px 0'
+                }}>
+                  {searchTerm 
+                    ? `No items match "${searchTerm}". Try a different search term.`
+                    : 'This restaurant has not added any menu items yet.'
+                  }
+                </p>
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    style={{
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Clear Search
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div>
-            {Object.entries(groupedMenu).map(([category, items]) => (
-              <div key={category} style={{ marginTop: '20px' }}>
-                <h2 style={{
-                  fontSize: '20px',
-                  fontWeight: '700',
-                  color: '#1f2937',
-                  margin: '0 0 20px 0',
-                  padding: '16px 20px',
-                  backgroundColor: 'white',
-                  borderRadius: '16px',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-                  border: '1px solid #e5e7eb'
-                }}>
-                  {category}
-                </h2>
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                  gap: '20px', 
-                  marginBottom: '32px' 
-                }}>
-                  {items.map(item => (
-                    <MenuItemCard
-                      key={item.id}
-                      item={item}
-                      onAddToCart={addToCart}
-                      onRemoveFromCart={removeFromCart}
-                      cartQuantity={cart.find(cartItem => cartItem.id === item.id)?.quantity || 0}
-                    />
-                  ))}
+            {Object.keys(groupedMenu).length > 0 ? (
+              Object.entries(groupedMenu).map(([category, items]) => (
+                <div key={category} style={{ marginTop: '20px' }}>
+                  <h2 style={{
+                    fontSize: '20px',
+                    fontWeight: '700',
+                    color: '#1f2937',
+                    margin: '0 0 20px 0',
+                    padding: '16px 20px',
+                    backgroundColor: 'white',
+                    borderRadius: '16px',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    {category}
+                  </h2>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                    gap: '20px', 
+                    marginBottom: '32px' 
+                  }}>
+                    {items.map(item => (
+                      <MenuItemCard
+                        key={item.id}
+                        item={item}
+                        onAddToCart={addToCart}
+                        onRemoveFromCart={removeFromCart}
+                        cartQuantity={cart.find(cartItem => cartItem.id === item.id)?.quantity || 0}
+                      />
+                    ))}
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div style={{
+                textAlign: 'center',
+                padding: '60px 20px',
+                backgroundColor: 'white',
+                borderRadius: '16px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                border: '1px solid #e5e7eb',
+                marginTop: '20px'
+              }}>
+                <div style={{
+                  fontSize: '48px',
+                  marginBottom: '16px'
+                }}>
+                  🍽️
+                </div>
+                <h3 style={{
+                  fontSize: '20px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  margin: '0 0 8px 0'
+                }}>
+                  {searchTerm ? 'No items found' : 'No menu items available'}
+                </h3>
+                <p style={{
+                  fontSize: '16px',
+                  color: '#6b7280',
+                  margin: '0 0 16px 0'
+                }}>
+                  {searchTerm 
+                    ? `No items match "${searchTerm}". Try a different search term.`
+                    : 'This restaurant has not added any menu items yet.'
+                  }
+                </p>
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    style={{
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Clear Search
+                  </button>
+                )}
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>
@@ -795,7 +852,7 @@ const PlaceOrderContent = () => {
           backgroundColor: 'white',
           boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
           zIndex: 200,
-          maxHeight: '60vh',
+          height: '90vh',
           overflowY: 'auto',
           borderTopLeftRadius: '16px',
           borderTopRightRadius: '16px'
@@ -1508,4 +1565,5 @@ const PlaceOrderPage = () => {
 };
 
 export default PlaceOrderPage;
+
 
