@@ -103,6 +103,9 @@ function RestaurantPOSContent() {
   
   // Sidebar collapse state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  // Card design toggle state
+  const [useModernCards, setUseModernCards] = useState(true);
   const [showMobileCart, setShowMobileCart] = useState(false);
   
   // Fullscreen mode states
@@ -2632,15 +2635,46 @@ function RestaurantPOSContent() {
             {/* Menu Header */}
           <div style={{ padding: '8px 12px', backgroundColor: 'white', borderBottom: '1px solid #f3f4f6' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
-              {/* <div>
+              <div>
                 <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
                   {categories.find(c => c.id === selectedCategory)?.name || 'All Items'}
                 </h2>
                 <p style={{ color: '#6b7280', margin: '2px 0 0 0', fontSize: '11px' }}>{filteredItems.length} items</p>
-              </div> */}
+              </div>
               
-              {/* Quick Search */}
-              
+              {/* Card Design Toggle Button */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
+                  {useModernCards ? 'Modern' : 'Compact'}
+                </span>
+                <button
+                  onClick={() => setUseModernCards(!useModernCards)}
+                  style={{
+                    width: '40px',
+                    height: '24px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    backgroundColor: useModernCards ? '#ef4444' : '#d1d5db',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: useModernCards ? 'flex-end' : 'flex-start',
+                    padding: '2px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                  }}
+                  title={useModernCards ? 'Switch to Compact Cards' : 'Switch to Modern Cards'}
+                >
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    backgroundColor: 'white',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+                    transition: 'all 0.3s ease'
+                  }} />
+                </button>
+              </div>
             </div>
             
             {/* Order Management Row - Redesigned */}
@@ -2833,12 +2867,14 @@ function RestaurantPOSContent() {
           }} className="hide-scrollbar">
             <div style={{
               display: 'grid',
-              gridTemplateColumns: isMobile 
-                ? 'repeat(auto-fill, minmax(140px, 1fr))' 
-                : 'repeat(auto-fill, minmax(150px, 1fr))',
-              gap: isMobile ? '8px' : '10px',
+              gridTemplateColumns: useModernCards 
+                ? (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))')
+                : (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))'),
+              gap: useModernCards 
+                ? (isMobile ? '12px' : '16px')
+                : (isMobile ? '8px' : '10px'),
               justifyContent: 'center',
-              padding: '0 4px'
+              padding: useModernCards ? '0 8px' : '0 6px'
             }}>
               {filteredItems.map((item) => {
                 const quantityInCart = getItemQuantityInCart(item.id);
@@ -2851,6 +2887,7 @@ function RestaurantPOSContent() {
                     onAddToCart={addToCart}
                     onRemoveFromCart={removeFromCart}
                     isMobile={isMobile}
+                    useModernDesign={useModernCards}
                   />
                 );
               })}
