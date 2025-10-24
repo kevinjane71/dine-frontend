@@ -46,6 +46,7 @@ const TableManagement = () => {
   const [showEditFloor, setShowEditFloor] = useState(false);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
+  const [bookingFromHeader, setBookingFromHeader] = useState(false);
   const [selectedFloorForTable, setSelectedFloorForTable] = useState(null);
   const [editingFloor, setEditingFloor] = useState(null);
   const [showNewFloorForm, setShowNewFloorForm] = useState(false);
@@ -64,13 +65,53 @@ const TableManagement = () => {
   const [bookingData, setBookingData] = useState({
     customerName: '',
     customerPhone: '',
-    partySize: 2,
+    partySize: 1,
     bookingDate: '',
     bookingTime: '',
+    mealType: 'lunch',
     notes: ''
   });
+  
+  // Time slots state
+  const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
 
   const scrollContainerRef = useRef(null);
+
+  // Generate time slots (10 AM to 11 PM, 30-minute intervals)
+  const generateTimeSlots = () => {
+    const slots = [];
+    const startHour = 10; // 10 AM
+    const endHour = 23; // 11 PM
+    
+    for (let hour = startHour; hour <= endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const time = new Date();
+        time.setHours(hour, minute, 0, 0);
+        
+        const timeString = time.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+        
+        slots.push({
+          value: time.toTimeString().slice(0, 5), // HH:MM format
+          display: timeString,
+          available: Math.random() > 0.3 // Mock availability (70% available)
+        });
+      }
+    }
+    
+    return slots;
+  };
+
+  // Update time slots when booking modal opens
+  useEffect(() => {
+    if (showBookingForm) {
+      setAvailableTimeSlots(generateTimeSlots());
+    }
+  }, [showBookingForm]);
 
   // Mobile detection hook
   useEffect(() => {
@@ -478,6 +519,7 @@ const TableManagement = () => {
       });
       setShowBookingForm(false);
       setSelectedTable(null);
+      setBookingFromHeader(false);
       
     } catch (err) {
       console.error('Error creating booking:', err);
@@ -508,9 +550,10 @@ const TableManagement = () => {
         setBookingData(prev => ({
           ...prev,
           bookingDate: now.toISOString().split('T')[0],
-          bookingTime: now.toTimeString().slice(0, 5),
-          partySize: table.capacity
+          partySize: Math.min(table.capacity, prev.partySize),
+          mealType: 'lunch'
         }));
+        setBookingFromHeader(false);
         setShowBookingForm(true);
         break;
         
@@ -829,35 +872,77 @@ const TableManagement = () => {
           </div>
 
           {/* Add Button */}
-          <button
-            onClick={() => setShowAddModal(true)}
-            style={{
-              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-              color: 'white',
-              padding: isMobile ? '10px 16px' : '12px 20px',
-              borderRadius: '10px',
-              fontWeight: '600',
-              fontSize: isMobile ? '14px' : '16px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
-            }}
-          >
-            <FaPlus size={isMobile ? 14 : 16} />
-            Add Table
-          </button>
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            alignItems: 'center'
+          }}>
+            {/* Book Table Button */}
+            <button
+              onClick={() => {
+                setBookingFromHeader(true);
+                setSelectedTable(null);
+                setShowBookingForm(true);
+              }}
+              style={{
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                color: 'white',
+                padding: isMobile ? '10px 16px' : '12px 20px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                fontSize: isMobile ? '14px' : '16px',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+              }}
+            >
+              <FaCalendarAlt size={isMobile ? 14 : 16} />
+              Book Table
+            </button>
+
+            {/* Add Table Button */}
+            <button
+              onClick={() => setShowAddModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                color: 'white',
+                padding: isMobile ? '10px 16px' : '12px 20px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                fontSize: isMobile ? '14px' : '16px',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+              }}
+            >
+              <FaPlus size={isMobile ? 14 : 16} />
+              Add Table
+            </button>
+          </div>
         </div>
 
         {/* Compact Floor Navigation */}
@@ -2060,186 +2145,453 @@ const TableManagement = () => {
         </div>
       )}
 
-      {/* Booking Form Modal */}
-      {showBookingForm && selectedTable && (
+      {/* Booking Form Modal - New Design */}
+      {showBookingForm && (
         <div style={{
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.5)',
           display: 'flex',
-          alignItems: isMobile ? 'flex-end' : 'center',
+          alignItems: 'center',
           justifyContent: 'center',
           zIndex: 50,
-          padding: isMobile ? '0' : '16px'
+          padding: '20px'
         }}>
           <div style={{
             backgroundColor: 'white',
-            borderRadius: isMobile ? '16px 16px 0 0' : '16px',
+            borderRadius: '16px',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
             width: '100%',
-            maxWidth: isMobile ? '100%' : '500px',
-            maxHeight: isMobile ? '80vh' : 'auto',
-            overflowY: isMobile ? 'auto' : 'visible'
+            maxWidth: '600px',
+            maxHeight: '90vh',
+            overflowY: 'auto'
           }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
-                Book Table {selectedTable.name}
+            {/* Header */}
+            <div style={{ padding: '24px 24px 0 24px' }}>
+              <h2 style={{ 
+                fontSize: '24px', 
+                fontWeight: 'bold', 
+                color: '#1f2937', 
+                margin: '0 0 8px 0',
+                textAlign: 'center'
+              }}>
+                Select your booking details
               </h2>
-              <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
-                Capacity: {selectedTable.capacity} people
-              </p>
+              {selectedTable && (
+                <p style={{ 
+                  fontSize: '16px', 
+                  color: '#6b7280', 
+                  margin: '0 0 24px 0',
+                  textAlign: 'center'
+                }}>
+                  Booking for Table {selectedTable.name} ({selectedTable.capacity} seats)
+                </p>
+              )}
             </div>
             
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                    Customer Name *
+            {/* Main Content */}
+            <div style={{ padding: '0 24px 24px 24px' }}>
+              {/* Table Selection - Show when opened from header button */}
+              {bookingFromHeader && (
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '14px', 
+                    fontWeight: '600', 
+                    color: '#374151', 
+                    marginBottom: '8px' 
+                  }}>
+                    Select Table *
                   </label>
-                  <input
-                    type="text"
-                    value={bookingData.customerName}
-                    onChange={(e) => setBookingData({...bookingData, customerName: e.target.value})}
+                  <select
+                    value={selectedTable?.id || ''}
+                    onChange={(e) => {
+                      const tableId = e.target.value;
+                      const table = floors
+                        .flatMap(floor => floor.tables || [])
+                        .find(t => t.id === tableId);
+                      setSelectedTable(table);
+                      if (table) {
+                        setBookingData(prev => ({
+                          ...prev,
+                          partySize: Math.min(table.capacity, prev.partySize)
+                        }));
+                      }
+                    }}
                     style={{
                       width: '100%',
-                      padding: '10px 12px',
+                      padding: '12px 16px',
                       border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '14px',
+                      borderRadius: '12px',
+                      fontSize: '16px',
                       outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      boxSizing: 'border-box'
+                      backgroundColor: '#f9fafb',
+                      boxSizing: 'border-box',
+                      cursor: 'pointer'
                     }}
-                    placeholder="Enter customer name"
-                  />
+                  >
+                    <option value="">Choose a table to book</option>
+                    {floors.map(floor => 
+                      (floor.tables || []).map(table => (
+                        <option key={table.id} value={table.id}>
+                          {table.name} ({floor.name}) - {table.capacity} seats - {table.status}
+                        </option>
+                      ))
+                    )}
+                  </select>
                 </div>
-                
+              )}
+
+              {/* Booking Details Row */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', 
+                gap: '16px',
+                marginBottom: '24px'
+              }}>
+                {/* Date Selection */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                    Phone Number
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '14px', 
+                    fontWeight: '600', 
+                    color: '#374151', 
+                    marginBottom: '8px' 
+                  }}>
+                    Date *
                   </label>
-                  <input
-                    type="tel"
-                    value={bookingData.customerPhone}
-                    onChange={(e) => setBookingData({...bookingData, customerPhone: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      boxSizing: 'border-box'
-                    }}
-                    placeholder="+91 9876543210"
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="date"
+                      value={bookingData.bookingDate}
+                      onChange={(e) => setBookingData({...bookingData, bookingDate: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        outline: 'none',
+                        backgroundColor: '#f9fafb',
+                        boxSizing: 'border-box',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      pointerEvents: 'none'
+                    }}>
+                      <FaCalendarAlt size={16} color="#6b7280" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Guest Count */}
+                <div>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '14px', 
+                    fontWeight: '600', 
+                    color: '#374151', 
+                    marginBottom: '8px' 
+                  }}>
+                    Guests *
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <select
+                      value={bookingData.partySize}
+                      onChange={(e) => setBookingData({...bookingData, partySize: parseInt(e.target.value)})}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        outline: 'none',
+                        backgroundColor: '#f9fafb',
+                        boxSizing: 'border-box',
+                        cursor: 'pointer',
+                        appearance: 'none'
+                      }}
+                    >
+                      {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? 'guest' : 'guests'}
+                        </option>
+                      ))}
+                    </select>
+                    <div style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      pointerEvents: 'none'
+                    }}>
+                      <FaUsers size={16} color="#6b7280" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Meal Type */}
+                <div>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '14px', 
+                    fontWeight: '600', 
+                    color: '#374151', 
+                    marginBottom: '8px' 
+                  }}>
+                    Meal Type *
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <select
+                      value={bookingData.mealType}
+                      onChange={(e) => setBookingData({...bookingData, mealType: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        outline: 'none',
+                        backgroundColor: '#f9fafb',
+                        boxSizing: 'border-box',
+                        cursor: 'pointer',
+                        appearance: 'none'
+                      }}
+                    >
+                      <option value="breakfast">Breakfast</option>
+                      <option value="lunch">Lunch</option>
+                      <option value="dinner">Dinner</option>
+                    </select>
+                    <div style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      pointerEvents: 'none'
+                    }}>
+                      <FaUtensils size={16} color="#6b7280" />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                    Party Size *
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max={selectedTable.capacity}
-                    value={bookingData.partySize}
-                    onChange={(e) => setBookingData({...bookingData, partySize: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      boxSizing: 'border-box'
-                    }}
-                  />
+              {/* Time Slots Section */}
+              <div>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  marginBottom: '16px'
+                }}>
+                  <h3 style={{ 
+                    fontSize: '18px', 
+                    fontWeight: 'bold', 
+                    color: '#1f2937', 
+                    margin: 0 
+                  }}>
+                    Select slot
+                  </h3>
+                  <div style={{ 
+                    height: '1px', 
+                    backgroundColor: '#e5e7eb', 
+                    flex: 1, 
+                    marginLeft: '16px' 
+                  }} />
+                  <FaChevronDown size={16} color="#6b7280" style={{ marginLeft: '8px' }} />
                 </div>
-                
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                    Date *
-                  </label>
-                  <input
-                    type="date"
-                    value={bookingData.bookingDate}
-                    onChange={(e) => setBookingData({...bookingData, bookingDate: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                    Time *
-                  </label>
-                  <input
-                    type="time"
-                    value={bookingData.bookingTime}
-                    onChange={(e) => setBookingData({...bookingData, bookingTime: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      boxSizing: 'border-box'
-                    }}
-                  />
+
+                {/* Time Slots Grid */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                  gap: '12px',
+                  maxHeight: '300px',
+                  overflowY: 'auto',
+                  padding: '4px'
+                }}>
+                  {availableTimeSlots.map((slot, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setSelectedTimeSlot(slot.value);
+                        setBookingData({...bookingData, bookingTime: slot.value});
+                      }}
+                      disabled={!slot.available}
+                      style={{
+                        padding: '16px 12px',
+                        border: selectedTimeSlot === slot.value ? '2px solid #3b82f6' : '1px solid #e5e7eb',
+                        borderRadius: '12px',
+                        backgroundColor: selectedTimeSlot === slot.value ? '#eff6ff' : 'white',
+                        cursor: slot.available ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.2s ease',
+                        opacity: slot.available ? 1 : 0.5,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (slot.available && selectedTimeSlot !== slot.value) {
+                          e.target.style.backgroundColor = '#f9fafb';
+                          e.target.style.borderColor = '#d1d5db';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (slot.available && selectedTimeSlot !== slot.value) {
+                          e.target.style.backgroundColor = 'white';
+                          e.target.style.borderColor = '#e5e7eb';
+                        }
+                      }}
+                    >
+                      <div style={{
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        color: selectedTimeSlot === slot.value ? '#3b82f6' : '#1f2937'
+                      }}>
+                        {slot.display}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#6b7280'
+                      }}>
+                        {slot.available ? 'Available' : 'Unavailable'}
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                  Special Notes
-                </label>
-                <textarea
-                  value={bookingData.notes}
-                  onChange={(e) => setBookingData({...bookingData, notes: e.target.value})}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    backgroundColor: '#fef7f0',
-                    boxSizing: 'border-box',
-                    minHeight: '60px',
-                    resize: 'vertical',
-                    fontFamily: 'inherit'
-                  }}
-                  placeholder="Any special requirements or notes..."
-                />
+
+              {/* Customer Details */}
+              <div style={{ marginTop: '24px' }}>
+                <h3 style={{ 
+                  fontSize: '18px', 
+                  fontWeight: 'bold', 
+                  color: '#1f2937', 
+                  margin: '0 0 16px 0' 
+                }}>
+                  Customer Details
+                </h3>
+                
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
+                  gap: '16px' 
+                }}>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      color: '#374151', 
+                      marginBottom: '8px' 
+                    }}>
+                      Customer Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={bookingData.customerName}
+                      onChange={(e) => setBookingData({...bookingData, customerName: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        outline: 'none',
+                        backgroundColor: '#f9fafb',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="Enter customer name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      color: '#374151', 
+                      marginBottom: '8px' 
+                    }}>
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={bookingData.customerPhone}
+                      onChange={(e) => setBookingData({...bookingData, customerPhone: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        outline: 'none',
+                        backgroundColor: '#f9fafb',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="+91 9876543210"
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '16px' }}>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '14px', 
+                    fontWeight: '600', 
+                    color: '#374151', 
+                    marginBottom: '8px' 
+                  }}>
+                    Special Notes
+                  </label>
+                  <textarea
+                    value={bookingData.notes}
+                    onChange={(e) => setBookingData({...bookingData, notes: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      outline: 'none',
+                      backgroundColor: '#f9fafb',
+                      boxSizing: 'border-box',
+                      minHeight: '80px',
+                      resize: 'vertical',
+                      fontFamily: 'inherit'
+                    }}
+                    placeholder="Any special requirements or notes..."
+                  />
+                </div>
               </div>
             </div>
             
-            <div style={{ padding: '20px', backgroundColor: '#fef7f0', display: 'flex', gap: '10px' }}>
+            {/* Footer */}
+            <div style={{ 
+              padding: '24px', 
+              backgroundColor: '#f9fafb', 
+              borderTop: '1px solid #e5e7eb',
+              display: 'flex', 
+              gap: '12px' 
+            }}>
               <button
                 onClick={() => {
                   setShowBookingForm(false);
                   setSelectedTable(null);
+                  setBookingFromHeader(false);
+                  setSelectedTimeSlot('');
                   setBookingData({
                     customerName: '',
                     customerPhone: '',
-                    partySize: 2,
+                    partySize: 1,
                     bookingDate: '',
                     bookingTime: '',
+                    mealType: 'lunch',
                     notes: ''
                   });
                 }}
@@ -2247,38 +2599,54 @@ const TableManagement = () => {
                   flex: 1,
                   backgroundColor: '#6b7280',
                   color: 'white',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
+                  padding: '16px 24px',
+                  borderRadius: '12px',
                   fontWeight: '600',
                   border: 'none',
                   cursor: 'pointer',
-                  fontSize: '14px'
+                  fontSize: '16px',
+                  transition: 'all 0.2s ease'
                 }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#4b5563'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#6b7280'}
               >
                 Cancel
               </button>
               <button
                 onClick={createBooking}
-                disabled={!bookingData.customerName.trim() || !bookingData.bookingDate || !bookingData.bookingTime}
+                disabled={!selectedTable || !bookingData.customerName.trim() || !bookingData.bookingDate || !selectedTimeSlot}
                 style={{
                   flex: 2,
-                  background: (bookingData.customerName.trim() && bookingData.bookingDate && bookingData.bookingTime)
-                    ? 'linear-gradient(135deg, #d97706, #b45309)'
+                  background: (selectedTable && bookingData.customerName.trim() && bookingData.bookingDate && selectedTimeSlot)
+                    ? 'linear-gradient(135deg, #10b981, #059669)'
                     : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
                   color: 'white',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
+                  padding: '16px 24px',
+                  borderRadius: '12px',
                   fontWeight: '600',
                   border: 'none',
-                  cursor: (bookingData.customerName.trim() && bookingData.bookingDate && bookingData.bookingTime) ? 'pointer' : 'not-allowed',
-                  fontSize: '14px',
+                  cursor: (selectedTable && bookingData.customerName.trim() && bookingData.bookingDate && selectedTimeSlot) ? 'pointer' : 'not-allowed',
+                  fontSize: '16px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px'
+                  gap: '8px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedTable && bookingData.customerName.trim() && bookingData.bookingDate && selectedTimeSlot) {
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedTable && bookingData.customerName.trim() && bookingData.bookingDate && selectedTimeSlot) {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }
                 }}
               >
-                <FaCalendarAlt size={14} />
+                <FaCalendarAlt size={16} />
                 Confirm Booking
               </button>
             </div>
