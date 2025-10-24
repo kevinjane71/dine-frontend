@@ -27,6 +27,8 @@ import {
   FaExpand,
   FaCompress,
   FaExpandArrowsAlt,
+  FaChevronLeft,
+  FaChevronRight,
   FaChevronDown,
   FaSignOutAlt,
   FaChair,
@@ -98,6 +100,9 @@ function RestaurantPOSContent() {
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  
+  // Sidebar collapse state
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMobileCart, setShowMobileCart] = useState(false);
   
   // Fullscreen mode states
@@ -2308,7 +2313,7 @@ function RestaurantPOSContent() {
         {/* Desktop Menu Sections Sidebar - Redesigned */}
         {!isMobile && (
           <div style={{ 
-            width: '280px', 
+            width: sidebarCollapsed ? '60px' : '280px', 
             height: '100%',
             backgroundColor: '#ffffff', 
             borderRight: '1px solid #f3f4f6', 
@@ -2316,14 +2321,58 @@ function RestaurantPOSContent() {
             position: 'relative',
             overflow: 'hidden',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            zIndex: 10
           }}>
+          {/* Collapse Toggle Button */}
           <div style={{ 
-            padding: '20px 16px', 
+            position: 'absolute',
+            top: '20px',
+            right: sidebarCollapsed ? '15px' : '4px',
+            zIndex: 20,
+            transition: 'right 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}>
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                border: 'none',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                transition: 'all 0.2s ease',
+                fontSize: '10px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#dc2626';
+                e.target.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#ef4444';
+                e.target.style.transform = 'scale(1)';
+              }}
+            >
+              {sidebarCollapsed ? <FaChevronRight size={10} /> : <FaChevronLeft size={10} />}
+            </button>
+          </div>
+
+          <div style={{ 
+            padding: sidebarCollapsed ? '16px 8px' : '20px 16px', 
             borderBottom: '1px solid #f3f4f6',
             background: 'linear-gradient(135deg, #fef7f0 0%, #fed7aa 100%)',
-            borderRadius: '5px'
+            borderRadius: '5px',
+            transition: 'padding 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            minHeight: sidebarCollapsed ? '60px' : 'auto'
           }}>
+            {!sidebarCollapsed && (
+              <>
             <h2 style={{ 
               fontSize: '18px', 
               fontWeight: '700', 
@@ -2331,15 +2380,16 @@ function RestaurantPOSContent() {
               marginBottom: '6px',
               display: 'flex', 
               alignItems: 'center', 
-              gap: '8px'
+                  gap: '8px',
+                  transition: 'opacity 0.3s ease'
             }}>
-              {t('dashboard.menuCategories')}
+                  {t('dashboard.menuCategories')}
             </h2>
             <div style={{ position: 'relative' }}>
               <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={14} />
               <input
                 type="text"
-                placeholder={t('dashboard.searchOrder')}
+                    placeholder={t('dashboard.searchOrder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{
@@ -2367,14 +2417,27 @@ function RestaurantPOSContent() {
                 }}
               />
             </div>
+              </>
+            )}
+            {sidebarCollapsed && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '28px'
+              }}>
+                <FaUtensils size={16} color="#ef4444" />
+              </div>
+            )}
           </div>
           
           <div style={{ 
-            padding: '12px 8px', 
+            padding: sidebarCollapsed ? '12px 4px' : '12px 8px', 
             overflowY: 'auto', 
             flex: 1, // Fill remaining space
             scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
+            msOverflowStyle: 'none',
+            transition: 'padding 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
           }} className="hide-scrollbar">
             
             {categories.map((category, index) => {
@@ -2402,15 +2465,19 @@ function RestaurantPOSContent() {
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
                   style={{
-                    padding: '12px 16px',
-                    margin: '2px 0',
+                    padding: sidebarCollapsed ? '8px' : '12px 16px',
+                    margin: sidebarCollapsed ? '4px 0' : '2px 0',
                     backgroundColor: isSelected ? colorScheme.bg : 'transparent',
-                    borderRadius: '0px',
+                    borderRadius: sidebarCollapsed ? '8px' : '0px',
                     cursor: 'pointer',
-                    transition: 'background-color 0.15s ease',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     border: 'none',
                     position: 'relative',
-                    overflow: 'hidden'
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: sidebarCollapsed ? 'center' : 'space-between',
+                    minHeight: sidebarCollapsed ? '40px' : 'auto'
                   }}
                   onMouseEnter={(e) => {
                     if (!isSelected) {
@@ -2440,8 +2507,35 @@ function RestaurantPOSContent() {
                     justifyContent: 'space-between', 
                     alignItems: 'center',
                     position: 'relative',
-                    zIndex: 1
+                    zIndex: 1,
+                    width: '100%'
                   }}>
+                    {sidebarCollapsed ? (
+                      // Collapsed view - only icon
+                      <div style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : colorScheme.bg,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.2)' : `0 2px 6px ${colorScheme.bg}40`,
+                        transition: 'all 0.3s ease'
+                      }}>
+                        <span style={{ 
+                          fontSize: '12px',
+                          lineHeight: '1',
+                          filter: isSelected ? 'brightness(1.2)' : 'none'
+                        }}>
+                          {category.emoji}
+                        </span>
+                      </div>
+                    ) : (
+                      // Expanded view - full category button
+                      <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {/* Category Icon */}
                       <div style={{
@@ -2452,12 +2546,18 @@ function RestaurantPOSContent() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '12px',
+                        fontSize: '14px',
                         fontWeight: '600',
-                        color: isSelected ? 'white' : 'white',
-                        boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.2)' : `0 2px 6px ${colorScheme.bg}40`
+                        boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.2)' : `0 2px 6px ${colorScheme.bg}40`,
+                        transition: 'all 0.3s ease'
+                      }}>
+                        <span style={{ 
+                          fontSize: '14px',
+                          lineHeight: '1',
+                          filter: isSelected ? 'brightness(1.2)' : 'none'
                       }}>
                         {category.emoji}
+                        </span>
                       </div>
                       
                       <div>
@@ -2487,6 +2587,8 @@ function RestaurantPOSContent() {
                         backgroundColor: 'white',
                         borderRadius: '0px'
                       }} />
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
