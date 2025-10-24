@@ -85,6 +85,11 @@ const TableManagement = () => {
     reservedTables: 0
   });
 
+  // Date-based table status state
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [tableStatusesForDate, setTableStatusesForDate] = useState({});
+  const [loadingTableStatuses, setLoadingTableStatuses] = useState(false);
+
   const scrollContainerRef = useRef(null);
 
   // Generate time slots (10 AM to 11 PM, 30-minute intervals)
@@ -175,6 +180,59 @@ const TableManagement = () => {
       fetchAvailabilityForDate(bookingData.bookingDate);
     }
   }, [bookingData.bookingDate]);
+
+  // Fetch table statuses for selected date
+  const fetchTableStatusesForDate = async (date) => {
+    if (!selectedRestaurant?.id || !date) return;
+    
+    try {
+      setLoadingTableStatuses(true);
+      
+      // Call the availability API to get table statuses for the date
+      const response = await apiClient.request(`/api/bookings/availability/${selectedRestaurant.id}?date=${date}`, {
+        method: 'GET'
+      });
+      
+      if (response.success) {
+        // Create a map of table statuses for the selected date
+        const statusMap = {};
+        response.availableTables?.forEach(table => {
+          statusMap[table.id] = 'available';
+        });
+        
+        // Get all tables and their current statuses
+        floors.forEach(floor => {
+          floor.tables?.forEach(table => {
+            if (!statusMap[table.id]) {
+              // If not in available tables, check if it's booked/reserved
+              statusMap[table.id] = table.status;
+            }
+          });
+        });
+        
+        setTableStatusesForDate(statusMap);
+      }
+    } catch (error) {
+      console.error('Error fetching table statuses for date:', error);
+      // Fallback to current table statuses
+      const statusMap = {};
+      floors.forEach(floor => {
+        floor.tables?.forEach(table => {
+          statusMap[table.id] = table.status;
+        });
+      });
+      setTableStatusesForDate(statusMap);
+    } finally {
+      setLoadingTableStatuses(false);
+    }
+  };
+
+  // Fetch table statuses when date changes
+  useEffect(() => {
+    if (selectedDate) {
+      fetchTableStatusesForDate(selectedDate);
+    }
+  }, [selectedDate, selectedRestaurant?.id]);
 
   // Mobile detection hook
   useEffect(() => {
@@ -884,9 +942,78 @@ const TableManagement = () => {
             </div>
           </div>
           
-          {/* Compact Status Legend */}
+          {/* Date Picker Section */}
           <div style={{
                 display: 'flex',
+                alignItems: 'center',
+            gap: '12px',
+            marginBottom: isMobile ? '16px' : '20px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 12px',
+              backgroundColor: '#f8fafc',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <FaCalendarAlt size={16} color="#64748b" />
+              <label style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#374151'
+              }}>
+                View Date:
+              </label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              style={{
+                border: 'none',
+                  backgroundColor: 'transparent',
+                  fontSize: '14px',
+                  color: '#1f2937',
+                  fontWeight: '500',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              />
+            </div>
+            
+            {loadingTableStatuses && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                backgroundColor: '#fef3c7',
+                borderRadius: '8px',
+                border: '1px solid #f59e0b'
+              }}>
+                <div style={{
+                  width: '12px',
+                  height: '12px',
+                  border: '2px solid #f59e0b',
+                  borderTop: '2px solid transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                <span style={{
+                  fontSize: '12px',
+                  color: '#92400e',
+                  fontWeight: '500'
+                }}>
+                  Loading...
+                </span>
+          </div>
+            )}
+        </div>
+        
+          {/* Compact Status Legend */}
+          <div style={{
+            display: 'flex',
                 alignItems: 'center',
             gap: isMobile ? '8px' : '12px',
             marginRight: '16px'
@@ -932,8 +1059,8 @@ const TableManagement = () => {
                 </span>
           </div>
             ))}
-        </div>
-        
+              </div>
+              
           {/* Add Button */}
           <div style={{
             display: 'flex',
@@ -941,7 +1068,7 @@ const TableManagement = () => {
             alignItems: 'center'
           }}>
             {/* Book Table Button */}
-                <button
+                  <button
                     onClick={() => {
                 setBookingFromHeader(true);
                 setSelectedTable(null);
@@ -1255,7 +1382,9 @@ const TableManagement = () => {
               margin: '0 auto'
                 }}>
                   {(floor.tables || []).map((table) => {
-                    const statusInfo = getTableStatusInfo(table.status);
+                    // Use date-based status if available, otherwise fall back to current status
+                    const tableStatus = tableStatusesForDate[table.id] || table.status;
+                    const statusInfo = getTableStatusInfo(tableStatus);
                     const isDropdownOpen = activeDropdown === table.id;
                     
                     return (
@@ -1363,7 +1492,7 @@ const TableManagement = () => {
                         minWidth: isMobile ? '180px' : '160px',
                             overflow: 'hidden'
                           }}>
-                            {table.status === 'available' && (
+                            {tableStatus === 'available' && (
                               <>
                                 <button
                                   onClick={() => handleTableAction('take-order', table)}
@@ -1462,7 +1591,7 @@ const TableManagement = () => {
                               Cleaning
                             </button>
                             
-                            {table.status !== 'available' && (
+                            {tableStatus !== 'available' && (
                               <button
                                 onClick={() => handleTableAction('make-available', table)}
                                 style={{
@@ -2861,6 +2990,11 @@ const TableManagement = () => {
         
         .animate-spin {
           animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
       `}</style>
       
