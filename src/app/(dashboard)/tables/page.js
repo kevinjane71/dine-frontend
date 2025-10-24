@@ -75,6 +75,15 @@ const TableManagement = () => {
   // Time slots state
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
+  
+  // Dynamic booking data state
+  const [availableTablesForDate, setAvailableTablesForDate] = useState([]);
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [availabilityStats, setAvailabilityStats] = useState({
+    totalTables: 0,
+    availableTables: 0,
+    reservedTables: 0
+  });
 
   const scrollContainerRef = useRef(null);
 
@@ -106,12 +115,66 @@ const TableManagement = () => {
     return slots;
   };
 
+  // Fetch availability data for selected date
+  const fetchAvailabilityForDate = async (date) => {
+    if (!selectedRestaurant?.id || !date) return;
+    
+    try {
+      setLoadingAvailability(true);
+      
+      // Call the actual API
+      const response = await apiClient.request(`/api/bookings/availability/${selectedRestaurant.id}?date=${date}`, {
+        method: 'GET'
+      });
+      
+      if (response.success) {
+        setAvailableTablesForDate(response.availableTables || []);
+        setAvailableTimeSlots(response.timeSlots || generateTimeSlots());
+        setAvailabilityStats(response.stats || {
+          totalTables: floors.flatMap(floor => floor.tables || []).length,
+          availableTables: floors.flatMap(floor => floor.tables || []).filter(table => table.status === 'available').length,
+          reservedTables: floors.flatMap(floor => floor.tables || []).filter(table => table.status !== 'available' && table.status !== 'out-of-service').length
+        });
+      } else {
+        // Fallback to mock data
+        setAvailableTablesForDate(floors.flatMap(floor => floor.tables || []));
+        setAvailableTimeSlots(generateTimeSlots());
+        setAvailabilityStats({
+          totalTables: floors.flatMap(floor => floor.tables || []).length,
+          availableTables: floors.flatMap(floor => floor.tables || []).filter(table => table.status === 'available').length,
+          reservedTables: floors.flatMap(floor => floor.tables || []).filter(table => table.status !== 'available' && table.status !== 'out-of-service').length
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching availability:', error);
+      // Fallback to mock data
+      setAvailableTablesForDate(floors.flatMap(floor => floor.tables || []));
+      setAvailableTimeSlots(generateTimeSlots());
+      setAvailabilityStats({
+        totalTables: floors.flatMap(floor => floor.tables || []).length,
+        availableTables: floors.flatMap(floor => floor.tables || []).filter(table => table.status === 'available').length,
+        reservedTables: floors.flatMap(floor => floor.tables || []).filter(table => table.status !== 'available' && table.status !== 'out-of-service').length
+      });
+    } finally {
+      setLoadingAvailability(false);
+    }
+  };
+
   // Update time slots when booking modal opens
   useEffect(() => {
     if (showBookingForm) {
-      setAvailableTimeSlots(generateTimeSlots());
+      const today = new Date().toISOString().split('T')[0];
+      setBookingData(prev => ({ ...prev, bookingDate: today }));
+      fetchAvailabilityForDate(today);
     }
   }, [showBookingForm]);
+
+  // Fetch availability when date changes
+  useEffect(() => {
+    if (showBookingForm && bookingData.bookingDate) {
+      fetchAvailabilityForDate(bookingData.bookingDate);
+    }
+  }, [bookingData.bookingDate]);
 
   // Mobile detection hook
   useEffect(() => {
@@ -772,8 +835,8 @@ const TableManagement = () => {
       }}
     >
       {/* Modern Header */}
-      <div style={{
-        backgroundColor: 'white',
+        <div style={{
+          backgroundColor: 'white',
         borderBottom: '1px solid #e2e8f0',
         padding: isMobile ? '16px' : '24px',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
@@ -786,13 +849,13 @@ const TableManagement = () => {
           marginBottom: isMobile ? '16px' : '20px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
+            <div style={{ 
               width: isMobile ? '40px' : '48px',
               height: isMobile ? '40px' : '48px',
               background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
               borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
+              display: 'flex', 
+              alignItems: 'center', 
               justifyContent: 'center',
               boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
             }}>
@@ -823,14 +886,14 @@ const TableManagement = () => {
           
           {/* Compact Status Legend */}
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
+                display: 'flex',
+                alignItems: 'center',
             gap: isMobile ? '8px' : '12px',
             marginRight: '16px'
           }}>
             <div style={{
               fontSize: isMobile ? '10px' : '12px',
-              fontWeight: '600',
+                fontWeight: '600',
               color: '#64748b',
               whiteSpace: 'nowrap'
             }}>
@@ -867,10 +930,10 @@ const TableManagement = () => {
                 }}>
                   {info.label}
                 </span>
-              </div>
-            ))}
           </div>
-
+            ))}
+        </div>
+        
           {/* Add Button */}
           <div style={{
             display: 'flex',
@@ -878,13 +941,13 @@ const TableManagement = () => {
             alignItems: 'center'
           }}>
             {/* Book Table Button */}
-            <button
-              onClick={() => {
+                <button
+                    onClick={() => {
                 setBookingFromHeader(true);
                 setSelectedTable(null);
                 setShowBookingForm(true);
-              }}
-              style={{
+                    }}
+                    style={{
                 background: 'linear-gradient(135deg, #10b981, #059669)',
                 color: 'white',
                 padding: isMobile ? '10px 16px' : '12px 20px',
@@ -892,9 +955,9 @@ const TableManagement = () => {
                 fontWeight: '600',
                 fontSize: isMobile ? '14px' : '16px',
                 border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
                 gap: '8px',
                 boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
                 transition: 'all 0.3s ease'
@@ -910,23 +973,23 @@ const TableManagement = () => {
             >
               <FaCalendarAlt size={isMobile ? 14 : 16} />
               Book Table
-            </button>
-
+                  </button>
+                
             {/* Add Table Button */}
-            <button
+                <button
               onClick={() => setShowAddModal(true)}
-              style={{
+                  style={{
                 background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                color: 'white',
+                    color: 'white',
                 padding: isMobile ? '10px 16px' : '12px 20px',
                 borderRadius: '10px',
                 fontWeight: '600',
                 fontSize: isMobile ? '14px' : '16px',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
                 boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
                 transition: 'all 0.3s ease'
               }}
@@ -941,21 +1004,21 @@ const TableManagement = () => {
             >
               <FaPlus size={isMobile ? 14 : 16} />
               Add Table
-            </button>
-          </div>
-        </div>
+                </button>
+              </div>
+            </div>
 
         {/* Compact Floor Navigation */}
-        <div style={{
-          display: 'flex',
+          <div style={{ 
+            display: 'flex', 
           alignItems: 'center',
           gap: '8px',
           backgroundColor: '#f1f5f9',
           padding: '8px',
-          borderRadius: '12px',
+            borderRadius: '12px',
           overflowX: 'auto'
         }}>
-          <div style={{
+                <div style={{
             fontSize: isMobile ? '12px' : '14px',
             fontWeight: '600',
             color: '#64748b',
@@ -963,65 +1026,65 @@ const TableManagement = () => {
             marginRight: '8px'
           }}>
             Floors:
-          </div>
-          {floors.map((floor) => (
-            <button
-              key={floor.id}
-              onClick={() => scrollToFloor(floor.id)}
-              style={{
+                </div>
+                {floors.map((floor) => (
+                  <button
+                    key={floor.id}
+                    onClick={() => scrollToFloor(floor.id)}
+                    style={{
                 padding: isMobile ? '8px 12px' : '10px 16px',
                 borderRadius: '8px',
-                fontWeight: '600',
+                      fontWeight: '600',
                 fontSize: isMobile ? '12px' : '14px',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
                 backgroundColor: 'white',
                 color: '#475569',
-                display: 'flex',
-                alignItems: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
                 gap: '6px',
                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
                 whiteSpace: 'nowrap'
-              }}
-              onMouseEnter={(e) => {
+                    }}
+                    onMouseEnter={(e) => {
                 e.target.style.backgroundColor = '#3b82f6';
-                e.target.style.color = 'white';
+                      e.target.style.color = 'white';
                 e.target.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
+                    }}
+                    onMouseLeave={(e) => {
                 e.target.style.backgroundColor = 'white';
                 e.target.style.color = '#475569';
                 e.target.style.transform = 'translateY(0)';
-              }}
-            >
+                    }}
+                  >
               <FaHome size={isMobile ? 10 : 12} />
-              {floor.name}
-              <span style={{
+                    {floor.name}
+                    <span style={{
                 backgroundColor: '#e2e8f0',
                 color: '#475569',
                 padding: '2px 6px',
                 borderRadius: '4px',
                 fontSize: isMobile ? '10px' : '11px',
-                fontWeight: 'bold'
-              }}>
-                {(floor.tables || []).length}
-              </span>
-            </button>
-          ))}
-          <button
-            onClick={() => setShowAddFloor(true)}
-            style={{
+                      fontWeight: 'bold'
+                    }}>
+                      {(floor.tables || []).length}
+                    </span>
+                  </button>
+                ))}
+                <button
+                  onClick={() => setShowAddFloor(true)}
+                  style={{
               padding: isMobile ? '8px 12px' : '10px 16px',
               borderRadius: '8px',
-              fontWeight: '600',
+                    fontWeight: '600',
               fontSize: isMobile ? '12px' : '14px',
-              border: 'none',
-              cursor: 'pointer',
+                    border: 'none',
+                    cursor: 'pointer',
               backgroundColor: '#f1f5f9',
               color: '#64748b',
-              display: 'flex',
-              alignItems: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
               gap: '6px',
               transition: 'all 0.2s',
               whiteSpace: 'nowrap'
@@ -1034,26 +1097,26 @@ const TableManagement = () => {
             }}
           >
             <FaPlus size={isMobile ? 10 : 12} />
-            Add Floor
-          </button>
-        </div>
-      </div>
+                  Add Floor
+                </button>
+              </div>
+            </div>
+            
 
-
-      {/* Scrollable Floor Content */}
-      <div 
-        ref={scrollContainerRef}
-        style={{ 
-          flex: 1, 
-          overflowY: 'auto', 
+        {/* Scrollable Floor Content */}
+        <div 
+          ref={scrollContainerRef}
+          style={{ 
+            flex: 1, 
+            overflowY: 'auto', 
           backgroundColor: '#f8fafc',
           padding: isMobile ? '20px 16px' : '32px 24px'
-        }}
-      >
-        {floors.map((floor) => (
+          }}
+        >
+          {floors.map((floor) => (
           <div key={floor.id} id={`floor-${floor.id}`} style={{ marginBottom: isMobile ? '32px' : '48px', position: 'relative' }}>
             {/* Floor Info Badge - Top Left */}
-            <div style={{
+                <div style={{
               position: 'absolute',
               top: '0',
               left: '0',
@@ -1063,19 +1126,19 @@ const TableManagement = () => {
               padding: isMobile ? '6px 10px' : '8px 12px',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
               border: '1px solid #e2e8f0',
-              display: 'flex',
-              alignItems: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
               gap: isMobile ? '6px' : '8px'
-            }}>
+                }}>
               {/* Floor Icon & Name */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <div style={{
+                  <div style={{
                   width: isMobile ? '16px' : '18px',
                   height: isMobile ? '16px' : '18px',
                   background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
                   borderRadius: '3px',
-                  display: 'flex',
-                  alignItems: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
                   justifyContent: 'center',
                   boxShadow: '0 1px 3px rgba(99, 102, 241, 0.3)'
                 }}>
@@ -1091,14 +1154,14 @@ const TableManagement = () => {
               </div>
 
               {/* Stats */}
-              <div style={{
+                    <div style={{
                 display: 'flex',
                 gap: isMobile ? '4px' : '6px',
                 alignItems: 'center'
               }}>
                 <div style={{
                   fontSize: isMobile ? '10px' : '11px',
-                  fontWeight: 'bold',
+                      fontWeight: 'bold',
                   color: '#1e293b',
                   backgroundColor: '#f1f5f9',
                   padding: '2px 4px',
@@ -1126,114 +1189,114 @@ const TableManagement = () => {
                 }}>
                   {(floor.tables || []).filter(t => t.status === 'occupied').length}B
                 </div>
-              </div>
-
+                    </div>
+                    
               {/* Actions */}
               <div style={{ display: 'flex', gap: '2px', marginLeft: '4px' }}>
-                <button
-                  onClick={() => startEditFloor(floor)}
-                  style={{
+                      <button
+                        onClick={() => startEditFloor(floor)}
+                        style={{
                     padding: '2px 4px',
                     backgroundColor: '#f8fafc',
                     border: '1px solid #e2e8f0',
                     borderRadius: '3px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => {
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
                     e.target.style.backgroundColor = '#e2e8f0';
-                  }}
-                  onMouseLeave={(e) => {
+                        }}
+                        onMouseLeave={(e) => {
                     e.target.style.backgroundColor = '#f8fafc';
-                  }}
-                >
+                        }}
+                      >
                   <FaEdit size={isMobile ? 6 : 8} color="#64748b" />
-                </button>
-                
-                <button
-                  onClick={() => deleteFloor(floor.id)}
-                  style={{
+                      </button>
+                      
+                      <button
+                        onClick={() => deleteFloor(floor.id)}
+                        style={{
                     padding: '2px 4px',
-                    backgroundColor: '#fef2f2',
+                          backgroundColor: '#fef2f2',
                     border: '1px solid #fecaca',
                     borderRadius: '3px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = '#fee2e2';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = '#fef2f2';
-                  }}
-                >
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#fee2e2';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = '#fef2f2';
+                        }}
+                      >
                   <FaTrash size={isMobile ? 6 : 8} color="#dc2626" />
-                </button>
-              </div>
-            </div>
+                      </button>
+                  </div>
+                </div>
 
-            {/* Tables Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile 
+                {/* Tables Grid */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile 
                 ? 'repeat(auto-fit, minmax(100px, max-content))' 
                 : 'repeat(auto-fit, minmax(120px, max-content))',
               gap: isMobile ? '12px' : '16px',
-              justifyContent: 'center',
-              justifyItems: 'center',
+                  justifyContent: 'center',
+                  justifyItems: 'center',
               paddingTop: isMobile ? '40px' : '50px', // Add top padding to avoid overlap with floor badge
               maxWidth: '100%',
               margin: '0 auto'
-            }}>
-              {(floor.tables || []).map((table) => {
-                const statusInfo = getTableStatusInfo(table.status);
-                const isDropdownOpen = activeDropdown === table.id;
-                
-                return (
-                  <div key={table.id} style={{ position: 'relative' }} className="table-dropdown">
-                    {/* Table Card */}
-                    <div
-                      onClick={() => setActiveDropdown(isDropdownOpen ? null : table.id)}
-                      style={{
+                }}>
+                  {(floor.tables || []).map((table) => {
+                    const statusInfo = getTableStatusInfo(table.status);
+                    const isDropdownOpen = activeDropdown === table.id;
+                    
+                    return (
+                      <div key={table.id} style={{ position: 'relative' }} className="table-dropdown">
+                        {/* Table Card */}
+                        <div
+                          onClick={() => setActiveDropdown(isDropdownOpen ? null : table.id)}
+                          style={{
                         width: isMobile ? '80px' : '100px',
                         height: isMobile ? '80px' : '100px',
                         background: statusInfo.gradient,
                         borderRadius: '8px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        display: 'flex',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            display: 'flex',
                         flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        position: 'relative',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'relative',
                         border: `2px solid ${statusInfo.border}`,
                         boxShadow: statusInfo.shadow,
-                        animation: statusInfo.pulse ? 'pulse 2s infinite' : 'none'
-                      }}
-                      onMouseEnter={(e) => {
+                            animation: statusInfo.pulse ? 'pulse 2s infinite' : 'none'
+                          }}
+                          onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
                         e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
                         e.currentTarget.style.boxShadow = statusInfo.shadow;
-                      }}
-                    >
-                      {/* Table Number */}
-                      <div style={{ 
+                          }}
+                        >
+                          {/* Table Number */}
+                          <div style={{ 
                         fontSize: isMobile ? '20px' : '24px', 
-                        fontWeight: 'bold', 
+                            fontWeight: 'bold', 
                         color: statusInfo.text,
                         marginBottom: '2px'
-                      }}>
-                        {table.name}
-                      </div>
+                          }}>
+                            {table.name}
+                          </div>
 
                       {/* Table Capacity */}
                       <div style={{
@@ -1246,25 +1309,25 @@ const TableManagement = () => {
                       </div>
 
                       {/* Status Icon */}
-                      <div style={{
-                        position: 'absolute',
+                          <div style={{
+                            position: 'absolute',
                         top: '4px',
                         right: '4px',
                         width: isMobile ? '16px' : '18px',
                         height: isMobile ? '16px' : '18px',
-                        backgroundColor: 'rgba(255,255,255,0.9)',
+                            backgroundColor: 'rgba(255,255,255,0.9)',
                         borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                         boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                       }}>
                         <statusInfo.icon size={isMobile ? 8 : 10} color={statusInfo.text} />
-                      </div>
+                        </div>
 
                       {/* Customer Name */}
                       {table.customerName && (
-                        <div style={{
+                        <div style={{ 
                           position: 'absolute',
                           bottom: '2px',
                           left: '2px',
@@ -1281,183 +1344,183 @@ const TableManagement = () => {
                           whiteSpace: 'nowrap'
                         }}>
                           {table.customerName}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
 
-                    {/* Action Dropdown */}
-                    {isDropdownOpen && (
-                      <div style={{
-                        position: 'absolute',
+                        {/* Action Dropdown */}
+                        {isDropdownOpen && (
+                          <div style={{
+                            position: 'absolute',
                         top: isMobile ? '110px' : '130px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        backgroundColor: 'white',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            backgroundColor: 'white',
                         borderRadius: '12px',
                         boxShadow: '0 12px 32px rgba(0,0,0,0.2)',
                         border: '1px solid #e2e8f0',
-                        zIndex: 20,
+                            zIndex: 20,
                         minWidth: isMobile ? '180px' : '160px',
-                        overflow: 'hidden'
-                      }}>
-                        {table.status === 'available' && (
-                          <>
-                            <button
-                              onClick={() => handleTableAction('take-order', table)}
-                              style={{
-                                width: '100%',
+                            overflow: 'hidden'
+                          }}>
+                            {table.status === 'available' && (
+                              <>
+                                <button
+                                  onClick={() => handleTableAction('take-order', table)}
+                                  style={{
+                                    width: '100%',
                                 padding: isMobile ? '16px 20px' : '12px 16px',
-                                border: 'none',
-                                backgroundColor: 'white',
-                                textAlign: 'left',
-                                cursor: 'pointer',
+                                    border: 'none',
+                                    backgroundColor: 'white',
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
                                 fontSize: isMobile ? '14px' : '13px',
-                                fontWeight: '600',
-                                display: 'flex',
-                                alignItems: 'center',
+                                    fontWeight: '600',
+                                    display: 'flex',
+                                    alignItems: 'center',
                                 gap: isMobile ? '12px' : '10px',
                                 color: '#059669',
                                 transition: 'all 0.2s'
-                              }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                            >
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
+                                  onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                >
                               <FaUtensils size={isMobile ? 16 : 14} />
-                              Take Order
-                            </button>
+                                  Take Order
+                                </button>
+                                <button
+                                  onClick={() => handleTableAction('book-table', table)}
+                                  style={{
+                                    width: '100%',
+                                padding: isMobile ? '16px 20px' : '12px 16px',
+                                    border: 'none',
+                                    backgroundColor: 'white',
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                fontSize: isMobile ? '14px' : '13px',
+                                    fontWeight: '600',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                gap: isMobile ? '12px' : '10px',
+                                color: '#d97706',
+                                transition: 'all 0.2s'
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.backgroundColor = '#fefbf0'}
+                                  onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                >
+                              <FaCalendarAlt size={isMobile ? 16 : 14} />
+                                  Book Table
+                                </button>
+                              </>
+                            )}
+                            
                             <button
-                              onClick={() => handleTableAction('book-table', table)}
+                              onClick={() => handleTableAction('out-of-service', table)}
                               style={{
                                 width: '100%',
-                                padding: isMobile ? '16px 20px' : '12px 16px',
+                            padding: isMobile ? '16px 20px' : '12px 16px',
                                 border: 'none',
                                 backgroundColor: 'white',
                                 textAlign: 'left',
                                 cursor: 'pointer',
-                                fontSize: isMobile ? '14px' : '13px',
+                            fontSize: isMobile ? '14px' : '13px',
                                 fontWeight: '600',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: isMobile ? '12px' : '10px',
-                                color: '#d97706',
-                                transition: 'all 0.2s'
-                              }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = '#fefbf0'}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                            >
-                              <FaCalendarAlt size={isMobile ? 16 : 14} />
-                              Book Table
-                            </button>
-                          </>
-                        )}
-                        
-                        <button
-                          onClick={() => handleTableAction('out-of-service', table)}
-                          style={{
-                            width: '100%',
-                            padding: isMobile ? '16px 20px' : '12px 16px',
-                            border: 'none',
-                            backgroundColor: 'white',
-                            textAlign: 'left',
-                            cursor: 'pointer',
-                            fontSize: isMobile ? '14px' : '13px',
-                            fontWeight: '600',
-                            display: 'flex',
-                            alignItems: 'center',
                             gap: isMobile ? '12px' : '10px',
                             color: '#7c3aed',
                             transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f3ff'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                        >
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f3ff'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                            >
                           <FaTools size={isMobile ? 16 : 14} />
-                          Out of Service
-                        </button>
-                        
-                        <button
-                          onClick={() => handleTableAction('cleaning', table)}
-                          style={{
-                            width: '100%',
+                              Out of Service
+                            </button>
+                            
+                            <button
+                              onClick={() => handleTableAction('cleaning', table)}
+                              style={{
+                                width: '100%',
                             padding: isMobile ? '16px 20px' : '12px 16px',
-                            border: 'none',
-                            backgroundColor: 'white',
-                            textAlign: 'left',
-                            cursor: 'pointer',
+                                border: 'none',
+                                backgroundColor: 'white',
+                                textAlign: 'left',
+                                cursor: 'pointer',
                             fontSize: isMobile ? '14px' : '13px',
-                            fontWeight: '600',
-                            display: 'flex',
-                            alignItems: 'center',
+                                fontWeight: '600',
+                                display: 'flex',
+                                alignItems: 'center',
                             gap: isMobile ? '12px' : '10px',
                             color: '#4b5563',
                             transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                        >
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                            >
                           <FaUtensils size={isMobile ? 16 : 14} />
-                          Cleaning
-                        </button>
-                        
-                        {table.status !== 'available' && (
-                          <button
-                            onClick={() => handleTableAction('make-available', table)}
-                            style={{
-                              width: '100%',
+                              Cleaning
+                            </button>
+                            
+                            {table.status !== 'available' && (
+                              <button
+                                onClick={() => handleTableAction('make-available', table)}
+                                style={{
+                                  width: '100%',
                               padding: isMobile ? '16px 20px' : '12px 16px',
-                              border: 'none',
-                              backgroundColor: 'white',
-                              textAlign: 'left',
-                              cursor: 'pointer',
+                                  border: 'none',
+                                  backgroundColor: 'white',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
                               fontSize: isMobile ? '14px' : '13px',
-                              fontWeight: '600',
-                              display: 'flex',
-                              alignItems: 'center',
+                                  fontWeight: '600',
+                                  display: 'flex',
+                                  alignItems: 'center',
                               gap: isMobile ? '12px' : '10px',
                               color: '#059669',
                               transition: 'all 0.2s'
-                            }}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                          >
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                              >
                             <FaCheck size={isMobile ? 16 : 14} />
-                            Make Available
-                          </button>
-                        )}
-                        
+                                Make Available
+                              </button>
+                            )}
+                            
                         <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid #e2e8f0' }} />
-                        
-                        <button
-                          onClick={() => deleteTable(table.id)}
-                          style={{
-                            width: '100%',
+                            
+                            <button
+                              onClick={() => deleteTable(table.id)}
+                              style={{
+                                width: '100%',
                             padding: isMobile ? '16px 20px' : '12px 16px',
-                            border: 'none',
-                            backgroundColor: 'white',
-                            textAlign: 'left',
-                            cursor: 'pointer',
+                                border: 'none',
+                                backgroundColor: 'white',
+                                textAlign: 'left',
+                                cursor: 'pointer',
                             fontSize: isMobile ? '14px' : '13px',
-                            fontWeight: '600',
-                            display: 'flex',
-                            alignItems: 'center',
+                                fontWeight: '600',
+                                display: 'flex',
+                                alignItems: 'center',
                             gap: isMobile ? '12px' : '10px',
                             color: '#dc2626',
                             transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                        >
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                            >
                           <FaTrash size={isMobile ? 16 : 14} />
-                          Delete Table
-                        </button>
+                              Delete Table
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {/* Unified Add Modal */}
@@ -2152,18 +2215,19 @@ const TableManagement = () => {
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.5)',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: isMobile ? 'flex-start' : 'center',
           justifyContent: 'center',
-          zIndex: 50,
-          padding: '20px'
+          zIndex: 9999, // Higher z-index to appear above navigation
+          padding: isMobile ? '10px' : '20px',
+          paddingTop: isMobile ? '60px' : '20px' // Account for mobile navigation
         }}>
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '16px',
+            borderRadius: isMobile ? '12px' : '16px',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
             width: '100%',
-            maxWidth: '600px',
-            maxHeight: '90vh',
+            maxWidth: isMobile ? '100%' : '600px',
+            maxHeight: isMobile ? 'calc(100vh - 80px)' : '90vh',
             overflowY: 'auto'
           }}>
             {/* Header */}
@@ -2191,54 +2255,110 @@ const TableManagement = () => {
             
             {/* Main Content */}
             <div style={{ padding: '0 24px 24px 24px' }}>
-              {/* Table Selection - Show when opened from header button */}
-              {bookingFromHeader && (
+              {/* Available Tables Summary for Selected Date */}
+              {bookingData.bookingDate && (
                 <div style={{ marginBottom: '24px' }}>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '14px', 
-                    fontWeight: '600', 
-                    color: '#374151', 
-                    marginBottom: '8px' 
+                  <h3 style={{ 
+                    fontSize: '18px', 
+                    fontWeight: 'bold', 
+                    color: '#1f2937', 
+                    margin: '0 0 16px 0' 
                   }}>
-                    Select Table *
-                  </label>
-                  <select
-                    value={selectedTable?.id || ''}
-                    onChange={(e) => {
-                      const tableId = e.target.value;
-                      const table = floors
-                        .flatMap(floor => floor.tables || [])
-                        .find(t => t.id === tableId);
-                      setSelectedTable(table);
-                      if (table) {
-                        setBookingData(prev => ({
-                          ...prev,
-                          partySize: Math.min(table.capacity, prev.partySize)
-                        }));
-                      }
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '12px',
-                      fontSize: '16px',
-                      outline: 'none',
+                    Availability for {new Date(bookingData.bookingDate).toLocaleDateString()}
+                  </h3>
+                  
+                  {loadingAvailability ? (
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'center', 
+                      padding: '20px',
+                      color: '#6b7280'
+                    }}>
+                      Loading availability...
+                    </div>
+                  ) : (
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                      gap: '12px',
+                      padding: '16px',
                       backgroundColor: '#f9fafb',
-                      boxSizing: 'border-box',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <option value="">Choose a table to book</option>
-                    {floors.map(floor => 
-                      (floor.tables || []).map(table => (
-                        <option key={table.id} value={table.id}>
-                          {table.name} ({floor.name}) - {table.capacity} seats - {table.status}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                      borderRadius: '12px',
+                      border: '1px solid #e5e7eb'
+                    }}>
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '12px',
+                        backgroundColor: 'white',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb'
+                      }}>
+                        <div style={{
+                          fontSize: '24px',
+                          fontWeight: 'bold',
+                          color: '#059669',
+                          marginBottom: '4px'
+                        }}>
+                          {availabilityStats.availableTables}
+                        </div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#6b7280',
+                          fontWeight: '600'
+                        }}>
+                          Available Tables
+                        </div>
+                      </div>
+                      
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '12px',
+                        backgroundColor: 'white',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb'
+                      }}>
+                        <div style={{
+                          fontSize: '24px',
+                          fontWeight: 'bold',
+                          color: '#dc2626',
+                          marginBottom: '4px'
+                        }}>
+                          {availabilityStats.reservedTables}
+                        </div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#6b7280',
+                          fontWeight: '600'
+                        }}>
+                          Reserved Tables
+                        </div>
+                      </div>
+                      
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '12px',
+                        backgroundColor: 'white',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb'
+                      }}>
+                        <div style={{
+                          fontSize: '24px',
+                          fontWeight: 'bold',
+                          color: '#6b7280',
+                          marginBottom: '4px'
+                        }}>
+                          {availabilityStats.totalTables}
+                        </div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#6b7280',
+                          fontWeight: '600'
+                        }}>
+                          Total Tables
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -2261,17 +2381,17 @@ const TableManagement = () => {
                     Date *
                   </label>
                   <div style={{ position: 'relative' }}>
-                    <input
+                  <input
                       type="date"
                       value={bookingData.bookingDate}
                       onChange={(e) => setBookingData({...bookingData, bookingDate: e.target.value})}
-                      style={{
-                        width: '100%',
+                    style={{
+                      width: '100%',
                         padding: '12px 16px',
-                        border: '1px solid #d1d5db',
+                      border: '1px solid #d1d5db',
                         borderRadius: '12px',
                         fontSize: '16px',
-                        outline: 'none',
+                      outline: 'none',
                         backgroundColor: '#f9fafb',
                         boxSizing: 'border-box',
                         cursor: 'pointer'
@@ -2286,9 +2406,9 @@ const TableManagement = () => {
                     }}>
                       <FaCalendarAlt size={16} color="#6b7280" />
                     </div>
-                  </div>
                 </div>
-
+                </div>
+                
                 {/* Guest Count */}
                 <div>
                   <label style={{ 
@@ -2302,15 +2422,15 @@ const TableManagement = () => {
                   </label>
                   <div style={{ position: 'relative' }}>
                     <select
-                      value={bookingData.partySize}
+                    value={bookingData.partySize}
                       onChange={(e) => setBookingData({...bookingData, partySize: parseInt(e.target.value)})}
-                      style={{
-                        width: '100%',
+                    style={{
+                      width: '100%',
                         padding: '12px 16px',
-                        border: '1px solid #d1d5db',
+                      border: '1px solid #d1d5db',
                         borderRadius: '12px',
                         fontSize: '16px',
-                        outline: 'none',
+                      outline: 'none',
                         backgroundColor: '#f9fafb',
                         boxSizing: 'border-box',
                         cursor: 'pointer',
@@ -2332,14 +2452,14 @@ const TableManagement = () => {
                     }}>
                       <FaUsers size={16} color="#6b7280" />
                     </div>
-                  </div>
                 </div>
+              </div>
 
                 {/* Meal Type */}
                 <div>
                   <label style={{ 
                     display: 'block', 
-                    fontSize: '14px', 
+                      fontSize: '14px',
                     fontWeight: '600', 
                     color: '#374151', 
                     marginBottom: '8px' 
@@ -2350,13 +2470,13 @@ const TableManagement = () => {
                     <select
                       value={bookingData.mealType}
                       onChange={(e) => setBookingData({...bookingData, mealType: e.target.value})}
-                      style={{
-                        width: '100%',
+                    style={{
+                      width: '100%',
                         padding: '12px 16px',
-                        border: '1px solid #d1d5db',
+                      border: '1px solid #d1d5db',
                         borderRadius: '12px',
                         fontSize: '16px',
-                        outline: 'none',
+                      outline: 'none',
                         backgroundColor: '#f9fafb',
                         boxSizing: 'border-box',
                         cursor: 'pointer',
@@ -2378,10 +2498,10 @@ const TableManagement = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-
+                </div>
+                
               {/* Time Slots Section */}
-              <div>
+                <div>
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -2459,7 +2579,7 @@ const TableManagement = () => {
                         fontSize: '12px',
                         color: '#6b7280'
                       }}>
-                        {slot.available ? 'Available' : 'Unavailable'}
+                        {slot.available ? `${slot.availableTablesCount || 0} tables` : 'Unavailable'}
                       </div>
                     </button>
                   ))}
@@ -2468,6 +2588,57 @@ const TableManagement = () => {
 
               {/* Customer Details */}
               <div style={{ marginTop: '24px' }}>
+                {/* Table Selection - Show when opened from header button */}
+                {bookingFromHeader && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px',
+                      fontWeight: '600', 
+                      color: '#374151', 
+                      marginBottom: '8px' 
+                    }}>
+                      Select Table *
+                    </label>
+                    <select
+                      value={selectedTable?.id || ''}
+                      onChange={(e) => {
+                        const tableId = e.target.value;
+                        const table = floors
+                          .flatMap(floor => floor.tables || [])
+                          .find(t => t.id === tableId);
+                        setSelectedTable(table);
+                        if (table) {
+                          setBookingData(prev => ({
+                            ...prev,
+                            partySize: Math.min(table.capacity, prev.partySize)
+                          }));
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                      outline: 'none',
+                        backgroundColor: '#f9fafb',
+                        boxSizing: 'border-box',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="">Choose a table to book</option>
+                      {floors.map(floor => 
+                        (floor.tables || []).map(table => (
+                          <option key={table.id} value={table.id}>
+                            {table.name} ({floor.name}) - {table.capacity} seats - {table.status}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                </div>
+                )}
+
                 <h3 style={{ 
                   fontSize: '18px', 
                   fontWeight: 'bold', 
@@ -2482,7 +2653,7 @@ const TableManagement = () => {
                   gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
                   gap: '16px' 
                 }}>
-                  <div>
+                <div>
                     <label style={{ 
                       display: 'block', 
                       fontSize: '14px', 
@@ -2491,26 +2662,26 @@ const TableManagement = () => {
                       marginBottom: '8px' 
                     }}>
                       Customer Name *
-                    </label>
-                    <input
+                  </label>
+                  <input
                       type="text"
                       value={bookingData.customerName}
                       onChange={(e) => setBookingData({...bookingData, customerName: e.target.value})}
-                      style={{
-                        width: '100%',
+                    style={{
+                      width: '100%',
                         padding: '12px 16px',
-                        border: '1px solid #d1d5db',
+                      border: '1px solid #d1d5db',
                         borderRadius: '12px',
                         fontSize: '16px',
-                        outline: 'none',
+                      outline: 'none',
                         backgroundColor: '#f9fafb',
-                        boxSizing: 'border-box'
-                      }}
+                      boxSizing: 'border-box'
+                    }}
                       placeholder="Enter customer name"
-                    />
-                  </div>
-                  
-                  <div>
+                  />
+                </div>
+                
+                <div>
                     <label style={{ 
                       display: 'block', 
                       fontSize: '14px', 
@@ -2519,26 +2690,26 @@ const TableManagement = () => {
                       marginBottom: '8px' 
                     }}>
                       Phone Number
-                    </label>
-                    <input
+                  </label>
+                  <input
                       type="tel"
                       value={bookingData.customerPhone}
                       onChange={(e) => setBookingData({...bookingData, customerPhone: e.target.value})}
-                      style={{
-                        width: '100%',
+                    style={{
+                      width: '100%',
                         padding: '12px 16px',
-                        border: '1px solid #d1d5db',
+                      border: '1px solid #d1d5db',
                         borderRadius: '12px',
                         fontSize: '16px',
-                        outline: 'none',
+                      outline: 'none',
                         backgroundColor: '#f9fafb',
-                        boxSizing: 'border-box'
-                      }}
+                      boxSizing: 'border-box'
+                    }}
                       placeholder="+91 9876543210"
-                    />
-                  </div>
+                  />
                 </div>
-
+              </div>
+              
                 <div style={{ marginTop: '16px' }}>
                   <label style={{ 
                     display: 'block', 
@@ -2547,26 +2718,26 @@ const TableManagement = () => {
                     color: '#374151', 
                     marginBottom: '8px' 
                   }}>
-                    Special Notes
-                  </label>
-                  <textarea
-                    value={bookingData.notes}
-                    onChange={(e) => setBookingData({...bookingData, notes: e.target.value})}
-                    style={{
-                      width: '100%',
+                  Special Notes
+                </label>
+                <textarea
+                  value={bookingData.notes}
+                  onChange={(e) => setBookingData({...bookingData, notes: e.target.value})}
+                  style={{
+                    width: '100%',
                       padding: '12px 16px',
-                      border: '1px solid #d1d5db',
+                    border: '1px solid #d1d5db',
                       borderRadius: '12px',
                       fontSize: '16px',
-                      outline: 'none',
+                    outline: 'none',
                       backgroundColor: '#f9fafb',
-                      boxSizing: 'border-box',
+                    boxSizing: 'border-box',
                       minHeight: '80px',
-                      resize: 'vertical',
-                      fontFamily: 'inherit'
-                    }}
-                    placeholder="Any special requirements or notes..."
-                  />
+                    resize: 'vertical',
+                    fontFamily: 'inherit'
+                  }}
+                  placeholder="Any special requirements or notes..."
+                />
                 </div>
               </div>
             </div>
