@@ -47,6 +47,8 @@ import apiClient from '../../../lib/api';
 import { performLogout } from '../../../lib/logout';
 import { t } from '../../../lib/i18n';
 import { useLoading } from '../../../contexts/LoadingContext';
+import ChatbotInterface from '../../../components/ChatbotInterface';
+import RAGInitializer from '../../../components/RAGInitializer';
 
 function RestaurantPOSContent() {
   const searchParams = useSearchParams();
@@ -3544,6 +3546,16 @@ function RestaurantPOSContent() {
         onMenuItemsAdded={handleMenuItemsAdded}
         currentMenuItems={menuItems}
       />
+
+      {/* RAG Initializer */}
+      {selectedRestaurant?.id && (
+        <RAGInitializer 
+          restaurantId={selectedRestaurant.id}
+          onInitialized={() => {
+            console.log('RAG knowledge initialized successfully');
+          }}
+        />
+      )}
     </div>
   );
 }

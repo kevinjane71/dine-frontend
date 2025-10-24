@@ -53,6 +53,27 @@ class ApiClient {
     }
   }
 
+  // HTTP method shortcuts
+  async get(endpoint, options = {}) {
+    return this.request(endpoint, { ...options, method: 'GET' });
+  }
+
+  async post(endpoint, data, options = {}) {
+    return this.request(endpoint, { ...options, method: 'POST', body: data });
+  }
+
+  async put(endpoint, data, options = {}) {
+    return this.request(endpoint, { ...options, method: 'PUT', body: data });
+  }
+
+  async patch(endpoint, data, options = {}) {
+    return this.request(endpoint, { ...options, method: 'PATCH', body: data });
+  }
+
+  async delete(endpoint, options = {}) {
+    return this.request(endpoint, { ...options, method: 'DELETE' });
+  }
+
   getToken() {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('authToken');
@@ -408,23 +429,34 @@ class ApiClient {
     });
   }
 
-  async updateTableStatus(tableId, status, orderId = null) {
+  async updateTableStatus(tableId, status, orderId = null, restaurantId = null) {
+    const body = { status };
+    if (orderId) body.orderId = orderId;
+    if (restaurantId) body.restaurantId = restaurantId;
+    
     return this.request(`/api/tables/${tableId}/status`, {
       method: 'PATCH',
-      body: { status, orderId },
+      body,
     });
   }
 
-  async updateTable(tableId, updateData) {
+  async updateTable(tableId, updateData, restaurantId = null) {
+    const body = { ...updateData };
+    if (restaurantId) body.restaurantId = restaurantId;
+    
     return this.request(`/api/tables/${tableId}`, {
       method: 'PATCH',
-      body: updateData,
+      body,
     });
   }
 
-  async deleteTable(tableId) {
+  async deleteTable(tableId, restaurantId = null) {
+    const body = {};
+    if (restaurantId) body.restaurantId = restaurantId;
+    
     return this.request(`/api/tables/${tableId}`, {
       method: 'DELETE',
+      body,
     });
   }
 

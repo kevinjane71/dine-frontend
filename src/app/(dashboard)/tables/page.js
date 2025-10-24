@@ -400,7 +400,7 @@ const TableManagement = () => {
 
   const updateTableStatus = async (tableId, newStatus, additionalData = {}) => {
     try {
-      await apiClient.updateTableStatus(tableId, newStatus, additionalData.orderId);
+      await apiClient.updateTableStatus(tableId, newStatus, additionalData.orderId, selectedRestaurant?.id);
       
       // Update local state
       setFloors(prev => prev.map(floor => ({
@@ -430,7 +430,7 @@ const TableManagement = () => {
     if (!confirm('Are you sure you want to delete this table?')) return;
     
     try {
-      await apiClient.deleteTable(tableId);
+      await apiClient.deleteTable(tableId, selectedRestaurant?.id);
       
       setFloors(prev => prev.map(floor => ({
         ...floor,

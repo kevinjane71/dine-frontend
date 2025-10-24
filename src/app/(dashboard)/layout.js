@@ -3,19 +3,23 @@
 import { Suspense, useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Navigation from '../../components/Navigation';
-import { DineBotProvider } from '../../components/DineBotProvider';
-import DineBotButton from '../../components/DineBotButton';
+import ChatbotInterface from '../../components/ChatbotInterface';
 
 function DashboardLayoutContent({ children }) {
   const [isNavigationHidden, setIsNavigationHidden] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
+  const [isClient, setIsClient] = useState(false);
   const pathname = usePathname();
   
   // Check if current page is dashboard
   const isDashboardPage = pathname === '/dashboard';
 
-  // Check if device is mobile
+  // Check if device is mobile and set client-side flag
   useEffect(() => {
+    setIsClient(true);
+    
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -35,9 +39,32 @@ function DashboardLayoutContent({ children }) {
     return () => window.removeEventListener('navigationToggle', handleNavigationToggle);
   }, []);
 
+  // Get selected restaurant ID from localStorage
+  useEffect(() => {
+    const getSelectedRestaurant = () => {
+      const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+      if (savedRestaurantId) {
+        setSelectedRestaurantId(savedRestaurantId);
+      }
+    };
+
+    getSelectedRestaurant();
+    
+    // Listen for restaurant changes
+    const handleRestaurantChange = (event) => {
+      console.log('Restaurant changed in layout:', event.detail);
+      setSelectedRestaurantId(event.detail.restaurantId);
+    };
+
+    window.addEventListener('restaurantChanged', handleRestaurantChange);
+    
+    return () => {
+      window.removeEventListener('restaurantChanged', handleRestaurantChange);
+    };
+  }, []);
+
   return (
-    <DineBotProvider>
-      <div style={{ 
+    <div style={{ 
         height: (isDashboardPage && !isMobile) ? '100vh' : 'auto', // Only desktop dashboard gets 100vh
         minHeight: (isDashboardPage && !isMobile) ? '100vh' : 'auto',
         backgroundColor: '#f9fafb',
@@ -68,17 +95,26 @@ function DashboardLayoutContent({ children }) {
           {children}
         </main>
         
-        {/* DineBot Floating Button */}
-        <DineBotButton />
+        {/* RAG Chatbot Interface - Only render on client side with valid restaurant ID */}
+        {isClient && selectedRestaurantId && (
+          <ChatbotInterface 
+            restaurantId={selectedRestaurantId}
+            userId={null} // Will be extracted from JWT token
+          />
+        )}
       </div>
-    </DineBotProvider>
   );
 }
 
 function DashboardLayoutFallback({ children }) {
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
   return (
-    <DineBotProvider>
-      <div style={{ 
+    <div style={{ 
         height: 'auto', // Allow scrolling in fallback too
         minHeight: '100vh',
         backgroundColor: '#f9fafb',
@@ -116,10 +152,14 @@ function DashboardLayoutFallback({ children }) {
           {children}
         </main>
         
-        {/* DineBot Floating Button */}
-        <DineBotButton />
+        {/* RAG Chatbot Interface - Only render on client side with valid restaurant ID */}
+        {isClient && selectedRestaurantId && (
+          <ChatbotInterface 
+            restaurantId={selectedRestaurantId}
+            userId={null} // Will be extracted from JWT token
+          />
+        )}
       </div>
-    </DineBotProvider>
   );
 }
 
