@@ -1540,13 +1540,14 @@ function RestaurantPOSContent() {
           setNotification({
             type: 'success',
             title: 'Order Sent to Chef! 👨‍🍳',
-            message: `Order #${response.order.id.slice(-6)} has been placed and sent to the kitchen for preparation.`,
+            message: `Order #${response.order.dailyOrderId || response.order.id.slice(-6)} has been placed and sent to the kitchen for preparation.`,
             show: true
           });
 
           // Show order success in the cart area
           setOrderSuccess({
             orderId: response.order.id,
+            dailyOrderId: response.order.dailyOrderId,
             show: true,
             message: 'Order Placed to Kitchen! 👨‍🍳'
           });

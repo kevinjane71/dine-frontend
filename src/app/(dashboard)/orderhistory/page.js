@@ -20,7 +20,8 @@ import {
   FaChevronDown,
   FaFilter,
   FaChevronUp,
-  FaChevronDown as FaChevronDownIcon
+  FaChevronDown as FaChevronDownIcon,
+  FaCopy
 } from 'react-icons/fa';
 
 const OrderHistory = () => {
@@ -110,6 +111,15 @@ const OrderHistory = () => {
       newExpanded.add(orderId);
     }
     setExpandedOrders(newExpanded);
+  };
+
+  // Copy to clipboard functionality
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
   };
 
   // Improved date formatting
@@ -417,7 +427,7 @@ const OrderHistory = () => {
                 <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
                 <input
                   type="text"
-                  placeholder="Search by order ID, table, customer..."
+                  placeholder="Search by daily order ID, table, customer..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 text-sm bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-sm hover:shadow-md transition-all duration-200 hover:border-gray-300 font-medium"
@@ -517,7 +527,10 @@ const OrderHistory = () => {
             </div>
           ) : (
             orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-lg shadow-sm border overflow-hidden">
+              <div 
+                key={order.id} 
+                className="bg-white rounded-lg shadow-sm border overflow-hidden"
+              >
                 <div className="p-4 sm:p-6">
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex items-start space-x-3 sm:space-x-4 mb-4 lg:mb-0 lg:flex-1">
@@ -531,9 +544,31 @@ const OrderHistory = () => {
                       {/* Order Details */}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 mb-3">
-                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">
-                            Order #{order.orderNumber || order.id.slice(-8).toUpperCase()}
-                          </h3>
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-2 sm:mb-0">
+                            {/* Order Number - Clickable */}
+                            <div className="flex items-center space-x-1">
+                              <h3 
+                                className="text-base sm:text-lg font-semibold text-gray-900 cursor-pointer hover:text-red-600 transition-colors duration-200 flex items-center space-x-1"
+                                onClick={() => copyToClipboard(order.dailyOrderId?.toString() || order.id.slice(-8).toUpperCase())}
+                                title="Click to copy order number"
+                              >
+                                <span>Order #{order.dailyOrderId || order.orderNumber || order.id.slice(-8).toUpperCase()}</span>
+                                <FaCopy className="text-gray-400 text-sm hover:text-red-500 transition-colors duration-200" />
+                              </h3>
+                            </div>
+                            
+                            {/* Order ID - Clickable */}
+                            <div className="flex items-center space-x-1">
+                              <span 
+                                className="text-xs text-gray-500 font-mono cursor-pointer hover:text-red-600 transition-colors duration-200 flex items-center space-x-1"
+                                onClick={() => copyToClipboard(order.id)}
+                                title="Click to copy order ID"
+                              >
+                                <span>ID: {order.id}</span>
+                                <FaCopy className="text-gray-400 text-xs hover:text-red-500 transition-colors duration-200" />
+                              </span>
+                            </div>
+                          </div>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border w-fit ${getStatusColor(order.status, order.orderFlow)}`}>
                             {getStatusText(order.status, order.orderFlow)}
                           </span>

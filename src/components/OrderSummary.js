@@ -640,7 +640,12 @@ const OrderSummary = ({
             </div>
           </div>
           <div style={{ fontSize: '14px', color: '#166534', marginBottom: '12px', fontWeight: '600' }}>
-            Order #{orderSuccess.orderId} {orderSuccess.message?.includes('placed') ? 'sent to kitchen' : 'billing completed'}
+            Order #{orderSuccess.dailyOrderId || orderSuccess.orderId} {orderSuccess.message?.includes('placed') ? 'sent to kitchen' : 'billing completed'}
+            {orderSuccess.dailyOrderId && (
+              <div style={{ fontSize: '11px', color: '#15803d', marginTop: '4px', fontFamily: 'monospace' }}>
+                ID: {orderSuccess.orderId?.slice(-8).toUpperCase()}
+              </div>
+            )}
           </div>
           <div style={{ fontSize: '12px', color: '#166534', marginBottom: '16px' }}>
             {orderSuccess.message?.includes('placed') 
