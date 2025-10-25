@@ -439,10 +439,11 @@ const PlaceOrderContent = () => {
       setCart([]);
       setCustomerInfo({ phone: '', seatNumber: customerInfo.seatNumber, name: '' });
       
-      // Redirect after 3 seconds
-      setTimeout(() => {
-        router.push('/');
-      }, 3000);
+      // Close all modals and stay on the same page
+      setShowOtpModal(false);
+      setShowCart(false);
+      setOtpSent(false);
+      setOtp('');
 
     } catch (err) {
       console.error('Error placing order:', err);
@@ -825,15 +826,41 @@ const PlaceOrderContent = () => {
 
       {success && (
         <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
           backgroundColor: '#f0fdf4',
-          border: '1px solid #bbf7d0',
+          border: '2px solid #22c55e',
           color: '#166534',
-          padding: '12px 16px',
-          margin: '16px',
-          borderRadius: '8px',
-          fontSize: '14px'
+          padding: '20px',
+          borderRadius: '12px',
+          fontSize: '16px',
+          fontWeight: '600',
+          textAlign: 'center',
+          zIndex: 1000,
+          boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+          maxWidth: '90%',
+          width: '400px'
         }}>
-          {success}
+          <div style={{ marginBottom: '12px' }}>
+            ✅ {success}
+          </div>
+          <button
+            onClick={() => setSuccess('')}
+            style={{
+              backgroundColor: '#22c55e',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              fontWeight: '600'
+            }}
+          >
+            Close
+          </button>
         </div>
       )}
 
