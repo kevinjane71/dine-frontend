@@ -23,13 +23,67 @@ import {
   FaTimes,
   FaPhoneAlt,
   FaUser,
-  FaChevronDown
+  FaChevronDown,
+  FaEye
 } from 'react-icons/fa';
 
 const TableManagement = () => {
   const router = useRouter();
   const { isLoading } = useLoading();
   const { showSuccess, showError, showWarning, NotificationContainer } = useNotification();
+
+  // Add CSS animations
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes dottedBorder {
+        0% { border-style: dashed; }
+        50% { border-style: dotted; }
+        100% { border-style: dashed; }
+      }
+      @keyframes clockwiseBorder {
+        0% { 
+          border-top-color: #f59e0b;
+          border-right-color: transparent;
+          border-bottom-color: transparent;
+          border-left-color: transparent;
+        }
+        25% { 
+          border-top-color: #f59e0b;
+          border-right-color: #f59e0b;
+          border-bottom-color: transparent;
+          border-left-color: transparent;
+        }
+        50% { 
+          border-top-color: #f59e0b;
+          border-right-color: #f59e0b;
+          border-bottom-color: #f59e0b;
+          border-left-color: transparent;
+        }
+        75% { 
+          border-top-color: #f59e0b;
+          border-right-color: #f59e0b;
+          border-bottom-color: #f59e0b;
+          border-left-color: #f59e0b;
+        }
+        100% { 
+          border-top-color: transparent;
+          border-right-color: #f59e0b;
+          border-bottom-color: #f59e0b;
+          border-left-color: #f59e0b;
+        }
+      }
+      .dotted-border-animation {
+        animation: dottedBorder 2s infinite;
+      }
+      .clockwise-border-animation {
+        animation: clockwiseBorder 2s linear infinite;
+        border: 2px dashed transparent;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
   const [floors, setFloors] = useState([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -381,14 +435,15 @@ const TableManagement = () => {
         shadow: '0 4px 12px rgba(34, 197, 94, 0.2)'
       },
       occupied: { 
-        bg: '#fef2f2', 
-        text: '#dc2626', 
+        bg: '#fefce8', 
+        text: '#ca8a04', 
         label: 'Occupied',
         icon: FaUsers,
-        border: '#ef4444',
+        border: '#f59e0b',
         pulse: false,
-        gradient: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
-        shadow: '0 4px 12px rgba(239, 68, 68, 0.2)'
+        clockwiseBorder: true,
+        gradient: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
+        shadow: '0 4px 12px rgba(245, 158, 11, 0.2)'
       },
       serving: { 
         bg: '#fefce8', 
@@ -396,7 +451,8 @@ const TableManagement = () => {
         label: 'Serving',
         icon: FaUtensils,
         border: '#f59e0b',
-        pulse: true,
+        pulse: false,
+        dottedBorder: true,
         gradient: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
         shadow: '0 4px 12px rgba(245, 158, 11, 0.2)'
       },
@@ -421,14 +477,14 @@ const TableManagement = () => {
         shadow: '0 4px 12px rgba(100, 116, 139, 0.2)'
       },
       'out-of-service': { 
-        bg: '#faf5ff', 
-        text: '#7c3aed', 
+        bg: '#fef2f2', 
+        text: '#dc2626', 
         label: 'Out of Service',
         icon: FaBan,
-        border: '#8b5cf6',
+        border: '#ef4444',
         pulse: false,
-        gradient: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)',
-        shadow: '0 4px 12px rgba(139, 92, 246, 0.2)'
+        gradient: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+        shadow: '0 4px 12px rgba(239, 68, 68, 0.2)'
       }
     };
     return statusMap[status] || statusMap.available;
@@ -688,6 +744,15 @@ const TableManagement = () => {
         
       case 'make-available':
         updateTableStatus(table.id, 'available');
+        break;
+        
+      case 'view-order':
+        // Redirect to dashboard with table's current order ID for editing
+        if (table.currentOrderId) {
+          router.push(`/dashboard?orderId=${table.currentOrderId}&mode=edit`);
+        } else {
+          showWarning('No active order found for this table');
+        }
         break;
         
       default:
@@ -1030,7 +1095,6 @@ const TableManagement = () => {
               available: getTableStatusInfo('available'),
               occupied: getTableStatusInfo('occupied'),
               reserved: getTableStatusInfo('reserved'),
-              serving: getTableStatusInfo('serving'),
               cleaning: getTableStatusInfo('cleaning'),
               'out-of-service': getTableStatusInfo('out-of-service')
             }).map(([status, info]) => (
@@ -1392,6 +1456,7 @@ const TableManagement = () => {
                         {/* Table Card */}
                         <div
                           onClick={() => setActiveDropdown(isDropdownOpen ? null : table.id)}
+                          className={`${statusInfo.dottedBorder ? 'dotted-border-animation' : ''} ${statusInfo.clockwiseBorder ? 'clockwise-border-animation' : ''}`}
                           style={{
                         width: isMobile ? '80px' : '100px',
                         height: isMobile ? '80px' : '100px',
@@ -1404,7 +1469,11 @@ const TableManagement = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             position: 'relative',
-                        border: `2px solid ${statusInfo.border}`,
+                        border: statusInfo.clockwiseBorder 
+                          ? '2px dashed transparent' 
+                          : statusInfo.dottedBorder 
+                            ? `2px dashed ${statusInfo.border}` 
+                            : `2px solid ${statusInfo.border}`,
                         boxShadow: statusInfo.shadow,
                             animation: statusInfo.pulse ? 'pulse 2s infinite' : 'none'
                           }}
@@ -1453,6 +1522,41 @@ const TableManagement = () => {
                       }}>
                         <statusInfo.icon size={isMobile ? 8 : 10} color={statusInfo.text} />
                         </div>
+
+                      {/* View Order Icon for occupied tables with active order */}
+                      {tableStatus === 'occupied' && table.currentOrderId && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '4px',
+                          left: '4px',
+                          width: isMobile ? '16px' : '18px',
+                          height: isMobile ? '16px' : '18px',
+                          backgroundColor: 'rgba(59, 130, 246, 0.9)',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTableAction('view-order', table);
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = 'rgba(59, 130, 246, 1)';
+                          e.target.style.transform = 'scale(1.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = 'rgba(59, 130, 246, 0.9)';
+                          e.target.style.transform = 'scale(1)';
+                        }}
+                        title="View Order Details"
+                        >
+                          <FaEye size={isMobile ? 8 : 10} color="white" />
+                        </div>
+                      )}
 
                       {/* Customer Name */}
                       {table.customerName && (
@@ -1541,6 +1645,33 @@ const TableManagement = () => {
                                   Book Table
                                 </button>
                               </>
+                            )}
+                            
+                            {/* View Order button for occupied tables */}
+                            {tableStatus === 'occupied' && table.currentOrderId && (
+                              <button
+                                onClick={() => handleTableAction('view-order', table)}
+                                style={{
+                                  width: '100%',
+                                  padding: isMobile ? '16px 20px' : '12px 16px',
+                                  border: 'none',
+                                  backgroundColor: 'white',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  fontSize: isMobile ? '14px' : '13px',
+                                  fontWeight: '600',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: isMobile ? '12px' : '10px',
+                                  color: '#3b82f6',
+                                  transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#eff6ff'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                              >
+                                <FaEye size={isMobile ? 16 : 14} />
+                                View Order
+                              </button>
                             )}
                             
                             <button
