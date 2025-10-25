@@ -1134,6 +1134,18 @@ function RestaurantPOSContent() {
   const processOrder = async () => {
     if (cart.length === 0 || !selectedRestaurant?.id) return;
 
+    // Check if order is completed and disable action
+    if (currentOrder && currentOrder.status === 'completed') {
+      setNotification({
+        type: 'error',
+        title: 'Order Completed! ✅',
+        message: 'This order has already been completed and cannot be modified.',
+        show: true
+      });
+      setTimeout(() => setNotification(null), 3000);
+      return;
+    }
+
     try {
       setProcessing(true);
       setError('');
@@ -1466,6 +1478,18 @@ function RestaurantPOSContent() {
       return;
     }
 
+    // Check if order is completed and disable action
+    if (currentOrder && currentOrder.status === 'completed') {
+      setNotification({
+        type: 'error',
+        title: 'Order Completed! ✅',
+        message: 'This order has already been completed and cannot be modified.',
+        show: true
+      });
+      setTimeout(() => setNotification(null), 3000);
+      return;
+    }
+
     try {
       setPlacingOrder(true);
       setError(null);
@@ -1493,7 +1517,10 @@ function RestaurantPOSContent() {
         const updateData = {
           items: cart.map(item => ({
             menuItemId: item.id,
+            name: item.name,
+            price: item.price,
             quantity: item.quantity,
+            total: item.price * item.quantity,
             notes: ''
           })),
           tableNumber: tableToUse || currentOrder.tableNumber,
@@ -1584,9 +1611,7 @@ function RestaurantPOSContent() {
           clearCart();
           
           // Hide notification after 4 seconds
-          setTimeout(() => {
-            setNotification(null);
-          }, 4000);
+          setTimeout(() => setNotification(null), 4000);
         }
       }
     } catch (error) {

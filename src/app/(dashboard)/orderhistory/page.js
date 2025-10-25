@@ -687,7 +687,22 @@ const OrderHistory = () => {
                     <div className="flex items-center justify-between lg:flex-col lg:items-end lg:space-y-2 mt-4 lg:mt-0">
                       <div className="text-right">
                         <div className="text-base sm:text-lg font-semibold text-gray-900">
-                          ₹{order.totalAmount?.toFixed(2) || '0.00'}
+                          ₹{(() => {
+                            // Calculate total from items if totalAmount is missing or zero
+                            if (order.totalAmount && order.totalAmount > 0) {
+                              return order.totalAmount.toFixed(2);
+                            }
+                            
+                            // Fallback: calculate from items
+                            if (order.items && Array.isArray(order.items)) {
+                              const calculatedTotal = order.items.reduce((sum, item) => {
+                                return sum + (item.total || (item.price * item.quantity) || 0);
+                              }, 0);
+                              return calculatedTotal.toFixed(2);
+                            }
+                            
+                            return '0.00';
+                          })()}
                         </div>
                         <div className="text-xs sm:text-sm text-gray-500">
                           {order.paymentMethod?.toUpperCase() || 'CASH'}

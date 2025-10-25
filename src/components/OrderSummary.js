@@ -138,6 +138,17 @@ const OrderSummary = ({
       setGrandTotal(getTotalAmount());
     }
   }, [calculateTax, cart, restaurantId, getTotalAmount, taxSettings]);
+
+  // Force recalculation when cart items change (for edit mode)
+  useEffect(() => {
+    if (cart.length > 0) {
+      console.log('🔄 Cart items changed, forcing tax recalculation');
+      // Small delay to ensure cart state is fully updated
+      setTimeout(() => {
+        calculateTax();
+      }, 100);
+    }
+  }, [cart.map(item => `${item.id}-${item.quantity}-${item.price}`).join(',')]);
   
   // Debug logging
   console.log('OrderSummary orderSuccess:', orderSuccess);
@@ -249,19 +260,23 @@ const OrderSummary = ({
               top: '-8px',
               left: '50%',
               transform: 'translateX(-50%)',
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              background: currentOrder.status === 'completed' 
+                ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
               color: 'white',
               padding: '4px 12px',
               borderRadius: '12px',
               fontSize: '10px',
               fontWeight: '700',
-              boxShadow: '0 2px 8px rgba(245, 158, 11, 0.4)',
+              boxShadow: currentOrder.status === 'completed'
+                ? '0 2px 8px rgba(16, 185, 129, 0.4)'
+                : '0 2px 8px rgba(245, 158, 11, 0.4)',
               zIndex: 10,
               display: 'flex',
               alignItems: 'center',
               gap: '4px'
             }}>
-              ✏️ EDIT MODE
+              {currentOrder.status === 'completed' ? '✅ COMPLETED ORDER' : '✏️ EDIT MODE'}
             </div>
           )}
           
@@ -1131,10 +1146,10 @@ const OrderSummary = ({
                         onPlaceOrder();
                       }
                     }}
-                    disabled={placingOrder || cart.length === 0}
+                    disabled={placingOrder || cart.length === 0 || (currentOrder && currentOrder.status === 'completed')}
                     style={{
                       flex: 1,
-                      background: placingOrder || cart.length === 0
+                      background: placingOrder || cart.length === 0 || (currentOrder && currentOrder.status === 'completed')
                         ? 'linear-gradient(135deg, #d1d5db, #9ca3af)' 
                         : 'linear-gradient(135deg, #ef4444, #dc2626)',
                       color: 'white',
@@ -1142,14 +1157,14 @@ const OrderSummary = ({
                       borderRadius: '6px',
                       fontWeight: '600',
                       border: 'none',
-                      cursor: placingOrder || cart.length === 0 ? 'not-allowed' : 'pointer',
+                      cursor: placingOrder || cart.length === 0 || (currentOrder && currentOrder.status === 'completed') ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '4px',
                       fontSize: '11px',
                       transition: 'all 0.2s',
-                      boxShadow: placingOrder || cart.length === 0 ? 'none' : '0 2px 8px rgba(239, 68, 68, 0.3)'
+                      boxShadow: placingOrder || cart.length === 0 || (currentOrder && currentOrder.status === 'completed') ? 'none' : '0 2px 8px rgba(239, 68, 68, 0.3)'
                     }}
                   >
                     {placingOrder ? (
@@ -1160,7 +1175,7 @@ const OrderSummary = ({
                     ) : (
                       <>
                         <FaUtensils size={10} />
-                        {t('dashboard.placeOrder')}
+                        {currentOrder ? 'Update Order' : t('dashboard.placeOrder')}
                       </>
                     )}
                   </button>
@@ -1170,10 +1185,10 @@ const OrderSummary = ({
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <button 
                     onClick={handleProcessOrder}
-                    disabled={processing || cart.length === 0}
+                    disabled={processing || cart.length === 0 || (currentOrder && currentOrder.status === 'completed')}
                     style={{
                       flex: 1,
-                      background: processing || cart.length === 0 
+                      background: processing || cart.length === 0 || (currentOrder && currentOrder.status === 'completed')
                         ? 'linear-gradient(135deg, #d1d5db, #9ca3af)' 
                         : 'linear-gradient(135deg, #10b981, #059669)',
                       color: 'white',
@@ -1181,14 +1196,14 @@ const OrderSummary = ({
                       borderRadius: '6px',
                       fontWeight: '600',
                       border: 'none',
-                      cursor: processing || cart.length === 0 ? 'not-allowed' : 'pointer',
+                      cursor: processing || cart.length === 0 || (currentOrder && currentOrder.status === 'completed') ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '4px',
                       fontSize: '11px',
                       transition: 'all 0.2s',
-                      boxShadow: processing || cart.length === 0 ? 'none' : '0 2px 8px rgba(34, 197, 94, 0.3)'
+                      boxShadow: processing || cart.length === 0 || (currentOrder && currentOrder.status === 'completed') ? 'none' : '0 2px 8px rgba(34, 197, 94, 0.3)'
                     }}
                   >
                     {processing ? (

@@ -51,3 +51,4 @@ export const performLogout = () => {
 };
 
 export default performLogout;
+
