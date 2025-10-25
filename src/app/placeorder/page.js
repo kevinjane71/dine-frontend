@@ -6,6 +6,18 @@ import { FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaArrowLeft, FaPhon
 import ImageCarousel from '../../components/ImageCarousel';
 import apiClient from '../../lib/api.js';
 
+// Try to import Firebase modules with error handling
+let firebaseAuth = null;
+let firebaseConfig = null;
+
+try {
+  firebaseAuth = require('firebase/auth');
+  firebaseConfig = require('../../../firebase');
+  console.log('✅ Firebase modules loaded successfully');
+} catch (error) {
+  console.warn('⚠️ Firebase modules not available:', error.message);
+}
+
 // Helper function to get category-specific colors
 const getCategoryColor = (category, opacity = 1) => {
   const colors = {
@@ -226,26 +238,13 @@ const PlaceOrderContent = () => {
 
       // Check if Firebase is available
       try {
-        // Try to import Firebase auth functions with better error handling
-        let signInWithPhoneNumber, RecaptchaVerifier, auth, isFirebaseConfigured;
-        
-        try {
-          const firebaseAuth = await import('firebase/auth');
-          signInWithPhoneNumber = firebaseAuth.signInWithPhoneNumber;
-          RecaptchaVerifier = firebaseAuth.RecaptchaVerifier;
-        } catch (importError) {
-          console.warn('Firebase auth import failed:', importError);
-          throw new Error('Firebase auth not available');
+        // Check if Firebase modules are available
+        if (!firebaseAuth || !firebaseConfig) {
+          throw new Error('Firebase modules not available');
         }
 
-        try {
-          const firebaseConfig = await import('../../../firebase');
-          auth = firebaseConfig.auth;
-          isFirebaseConfigured = firebaseConfig.isFirebaseConfigured;
-        } catch (configError) {
-          console.warn('Firebase config import failed:', configError);
-          throw new Error('Firebase config not available');
-        }
+        const { signInWithPhoneNumber, RecaptchaVerifier } = firebaseAuth;
+        const { auth, isFirebaseConfigured } = firebaseConfig;
 
         // Check if Firebase is properly configured
         if (!isFirebaseConfigured || !isFirebaseConfigured()) {
@@ -311,15 +310,8 @@ const PlaceOrderContent = () => {
           console.log('Too many OTP requests');
         }
         
-        // Fallback: Simulate OTP for demo purposes
-        console.log('Using fallback OTP simulation due to Firebase error');
-        setTimeout(() => {
-          setVerificationId('demo-verification-id');
-          setOtpSent(true);
-          setShowOtpModal(true);
-          setSendingOtp(false);
-          setSuccess('Demo OTP sent! Use 123456 to verify.');
-        }, 1000);
+        // Re-throw the Firebase error
+        throw firebaseError;
       }
       
     } catch (err) {
@@ -405,20 +397,17 @@ const PlaceOrderContent = () => {
 
     try {
       setError('');
+      setSendingOtp(true);
       
-      // For demo purposes, we'll use a simple fallback without Firebase
-      // This avoids the chunk loading issues
-      console.log('Using demo mode for order placement');
+      console.log('🚀 Starting OTP process for phone:', customerInfo.phone);
       
-      // Simulate OTP process
-      setVerificationId('demo-verification-id');
-      setOtpSent(true);
-      setShowOtpModal(true);
-      setSuccess('Demo OTP sent! Use 123456 to verify.');
+      // Use real Firebase OTP
+      await sendOtp();
       
     } catch (err) {
       console.error('Error in placeOrder:', err);
       setError('Failed to initiate order process');
+      setSendingOtp(false);
     }
   };
 
@@ -803,22 +792,22 @@ const PlaceOrderContent = () => {
         </div>
       </div>
 
-      {/* Demo Mode Notice */}
+      {/* Firebase Status Notice */}
       <div style={{
         position: 'fixed',
         top: '10px',
         right: '10px',
-        backgroundColor: '#fef3c7',
-        color: '#92400e',
+        backgroundColor: firebaseAuth && firebaseConfig ? '#dcfce7' : '#fef2f2',
+        color: firebaseAuth && firebaseConfig ? '#166534' : '#dc2626',
         padding: '8px 12px',
         borderRadius: '8px',
         fontSize: '12px',
         fontWeight: '600',
         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
         zIndex: 50,
-        border: '1px solid #fbbf24'
+        border: firebaseAuth && firebaseConfig ? '1px solid #22c55e' : '1px solid #fecaca'
       }}>
-        🚀 Demo Mode - Use OTP: 123456
+        {firebaseAuth && firebaseConfig ? '🔥 Firebase Ready' : '⚠️ Firebase Not Available'}
       </div>
       {error && (
         <div style={{
@@ -1362,10 +1351,10 @@ const PlaceOrderContent = () => {
                 {/* Checkout Button */}
                 <button
                   onClick={placeOrder}
-                  disabled={placingOrder || !customerInfo.phone.trim()}
+                  disabled={placingOrder || !customerInfo.phone.trim() || sendingOtp}
                   style={{
                     width: '100%',
-                    background: placingOrder || !customerInfo.phone.trim()
+                    background: placingOrder || !customerInfo.phone.trim() || sendingOtp
                       ? 'linear-gradient(135deg, #d1d5db, #9ca3af)' 
                       : 'linear-gradient(135deg, #ef4444, #dc2626)',
                     color: 'white',
@@ -1401,6 +1390,11 @@ const PlaceOrderContent = () => {
                     <>
                       <FaSpinner size={16} style={{ animation: 'spin 1s linear infinite' }} />
                       Processing Order...
+                    </>
+                  ) : sendingOtp ? (
+                    <>
+                      <FaSpinner size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                      Sending OTP...
                     </>
                   ) : (
                     <>
@@ -1452,6 +1446,7 @@ const PlaceOrderContent = () => {
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder="Enter 6-digit code"
                 maxLength="6"
+                autoFocus
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -1463,6 +1458,14 @@ const PlaceOrderContent = () => {
                   backgroundColor: '#f9fafb',
                   boxSizing: 'border-box',
                   letterSpacing: '2px'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#ef4444';
+                  e.target.style.backgroundColor = '#ffffff';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#e5e7eb';
+                  e.target.style.backgroundColor = '#f9fafb';
                 }}
               />
             </div>
@@ -1854,6 +1857,10 @@ const PlaceOrderPage = () => {
 };
 
 export default PlaceOrderPage;
+
+
+
+
 
 
 
