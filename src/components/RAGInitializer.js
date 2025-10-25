@@ -103,7 +103,7 @@ const RAGInitializer = ({ restaurantId, onInitialized }) => {
         style={{
           position: 'fixed',
           bottom: '90px',
-          right: '20px',
+          left: '20px',
           width: '50px',
           height: '50px',
           borderRadius: '50%',
@@ -137,7 +137,7 @@ const RAGInitializer = ({ restaurantId, onInitialized }) => {
     <div style={{
       position: 'fixed',
       bottom: '90px',
-      right: '20px',
+      left: '20px',
       width: '350px',
       backgroundColor: 'white',
       borderRadius: '16px',

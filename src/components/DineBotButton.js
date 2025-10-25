@@ -116,7 +116,7 @@ const DineBotButton = () => {
       style={{
         position: 'fixed',
         bottom: isMobile ? '20px' : '80px',
-        right: '20px',
+        left: '20px',
         width: isMobile ? '50px' : '60px',
         height: isMobile ? '50px' : '60px',
         backgroundColor: '#ef4444',

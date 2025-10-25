@@ -792,6 +792,34 @@ function RestaurantPOSContent() {
     });
   };
 
+  // Handle short code search
+  const handleShortCodeSearch = (e) => {
+    if (e.key === 'Enter' && shortCodeSearch.trim()) {
+      const searchValue = shortCodeSearch.trim().toUpperCase();
+      const foundItem = (menuItems || []).find(item => 
+        item.shortCode?.toUpperCase() === searchValue
+      );
+      
+      if (foundItem) {
+        addToCart(foundItem);
+        setShortCodeSearch('');
+      } else {
+        // Show error notification if short code not found
+        setNotification({
+          type: 'error',
+          title: 'Short Code Not Found',
+          message: `No item found with short code "${searchValue}"`,
+          show: true
+        });
+        
+        // Auto-hide notification after 3 seconds
+        setTimeout(() => {
+          setNotification(null);
+        }, 3000);
+      }
+    }
+  };
+
   const updateCartItemQuantity = (itemId, newQuantity) => {
     setCart(prevCart => {
       return prevCart.map(cartItem =>
@@ -2682,6 +2710,7 @@ function RestaurantPOSContent() {
                     placeholder="Short Code"
                     value={shortCodeSearch}
                     onChange={(e) => setShortCodeSearch(e.target.value)}
+                    onKeyPress={handleShortCodeSearch}
                     style={{
                       width: '100%',
                       height: '36px',

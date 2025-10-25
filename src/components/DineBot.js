@@ -177,7 +177,7 @@ const DineBot = ({ restaurantId, isOpen, onClose }) => {
     <div style={{
       position: 'fixed',
       bottom: '20px',
-      right: '20px',
+      left: '20px',
       width: '420px',
       height: '650px',
       backgroundColor: 'white',
@@ -447,3 +447,4 @@ const DineBot = ({ restaurantId, isOpen, onClose }) => {
 };
 
 export default DineBot;
+

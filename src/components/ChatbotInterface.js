@@ -109,7 +109,7 @@ const ChatbotInterface = ({ restaurantId, userId }) => {
         style={{
           position: 'fixed',
           bottom: '20px',
-          right: '20px',
+          left: '20px',
           width: '60px',
           height: '60px',
           borderRadius: '50%',
@@ -141,7 +141,7 @@ const ChatbotInterface = ({ restaurantId, userId }) => {
         <div style={{
           position: 'fixed',
           bottom: '90px',
-          right: '20px',
+          left: '20px',
           width: '350px',
           height: '500px',
           backgroundColor: 'white',

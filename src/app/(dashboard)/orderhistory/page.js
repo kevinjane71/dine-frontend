@@ -598,6 +598,12 @@ const OrderHistory = () => {
                             </div>
                           )}
 
+                          {/* Order Type */}
+                          <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
+                            <FaUtensils className="text-gray-400 flex-shrink-0" />
+                            <span className="capitalize">{order.orderType?.replace('-', ' ') || 'Dine In'}</span>
+                          </div>
+
                           {/* Staff Info */}
                           <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
                             <FaUser className="text-gray-400 flex-shrink-0" />

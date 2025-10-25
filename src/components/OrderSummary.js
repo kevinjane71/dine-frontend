@@ -304,6 +304,24 @@ const OrderSummary = ({
               >
                 {t('dashboard.takeaway')}
               </button>
+              <button
+                onClick={() => setOrderType('delivery')}
+                style={{
+                  backgroundColor: orderType === 'delivery' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '4px',
+                  padding: '3px 6px',
+                  fontSize: '8px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  backdropFilter: 'blur(10px)',
+                  minWidth: '28px'
+                }}
+                title="Delivery"
+              >
+                Delivery
+              </button>
             </div>
             
             {/* QR Code Button */}
