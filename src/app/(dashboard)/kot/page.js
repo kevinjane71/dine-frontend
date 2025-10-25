@@ -314,6 +314,13 @@ const KitchenOrderTicket = () => {
 
   const getStatusInfo = (status) => {
     const statusMap = {
+      pending: { 
+        bg: '#fef2f2', 
+        text: '#dc2626', 
+        label: 'Pending',
+        icon: FaClock,
+        border: '#ef4444'
+      },
       confirmed: { 
         bg: '#fef3c7', 
         text: '#92400e', 
@@ -863,6 +870,7 @@ const KitchenOrderTicket = () => {
               }}>
                 {[
                   { key: 'all', label: 'All', count: kotOrders.length },
+                  { key: 'pending', label: 'Pending', count: kotOrders.filter(o => o.status === 'pending').length },
                   { key: 'confirmed', label: 'New', count: kotOrders.filter(o => o.status === 'confirmed').length },
                   { key: 'preparing', label: 'Cooking', count: kotOrders.filter(o => o.status === 'preparing').length },
                   { key: 'ready', label: 'Ready', count: kotOrders.filter(o => o.status === 'ready').length },
@@ -950,6 +958,7 @@ const KitchenOrderTicket = () => {
                 }}>
                   {[
                     { key: 'all', label: 'All Orders', count: kotOrders.length },
+                    { key: 'pending', label: 'Pending', count: kotOrders.filter(o => o.status === 'pending').length },
                     { key: 'confirmed', label: 'Confirmed', count: kotOrders.filter(o => o.status === 'confirmed').length },
                     { key: 'preparing', label: 'Preparing', count: kotOrders.filter(o => o.status === 'preparing').length },
                     { key: 'ready', label: 'Ready', count: kotOrders.filter(o => o.status === 'ready').length },
@@ -1308,7 +1317,7 @@ const KitchenOrderTicket = () => {
                         View
                       </button>
                       
-                      {kot.status === 'confirmed' && (
+                      {(kot.status === 'pending' || kot.status === 'confirmed') && (
                         <button
                           onClick={() => startCooking(kot.kotId, kot.id)}
                           style={{
