@@ -103,7 +103,7 @@ function RestaurantPOSContent() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   
   // Sidebar collapse state
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   
   // Card design toggle state
   const [useModernCards, setUseModernCards] = useState(true);
@@ -2672,9 +2672,10 @@ function RestaurantPOSContent() {
                     height: '36px',
                     paddingLeft: '36px',
                     paddingRight: '12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '4px',
-                    backgroundColor: '#ffffff',
+                    border: 'none',
+                    borderBottom: '2px solid #e5e7eb',
+                    borderRadius: '0px',
+                    backgroundColor: '#f8fafc',
                     fontSize: '12px',
                     fontWeight: '500',
                     outline: 'none',
@@ -2682,12 +2683,12 @@ function RestaurantPOSContent() {
                     color: '#374151'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                    e.target.style.borderBottomColor = '#e5e7eb';
+                    e.target.style.backgroundColor = '#f8fafc';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#d1d5db';
-                    e.target.style.boxShadow = 'none';
+                    e.target.style.borderBottomColor = '#e5e7eb';
+                    e.target.style.backgroundColor = '#f8fafc';
                   }}
                 />
             </div>
@@ -2707,10 +2708,10 @@ function RestaurantPOSContent() {
                       height: '36px',
                       paddingLeft: '8px',
                       paddingRight: '8px',
-                      border: '1px solid #6b7280',
+                      border: 'none',
                       borderRadius: '3px',
-                      backgroundColor: '#ffffff',
-                      fontSize: '11px',
+                      backgroundColor: '#fef3c7',
+                      fontSize: isMobile ? '16px' : '11px',
                       fontWeight: '600',
                       outline: 'none',
                       textAlign: 'center',
@@ -2718,12 +2719,10 @@ function RestaurantPOSContent() {
                       color: '#374151'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#f59e0b';
-                      e.target.style.boxShadow = '0 0 0 2px rgba(245, 158, 11, 0.1)';
+                      e.target.style.backgroundColor = '#fef3c7';
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = '#6b7280';
-                      e.target.style.boxShadow = 'none';
+                      e.target.style.backgroundColor = '#fef3c7';
                     }}
                   />
                 </div>
@@ -2741,10 +2740,10 @@ function RestaurantPOSContent() {
                       height: '36px',
                       paddingLeft: '8px',
                       paddingRight: '8px',
-                      border: '1px solid #9ca3af',
+                      border: 'none',
                       borderRadius: '3px',
-                      backgroundColor: '#ffffff',
-                      fontSize: '11px',
+                      backgroundColor: '#d1fae5',
+                      fontSize: isMobile ? '16px' : '11px',
                       fontWeight: '600',
                       outline: 'none',
                       textAlign: 'center',
@@ -2754,12 +2753,10 @@ function RestaurantPOSContent() {
                       letterSpacing: '0.5px'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#10b981';
-                      e.target.style.boxShadow = '0 0 0 2px rgba(16, 185, 129, 0.1)';
+                      e.target.style.backgroundColor = '#d1fae5';
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = '#9ca3af';
-                      e.target.style.boxShadow = 'none';
+                      e.target.style.backgroundColor = '#d1fae5';
                     }}
                   />
                 </div>

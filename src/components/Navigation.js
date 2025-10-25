@@ -292,6 +292,10 @@ function NavigationContent({ isHidden = false }) {
 
   // Get user's initials for avatar
   const getUserInitials = () => {
+    // If user has name, use name initials first
+    if (user?.name) {
+      return user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
     // If user has phone (phone login)
     if (user?.phone) {
       return user.phone.substring(user.phone.length - 2).toUpperCase();
@@ -300,15 +304,15 @@ function NavigationContent({ isHidden = false }) {
     if (user?.email) {
       return user.email.substring(0, 2).toUpperCase();
     }
-    // Fallback to name
-    if (user?.name) {
-      return user.name.split(' ').map(n => n[0]).join('').toUpperCase();
-    }
     return user?.role ? user.role.substring(0, 2).toUpperCase() : 'U';
   };
 
   // Get user display name based on login method
   const getUserDisplayName = () => {
+    // If user has name, show name first
+    if (user?.name) {
+      return user.name;
+    }
     // If user has phone (phone login)
     if (user?.phone) {
       return user.phone;
@@ -317,22 +321,34 @@ function NavigationContent({ isHidden = false }) {
     if (user?.email) {
       return user.email;
     }
-    // Fallback to name or user ID
-    return user?.name || user?.id || 'User';
+    // Fallback to user ID
+    return user?.id || 'User';
   };
 
   // Get user role display based on login method
   const getUserRoleDisplay = () => {
-    // If user has phone (phone login)
+    // Use the actual role from user data
+    if (user?.role) {
+      // Map role to display name
+      const roleMap = {
+        'owner': 'Owner',
+        'manager': 'Manager', 
+        'waiter': 'Waiter',
+        'employee': 'Staff',
+        'staff': 'Staff',
+        'admin': 'Admin',
+        'customer': 'Customer'
+      };
+      return roleMap[user.role] || user.role.charAt(0).toUpperCase() + user.role.slice(1);
+    }
+    // Fallback based on login method
     if (user?.phone) {
       return 'Admin';
     }
-    // If user has email (Gmail login)
     if (user?.email) {
       return 'Admin';
     }
-    // Fallback to role
-    return user?.role || 'Staff';
+    return 'Staff';
   };
 
   // Get role color
