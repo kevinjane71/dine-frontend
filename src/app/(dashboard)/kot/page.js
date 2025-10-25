@@ -349,6 +349,13 @@ const KitchenOrderTicket = () => {
         icon: FaCheck,
         border: '#6b7280'
       },
+      cancelled: { 
+        bg: '#f3f4f6', 
+        text: '#6b7280', 
+        label: 'Cancelled',
+        icon: FaTimesCircle,
+        border: '#9ca3af'
+      },
       completed: { 
         bg: '#dcfce7', 
         text: '#166534', 
@@ -541,6 +548,27 @@ const KitchenOrderTicket = () => {
     } catch (error) {
       console.error('Error marking completed:', error);
       setError('Failed to mark order as completed');
+    }
+  };
+
+  const cancelOrder = async (kotId, orderId) => {
+    const reason = prompt('Please provide a reason for cancellation (optional):');
+    if (reason === null) return; // User cancelled the prompt
+    
+    try {
+      await apiClient.cancelOrder(orderId, reason);
+      
+      // Remove from local state since cancelled orders don't show in KOT
+      setKotOrders(orders => orders.filter(order => order.kotId !== kotId));
+
+      // Refresh to get server state
+      setTimeout(() => {
+        loadKotData(false);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      setError('Failed to cancel order');
     }
   };
 
@@ -1433,6 +1461,35 @@ const KitchenOrderTicket = () => {
                         >
                           <FaClipboardCheck size={isClient && isMobile ? 10 : 12} />
                           Complete Order
+                        </button>
+                      )}
+                      
+                      {/* Cancel button - only for non-completed orders */}
+                      {(kot.status !== 'completed' && kot.status !== 'cancelled') && (
+                        <button
+                          onClick={() => cancelOrder(kot.kotId, kot.id)}
+                          style={{
+                            backgroundColor: '#f59e0b',
+                            color: 'white',
+                            padding: '6px 8px',
+                            borderRadius: '6px',
+                            fontWeight: '500',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '11px'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#d97706';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#f59e0b';
+                          }}
+                        >
+                          <FaTimesCircle size={10} />
                         </button>
                       )}
                       

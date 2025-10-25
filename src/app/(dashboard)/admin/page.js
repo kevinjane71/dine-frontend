@@ -507,6 +507,50 @@ const Admin = () => {
     };
   }, []);
 
+  // Delete staff member
+  const deleteStaff = async (staffId, staffName) => {
+    if (!confirm(`Are you sure you want to delete ${staffName}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await apiClient.deleteStaff(staffId);
+      
+      // Remove from local state
+      setStaff(prevStaff => prevStaff.filter(member => member.id !== staffId));
+      
+      alert(`${staffName} has been deleted successfully`);
+    } catch (error) {
+      console.error('Error deleting staff:', error);
+      alert(`Failed to delete ${staffName}: ${error.message || 'Unknown error'}`);
+    }
+  };
+
+  // Fetch credentials for a specific staff member
+  const fetchStaffCredentials = async (staffId) => {
+    try {
+      const response = await apiClient.getStaffCredentials(staffId);
+      
+      // Update the staff member with credentials
+      setStaff(prevStaff => prevStaff.map(member => 
+        member.id === staffId 
+          ? { 
+              ...member, 
+              loginId: response.loginId,
+              tempPassword: response.temporaryPassword,
+              hasTemporaryPassword: response.hasTemporaryPassword,
+              credentialsMessage: response.message
+            }
+          : member
+      ));
+      
+      return response;
+    } catch (error) {
+      console.error('Error fetching staff credentials:', error);
+      return null;
+    }
+  };
+
   // Fetch staff data when restaurant is selected
   useEffect(() => {
     const fetchStaff = async () => {
@@ -783,15 +827,73 @@ const Admin = () => {
     (member.role && member.role.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const formatDateTime = (dateString) => {
-    if (!dateString) return 'Never';
-    const date = new Date(dateString);
-    return date.toLocaleString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const formatDateTime = (dateInput) => {
+    if (!dateInput) return 'Never';
+    
+    try {
+      let date;
+      
+      // Handle Firestore timestamp
+      if (dateInput.toDate && typeof dateInput.toDate === 'function') {
+        date = dateInput.toDate();
+      } else if (dateInput._seconds) {
+        // Handle Firestore timestamp format
+        date = new Date(dateInput._seconds * 1000);
+      } else if (dateInput instanceof Date) {
+        date = dateInput;
+      } else if (typeof dateInput === 'string' || typeof dateInput === 'number') {
+        date = new Date(dateInput);
+      } else {
+        return 'Never';
+      }
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Never';
+      }
+      
+      return date.toLocaleString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return 'Never';
+    }
+  };
+
+  const formatDate = (dateInput) => {
+    if (!dateInput) return 'N/A';
+    
+    try {
+      let date;
+      
+      // Handle Firestore timestamp
+      if (dateInput.toDate && typeof dateInput.toDate === 'function') {
+        date = dateInput.toDate();
+      } else if (dateInput._seconds) {
+        // Handle Firestore timestamp format
+        date = new Date(dateInput._seconds * 1000);
+      } else if (dateInput instanceof Date) {
+        date = dateInput;
+      } else if (typeof dateInput === 'string' || typeof dateInput === 'number') {
+        date = new Date(dateInput);
+      } else {
+        return 'N/A';
+      }
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'N/A';
+      }
+      
+      return date.toLocaleDateString('en-IN');
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return 'N/A';
+    }
   };
 
   const copyToClipboard = async (text, type, memberId) => {
@@ -1638,75 +1740,34 @@ const Admin = () => {
                   {/* Staff Details */}
                   <div style={{ padding: isClient && isMobile ? '16px' : '20px' }}>
                     {/* Login Credentials Section */}
-                    {(member.loginId || member.tempPassword) && (
-                      <div style={{ 
-                        backgroundColor: '#f0f9ff', 
-                        padding: isClient && isMobile ? '12px' : '16px', 
-                        borderRadius: '12px',
-                        marginBottom: isClient && isMobile ? '12px' : '16px',
-                        border: '1px solid #0ea5e9'
+                    <div style={{ 
+                      backgroundColor: '#f0f9ff', 
+                      padding: isClient && isMobile ? '12px' : '16px', 
+                      borderRadius: '12px',
+                      marginBottom: isClient && isMobile ? '12px' : '16px',
+                      border: '1px solid #0ea5e9'
+                    }}>
+                      <h4 style={{ 
+                        fontSize: '14px', 
+                        fontWeight: '600', 
+                        color: '#0c4a6e', 
+                        marginBottom: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
                       }}>
-                        <h4 style={{ 
-                          fontSize: '14px', 
-                          fontWeight: '600', 
-                          color: '#0c4a6e', 
-                          marginBottom: '12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px'
-                        }}>
-                          <FaKey size={12} />
-                          Login Credentials
-                        </h4>
-                        
-                        {/* User ID Badge */}
-                        <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <FaIdBadge style={{ color: '#0ea5e9', fontSize: '14px' }} />
-                          <div style={{ flex: 1 }}>
-                            <span style={{ fontSize: '11px', color: '#6b7280', display: 'block' }}>User ID</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{ 
-                                fontSize: '13px', 
-                                fontWeight: '600', 
-                                color: '#0c4a6e',
-                                backgroundColor: '#e0f2fe',
-                                padding: '4px 8px',
-                                borderRadius: '6px',
-                                fontFamily: 'monospace'
-                              }}>
-                                {member.loginId || 'N/A'}
-                              </span>
-                              {member.loginId && (
-                                <button
-                                  onClick={() => copyToClipboard(member.loginId, 'userId', member.id)}
-                                  style={{
-                                    backgroundColor: copiedCredentials[`${member.id}_userId`] ? '#10b981' : '#0ea5e9',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    padding: '4px 8px',
-                                    cursor: 'pointer',
-                                    fontSize: '11px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    transition: 'all 0.2s'
-                                  }}
-                                >
-                                  <FaCopy size={10} />
-                                  {copiedCredentials[`${member.id}_userId`] ? 'Copied!' : 'Copy'}
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Password with show/hide */}
-                        {(member.tempPassword || member.password) && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <FaKey style={{ color: '#0ea5e9', fontSize: '14px' }} />
+                        <FaKey size={12} />
+                        Login Credentials
+                      </h4>
+                      
+                      {/* Show credentials if available, otherwise show load button */}
+                      {(member.loginId || member.tempPassword) ? (
+                        <>
+                          {/* User ID Badge */}
+                          <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FaIdBadge style={{ color: '#0ea5e9', fontSize: '14px' }} />
                             <div style={{ flex: 1 }}>
-                              <span style={{ fontSize: '11px', color: '#6b7280', display: 'block' }}>Password</span>
+                              <span style={{ fontSize: '11px', color: '#6b7280', display: 'block' }}>User ID</span>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ 
                                   fontSize: '13px', 
@@ -1715,37 +1776,15 @@ const Admin = () => {
                                   backgroundColor: '#e0f2fe',
                                   padding: '4px 8px',
                                   borderRadius: '6px',
-                                  fontFamily: 'monospace',
-                                  minWidth: '60px'
+                                  fontFamily: 'monospace'
                                 }}>
-                                  {showPassword[member.id] 
-                                    ? (member.tempPassword || member.password || 'N/A')
-                                    : '••••••'
-                                  }
+                                  {member.loginId || 'N/A'}
                                 </span>
-                                <button
-                                  onClick={() => togglePasswordVisibility(member.id)}
-                                  style={{
-                                    backgroundColor: '#6b7280',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    padding: '4px 8px',
-                                    cursor: 'pointer',
-                                    fontSize: '11px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px'
-                                  }}
-                                >
-                                  {showPassword[member.id] ? <FaEyeSlash size={10} /> : <FaEye size={10} />}
-                                  {showPassword[member.id] ? 'Hide' : 'Show'}
-                                </button>
-                                {(member.tempPassword || member.password) && (
+                                {member.loginId && (
                                   <button
-                                    onClick={() => copyToClipboard(member.tempPassword || member.password, 'password', member.id)}
+                                    onClick={() => copyToClipboard(member.loginId, 'userId', member.id)}
                                     style={{
-                                      backgroundColor: copiedCredentials[`${member.id}_password`] ? '#10b981' : '#0ea5e9',
+                                      backgroundColor: copiedCredentials[`${member.id}_userId`] ? '#10b981' : '#0ea5e9',
                                       color: 'white',
                                       border: 'none',
                                       borderRadius: '6px',
@@ -1759,15 +1798,123 @@ const Admin = () => {
                                     }}
                                   >
                                     <FaCopy size={10} />
-                                    {copiedCredentials[`${member.id}_password`] ? 'Copied!' : 'Copy'}
+                                    {copiedCredentials[`${member.id}_userId`] ? 'Copied!' : 'Copy'}
                                   </button>
                                 )}
                               </div>
                             </div>
                           </div>
-                        )}
-                      </div>
-                    )}
+
+                          {/* Password with show/hide */}
+                          {(member.tempPassword || member.password || member.hasTemporaryPassword) && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <FaKey style={{ color: '#0ea5e9', fontSize: '14px' }} />
+                              <div style={{ flex: 1 }}>
+                                <span style={{ fontSize: '11px', color: '#6b7280', display: 'block' }}>Password</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ 
+                                    fontSize: '13px', 
+                                    fontWeight: '600', 
+                                    color: '#0c4a6e',
+                                    backgroundColor: '#e0f2fe',
+                                    padding: '4px 8px',
+                                    borderRadius: '6px',
+                                    fontFamily: 'monospace',
+                                    minWidth: '60px'
+                                  }}>
+                                    {showPassword[member.id] 
+                                      ? (member.tempPassword || member.password || 'N/A')
+                                      : '••••••'
+                                    }
+                                  </span>
+                                  <button
+                                    onClick={() => togglePasswordVisibility(member.id)}
+                                    style={{
+                                      backgroundColor: '#6b7280',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '6px',
+                                      padding: '4px 8px',
+                                      cursor: 'pointer',
+                                      fontSize: '11px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '4px'
+                                    }}
+                                  >
+                                    {showPassword[member.id] ? <FaEyeSlash size={10} /> : <FaEye size={10} />}
+                                    {showPassword[member.id] ? 'Hide' : 'Show'}
+                                  </button>
+                                  {(member.tempPassword || member.password) && (
+                                    <button
+                                      onClick={() => copyToClipboard(member.tempPassword || member.password, 'password', member.id)}
+                                      style={{
+                                        backgroundColor: copiedCredentials[`${member.id}_password`] ? '#10b981' : '#0ea5e9',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        padding: '4px 8px',
+                                        cursor: 'pointer',
+                                        fontSize: '11px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      <FaCopy size={10} />
+                                      {copiedCredentials[`${member.id}_password`] ? 'Copied!' : 'Copy'}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Show message if available */}
+                          {member.credentialsMessage && (
+                            <div style={{ 
+                              marginTop: '8px', 
+                              fontSize: '11px', 
+                              color: '#6b7280', 
+                              fontStyle: 'italic' 
+                            }}>
+                              {member.credentialsMessage}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div style={{ textAlign: 'center' }}>
+                          <button
+                            onClick={() => fetchStaffCredentials(member.id)}
+                            style={{
+                              backgroundColor: '#0ea5e9',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '8px 16px',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              margin: '0 auto'
+                            }}
+                          >
+                            <FaKey size={12} />
+                            Load Credentials
+                          </button>
+                          <div style={{ 
+                            marginTop: '8px', 
+                            fontSize: '11px', 
+                            color: '#6b7280' 
+                          }}>
+                            Click to load login credentials
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Page Access Display */}
                     {member.pageAccess && (
@@ -1839,7 +1986,7 @@ const Admin = () => {
                         <div>
                           <span style={{ fontSize: '11px', color: '#6b7280', display: 'block' }}>Start Date</span>
                           <span style={{ fontSize: '13px', fontWeight: '500', color: '#1f2937' }}>
-                            {member.startDate ? new Date(member.startDate).toLocaleDateString('en-IN') : 'N/A'}
+                            {formatDate(member.startDate)}
                           </span>
                         </div>
                       </div>
@@ -1888,35 +2035,34 @@ const Admin = () => {
                   
                   {/* Actions */}
                   <div style={{ 
-                    padding: isClient && isMobile ? '12px 16px' : '16px 20px', 
+                    padding: isClient && isMobile ? '8px 12px' : '12px 16px',
                     backgroundColor: '#fef7f0', 
                     display: 'flex', 
-                    gap: isClient && isMobile ? '6px' : '8px',
+                    gap: isClient && isMobile ? '4px' : '6px',
                     borderTop: '1px solid #fce7f3',
-                    flexWrap: isClient && isMobile ? 'wrap' : 'nowrap'
+                    justifyContent: 'center',
+                    alignItems: 'center'
                   }}>
                     {/* View button - available to everyone */}
                     <button
                       onClick={() => setSelectedStaff(member)}
                       style={{
-                        flex: isClient && isMobile ? '1 1 100%' : (canManageStaff(member.role) ? 1 : 2),
                         backgroundColor: '#3b82f6',
                         color: 'white',
-                        padding: isClient && isMobile ? '8px 12px' : '10px 16px',
-                        borderRadius: '10px',
-                        fontWeight: '600',
-                        fontSize: isClient && isMobile ? '12px' : '13px',
+                        padding: '6px',
+                        borderRadius: '6px',
                         border: 'none',
                         cursor: 'pointer',
                         transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: isClient && isMobile ? '4px' : '6px'
+                        minWidth: '32px',
+                        height: '32px'
                       }}
+                      title="View Details"
                     >
-                      <FaEye size={isClient && isMobile ? 10 : 12} />
-                      View Details
+                      <FaEye size={14} />
                     </button>
                     
                     {/* Status toggle - only if user can manage this staff member */}
@@ -1924,24 +2070,22 @@ const Admin = () => {
                       <button
                         onClick={() => toggleStaffStatus(member.id)}
                         style={{
-                          flex: isClient && isMobile ? '1 1 45%' : 1,
                           backgroundColor: member.status === 'active' ? '#ef4444' : '#10b981',
                           color: 'white',
-                          padding: isClient && isMobile ? '8px 12px' : '10px 16px',
-                          borderRadius: '10px',
-                          fontWeight: '600',
-                          fontSize: isClient && isMobile ? '12px' : '13px',
+                          padding: '6px',
+                          borderRadius: '6px',
                           border: 'none',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: isClient && isMobile ? '4px' : '6px'
+                          minWidth: '32px',
+                          height: '32px'
                         }}
+                        title={member.status === 'active' ? 'Deactivate' : 'Activate'}
                       >
-                        {member.status === 'active' ? <FaUserTimes size={isClient && isMobile ? 10 : 12} /> : <FaUserCheck size={isClient && isMobile ? 10 : 12} />}
-                        {member.status === 'active' ? 'Deactivate' : 'Activate'}
+                        {member.status === 'active' ? <FaUserTimes size={14} /> : <FaUserCheck size={14} />}
                       </button>
                     )}
 
@@ -1949,24 +2093,46 @@ const Admin = () => {
                     {(currentUserRole === 'owner' || currentUserRole === 'admin') && canManageStaff(member.role) && (
                       <button
                         style={{
-                          flex: isClient && isMobile ? '1 1 45%' : 1,
                           backgroundColor: '#f59e0b',
                           color: 'white',
-                          padding: isClient && isMobile ? '8px 12px' : '10px 16px',
-                          borderRadius: '10px',
-                          fontWeight: '600',
-                          fontSize: isClient && isMobile ? '12px' : '13px',
+                          padding: '6px',
+                          borderRadius: '6px',
                           border: 'none',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: isClient && isMobile ? '4px' : '6px'
+                          minWidth: '32px',
+                          height: '32px'
                         }}
+                        title="Edit Staff"
                       >
-                        <FaEdit size={12} />
-                        Edit
+                        <FaEdit size={14} />
+                      </button>
+                    )}
+
+                    {/* Delete button - only for owners and admins */}
+                    {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
+                      <button
+                        onClick={() => deleteStaff(member.id, member.name)}
+                        style={{
+                          backgroundColor: '#dc2626',
+                          color: 'white',
+                          padding: '6px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '32px',
+                          height: '32px'
+                        }}
+                        title="Delete Staff"
+                      >
+                        <FaTrash size={14} />
                       </button>
                     )}
                   </div>

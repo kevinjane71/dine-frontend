@@ -21,7 +21,8 @@ import {
   FaFilter,
   FaChevronUp,
   FaChevronDown as FaChevronDownIcon,
-  FaCopy
+  FaCopy,
+  FaTimesCircle
 } from 'react-icons/fa';
 
 const OrderHistory = () => {
@@ -306,6 +307,23 @@ const OrderHistory = () => {
 
   const handleViewOrder = (orderId) => {
     console.log('View order:', orderId);
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    const reason = prompt('Please provide a reason for cancellation (optional):');
+    if (reason === null) return; // User cancelled the prompt
+    
+    try {
+      await apiClient.cancelOrder(orderId, reason);
+      
+      // Refresh orders to get updated status
+      fetchOrders();
+      
+      alert('Order cancelled successfully');
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      alert('Failed to cancel order: ' + (error.message || 'Unknown error'));
+    }
   };
 
   const handleEditOrder = (orderId) => {
@@ -717,6 +735,17 @@ const OrderHistory = () => {
                           <FaEye className="text-xs" />
                           <span>View</span>
                         </button>
+                        {/* Cancel button - only for non-completed orders */}
+                        {(order.status !== 'completed' && order.status !== 'cancelled') && (
+                          <button
+                            onClick={() => handleCancelOrder(order.id)}
+                            className="px-3 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-lg transition-all duration-200 flex items-center justify-center space-x-1 shadow-md hover:shadow-lg"
+                            title="Cancel Order"
+                          >
+                            <FaTimesCircle className="text-xs" />
+                            <span>Cancel</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => handleEditOrder(order.id)}
                           className="px-3 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg transition-all duration-200 flex items-center justify-center space-x-1 shadow-md hover:shadow-lg"

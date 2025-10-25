@@ -628,6 +628,23 @@ class ApiClient {
     });
   }
 
+  async cancelOrder(orderId, reason = '') {
+    return this.request(`/api/orders/${orderId}/cancel`, {
+      method: 'PATCH',
+      body: { reason },
+    });
+  }
+
+  async getStaffCredentials(staffId) {
+    return this.request(`/api/staff/${staffId}/credentials`);
+  }
+
+  async deleteStaff(staffId) {
+    return this.request(`/api/staff/${staffId}`, {
+      method: 'DELETE',
+    });
+  }
+
   async deleteOrder(orderId) {
     return this.request(`/api/orders/${orderId}`, {
       method: 'DELETE',
