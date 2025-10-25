@@ -52,6 +52,7 @@ function NavigationContent({ isHidden = false }) {
   const [user, setUser] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [pageAccess, setPageAccess] = useState(null);
+  const [isNavigationReady, setIsNavigationReady] = useState(false);
   
   // Debug dropdown states
   useEffect(() => {
@@ -129,6 +130,11 @@ function NavigationContent({ isHidden = false }) {
                 admin: false
               });
             }
+            // Mark navigation as ready for staff users
+            setIsNavigationReady(true);
+          } else {
+            // For owners, mark navigation as ready immediately
+            setIsNavigationReady(true);
           }
           
           // Set restaurant data for staff and owners
@@ -245,11 +251,12 @@ function NavigationContent({ isHidden = false }) {
   // Filter navigation items based on user role and page access
   const navItems = getAllNavItems().filter(item => {
     if (!user || !user.role) {
-      return true;
+      return false; // Don't show any items until user is loaded
     }
     
     // For staff users, check page access
     if (user.role === 'employee' || user.role === 'manager') {
+      // Don't show items until pageAccess is loaded
       if (!pageAccess) return false;
       
       // Map navigation IDs to page access keys
@@ -274,7 +281,7 @@ function NavigationContent({ isHidden = false }) {
       return item.roles.includes(user.role);
     }
     
-    return true;
+    return false; // Default to not showing items
   });
 
   const handleNavItemClick = () => {
@@ -491,7 +498,8 @@ function NavigationContent({ isHidden = false }) {
               minHeight: '40px', // Prevent height changes
               overflow: 'hidden' // Prevent content overflow
             }}>
-              {navItems.map((item) => { // Show all navigation items
+              {isNavigationReady ? (
+                navItems.map((item) => { // Show all navigation items
                 const IconComponent = item.icon;
                 const isActive = pathname === item.href;
                 
@@ -555,7 +563,21 @@ function NavigationContent({ isHidden = false }) {
                     </div>
                   </Link>
                 );
-              })}
+              })
+              ) : (
+                // Loading state for navigation
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '6px 12px',
+                  color: '#9ca3af',
+                  fontSize: '12px',
+                  fontWeight: '500'
+                }}>
+                  Loading...
+                </div>
+              )}
             </div>
           )}
         
@@ -1211,7 +1233,8 @@ function NavigationContent({ isHidden = false }) {
 
             {/* Mobile Navigation Items - Modern */}
             <div style={{ flex: 1, padding: '20px 0' }}>
-              {navItems.map((item) => {
+              {isNavigationReady ? (
+                navItems.map((item) => {
                 const IconComponent = item.icon;
                 const isActive = pathname === item.href;
                 
@@ -1257,7 +1280,21 @@ function NavigationContent({ isHidden = false }) {
                     </div>
                   </Link>
                 );
-              })}
+              })
+              ) : (
+                // Loading state for mobile navigation
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '40px 20px',
+                  color: '#9ca3af',
+                  fontSize: '16px',
+                  fontWeight: '500'
+                }}>
+                  Loading navigation...
+                </div>
+              )}
             </div>
 
             {/* Mobile Menu Footer - Logout */}
