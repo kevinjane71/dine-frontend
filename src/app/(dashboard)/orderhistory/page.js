@@ -18,7 +18,9 @@ import {
   FaEye,
   FaEdit,
   FaChevronDown,
-  FaFilter
+  FaFilter,
+  FaChevronUp,
+  FaChevronDown as FaChevronDownIcon
 } from 'react-icons/fa';
 
 const OrderHistory = () => {
@@ -30,6 +32,7 @@ const OrderHistory = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedOrderType, setSelectedOrderType] = useState('all');
   const [myOrdersOnly, setMyOrdersOnly] = useState(false);
+  const [todayOrdersOnly, setTodayOrdersOnly] = useState(true); // Default to today only
   const [restaurantId, setRestaurantId] = useState(null);
   const [restaurant, setRestaurant] = useState(null);
   const [user, setUser] = useState(null);
@@ -37,6 +40,9 @@ const OrderHistory = () => {
   // Custom dropdown states
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
+  
+  // Expanded orders state for showing full item lists
+  const [expandedOrders, setExpandedOrders] = useState(new Set());
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -59,6 +65,53 @@ const OrderHistory = () => {
   const [totalOrders, setTotalOrders] = useState(0);
   const [limit] = useState(10);
 
+  // Get today's midnight timestamp
+  const getTodayMidnight = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  };
+
+  // Check if order is from today
+  const isOrderFromToday = (orderDate) => {
+    if (!orderDate) return false;
+    
+    try {
+      let d;
+      if (orderDate.toDate && typeof orderDate.toDate === 'function') {
+        d = orderDate.toDate();
+      } else if (orderDate._seconds) {
+        // Handle Firestore timestamp format
+        d = new Date(orderDate._seconds * 1000);
+      } else if (orderDate instanceof Date) {
+        d = orderDate;
+      } else if (typeof orderDate === 'string' || typeof orderDate === 'number') {
+        d = new Date(orderDate);
+      } else {
+        return false;
+      }
+      
+      if (isNaN(d.getTime())) return false;
+      
+      const todayMidnight = getTodayMidnight();
+      return d >= todayMidnight;
+    } catch (error) {
+      console.error('Date comparison error:', error);
+      return false;
+    }
+  };
+
+  // Toggle order expansion
+  const toggleOrderExpansion = (orderId) => {
+    const newExpanded = new Set(expandedOrders);
+    if (newExpanded.has(orderId)) {
+      newExpanded.delete(orderId);
+    } else {
+      newExpanded.add(orderId);
+    }
+    setExpandedOrders(newExpanded);
+  };
+
   // Improved date formatting
   const formatDate = (date) => {
     if (!date) return 'N/A';
@@ -68,6 +121,9 @@ const OrderHistory = () => {
       if (date.toDate && typeof date.toDate === 'function') {
         // Firestore timestamp
         d = date.toDate();
+      } else if (date._seconds) {
+        // Handle Firestore timestamp format
+        d = new Date(date._seconds * 1000);
       } else if (date instanceof Date) {
         d = date;
       } else if (typeof date === 'string' || typeof date === 'number') {
@@ -118,7 +174,7 @@ const OrderHistory = () => {
   // Get status display text
   const getStatusText = (status, orderFlow) => {
     if (orderFlow?.isDirectBilling) {
-      return 'Direct Billing';
+      return 'Billing Completed';
     }
     if (orderFlow?.isKitchenOrder) {
       return 'Kitchen Order';
@@ -150,7 +206,8 @@ const OrderHistory = () => {
         status: selectedStatus !== 'all' ? selectedStatus : undefined,
         orderType: selectedOrderType !== 'all' ? selectedOrderType : undefined,
         myOrdersOnly: myOrdersOnly ? user?.id : undefined,
-        search: searchTerm.trim() || undefined
+        search: searchTerm.trim() || undefined,
+        todayOnly: todayOrdersOnly
       };
 
       console.log('Orders page: Fetching orders with filters:', filters);
@@ -158,9 +215,35 @@ const OrderHistory = () => {
       
       console.log('Orders page: API response:', response);
       
-      setOrders(response.orders || []);
+      // Since backend now supports todayOnly, we don't need client-side filtering
+      let filteredOrders = response.orders || [];
+      
+      // Sort by latest first
+      filteredOrders.sort((a, b) => {
+        let dateA, dateB;
+        
+        if (a.createdAt?.toDate && typeof a.createdAt.toDate === 'function') {
+          dateA = a.createdAt.toDate();
+        } else if (a.createdAt?._seconds) {
+          dateA = new Date(a.createdAt._seconds * 1000);
+        } else {
+          dateA = new Date(a.createdAt);
+        }
+        
+        if (b.createdAt?.toDate && typeof b.createdAt.toDate === 'function') {
+          dateB = b.createdAt.toDate();
+        } else if (b.createdAt?._seconds) {
+          dateB = new Date(b.createdAt._seconds * 1000);
+        } else {
+          dateB = new Date(b.createdAt);
+        }
+        
+        return dateB - dateA; // Latest first
+      });
+      
+      setOrders(filteredOrders);
       setTotalPages(response.pagination?.totalPages || 1);
-      setTotalOrders(response.pagination?.totalOrders || 0);
+      setTotalOrders(response.pagination?.totalOrders || filteredOrders.length);
       
     } catch (error) {
       console.error('Orders page: Error fetching orders:', error);
@@ -169,7 +252,7 @@ const OrderHistory = () => {
     } finally {
       setLoading(false);
     }
-  }, [restaurantId, currentPage, limit, selectedStatus, selectedOrderType, myOrdersOnly, searchTerm, user?.id]);
+  }, [restaurantId, currentPage, limit, selectedStatus, selectedOrderType, myOrdersOnly, searchTerm, todayOrdersOnly, user?.id]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -198,7 +281,7 @@ const OrderHistory = () => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [selectedStatus, selectedOrderType, myOrdersOnly, searchTerm]);
+  }, [selectedStatus, selectedOrderType, myOrdersOnly, searchTerm, todayOrdersOnly]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -327,7 +410,7 @@ const OrderHistory = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Filters */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6 backdrop-blur-sm">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6">
             {/* Search */}
             <div className="sm:col-span-2">
               <form onSubmit={handleSearch} className="relative">
@@ -362,6 +445,34 @@ const OrderHistory = () => {
               placeholder="All Types"
             />
             
+            {/* Today Orders Checkbox */}
+            <div className="flex items-center justify-center lg:justify-start">
+              <label className="flex items-center space-x-3 cursor-pointer group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={todayOrdersOnly}
+                    onChange={(e) => setTodayOrdersOnly(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`w-5 h-5 border-2 rounded-md transition-all duration-200 flex items-center justify-center ${
+                    todayOrdersOnly 
+                      ? 'bg-red-600 border-red-600' 
+                      : 'bg-white border-gray-300 group-hover:border-red-400'
+                  }`}>
+                    {todayOrdersOnly && (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+                  Today Orders
+                </span>
+              </label>
+            </div>
+            
             {/* My Orders Checkbox */}
             <div className="flex items-center justify-center lg:justify-start">
               <label className="flex items-center space-x-3 cursor-pointer group">
@@ -370,13 +481,19 @@ const OrderHistory = () => {
                     type="checkbox"
                     checked={myOrdersOnly}
                     onChange={(e) => setMyOrdersOnly(e.target.checked)}
-                    className="w-5 h-5 text-red-600 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 group-hover:border-red-400"
+                    className="sr-only"
                   />
-                  {myOrdersOnly && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-3 h-3 bg-red-600 rounded-sm"></div>
-                    </div>
-                  )}
+                  <div className={`w-5 h-5 border-2 rounded-md transition-all duration-200 flex items-center justify-center ${
+                    myOrdersOnly 
+                      ? 'bg-red-600 border-red-600' 
+                      : 'bg-white border-gray-300 group-hover:border-red-400'
+                  }`}>
+                    {myOrdersOnly && (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
                 </div>
                 <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
                   My Orders
@@ -453,22 +570,58 @@ const OrderHistory = () => {
                           </div>
                         </div>
 
-                        {/* Items - Compact */}
+                        {/* Items - Enhanced with Expand/Collapse */}
                         <div className="mb-3">
-                          <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">
-                            Items ({Array.isArray(order.items) ? order.items.length : 0})
-                          </h4>
-                          <div className="space-y-1">
-                            {Array.isArray(order.items) && order.items.slice(0, 2).map((item, itemIndex) => (
-                              <div key={itemIndex} className="flex justify-between text-xs sm:text-sm text-gray-600">
-                                <span className="truncate">{item.name} x {item.quantity}</span>
-                                <span className="ml-2 flex-shrink-0">₹{item.total}</span>
-                              </div>
-                            ))}
+                          <div className="flex items-center justify-between mb-1 sm:mb-2">
+                            <h4 className="text-xs sm:text-sm font-medium text-gray-900">
+                              Items ({Array.isArray(order.items) ? order.items.length : 0})
+                            </h4>
                             {Array.isArray(order.items) && order.items.length > 2 && (
-                              <div className="text-xs sm:text-sm text-gray-500">
-                                +{order.items.length - 2} more items
-                              </div>
+                              <button
+                                onClick={() => toggleOrderExpansion(order.id)}
+                                className="flex items-center space-x-1 text-xs text-red-600 hover:text-red-700 transition-colors duration-200"
+                              >
+                                <span>{expandedOrders.has(order.id) ? 'Show Less' : 'Show All'}</span>
+                                {expandedOrders.has(order.id) ? (
+                                  <FaChevronUp className="text-xs" />
+                                ) : (
+                                  <FaChevronDownIcon className="text-xs" />
+                                )}
+                              </button>
+                            )}
+                          </div>
+                          
+                          {/* Items Display */}
+                          <div className="space-y-1">
+                            {Array.isArray(order.items) && (
+                              <>
+                                {/* Always show first 2 items */}
+                                {order.items.slice(0, 2).map((item, itemIndex) => (
+                                  <div key={itemIndex} className="flex justify-between text-xs sm:text-sm text-gray-600">
+                                    <span className="truncate">{item.name} x {item.quantity}</span>
+                                    <span className="ml-2 flex-shrink-0">₹{item.total}</span>
+                                  </div>
+                                ))}
+                                
+                                {/* Show remaining items if expanded */}
+                                {expandedOrders.has(order.id) && order.items.length > 2 && (
+                                  <div className="mt-2 pt-2 border-t border-gray-100">
+                                    {order.items.slice(2).map((item, itemIndex) => (
+                                      <div key={itemIndex + 2} className="flex justify-between text-xs sm:text-sm text-gray-600 mb-1">
+                                        <span className="truncate">{item.name} x {item.quantity}</span>
+                                        <span className="ml-2 flex-shrink-0">₹{item.total}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                
+                                {/* Show "+X more items" if not expanded */}
+                                {!expandedOrders.has(order.id) && order.items.length > 2 && (
+                                  <div className="text-xs sm:text-sm text-gray-500">
+                                    +{order.items.length - 2} more items
+                                  </div>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>

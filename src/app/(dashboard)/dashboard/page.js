@@ -62,6 +62,7 @@ function RestaurantPOSContent() {
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [quickSearch, setQuickSearch] = useState('');
+  const [shortCodeSearch, setShortCodeSearch] = useState('');
   const [orderType, setOrderType] = useState('dine-in');
   const [selectedTable, setSelectedTable] = useState(null);
   const [showTableSelector, setShowTableSelector] = useState(false);
@@ -2388,38 +2389,6 @@ function RestaurantPOSContent() {
             }}>
                   {t('dashboard.menuCategories')}
             </h2>
-            <div style={{ position: 'relative' }}>
-              <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={14} />
-              <input
-                type="text"
-                    placeholder={t('dashboard.searchOrder')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: '100%',
-                  paddingLeft: '36px',
-                  paddingRight: '12px',
-                  paddingTop: '10px',
-                  paddingBottom: '10px',
-                  border: 'none',
-                  borderRadius: '8px',
-                  backgroundColor: '#ffffff',
-                  fontSize: '13px',
-                  fontWeight: '500',
-                  outline: 'none',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  transition: 'all 0.2s ease'
-                }}
-                onFocus={(e) => {
-                  e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.2)';
-                  e.target.style.border = '1px solid #ef4444';
-                }}
-                onBlur={(e) => {
-                  e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-                  e.target.style.border = 'none';
-                }}
-              />
-            </div>
               </>
             )}
             {sidebarCollapsed && (
@@ -2430,7 +2399,7 @@ function RestaurantPOSContent() {
                 height: '28px'
               }}>
                 <FaUtensils size={16} color="#ef4444" />
-              </div>
+            </div>
             )}
           </div>
           
@@ -2632,228 +2601,182 @@ function RestaurantPOSContent() {
             </div>
           ) : (
           <>
-            {/* Menu Header */}
-          <div style={{ padding: '8px 12px', backgroundColor: 'white', borderBottom: '1px solid #f3f4f6' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
-              <div>
-                <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                  {categories.find(c => c.id === selectedCategory)?.name || 'All Items'}
-                </h2>
-                <p style={{ color: '#6b7280', margin: '2px 0 0 0', fontSize: '11px' }}>{filteredItems.length} items</p>
-              </div>
-              
-              {/* Card Design Toggle Button */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
-                  {useModernCards ? 'Modern' : 'Compact'}
-                </span>
-                <button
-                  onClick={() => setUseModernCards(!useModernCards)}
-                  style={{
-                    width: '40px',
-                    height: '24px',
-                    borderRadius: '12px',
-                    border: 'none',
-                    backgroundColor: useModernCards ? '#ef4444' : '#d1d5db',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: useModernCards ? 'flex-end' : 'flex-start',
-                    padding: '2px',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                  }}
-                  title={useModernCards ? 'Switch to Compact Cards' : 'Switch to Modern Cards'}
-                >
-                  <div style={{
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    backgroundColor: 'white',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-                    transition: 'all 0.3s ease'
-                  }} />
-                </button>
-              </div>
-            </div>
-            
-            {/* Order Management Row - Redesigned */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between', 
-              gap: '12px', 
-              paddingTop: '8px', 
-              borderTop: '1px solid #f3f4f6',
-              minHeight: '44px' // Consistent height for all elements
-            }}>
-              {/* Left side - Order Search */}
-              <div style={{ position: 'relative', flex: 1, maxWidth: '320px' }}>
-                <FaSearch style={{ 
-                  position: 'absolute', 
-                  left: '12px', 
-                  top: '50%', 
-                  transform: 'translateY(-50%)', 
-                  color: '#6b7280', 
-                  opacity: 0.7,
-                  display: orderSearchLoading ? 'none' : 'block'
-                }} size={14} />
-                {orderSearchLoading && (
-                  <FaSpinner style={{ 
-                    position: 'absolute', 
-                    left: '12px', 
-                    top: '50%', 
-                    transform: 'translateY(-50%)', 
-                    color: '#ef4444', 
-                    opacity: 0.8,
-                    animation: 'spin 1s linear infinite'
-                  }} size={14} />
-                )}
+            {/* Compact Header - Redesigned */}
+          <div style={{ padding: '12px', backgroundColor: 'white', borderBottom: '1px solid #f3f4f6' }}>
+            {/* Single Row - Cool Design Layout */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+              {/* Main Menu Search - Cool Design */}
+              <div style={{ position: 'relative', width: '250px' }}>
+                <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#6b7280' }} size={12} />
                 <input
                   type="text"
-                  placeholder={t('dashboard.searchOrder')}
-                  value={orderLookup}
-                  onChange={(e) => setOrderLookup(e.target.value)}
-                  onKeyPress={handleOrderLookup}
-                  disabled={orderSearchLoading}
+                  placeholder="Search menu..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   style={{
                     width: '100%',
-                    height: '40px', // Fixed height
+                    height: '36px',
                     paddingLeft: '36px',
                     paddingRight: '12px',
-                    border: orderLookup.trim() ? '2px solid #ef4444' : '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    backgroundColor: orderSearchLoading ? '#f9fafb' : (orderLookup.trim() ? '#fef2f2' : '#ffffff'),
-                    fontSize: '14px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    backgroundColor: '#ffffff',
+                    fontSize: '12px',
                     fontWeight: '500',
                     outline: 'none',
-                    color: orderSearchLoading ? '#9ca3af' : '#374151',
                     transition: 'all 0.2s ease',
-                    cursor: orderSearchLoading ? 'not-allowed' : 'text',
-                    boxShadow: orderLookup.trim() ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : '0 1px 2px rgba(0, 0, 0, 0.05)'
+                    color: '#374151'
                   }}
                   onFocus={(e) => {
-                    e.target.style.backgroundColor = orderLookup.trim() ? '#fef2f2' : '#ffffff';
-                    e.target.style.borderColor = '#ef4444';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.backgroundColor = orderLookup.trim() ? '#fef2f2' : '#ffffff';
-                    e.target.style.borderColor = orderLookup.trim() ? '#ef4444' : '#d1d5db';
-                    e.target.style.boxShadow = orderLookup.trim() ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : '0 1px 2px rgba(0, 0, 0, 0.05)';
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
                   }}
                 />
             </div>
             
-              {/* Right side - Action Buttons */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {/* Quick Add Input - Better proportions */}
-              <div style={{ position: 'relative', width: '120px' }}>
-                  <FaSearch style={{ 
-                    position: 'absolute', 
-                    left: '10px', 
-                    top: '50%', 
-                    transform: 'translateY(-50%)', 
-                    color: '#6b7280', 
-                    opacity: 0.7 
-                  }} size={12} />
-                <input
-                  type="text"
-                    placeholder="Code"
-                    value={quickSearch}
-                    onChange={(e) => setQuickSearch(e.target.value)}
-                    onKeyPress={handleQuickSearch}
-                  style={{
-                    width: '100%',
-                      height: '40px', // Fixed height to match other elements
-                      paddingLeft: '32px',
-                      paddingRight: '10px',
-                      border: quickSearch.trim() ? '2px solid #10b981' : '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      backgroundColor: quickSearch.trim() ? '#ecfdf5' : '#ffffff',
-                      fontSize: '13px',
+              {/* Right Side Controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {/* Order ID Search - Cool Design (Moved First, Made Bigger) */}
+                <div style={{ position: 'relative', width: '110px' }}>
+                  <input
+                    type="text"
+                    placeholder="Order ID"
+                    value={orderLookup}
+                    onChange={(e) => setOrderLookup(e.target.value)}
+                    onKeyPress={handleOrderLookup}
+                    style={{
+                      width: '100%',
+                      height: '36px',
+                      paddingLeft: '8px',
+                      paddingRight: '8px',
+                      border: '1px solid #6b7280',
+                      borderRadius: '3px',
+                      backgroundColor: '#ffffff',
+                      fontSize: '11px',
                       fontWeight: '600',
                       outline: 'none',
-                      color: '#374151',
+                      textAlign: 'center',
                       transition: 'all 0.2s ease',
-                      boxShadow: quickSearch.trim() ? '0 0 0 3px rgba(16, 185, 129, 0.1)' : '0 1px 2px rgba(0, 0, 0, 0.05)'
+                      color: '#374151'
                     }}
                     onFocus={(e) => {
-                      e.target.style.backgroundColor = quickSearch.trim() ? '#ecfdf5' : '#ffffff';
-                      e.target.style.borderColor = '#10b981';
-                      e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                      e.target.style.borderColor = '#f59e0b';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(245, 158, 11, 0.1)';
                     }}
                     onBlur={(e) => {
-                      e.target.style.backgroundColor = quickSearch.trim() ? '#ecfdf5' : '#ffffff';
-                      e.target.style.borderColor = quickSearch.trim() ? '#10b981' : '#d1d5db';
-                      e.target.style.boxShadow = quickSearch.trim() ? '0 0 0 3px rgba(16, 185, 129, 0.1)' : '0 1px 2px rgba(0, 0, 0, 0.05)';
-                  }}
-                />
-              </div>
+                      e.target.style.borderColor = '#6b7280';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
 
-                {/* Fresh Order Button */}
+                {/* Short Code Search - Cool Design (Moved Second, Renamed) */}
+                <div style={{ position: 'relative', width: '70px' }}>
+                  <input
+                    type="text"
+                    placeholder="Short Code"
+                    value={shortCodeSearch}
+                    onChange={(e) => setShortCodeSearch(e.target.value)}
+                    style={{
+                      width: '100%',
+                      height: '36px',
+                      paddingLeft: '8px',
+                      paddingRight: '8px',
+                      border: '1px solid #9ca3af',
+                      borderRadius: '3px',
+                      backgroundColor: '#ffffff',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      outline: 'none',
+                      textAlign: 'center',
+                      transition: 'all 0.2s ease',
+                      color: '#374151',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#10b981';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(16, 185, 129, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#9ca3af';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+
+                {/* Fresh Order Button - Cool Design */}
                 <button
                   onClick={handleFreshOrder}
                   style={{
-                    height: '40px',
-                    padding: '0 16px',
-                    backgroundColor: '#ef4444',
+                    height: '36px',
+                    paddingLeft: '16px',
+                    paddingRight: '16px',
+                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                     color: 'white',
                     border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: '600',
+                    borderRadius: '12px',
+                    fontSize: '11px',
+                    fontWeight: '700',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    transition: 'all 0.2s ease',
-                    minWidth: 'fit-content'
+                    transition: 'all 0.3s ease',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = '#dc2626';
-                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = '#ef4444';
                     e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
                   }}
                 >
-                  <FaPlus size={12} />
-                  {t('menu.freshOrder')}
+                  <FaPlus size={10} />
+                  Fresh Order
                 </button>
 
+                {/* Compact Toggle Below Fresh Order */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: '9px', color: '#6b7280', fontWeight: '500' }}>
+                    {useModernCards ? 'M' : 'C'}
+                  </span>
+                <button
+                    onClick={() => setUseModernCards(!useModernCards)}
+                  style={{
+                      width: '20px',
+                      height: '12px',
+                      borderRadius: '6px',
+                    border: 'none',
+                      backgroundColor: useModernCards ? '#ef4444' : '#d1d5db',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                      justifyContent: useModernCards ? 'flex-end' : 'flex-start',
+                      padding: '1px',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}
+                  >
+                    <div style={{
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: '50%',
+                      backgroundColor: 'white',
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+                      transition: 'all 0.3s ease'
+                    }} />
+                </button>
               </div>
-
-              {/* Current Order Status */}
-              {currentOrder && (
-                <div style={{ 
-                  padding: '8px 12px', 
-                  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                  border: '2px solid #f59e0b',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: '0 2px 4px rgba(245, 158, 11, 0.2)',
-                  marginBottom: '8px'
-                }}>
-                  <FaEdit size={14} style={{ color: '#d97706' }} />
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <div style={{ color: '#92400e', fontWeight: '700' }}>
-                      ✏️ EDITING EXISTING ORDER
                     </div>
-                    <div style={{ color: '#a16207', fontSize: '10px' }}>
-                      Order #{currentOrder.id.slice(-8).toUpperCase()} • {currentOrder.status === 'confirmed' ? 'Kitchen Order' : 'Direct Billing'}
-                    </div>
-                    <div style={{ color: '#a16207', fontSize: '10px' }}>
-                      Table: {currentOrder.tableNumber || 'N/A'} • Items: {currentOrder.items?.length || 0}
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
           
