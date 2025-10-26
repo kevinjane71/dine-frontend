@@ -280,22 +280,23 @@ const OrderSummary = ({
             </div>
           )}
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             {/* Order Type Selector - Text Based */}
-            <div style={{ display: 'flex', gap: '2px' }}>
+            <div style={{ display: 'flex', gap: '4px' }}>
               <button
                 onClick={() => setOrderType('dine-in')}
                 style={{
-                  backgroundColor: orderType === 'dine-in' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '4px',
-                  padding: '3px 6px',
-                  fontSize: '8px',
-                  fontWeight: '600',
+                  backgroundColor: orderType === 'dine-in' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)',
+                  color: orderType === 'dine-in' ? '#1f2937' : 'white',
+                  border: orderType === 'dine-in' ? '2px solid white' : '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '6px',
+                  padding: '6px 10px',
+                  fontSize: '11px',
+                  fontWeight: '700',
                   cursor: 'pointer',
                   backdropFilter: 'blur(10px)',
-                  minWidth: '28px'
+                  minWidth: '50px',
+                  boxShadow: orderType === 'dine-in' ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
                 }}
                 title="Dine In"
               >
@@ -304,16 +305,17 @@ const OrderSummary = ({
               <button
                 onClick={() => setOrderType('takeaway')}
                 style={{
-                  backgroundColor: orderType === 'takeaway' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '4px',
-                  padding: '3px 6px',
-                  fontSize: '8px',
-                  fontWeight: '600',
+                  backgroundColor: orderType === 'takeaway' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)',
+                  color: orderType === 'takeaway' ? '#1f2937' : 'white',
+                  border: orderType === 'takeaway' ? '2px solid white' : '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '6px',
+                  padding: '6px 10px',
+                  fontSize: '11px',
+                  fontWeight: '700',
                   cursor: 'pointer',
                   backdropFilter: 'blur(10px)',
-                  minWidth: '28px'
+                  minWidth: '50px',
+                  boxShadow: orderType === 'takeaway' ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
                 }}
                 title="Takeaway"
               >
@@ -322,16 +324,17 @@ const OrderSummary = ({
               <button
                 onClick={() => setOrderType('delivery')}
                 style={{
-                  backgroundColor: orderType === 'delivery' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '4px',
-                  padding: '3px 6px',
-                  fontSize: '8px',
-                  fontWeight: '600',
+                  backgroundColor: orderType === 'delivery' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)',
+                  color: orderType === 'delivery' ? '#1f2937' : 'white',
+                  border: orderType === 'delivery' ? '2px solid white' : '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '6px',
+                  padding: '6px 10px',
+                  fontSize: '11px',
+                  fontWeight: '700',
                   cursor: 'pointer',
                   backdropFilter: 'blur(10px)',
-                  minWidth: '28px'
+                  minWidth: '50px',
+                  boxShadow: orderType === 'delivery' ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
                 }}
                 title="Delivery"
               >
@@ -394,32 +397,138 @@ const OrderSummary = ({
       }}>
         {cart.length === 0 ? (
           <div style={{ 
-            textAlign: 'center', 
-            paddingTop: '20px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '8px'
+            justifyContent: 'center',
+            padding: '60px 30px',
+            height: '100%',
+            minHeight: '500px'
           }}>
+            {/* Main Plate Icon */}
             <div style={{ 
-              width: '40px', 
-              height: '40px', 
-              backgroundColor: '#f3f4f6', 
+              width: '120px', 
+              height: '120px', 
+              background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)', 
               borderRadius: '50%', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)'
+              boxShadow: '0 8px 32px rgba(239, 68, 68, 0.15)',
+              marginBottom: '32px',
+              border: '3px solid #fecaca'
             }}>
-              <FaUtensils size={16} color="#9ca3af" />
+              <div style={{ fontSize: '56px' }}>
+                🍽️
+              </div>
             </div>
-            <div>
-              <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#6b7280', margin: '0 0 4px 0' }}>
-                No Items Added
-              </h3>
-              <p style={{ color: '#9ca3af', fontSize: '10px', margin: 0 }}>
-                Add items from the menu
-              </p>
+            
+            {/* Title */}
+            <h2 style={{ 
+              fontSize: '24px', 
+              fontWeight: '800', 
+              color: '#1f2937',
+              margin: '0 0 12px 0',
+              letterSpacing: '-0.5px'
+            }}>
+              Start Taking Orders
+            </h2>
+            
+            {/* Description */}
+            <p style={{ 
+              color: '#64748b', 
+              fontSize: '14px', 
+              margin: '0 0 32px 0',
+              fontWeight: '500',
+              lineHeight: '1.6',
+              textAlign: 'center',
+              maxWidth: '300px'
+            }}>
+              Start by adding delicious items from the menu to begin taking orders
+            </p>
+            
+            {/* Visual Elements Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '16px',
+              width: '100%',
+              maxWidth: '320px',
+              marginTop: '20px'
+            }}>
+              {/* Food Icons */}
+              <div style={{
+                background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                borderRadius: '12px',
+                padding: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '32px',
+                boxShadow: '0 2px 8px rgba(239, 68, 68, 0.1)'
+              }}>
+                🍕
+              </div>
+              <div style={{
+                background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                borderRadius: '12px',
+                padding: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '32px',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.1)'
+              }}>
+                🍔
+              </div>
+              <div style={{
+                background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                borderRadius: '12px',
+                padding: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '32px',
+                boxShadow: '0 2px 8px rgba(251, 191, 36, 0.1)'
+              }}>
+                🍜
+              </div>
+              <div style={{
+                background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                borderRadius: '12px',
+                padding: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '32px',
+                boxShadow: '0 2px 8px rgba(59, 130, 246, 0.1)'
+              }}>
+                🍛
+              </div>
+              <div style={{
+                background: 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)',
+                borderRadius: '12px',
+                padding: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '32px',
+                boxShadow: '0 2px 8px rgba(244, 114, 182, 0.1)'
+              }}>
+                🍱
+              </div>
+              <div style={{
+                background: 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)',
+                borderRadius: '12px',
+                padding: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '32px',
+                boxShadow: '0 2px 8px rgba(168, 85, 247, 0.1)'
+              }}>
+                🥗
+              </div>
             </div>
           </div>
         ) : (
