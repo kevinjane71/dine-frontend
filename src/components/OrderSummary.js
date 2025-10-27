@@ -286,8 +286,8 @@ const OrderSummary = ({
               <button
                 onClick={() => setOrderType('dine-in')}
                 style={{
-                  backgroundColor: orderType === 'dine-in' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)',
-                  color: orderType === 'dine-in' ? '#1f2937' : 'white',
+                  backgroundColor: orderType === 'dine-in' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.1)',
+                  color: 'white',
                   border: orderType === 'dine-in' ? '2px solid white' : '1px solid rgba(255,255,255,0.2)',
                   borderRadius: '6px',
                   padding: '6px 10px',
@@ -305,8 +305,8 @@ const OrderSummary = ({
               <button
                 onClick={() => setOrderType('takeaway')}
                 style={{
-                  backgroundColor: orderType === 'takeaway' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)',
-                  color: orderType === 'takeaway' ? '#1f2937' : 'white',
+                  backgroundColor: orderType === 'takeaway' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.1)',
+                  color: 'white',
                   border: orderType === 'takeaway' ? '2px solid white' : '1px solid rgba(255,255,255,0.2)',
                   borderRadius: '6px',
                   padding: '6px 10px',
@@ -324,8 +324,8 @@ const OrderSummary = ({
               <button
                 onClick={() => setOrderType('delivery')}
                 style={{
-                  backgroundColor: orderType === 'delivery' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)',
-                  color: orderType === 'delivery' ? '#1f2937' : 'white',
+                  backgroundColor: orderType === 'delivery' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.1)',
+                  color: 'white',
                   border: orderType === 'delivery' ? '2px solid white' : '1px solid rgba(255,255,255,0.2)',
                   borderRadius: '6px',
                   padding: '6px 10px',
