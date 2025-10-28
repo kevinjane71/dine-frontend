@@ -990,6 +990,14 @@ class ApiClient {
       method: 'DELETE'
     });
   }
+
+  // Voice Assistant endpoint
+  async processVoiceOrder(transcript, restaurantId) {
+    return this.request(`/api/voice/process-order`, {
+      method: 'POST',
+      body: { transcript, restaurantId },
+    });
+  }
 }
 
 const apiClient = new ApiClient();

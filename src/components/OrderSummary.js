@@ -16,7 +16,9 @@ import {
   FaSpinner,
   FaQrcode,
   FaTrash,
-  FaPrint
+  FaPrint,
+  FaMicrophone,
+  FaMicrophoneSlash
 } from 'react-icons/fa';
 
 const OrderSummary = ({ 
@@ -52,13 +54,23 @@ const OrderSummary = ({
   onShowQRCode,
   restaurantId,
   restaurantName,
-  taxSettings
+  taxSettings,
+  menuItems = []
 }) => {
   const [invoice, setInvoice] = useState(null);
   const [showInvoicePermanently, setShowInvoicePermanently] = useState(false);
   const [taxBreakdown, setTaxBreakdown] = useState([]);
   const [totalTax, setTotalTax] = useState(0);
   const [grandTotal, setGrandTotal] = useState(0);
+  
+  // Voice Assistant State
+  const [isListening, setIsListening] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
+  const [voiceProcessing, setVoiceProcessing] = useState(false);
+  const [recognizedItems, setRecognizedItems] = useState([]);
+  const [showVoiceConfirm, setShowVoiceConfirm] = useState(false);
+  const [voiceError, setVoiceError] = useState('');
+  const [useFullChatGPT, setUseFullChatGPT] = useState(true); // Feature flag - Set to true for full ChatGPT processing
   
   // Debug: Log cart prop received by OrderSummary
   console.log('📋 OrderSummary: Received cart prop:', cart);
@@ -138,6 +150,166 @@ const OrderSummary = ({
       setGrandTotal(getTotalAmount());
     }
   }, [calculateTax, cart, restaurantId, getTotalAmount, taxSettings]);
+
+  // Voice Assistant Functions
+  const fuzzyMatchMenuItems = (transcript, menuItems) => {
+    if (!transcript || menuItems.length === 0) return [];
+    
+    const lowerTranscript = transcript.toLowerCase();
+    const results = [];
+    
+    menuItems.forEach(item => {
+      const itemName = item.name.toLowerCase();
+      
+      // Exact match
+      if (itemName.includes(lowerTranscript) || lowerTranscript.includes(itemName)) {
+        results.push({ item, confidence: 1.0, matchType: 'exact' });
+        return;
+      }
+      
+      // Partial word match
+      const itemWords = itemName.split(' ');
+      const transcriptWords = lowerTranscript.split(' ');
+      
+      let matchCount = 0;
+      itemWords.forEach(word => {
+        if (transcriptWords.some(tword => word.includes(tword) || tword.includes(word))) {
+          matchCount++;
+        }
+      });
+      
+      if (matchCount > 0) {
+        const confidence = matchCount / itemWords.length;
+        if (confidence >= 0.5) {
+          results.push({ item, confidence, matchType: 'partial' });
+        }
+      }
+      
+      // Category match
+      if (item.category && item.category.toLowerCase().includes(lowerTranscript)) {
+        results.push({ item, confidence: 0.7, matchType: 'category' });
+      }
+    });
+    
+    // Sort by confidence
+    results.sort((a, b) => b.confidence - a.confidence);
+    
+    // Return top 3 matches
+    return results.slice(0, 3);
+  };
+  
+  const parseQuantity = (transcript) => {
+    const quantityMatch = transcript.match(/\d+/);
+    return quantityMatch ? parseInt(quantityMatch[0]) : 1;
+  };
+  
+  const startVoiceListening = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      setVoiceError('Speech recognition not supported in this browser. Please use Chrome or Edge.');
+      return;
+    }
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    
+    recognition.onstart = () => {
+      setIsListening(true);
+      setVoiceError('');
+      setVoiceTranscript('');
+    };
+    
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      setVoiceTranscript(transcript);
+      
+      // Process the transcript
+      await processVoiceCommand(transcript);
+      
+      recognition.stop();
+      setIsListening(false);
+    };
+    
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setVoiceError(`Error: ${event.error}`);
+      setIsListening(false);
+      recognition.stop();
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+    
+    recognition.start();
+  };
+  
+  const processVoiceCommand = async (transcript) => {
+    setVoiceProcessing(true);
+    setVoiceError('');
+    
+    try {
+      // If full ChatGPT mode is disabled, use local fuzzy matching first
+      if (!useFullChatGPT) {
+        const localMatches = fuzzyMatchMenuItems(transcript, menuItems);
+        
+        if (localMatches.length > 0 && localMatches[0].confidence >= 0.7) {
+          // High confidence local match - add immediately
+          const matchedItem = localMatches[0].item;
+          const quantity = parseQuantity(transcript);
+          
+          setRecognizedItems([{
+            id: matchedItem.id,
+            name: matchedItem.name,
+            price: matchedItem.price,
+            quantity: quantity
+          }]);
+          setShowVoiceConfirm(true);
+          setVoiceProcessing(false);
+          return;
+        }
+      }
+      
+      // Use ChatGPT for low confidence or full ChatGPT mode
+      const response = await apiClient.processVoiceOrder(transcript, restaurantId);
+      
+      if (response.items && response.items.length > 0) {
+        setRecognizedItems(response.items);
+        setShowVoiceConfirm(true);
+      } else {
+        setVoiceError('No items found. Please try again or check the menu.');
+      }
+    } catch (error) {
+      console.error('Voice processing error:', error);
+      setVoiceError(error.message || 'Failed to process voice command. Please try again.');
+    } finally {
+      setVoiceProcessing(false);
+    }
+  };
+  
+  const confirmVoiceOrder = () => {
+    recognizedItems.forEach(item => {
+      const existingItem = cart.find(cartItem => cartItem.id === item.id);
+      
+      if (existingItem) {
+        onUpdateCartItemQuantity(existingItem.id, existingItem.quantity + item.quantity);
+      } else {
+        onAddToCart({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity
+        });
+      }
+    });
+    
+    setShowVoiceConfirm(false);
+    setRecognizedItems([]);
+    setVoiceTranscript('');
+  };
 
   // Force recalculation when cart items change (for edit mode)
   useEffect(() => {
@@ -1349,6 +1521,133 @@ const OrderSummary = ({
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Voice Confirmation Modal */}
+      {showVoiceConfirm && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '400px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <h3 style={{
+              margin: '0 0 16px 0',
+              fontSize: '18px',
+              fontWeight: '700',
+              color: '#1f2937'
+            }}>
+              Confirm Voice Order
+            </h3>
+            
+            {voiceTranscript && (
+              <p style={{
+                margin: '0 0 16px 0',
+                fontSize: '14px',
+                color: '#6b7280',
+                fontStyle: 'italic'
+              }}>
+                You said: &quot;{voiceTranscript}&quot;
+              </p>
+            )}
+            
+            <div style={{ marginBottom: '16px' }}>
+              <p style={{
+                margin: '0 0 8px 0',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#374151'
+              }}>
+                Adding to cart:
+              </p>
+              {recognizedItems.map((item, index) => (
+                <div key={index} style={{
+                  padding: '8px',
+                  backgroundColor: '#f3f4f6',
+                  borderRadius: '6px',
+                  marginBottom: '8px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <div>
+                    <div style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937' }}>
+                      {item.quantity}x {item.name}
+                    </div>
+                  </div>
+                  <div style={{ fontWeight: '600', fontSize: '14px', color: '#059669' }}>
+                    ₹{item.price * item.quantity}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {voiceError && (
+              <div style={{
+                padding: '8px',
+                backgroundColor: '#fee2e2',
+                borderRadius: '6px',
+                marginBottom: '16px',
+                fontSize: '12px',
+                color: '#dc2626'
+              }}>
+                {voiceError}
+              </div>
+            )}
+            
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => {
+                  setShowVoiceConfirm(false);
+                  setRecognizedItems([]);
+                  setVoiceTranscript('');
+                }}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  backgroundColor: 'white',
+                  color: '#374151',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmVoiceOrder}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                  color: 'white',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -43,7 +43,9 @@ import {
   FaCog,
   FaBars,
   FaTable,
-  FaCloudUploadAlt
+  FaCloudUploadAlt,
+  FaMicrophone,
+  FaMicrophoneSlash
 } from 'react-icons/fa';
 import apiClient from '../../../lib/api';
 import { performLogout } from '../../../lib/logout';
@@ -108,6 +110,11 @@ function RestaurantPOSContent() {
   // Card design toggle state
   const [useModernCards, setUseModernCards] = useState(true);
   const [showMobileCart, setShowMobileCart] = useState(false);
+  
+  // Voice Assistant State
+  const [isListeningVoice, setIsListeningVoice] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
   
   // Fullscreen mode states
   const [isNavigationHidden, setIsNavigationHidden] = useState(false);
@@ -1124,6 +1131,124 @@ function RestaurantPOSContent() {
       setIsLoadingOrder(false); // Clear flag to allow localStorage loading
       }
   }, [selectedRestaurant?.id, searchParams]);
+
+  // Voice Assistant Functions
+  const startVoiceListening = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Speech recognition not supported in this browser. Please use Chrome or Edge.');
+      return;
+    }
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    
+    recognition.onstart = () => {
+      setIsListeningVoice(true);
+      setVoiceTranscript('');
+    };
+    
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      console.log('🎤 Voice transcript:', transcript);
+      setVoiceTranscript(transcript);
+      
+      // Process the transcript
+      await processVoiceCommand(transcript);
+      
+      setTimeout(() => {
+        recognition.stop();
+        setIsListeningVoice(false);
+      }, 100);
+    };
+    
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setIsListeningVoice(false);
+      recognition.stop();
+    };
+    
+    recognition.onend = () => {
+      setIsListeningVoice(false);
+    };
+    
+    recognition.start();
+  };
+  
+  const stopVoiceListening = () => {
+    setIsListeningVoice(false);
+  };
+  
+  const processVoiceCommand = async (transcript) => {
+    try {
+      setIsProcessingVoice(true);
+      console.log('🚀 Processing voice command:', transcript);
+      
+      if (!selectedRestaurant?.id) {
+        setNotification({
+          type: 'error',
+          title: 'No Restaurant Selected',
+          message: 'Please select a restaurant first',
+          show: true
+        });
+        setTimeout(() => setNotification(null), 3000);
+        return;
+      }
+      
+      // Call the backend API
+      const response = await apiClient.processVoiceOrder(transcript, selectedRestaurant.id);
+      console.log('✅ Voice API response:', response);
+      
+      if (response.items && response.items.length > 0) {
+        // Add items to cart
+        response.items.forEach(item => {
+          const existingItem = cart.find(cartItem => cartItem.id === item.id);
+          
+          if (existingItem) {
+            updateCartItemQuantity(existingItem.id, existingItem.quantity + item.quantity);
+          } else {
+            addToCart({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity || 1
+            });
+          }
+        });
+        
+        // Show success notification
+        setNotification({
+          type: 'success',
+          title: 'Items Added! ✅',
+          message: `Successfully added ${response.items.length} item(s) to cart`,
+          show: true
+        });
+        setTimeout(() => setNotification(null), 3000);
+      } else {
+        setNotification({
+          type: 'warning',
+          title: 'No Items Found',
+          message: 'Could not match any menu items. Please try again.',
+          show: true
+        });
+        setTimeout(() => setNotification(null), 3000);
+      }
+    } catch (error) {
+      console.error('❌ Voice processing error:', error);
+      setNotification({
+        type: 'error',
+        title: 'Voice Order Failed',
+        message: error.message || 'Failed to process voice command',
+        show: true
+      });
+      setTimeout(() => setNotification(null), 4000);
+    } finally {
+      setIsProcessingVoice(false);
+    }
+  };
 
   const handleOrderLookup = async (e) => {
     if (e.key === 'Enter' && orderLookup.trim()) {
@@ -2693,6 +2818,73 @@ function RestaurantPOSContent() {
                 />
             </div>
             
+              {/* Voice Listening Widget */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px',
+                backgroundColor: isListeningVoice ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                minWidth: isListeningVoice ? '200px' : '60px',
+                transition: 'all 0.3s ease',
+                animation: isListeningVoice ? 'pulse 1.5s ease-in-out infinite' : 'none'
+              }}>
+                {isListeningVoice ? (
+                  <>
+                    <FaMicrophoneSlash 
+                      size={16} 
+                      color="#ef4444" 
+                      style={{ animation: 'pulse 1s ease-in-out infinite' }}
+                    />
+                    <span style={{ 
+                      fontSize: '12px', 
+                      fontWeight: '600', 
+                      color: '#ef4444' 
+                    }}>
+                      Listening...
+                    </span>
+                    <button
+                      onClick={stopVoiceListening}
+                      style={{
+                        marginLeft: '8px',
+                        padding: '4px 8px',
+                        background: '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '10px',
+                        cursor: 'pointer',
+                        fontWeight: '600'
+                      }}
+                    >
+                      Stop
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={startVoiceListening}
+                    style={{
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '32px',
+                      height: '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+                    }}
+                    title="Start Voice Order"
+                  >
+                    <FaMicrophone size={14} />
+                  </button>
+                )}
+              </div>
+            
               {/* Right Side Controls */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {/* Order ID Search - Cool Design (Moved First, Made Bigger) */}
@@ -2920,6 +3112,7 @@ function RestaurantPOSContent() {
                   restaurantId={selectedRestaurant?.id}
                   restaurantName={selectedRestaurant?.name}
             taxSettings={taxSettings}
+            menuItems={menuItems}
           />
         </div>
             )}
@@ -3026,6 +3219,7 @@ function RestaurantPOSContent() {
                     restaurantId={selectedRestaurant?.id}
                     restaurantName={selectedRestaurant?.name}
                     taxSettings={taxSettings}
+                    menuItems={menuItems}
                     isMobile={true}
                   />
                 </div>
