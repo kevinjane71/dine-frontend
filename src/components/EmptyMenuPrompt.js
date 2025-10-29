@@ -91,7 +91,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
 
         const defaultRestaurant = {
           name: 'My Restaurant',
-          description: 'Welcome to your restaurant!',
+          description: '',
           address: 'Add your address here',
           phone: '',
           email: '',
@@ -358,7 +358,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
         {/* Main Content */}
         
         
-        <p style={{
+        {/* <p style={{
           fontSize: '18px',
           color: '#6b7280',
           margin: '0 0 32px 0',
@@ -367,7 +367,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
           Welcome to <strong style={{ color: '#1f2937' }}>{restaurantName || 'Your Restaurant'}</strong>! 
           <br />
           
-        </p>
+        </p> */}
 
         {/* AI Upload Section */}
         <div style={{

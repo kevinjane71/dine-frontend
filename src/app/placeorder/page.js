@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaArrowLeft, FaPhone, FaChair, FaUtensils, FaLeaf, FaDrumstickBite, FaSpinner, FaLock, FaTimes } from 'react-icons/fa';
 import ImageCarousel from '../../components/ImageCarousel';
 import apiClient from '../../lib/api.js';
+import { getDisplayImage } from '../../utils/placeholderImages';
 
 // Try to import Firebase modules with error handling
 let firebaseAuth = null;
@@ -53,6 +54,7 @@ const PlaceOrderContent = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showCart, setShowCart] = useState(false);
+  const [showMenuDrawer, setShowMenuDrawer] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -98,9 +100,9 @@ const PlaceOrderContent = () => {
   useEffect(() => {
     return () => {
       try {
-        if (window.recaptchaVerifier) {
-          window.recaptchaVerifier.clear();
-          window.recaptchaVerifier = null;
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
         }
       } catch (error) {
         console.warn('Error cleaning up reCAPTCHA:', error);
@@ -207,12 +209,11 @@ const PlaceOrderContent = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
-  // Filter menu
+  // Filter menu - only by search term, not by category (we'll scroll instead)
   const filteredMenu = menu.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    return matchesSearch;
   });
 
   const groupedMenu = categories.reduce((acc, category) => {
@@ -260,7 +261,7 @@ const PlaceOrderContent = () => {
         // Clear any existing reCAPTCHA
         if (window.recaptchaVerifier) {
           try {
-            window.recaptchaVerifier.clear();
+          window.recaptchaVerifier.clear();
           } catch (clearError) {
             console.warn('Error clearing reCAPTCHA:', clearError);
           }
@@ -268,30 +269,30 @@ const PlaceOrderContent = () => {
 
         // Setup reCAPTCHA with proper configuration
         try {
-          window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            size: 'invisible',
-            callback: (response) => {
-              console.log('reCAPTCHA solved');
-            },
-            'expired-callback': () => {
-              console.log('reCAPTCHA expired');
-              setError('reCAPTCHA expired. Please try again.');
-            },
-            'error-callback': (error) => {
-              console.log('reCAPTCHA error:', error);
-              setError('reCAPTCHA error. Please refresh and try again.');
-            }
-          });
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'invisible',
+          callback: (response) => {
+            console.log('reCAPTCHA solved');
+          },
+          'expired-callback': () => {
+            console.log('reCAPTCHA expired');
+            setError('reCAPTCHA expired. Please try again.');
+          },
+          'error-callback': (error) => {
+            console.log('reCAPTCHA error:', error);
+            setError('reCAPTCHA error. Please refresh and try again.');
+          }
+        });
 
-          // Render reCAPTCHA
-          await window.recaptchaVerifier.render();
+        // Render reCAPTCHA
+        await window.recaptchaVerifier.render();
 
-          // Send OTP
-          const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
-          setVerificationId(confirmationResult);
-          setOtpSent(true);
-          setShowOtpModal(true);
-          setSendingOtp(false);
+        // Send OTP
+        const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
+        setVerificationId(confirmationResult);
+        setOtpSent(true);
+        setShowOtpModal(true);
+        setSendingOtp(false);
           
         } catch (recaptchaError) {
           console.warn('reCAPTCHA setup failed:', recaptchaError);
@@ -321,9 +322,9 @@ const PlaceOrderContent = () => {
       
       // Clear reCAPTCHA on error
       try {
-        if (window.recaptchaVerifier) {
-          window.recaptchaVerifier.clear();
-          window.recaptchaVerifier = null;
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
         }
       } catch (clearError) {
         console.warn('Error clearing reCAPTCHA on error:', clearError);
@@ -360,16 +361,16 @@ const PlaceOrderContent = () => {
 
       // Real Firebase OTP verification
       try {
-        const result = await verificationId.confirm(otp);
-        const user = result.user;
-        
-        // Get Firebase UID and proceed to place order
-        await placeOrderWithVerification(user.uid);
-        
-        setOtpSent(false);
-        setShowOtpModal(false);
-        setOtp('');
-        setSendingOtp(false);
+      const result = await verificationId.confirm(otp);
+      const user = result.user;
+      
+      // Get Firebase UID and proceed to place order
+      await placeOrderWithVerification(user.uid);
+      
+      setOtpSent(false);
+      setShowOtpModal(false);
+      setOtp('');
+      setSendingOtp(false);
         
       } catch (firebaseError) {
         console.error('Firebase OTP verification error:', firebaseError);
@@ -402,7 +403,7 @@ const PlaceOrderContent = () => {
       console.log('🚀 Starting OTP process for phone:', customerInfo.phone);
       
       // Use real Firebase OTP
-      await sendOtp();
+    await sendOtp();
       
     } catch (err) {
       console.error('Error in placeOrder:', err);
@@ -603,34 +604,103 @@ const PlaceOrderContent = () => {
           width: '100%',
           marginBottom: isScrolled ? '8px' : '12px'
         }}>
+          {/* DineOpen Logo & Restaurant Info */}
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* DineOpen Logo */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              flexShrink: 0
+            }}>
+              <div style={{
+                width: isScrolled ? '32px' : '40px',
+                height: isScrolled ? '32px' : '40px',
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                transition: 'all 0.2s ease-out'
+              }}>
+                <span style={{
+                  fontSize: isScrolled ? '16px' : '20px',
+                  fontWeight: '700',
+                  color: 'white',
+                  letterSpacing: '-0.5px'
+                }}>
+                  🍽️
+                </span>
+              </div>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1px'
+              }}>
+                <span style={{
+                  fontSize: isScrolled ? '10px' : '12px',
+                  fontWeight: '700',
+                  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  lineHeight: '1',
+                  letterSpacing: '0.5px'
+                }}>
+                  DineOpen
+                </span>
+                {!isScrolled && (
+                  <span style={{
+                    fontSize: '7px',
+                    color: '#9ca3af',
+                    fontWeight: '500',
+                    letterSpacing: '0.3px',
+                    lineHeight: '1'
+                  }}>
+                    Restaurant OS
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Vertical Separator */}
+            <div style={{
+              width: '1px',
+              height: isScrolled ? '28px' : '36px',
+              background: 'linear-gradient(to bottom, transparent, #e5e7eb, transparent)',
+              flexShrink: 0
+            }} />
+
           {/* Restaurant Info */}
-          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
             <h1 style={{ 
-              fontSize: isScrolled ? '14px' : '18px', 
-              fontWeight: '700', 
+                fontSize: isScrolled ? '14px' : '18px', 
+                fontWeight: '700', 
               color: '#1f2937', 
               margin: 0,
               lineHeight: '1.2',
-              transition: 'font-size 0.2s ease-out',
-              willChange: 'font-size',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}>
-              {restaurant?.name || 'My Restaurant'}
-            </h1>
-            {!isScrolled && restaurant?.description && (
-              <p style={{
-                fontSize: '12px',
-                color: '#6b7280',
-                margin: '2px 0 0 0',
+                transition: 'font-size 0.2s ease-out',
+                willChange: 'font-size',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap'
-              }}>
-                {restaurant.description}
-              </p>
-            )}
+            }}>
+              {restaurant?.name || 'My Restaurant'}
+            </h1>
+              {!isScrolled && restaurant?.description && (
+                <p style={{
+                  fontSize: '12px',
+                  color: '#6b7280',
+                  margin: '2px 0 0 0',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {restaurant.description}
+                </p>
+              )}
+            </div>
           </div>
           
           {/* Cart Button */}
@@ -751,7 +821,21 @@ const PlaceOrderContent = () => {
           {categories.map(category => (
             <button
               key={category}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => {
+                setSelectedCategory(category);
+                // Scroll to category section
+                if (category !== 'all') {
+                  setTimeout(() => {
+                    const element = document.getElementById(`category-${category}`);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }, 100);
+                } else {
+                  // Scroll to top for "all"
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
               style={{
                 background: selectedCategory === category 
                   ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
@@ -864,88 +948,17 @@ const PlaceOrderContent = () => {
         </div>
       )}
 
-      {/* Menu */}
+      {/* Menu - Always show all categories, scroll to selected */}
       <div style={{ 
         padding: '0 16px',
         maxWidth: '1200px',
         margin: '0 auto'
       }}>
-        {selectedCategory === 'all' ? (
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-            gap: '20px',
-            marginTop: '20px'
-          }}>
-            {filteredMenu.length > 0 ? (
-              filteredMenu.map(item => (
-                <MenuItemCard
-                  key={item.id}
-                  item={item}
-                  onAddToCart={addToCart}
-                  onRemoveFromCart={removeFromCart}
-                  cartQuantity={cart.find(cartItem => cartItem.id === item.id)?.quantity || 0}
-                />
-              ))
-            ) : (
-              <div style={{
-                gridColumn: '1 / -1',
-                textAlign: 'center',
-                padding: '60px 20px',
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-                border: '1px solid #e5e7eb'
-              }}>
-                <div style={{
-                  fontSize: '48px',
-                  marginBottom: '16px'
-                }}>
-                  🍽️
-                </div>
-                <h3 style={{
-                  fontSize: '20px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  margin: '0 0 8px 0'
-                }}>
-                  {searchTerm ? 'No items found' : 'No menu items available'}
-                </h3>
-                <p style={{
-                  fontSize: '16px',
-                  color: '#6b7280',
-                  margin: '0 0 16px 0'
-                }}>
-                  {searchTerm 
-                    ? `No items match "${searchTerm}". Try a different search term.`
-                    : 'This restaurant has not added any menu items yet.'
-                  }
-                </p>
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    style={{
-                      backgroundColor: '#ef4444',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '8px 16px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Clear Search
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        ) : (
+        {filteredMenu.length > 0 ? (
           <div>
             {Object.keys(groupedMenu).length > 0 ? (
               Object.entries(groupedMenu).map(([category, items]) => (
-                <div key={category} style={{ marginTop: '20px' }}>
+                <div key={category} id={`category-${category}`} style={{ marginTop: '20px', scrollMarginTop: '120px' }}>
                   <h2 style={{
                     fontSize: '20px',
                     fontWeight: '700',
@@ -1031,6 +1044,58 @@ const PlaceOrderContent = () => {
               </div>
             )}
           </div>
+        ) : (
+          <div style={{
+            textAlign: 'center',
+            padding: '60px 20px',
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+            border: '1px solid #e5e7eb',
+            marginTop: '20px'
+          }}>
+            <div style={{
+              fontSize: '48px',
+              marginBottom: '16px'
+            }}>
+              🍽️
+            </div>
+            <h3 style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              color: '#374151',
+              margin: '0 0 8px 0'
+            }}>
+              {searchTerm ? 'No items found' : 'No menu items available'}
+            </h3>
+            <p style={{
+              fontSize: '16px',
+              color: '#6b7280',
+              margin: '0 0 16px 0'
+            }}>
+              {searchTerm 
+                ? `No items match "${searchTerm}". Try a different search term.`
+                : 'This restaurant has not added any menu items yet.'
+              }
+            </p>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                style={{
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Clear Search
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -1073,59 +1138,59 @@ const PlaceOrderContent = () => {
               backgroundColor: '#fafbfc'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
                   Your Order ({getCartItemCount()} items)
-                </h3>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => setShowCart(false)}
-                    style={{
-                      background: '#f1f5f9',
-                      border: 'none',
-                      padding: '8px',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      color: '#64748b',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#e2e8f0';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#f1f5f9';
-                    }}
-                  >
-                    <FaTimes size={14} />
-                  </button>
-                  <button
-                    onClick={() => setCart([])}
-                    style={{
-                      background: '#fef2f2',
-                      border: 'none',
-                      padding: '8px',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      color: '#dc2626',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#fee2e2';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#fef2f2';
-                    }}
-                  >
-                    <FaTrash size={14} />
-                  </button>
-                </div>
+              </h3>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setShowCart(false)}
+                  style={{
+                    background: '#f1f5f9',
+                    border: 'none',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    color: '#64748b',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#e2e8f0';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#f1f5f9';
+                  }}
+                >
+                  <FaTimes size={14} />
+                </button>
+                <button
+                  onClick={() => setCart([])}
+                  style={{
+                    background: '#fef2f2',
+                    border: 'none',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    color: '#dc2626',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#fee2e2';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#fef2f2';
+                  }}
+                >
+                  <FaTrash size={14} />
+                </button>
               </div>
-              
+            </div>
+
               {/* Cart Summary */}
               <div style={{ 
                 display: 'flex', 
@@ -1153,7 +1218,7 @@ const PlaceOrderContent = () => {
               scrollbarWidth: 'thin',
               scrollbarColor: '#cbd5e1 transparent'
             }}>
-              {cart.length === 0 ? (
+            {cart.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
                   <div style={{ 
                     width: '60px', 
@@ -1174,8 +1239,8 @@ const PlaceOrderContent = () => {
                   <p style={{ fontSize: '13px', margin: 0, opacity: 0.7 }}>
                     Add some delicious items to get started
                   </p>
-                </div>
-              ) : (
+              </div>
+            ) : (
                 <div style={{ padding: '16px 0' }}>
                   {cart.map(item => (
                     <div key={item.id} style={{
@@ -1272,11 +1337,11 @@ const PlaceOrderContent = () => {
                   ))}
                 </div>
               )}
-            </div>
+                </div>
 
             {/* Customer Info & Checkout Section */}
             {cart.length > 0 && (
-              <div style={{
+                <div style={{
                 padding: '20px',
                 borderTop: '1px solid #f1f5f9',
                 backgroundColor: '#fafbfc'
@@ -1376,60 +1441,60 @@ const PlaceOrderContent = () => {
                 </div>
 
                 {/* Checkout Button */}
-                <button
-                  onClick={placeOrder}
+                  <button
+                    onClick={placeOrder}
                   disabled={placingOrder || !customerInfo.phone.trim() || sendingOtp}
-                  style={{
-                    width: '100%',
+                    style={{
+                      width: '100%',
                     background: placingOrder || !customerInfo.phone.trim() || sendingOtp
                       ? 'linear-gradient(135deg, #d1d5db, #9ca3af)' 
                       : 'linear-gradient(135deg, #ef4444, #dc2626)',
-                    color: 'white',
+                      color: 'white',
                     padding: '14px 20px',
-                    borderRadius: '12px',
-                    fontWeight: '700',
+                      borderRadius: '12px',
+                      fontWeight: '700',
                     border: 'none',
                     cursor: placingOrder || !customerInfo.phone.trim() ? 'not-allowed' : 'pointer',
                     fontSize: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
                     transition: 'all 0.2s ease',
                     boxShadow: placingOrder || !customerInfo.phone.trim() 
-                      ? 'none' 
+                        ? 'none'
                       : '0 4px 12px rgba(239, 68, 68, 0.3)'
-                  }}
-                  onMouseEnter={(e) => {
+                    }}
+                    onMouseEnter={(e) => {
                     if (!placingOrder && customerInfo.phone.trim()) {
                       e.target.style.transform = 'translateY(-1px)';
                       e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
+                      }
+                    }}
+                    onMouseLeave={(e) => {
                     if (!placingOrder && customerInfo.phone.trim()) {
                       e.target.style.transform = 'translateY(0)';
                       e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
-                    }
-                  }}
-                >
-                  {placingOrder ? (
-                    <>
-                      <FaSpinner size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                      }
+                    }}
+                  >
+                    {placingOrder ? (
+                      <>
+                        <FaSpinner size={16} style={{ animation: 'spin 1s linear infinite' }} />
                       Processing Order...
                     </>
                   ) : sendingOtp ? (
                     <>
                       <FaSpinner size={16} style={{ animation: 'spin 1s linear infinite' }} />
                       Sending OTP...
-                    </>
-                  ) : (
-                    <>
-                      <FaUtensils size={16} />
+                      </>
+                    ) : (
+                      <>
+                        <FaUtensils size={16} />
                       Place Order - ₹{getCartTotal().toFixed(2)}
-                    </>
-                  )}
-                </button>
+                      </>
+                    )}
+                  </button>
               </div>
             )}
           </div>
@@ -1553,10 +1618,303 @@ const PlaceOrderContent = () => {
         </div>
       )}
 
+      {/* Hidden reCAPTCHA container for Firebase OTP */}
+      <div id="recaptcha-container" style={{ display: 'none' }}></div>
+
+      {/* Floating Menu Button - Bottom Right */}
+      {!showMenuDrawer && (
+        <button
+          onClick={() => setShowMenuDrawer(true)}
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+            color: 'white',
+            border: 'none',
+            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 90,
+            transition: 'all 0.3s ease',
+            animation: 'float 3s ease-in-out infinite'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'scale(1.1)';
+            e.target.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+          }}
+        >
+          <FaUtensils size={24} />
+        </button>
+      )}
+
+      {/* Menu Drawer - Category List */}
+      {showMenuDrawer && (
+        <>
+          {/* Backdrop */}
+          <div 
+            onClick={() => setShowMenuDrawer(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              zIndex: 95,
+              animation: 'fadeIn 0.2s ease'
+            }}
+          />
+          
+          {/* Drawer */}
+          <div style={{
+            position: 'fixed',
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: '280px',
+            maxWidth: '80vw',
+            backgroundColor: 'white',
+            boxShadow: '-4px 0 20px rgba(0,0,0,0.15)',
+            zIndex: 100,
+            display: 'flex',
+            flexDirection: 'column',
+            animation: 'slideInRight 0.3s ease'
+          }}>
+            {/* Drawer Header */}
+            <div style={{
+              padding: '20px',
+              borderBottom: '2px solid #f3f4f6',
+              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  marginBottom: '4px'
+                }}>
+                  Menu Categories
+                </h3>
+                <p style={{
+                  margin: 0,
+                  fontSize: '12px',
+                  opacity: 0.9
+                }}>
+                  {menu.length} items available
+                </p>
+              </div>
+              <button
+                onClick={() => setShowMenuDrawer(false)}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: 'white',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255,255,255,0.3)';
+                  e.target.style.transform = 'rotate(90deg)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(255,255,255,0.2)';
+                  e.target.style.transform = 'rotate(0deg)';
+                }}
+              >
+                <FaTimes size={16} />
+              </button>
+            </div>
+
+            {/* Category List */}
+            <div style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '12px'
+            }}>
+              {categories.filter(cat => cat !== 'all').map((category, index) => {
+                const categoryItems = menu.filter(item => item.category === category);
+                const itemCount = categoryItems.length;
+                
+                return (
+                  <button
+                    key={category}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setShowMenuDrawer(false);
+                      // Scroll to category section
+                      setTimeout(() => {
+                        const categoryElement = document.getElementById(`category-${category}`);
+                        if (categoryElement) {
+                          categoryElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                      }, 300);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '14px 16px',
+                      marginBottom: '8px',
+                      background: selectedCategory === category 
+                        ? 'linear-gradient(135deg, #fef2f2, #fee2e2)' 
+                        : 'white',
+                      border: selectedCategory === category 
+                        ? '2px solid #ef4444' 
+                        : '1px solid #e5e7eb',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      transition: 'all 0.2s ease',
+                      boxShadow: selectedCategory === category 
+                        ? '0 4px 12px rgba(239, 68, 68, 0.15)' 
+                        : '0 2px 4px rgba(0,0,0,0.05)',
+                      animation: `fadeInUp 0.3s ease ${index * 0.05}s both`
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedCategory !== category) {
+                        e.target.style.borderColor = '#ef4444';
+                        e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                        e.target.style.transform = 'translateX(-4px)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedCategory !== category) {
+                        e.target.style.borderColor = '#e5e7eb';
+                        e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
+                        e.target.style.transform = 'translateX(0)';
+                      }
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        fontSize: '15px',
+                        fontWeight: '600',
+                        color: selectedCategory === category ? '#ef4444' : '#1f2937',
+                        marginBottom: '4px',
+                        textTransform: 'capitalize'
+                      }}>
+                        {category}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#6b7280'
+                      }}>
+                        {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                      </div>
+                    </div>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      background: selectedCategory === category 
+                        ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
+                        : '#f3f4f6',
+                      color: selectedCategory === category ? 'white' : '#6b7280',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '14px',
+                      fontWeight: '700'
+                    }}>
+                      {itemCount}
+                    </div>
+                  </button>
+                );
+              })}
+
+              {/* All Items Option */}
+              <button
+                onClick={() => {
+                  setSelectedCategory('all');
+                  setShowMenuDrawer(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  marginTop: '12px',
+                  background: selectedCategory === 'all' 
+                    ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
+                    : '#f9fafb',
+                  border: 'none',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  color: selectedCategory === 'all' ? 'white' : '#6b7280',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  transition: 'all 0.2s ease',
+                  boxShadow: selectedCategory === 'all' 
+                    ? '0 4px 12px rgba(239, 68, 68, 0.3)' 
+                    : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedCategory !== 'all') {
+                    e.target.style.background = '#f3f4f6';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedCategory !== 'all') {
+                    e.target.style.background = '#f9fafb';
+                  }
+                }}
+              >
+                View All Items ({menu.length})
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
       <style jsx>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
     </div>
@@ -1621,7 +1979,10 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity }) => 
         overflow: 'hidden',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
       }}>
-        {(item.images && item.images.length > 0) ? (
+        {(() => {
+          // Priority 1: User uploaded images
+          if (item.images && item.images.length > 0) {
+            return (
           <ImageCarousel
             images={item.images}
             itemName={item.name}
@@ -1632,7 +1993,43 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity }) => 
             autoPlayInterval={4000}
             className="w-full h-full"
           />
-        ) : (
+            );
+          }
+          
+          // Priority 2: Smart placeholder images
+          const placeholderUrl = getDisplayImage(item);
+          if (placeholderUrl) {
+            return (
+              <img
+                src={placeholderUrl}
+                alt={item.name}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = `
+                    <div style="
+                      width: 100%;
+                      height: 100%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      background: linear-gradient(135deg, ${getCategoryColor(item.category)} 0%, ${getCategoryColor(item.category, 0.7)} 100%);
+                      font-size: 36px;
+                    ">
+                      🍽️
+                    </div>
+                  `;
+                }}
+              />
+            );
+          }
+          
+          // Priority 3: Fallback to gradient with emoji
+          return (
           <div style={{
             width: '100%',
             height: '100%',
@@ -1701,7 +2098,8 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity }) => 
               border: '1px solid rgba(255, 255, 255, 0.2)'
             }} />
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Content */}
@@ -1848,52 +2246,32 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity }) => 
           </div>
         </div>
       </div>
-
-      {/* Hidden reCAPTCHA container for Firebase OTP */}
-      <div id="recaptcha-container" style={{ display: 'none' }}></div>
     </div>
   );
 };
 
 const PlaceOrderPage = () => {
+  const loadingFallback = (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#fef7f0',
+      flexDirection: 'column',
+      gap: '20px'
+    }}>
+      <FaSpinner size={40} color="#e53e3e" style={{ animation: 'spin 1s linear infinite' }} />
+      <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading...</p>
+    </div>
+  );
+
   return (
-    <Suspense fallback={
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#fef7f0',
-        flexDirection: 'column',
-        gap: '20px'
-      }}>
-        <FaSpinner size={40} color="#e53e3e" style={{ animation: 'spin 1s linear infinite' }} />
-        <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading...</p>
-        
-        <style jsx>{`
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    }>
+    <Suspense fallback={loadingFallback}>
       <PlaceOrderContent />
     </Suspense>
   );
 };
 
 export default PlaceOrderPage;
-
-
-
-
-
-
-
-
-
-
-
-
 

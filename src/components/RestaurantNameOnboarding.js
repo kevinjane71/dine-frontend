@@ -29,7 +29,7 @@ const RestaurantNameOnboarding = ({ onComplete, onSkip }) => {
         phone: '',
         email: '',
         cuisine: ['Indian'],
-        description: 'Welcome to your restaurant! You can customize this information later.',
+        description: '',
         operatingHours: {
           open: '09:00',
           close: '22:00'
@@ -84,7 +84,7 @@ const RestaurantNameOnboarding = ({ onComplete, onSkip }) => {
         phone: '',
         email: '',
         cuisine: ['Indian'],
-        description: 'Welcome to your restaurant! You can customize this information later.',
+        description: '',
         operatingHours: {
           open: '09:00',
           close: '22:00'

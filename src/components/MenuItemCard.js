@@ -216,38 +216,44 @@ const MenuItemCard = ({
   const imageUrl = getDisplayImage(item);
   const hasImage = imageUrl !== null;
 
-  return (
-    <div
-      className="menu-item-card"
-      style={{
-        backgroundColor: '#ffffff',
-        border: '1px solid #e5e7eb',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        height: isMobile ? (hasImage ? '180px' : '120px') : (hasImage ? '190px' : '130px'),
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: hasImage ? '0' : '12px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
-        position: 'relative',
-        overflow: 'hidden',
-        background: '#ffffff',
-        borderTop: hasImage ? 'none' : `3px solid ${isVeg ? '#22c55e' : '#ef4444'}`,
-        transition: 'all 0.2s ease'
-      }}
-      onClick={() => onAddToCart(item)}
-    >
-      {/* Image Section - Only if image exists */}
-      {hasImage && (
-        <div style={{
+  // Full Image Overlay Design when image exists
+  if (hasImage) {
+    return (
+      <div
+        className="menu-item-card"
+        style={{
+          backgroundColor: '#1f2937',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          height: isMobile ? '160px' : '170px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          padding: '0',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           position: 'relative',
-          width: '100%',
-          height: isMobile ? '80px' : '90px',
           overflow: 'hidden',
-          borderTopLeftRadius: '4px',
-          borderTopRightRadius: '4px',
-          backgroundColor: '#f3f4f6'
+          transition: 'all 0.3s ease',
+          border: 'none'
+        }}
+        onClick={() => onAddToCart(item)}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.25)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        }}
+      >
+        {/* Full Background Image */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 0
         }}>
           <img
             src={imageUrl}
@@ -258,37 +264,266 @@ const MenuItemCard = ({
               objectFit: 'cover'
             }}
             onError={(e) => {
-              // Hide image on error
               e.target.style.display = 'none';
             }}
           />
           
-          {/* Gradient Overlay */}
-          <div style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '30px',
-            background: 'linear-gradient(to top, rgba(0,0,0,0.3), transparent)',
-            pointerEvents: 'none'
-          }} />
-
-          {/* Veg/Non-Veg Stripe */}
+          {/* Dark Gradient Overlay for text visibility */}
           <div style={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            height: '3px',
-            backgroundColor: isVeg ? '#22c55e' : '#ef4444'
+            bottom: 0,
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.8) 100%)',
+            pointerEvents: 'none'
           }} />
         </div>
-      )}
-      
+
+        {/* Veg/Non-Veg Badge - Top Left */}
+        <div style={{
+          position: 'absolute',
+          top: '8px',
+          left: '8px',
+          width: '18px',
+          height: '18px',
+          borderRadius: '50%',
+          backgroundColor: isVeg ? '#22c55e' : '#ef4444',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+          border: '2px solid white'
+        }}>
+          {isVeg ? (
+            <FaLeaf size={8} color="white" />
+          ) : (
+            <FaDrumstickBite size={7} color="white" />
+          )}
+        </div>
+
+        {/* Top Right Badges */}
+        <div style={{
+          position: 'absolute',
+          top: '8px',
+          right: '8px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+          zIndex: 10
+        }}>
+          {item.shortCode && (
+            <div style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              backdropFilter: 'blur(4px)',
+              color: 'white',
+              padding: '3px 7px',
+              borderRadius: '6px',
+              fontSize: '9px',
+              fontWeight: '700',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              {item.shortCode}
+            </div>
+          )}
+          
+          {isPopular && (
+            <div style={{
+              backgroundColor: 'rgba(245, 158, 11, 0.95)',
+              backdropFilter: 'blur(4px)',
+              color: 'white',
+              padding: '3px 6px',
+              borderRadius: '6px',
+              fontSize: '7px',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '2px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.3px',
+              boxShadow: '0 2px 6px rgba(245, 158, 11, 0.4)'
+            }}>
+              <FaStar size={6} />
+              HOT
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Content - Overlaid on image */}
+        <div style={{
+          position: 'relative',
+          zIndex: 5,
+          padding: isMobile ? '10px' : '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '6px'
+        }}>
+          {/* Item Name */}
+          <h3 style={{
+            fontSize: isMobile ? '13px' : '14px',
+            fontWeight: '700',
+            margin: 0,
+            color: '#ffffff',
+            lineHeight: '1.2',
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+            letterSpacing: '0.2px'
+          }}>
+            {item.name}
+          </h3>
+          
+          {/* Price and Add Button Row */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: '2px'
+          }}>
+            {/* Price */}
+            <span style={{
+              fontSize: isMobile ? '15px' : '16px',
+              color: '#ffffff',
+              fontWeight: '800',
+              lineHeight: 1,
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.6)',
+              letterSpacing: '0.3px'
+            }}>
+              ₹{item.price}
+            </span>
+            
+            {/* Add Button */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: quantityInCart > 0 ? '#ef4444' : 'rgba(255, 255, 255, 0.95)',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              border: quantityInCart > 0 ? 'none' : '2px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: quantityInCart > 0 
+                ? '0 4px 12px rgba(239, 68, 68, 0.4)' 
+                : '0 2px 8px rgba(0, 0, 0, 0.3)',
+              backdropFilter: 'blur(4px)'
+            }}>
+              {quantityInCart > 0 ? (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveFromCart(item.id);
+                    }}
+                    style={{
+                      width: '28px',
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '700'
+                    }}
+                  >
+                    <FaMinus size={9} />
+                  </button>
+                  <span style={{
+                    width: '32px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: '800',
+                    color: 'white',
+                    fontSize: '12px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)'
+                  }}>
+                    {quantityInCart}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToCart(item);
+                    }}
+                    style={{
+                      width: '28px',
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '700'
+                    }}
+                  >
+                    <FaPlus size={9} />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddToCart(item);
+                  }}
+                  style={{
+                    padding: '7px 14px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    color: '#1f2937',
+                    fontWeight: '700',
+                    fontSize: '10px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  <FaPlus size={8} />
+                  ADD
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback design for items without images
+  return (
+    <div
+      className="menu-item-card"
+      style={{
+        backgroundColor: '#ffffff',
+        border: '1px solid #e5e7eb',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        height: isMobile ? '120px' : '130px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: '12px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+        position: 'relative',
+        overflow: 'hidden',
+        background: '#ffffff',
+        borderTop: `3px solid ${isVeg ? '#22c55e' : '#ef4444'}`,
+        transition: 'all 0.2s ease'
+      }}
+      onClick={() => onAddToCart(item)}
+    >
       {/* Content Section */}
       <div style={{
-        padding: hasImage ? '12px' : '0',
+        padding: '0',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',

@@ -455,7 +455,7 @@ function RestaurantPOSContent() {
         try {
           const defaultRestaurant = {
             name: 'My Restaurant',
-            description: 'Welcome to your restaurant!',
+            description: '',
             address: 'Add your address here',
             phone: '',
             email: '',
