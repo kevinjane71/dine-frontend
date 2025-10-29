@@ -25,6 +25,14 @@ export default function LandingPage() {
   const router = useRouter();
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [demoContactType, setDemoContactType] = useState('phone'); // 'phone' or 'email'
+  const [demoPhone, setDemoPhone] = useState('');
+  const [demoEmail, setDemoEmail] = useState('');
+  const [demoComment, setDemoComment] = useState('');
+  const [demoSubmitting, setDemoSubmitting] = useState(false);
+  const [demoSuccess, setDemoSuccess] = useState(false);
+  const [demoError, setDemoError] = useState('');
 
   useEffect(() => {
     const checkMobile = () => {
@@ -100,7 +108,7 @@ export default function LandingPage() {
         "Email support"
       ],
       popular: false,
-      buttonText: "Start Free Trial"
+      buttonText: "Start 1 Month Free Trial"
     },
     {
       name: "Professional",
@@ -119,7 +127,7 @@ export default function LandingPage() {
         "Custom branding"
       ],
       popular: true,
-      buttonText: "Start Free Trial"
+      buttonText: "Start 1 Month Free Trial"
     },
     {
       name: "Enterprise",
@@ -159,6 +167,44 @@ export default function LandingPage() {
 
   const handleDemoLogin = () => {
     router.push('/login?demo=true');
+  };
+
+  const handleSubmitDemoRequest = async () => {
+    // Validate required fields
+    if (demoContactType === 'phone' && !demoPhone.trim()) {
+      setDemoError('Phone number is required');
+      return;
+    }
+    if (demoContactType === 'email' && !demoEmail.trim()) {
+      setDemoError('Email is required');
+      return;
+    }
+
+    setDemoSubmitting(true);
+    setDemoError('');
+
+    try {
+      await apiClient.submitDemoRequest(
+        demoContactType,
+        demoPhone.trim(),
+        demoEmail.trim(),
+        demoComment.trim()
+      );
+
+      setDemoSuccess(true);
+      setTimeout(() => {
+        setShowDemoModal(false);
+        setDemoSuccess(false);
+        setDemoPhone('');
+        setDemoEmail('');
+        setDemoComment('');
+        setDemoContactType('phone');
+      }, 2000);
+    } catch (error) {
+      setDemoError(error.message || 'Failed to submit demo request. Please try again.');
+    } finally {
+      setDemoSubmitting(false);
+    }
   };
 
     return (
@@ -293,6 +339,32 @@ export default function LandingPage() {
           </div>
           
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button
+                  onClick={() => setShowDemoModal(true)}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: 'transparent',
+                    color: '#ef4444',
+                    border: '2px solid #ef4444',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#ef4444';
+                    e.target.style.color = 'white';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                    e.target.style.color = '#ef4444';
+                    e.target.style.transform = 'translateY(0)';
+                  }}
+                >
+                  Book Demo
+                </button>
           <button
                   onClick={handleLogin}
             style={{
@@ -450,6 +522,25 @@ export default function LandingPage() {
               </a>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }}>
+                <button
+                  onClick={() => {
+                    setShowDemoModal(true);
+                    setShowMobileMenu(false);
+                  }}
+                  style={{
+                    padding: '12px 20px',
+                    backgroundColor: 'transparent',
+                    color: '#ef4444',
+                    border: '2px solid #ef4444',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '15px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  Book Demo
+                </button>
                 <button
                   onClick={() => {
                     handleLogin();
@@ -638,40 +729,6 @@ export default function LandingPage() {
               and get real-time insights - all in one simple platform.
             </p>
             
-            {/* Stats */}
-            <div style={{
-              display: 'flex',
-              justifyContent: isMobile ? 'center' : 'flex-start', 
-              gap: isMobile ? '20px' : '40px',
-              marginBottom: '40px',
-              flexWrap: 'wrap'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
-                  1000+
-                </div>
-                <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
-                  Restaurants
-                </div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
-                  30%
-                </div>
-                <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
-                  More Savings
-                </div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: isMobile ? '28px' : '32px', fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
-                  24/7
-                </div>
-                <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
-                  Support
-                </div>
-              </div>
-            </div>
-
             {/* CTA Buttons */}
             <div style={{ 
               display: 'flex',
@@ -687,20 +744,20 @@ export default function LandingPage() {
                   padding: '18px 36px',
                   background: 'rgba(255, 255, 255, 0.95)',
                   color: '#dc2626',
-                  border: 'none',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
                   borderRadius: '16px',
                   fontWeight: '700',
-                  fontSize: isMobile ? '16px' : '18px',
+                  fontSize: isMobile ? '14px' : '16px',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
                   transform: 'translateY(0)',
                   backdropFilter: 'blur(10px)',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  width: isMobile ? '100%' : 'auto'
+                  width: isMobile ? '100%' : 'auto',
+                  whiteSpace: 'nowrap'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-4px)';
@@ -714,7 +771,7 @@ export default function LandingPage() {
                 }}
               >
                 <FaRocket size={20} />
-                🚀 Start Free Trial
+                <span>Start 1 Month Free Trial</span>
               </button>
               <button
                 onClick={handleDemoLogin}
@@ -725,14 +782,15 @@ export default function LandingPage() {
                   border: '2px solid rgba(255, 255, 255, 0.3)',
                   borderRadius: '16px',
                   fontWeight: '600',
-                  fontSize: isMobile ? '16px' : '18px',
+                  fontSize: isMobile ? '14px' : '16px',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   backdropFilter: 'blur(10px)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  width: isMobile ? '100%' : 'auto'
+                  width: isMobile ? '100%' : 'auto',
+                  whiteSpace: 'nowrap'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
@@ -744,11 +802,11 @@ export default function LandingPage() {
                 }}
               >
                 <FaPlay size={16} />
-                See Real Demo
+                <span>See Real Demo</span>
               </button>
             </div>
             
-            {/* Trust Indicators */}
+            {/* Key Features */}
             <div style={{ 
               marginTop: '40px',
               padding: '20px',
@@ -761,9 +819,12 @@ export default function LandingPage() {
                 fontSize: isMobile ? '12px' : '14px',
                 color: 'rgba(255, 255, 255, 0.8)',
                 margin: 0,
-                fontWeight: '500'
+                fontWeight: '500',
+                textAlign: 'center',
+                whiteSpace: isMobile ? 'normal' : 'nowrap',
+                lineHeight: '1.6'
               }}>
-                ✨ Bank-Level Security • 🛡️ GDPR Compliant • ⚡ Lightning Fast
+                🏪 Multi-Restaurant Management • 🪑 Tables Booking & Management
               </p>
             </div>
           </div>
@@ -844,218 +905,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Social Proof Banner */}
-      <section style={{
-        background: 'linear-gradient(135deg, rgb(255 246 241) 0%, rgb(254 245 242) 50%, rgb(255 244 243) 100%)',
-        padding: isMobile ? '30px 20px' : '40px 20px',
-                        color: '#1f2937',
-                        textAlign: 'center',
-        position: 'relative',
-                        overflow: 'hidden',
-        borderTop: '1px solid #f3f4f6',
-        borderBottom: '1px solid #f3f4f6'
-      }}>
-        {/* Background Pattern */}
-                          <div style={{
-                position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'url("data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ef4444" fill-opacity="0.08"%3E%3Ccircle cx="20" cy="20" r="1.5"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          opacity: '0.7'
-        }}></div>
-        
-        <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-                          <div style={{
-                      display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-                      alignItems: 'center',
-            justifyContent: 'space-around',
-            gap: isMobile ? '20px' : '40px'
-          }}>
-            {/* Statistic 1 */}
-                      <div style={{
-                        display: 'flex',
-              flexDirection: 'column',
-                        alignItems: 'center',
-              gap: '6px'
-                      }}>
-                        <div style={{
-                fontSize: isMobile ? '32px' : '42px',
-                            fontWeight: 'bold',
-                background: 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                lineHeight: '1'
-              }}>
-                1000+
-                          </div>
-              <div style={{
-                fontSize: isMobile ? '14px' : '16px',
-                fontWeight: '600',
-                color: '#374151'
-              }}>
-                Restaurants Using
-                    </div>
-              <div style={{
-                fontSize: isMobile ? '12px' : '14px',
-                color: '#6b7280',
-                fontWeight: '500'
-              }}>
-                DineOpen
-                        </div>
-                      </div>
-                      
-            {/* Divider */}
-            <div style={{
-              width: isMobile ? '40px' : '2px',
-              height: isMobile ? '2px' : '40px',
-              background: 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)',
-              borderRadius: '2px',
-              opacity: '0.4'
-            }}></div>
-
-            {/* Statistic 2 */}
-          <div style={{ 
-                            display: 'flex',
-              flexDirection: 'column',
-                            alignItems: 'center',
-              gap: '6px'
-            }}>
-              <div style={{
-                fontSize: isMobile ? '32px' : '42px',
-                          fontWeight: 'bold',
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                lineHeight: '1'
-              }}>
-                30%
-                      </div>
-                    <div style={{ 
-                fontSize: isMobile ? '14px' : '16px',
-                fontWeight: '600',
-                color: '#374151'
-              }}>
-                More Savings
-                    </div>
-              <div style={{
-                fontSize: isMobile ? '12px' : '14px',
-                color: '#6b7280',
-                      fontWeight: '500'
-              }}>
-                vs Traditional Software
-                    </div>
-          </div>
-
-            {/* Divider */}
-            <div style={{
-              width: isMobile ? '40px' : '2px',
-              height: isMobile ? '2px' : '40px',
-              background: 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)',
-              borderRadius: '2px',
-              opacity: '0.4'
-            }}></div>
-
-            {/* Statistic 3 */}
-            <div style={{ 
-                  display: 'flex',
-              flexDirection: 'column',
-                  alignItems: 'center',
-              gap: '6px'
-            }}>
-              <div style={{
-                fontSize: isMobile ? '32px' : '42px',
-                fontWeight: 'bold',
-                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                lineHeight: '1'
-              }}>
-                40%
-                  </div>
-              <div style={{
-                fontSize: isMobile ? '14px' : '16px',
-                  fontWeight: '600',
-                color: '#374151'
-              }}>
-                Faster Processing
-            </div>
-              <div style={{
-                fontSize: isMobile ? '12px' : '14px',
-                color: '#6b7280',
-                fontWeight: '500'
-              }}>
-                Average Improvement
-          </div>
-                </div>
-              </div>
-
-          {/* Trust Indicators */}
-                <div style={{ 
-            marginTop: '25px',
-            paddingTop: '20px',
-            borderTop: '1px solid rgba(239, 68, 68, 0.1)'
-          }}>
-                    <div style={{ 
-                        display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-              gap: isMobile ? '15px' : '30px',
-              flexWrap: 'wrap'
-            }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      fontSize: '13px', 
-                color: '#6b7280',
-                fontWeight: '500'
-              }}>
-                <div style={{
-                  width: '14px',
-                  height: '14px',
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                  borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                  justifyContent: 'center'
-                    }}>
-                  <FaShieldAlt color="white" size={8} />
-                    </div>
-                <span>Bank-Level Security</span>
-                  </div>
-
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                fontSize: '13px',
-                color: '#6b7280',
-                fontWeight: '500'
-                      }}>
-                        <div style={{
-                  width: '14px',
-                  height: '14px',
-                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                          borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <FaHeadset color="white" size={8} />
-                  </div>
-                <span>24/7 Customer Support</span>
-                    </div>
-                  </div>
-            </div>
-          </div>
-      </section>
 
       {/* Features Section */}
       <section id="features" style={{
@@ -2004,7 +1853,349 @@ export default function LandingPage() {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.05); }
         }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
       `}</style>
+
+      {/* Demo Booking Modal */}
+      {showDemoModal && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowDemoModal(false);
+              setDemoError('');
+              setDemoPhone('');
+              setDemoEmail('');
+              setDemoComment('');
+              setDemoContactType('phone');
+            }
+          }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+            animation: 'fadeIn 0.2s ease'
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '16px',
+              padding: '32px',
+              maxWidth: '500px',
+              width: '100%',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+              animation: 'slideUp 0.3s ease',
+              maxHeight: '90vh',
+              overflowY: 'auto'
+            }}
+          >
+            {/* Header */}
+            <div style={{ marginBottom: '24px', textAlign: 'center' }}>
+              <h2 style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#1f2937',
+                margin: '0 0 8px 0'
+              }}>
+                Book a Demo
+              </h2>
+              <p style={{
+                fontSize: '14px',
+                color: '#6b7280',
+                margin: 0
+              }}>
+                Schedule a personalized demo and see how DineOpen can transform your restaurant
+              </p>
+            </div>
+
+            {/* Success Message */}
+            {demoSuccess && (
+              <div style={{
+                backgroundColor: '#f0fdf4',
+                border: '2px solid #22c55e',
+                color: '#166534',
+                padding: '16px',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                textAlign: 'center',
+                fontWeight: '600'
+              }}>
+                ✅ {demoSuccess ? 'Demo request submitted successfully! We\'ll contact you soon.' : ''}
+              </div>
+            )}
+
+            {/* Error Message */}
+            {demoError && (
+              <div style={{
+                backgroundColor: '#fef2f2',
+                border: '2px solid #ef4444',
+                color: '#dc2626',
+                padding: '16px',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                fontSize: '14px'
+              }}>
+                {demoError}
+              </div>
+            )}
+
+            {/* Contact Type Selection */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#374151',
+                marginBottom: '12px'
+              }}>
+                How would you like us to contact you?
+              </label>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => {
+                    setDemoContactType('phone');
+                    setDemoError('');
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    backgroundColor: demoContactType === 'phone' ? '#ef4444' : '#f3f4f6',
+                    color: demoContactType === 'phone' ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  📞 Phone
+                </button>
+                <button
+                  onClick={() => {
+                    setDemoContactType('email');
+                    setDemoError('');
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    backgroundColor: demoContactType === 'email' ? '#ef4444' : '#f3f4f6',
+                    color: demoContactType === 'email' ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  ✉️ Email
+                </button>
+              </div>
+            </div>
+
+            {/* Phone Input (if phone selected) */}
+            {demoContactType === 'phone' && (
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '8px'
+                }}>
+                  Phone Number <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={demoPhone}
+                  onChange={(e) => setDemoPhone(e.target.value)}
+                  placeholder="+91 9876543210"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#ef4444';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Email Input (if email selected) */}
+            {demoContactType === 'email' && (
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '8px'
+                }}>
+                  Email Address <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="email"
+                  value={demoEmail}
+                  onChange={(e) => setDemoEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#ef4444';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Comment Text Area */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#374151',
+                marginBottom: '8px'
+              }}>
+                Additional Comments (Optional)
+              </label>
+              <textarea
+                value={demoComment}
+                onChange={(e) => setDemoComment(e.target.value)}
+                placeholder="Tell us about your restaurant or any specific requirements..."
+                rows={4}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                  transition: 'all 0.2s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#ef4444';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#e5e7eb';
+                  e.target.style.boxShadow = 'none';
+                }}
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => {
+                  setShowDemoModal(false);
+                  setDemoError('');
+                  setDemoPhone('');
+                  setDemoEmail('');
+                  setDemoComment('');
+                  setDemoContactType('phone');
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px 24px',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#e5e7eb';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#f3f4f6';
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitDemoRequest}
+                disabled={demoSubmitting || demoSuccess}
+                style={{
+                  flex: 1,
+                  padding: '12px 24px',
+                  background: (demoSubmitting || demoSuccess) 
+                    ? '#d1d5db' 
+                    : 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: (demoSubmitting || demoSuccess) ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (!demoSubmitting && !demoSuccess) {
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              >
+                {demoSubmitting ? 'Submitting...' : 'Submit Request'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

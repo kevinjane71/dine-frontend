@@ -998,6 +998,33 @@ class ApiClient {
       body: { transcript, restaurantId },
     });
   }
+
+  // Demo request endpoint - public, no auth required
+  async submitDemoRequest(contactType, phone, email, comment) {
+    // Create a request without auth token
+    const url = `${this.baseURL}/api/demo-request`;
+    const config = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ contactType, phone, email, comment })
+    };
+
+    try {
+      const response = await fetch(url, config);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Failed to submit demo request');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  }
 }
 
 const apiClient = new ApiClient();
