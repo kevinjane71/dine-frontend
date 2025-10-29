@@ -55,7 +55,8 @@ const OrderSummary = ({
   restaurantId,
   restaurantName,
   taxSettings,
-  menuItems = []
+  menuItems = [],
+  onClose
 }) => {
   const [invoice, setInvoice] = useState(null);
   const [showInvoicePermanently, setShowInvoicePermanently] = useState(false);
@@ -71,6 +72,7 @@ const OrderSummary = ({
   const [showVoiceConfirm, setShowVoiceConfirm] = useState(false);
   const [voiceError, setVoiceError] = useState('');
   const [useFullChatGPT, setUseFullChatGPT] = useState(true); // Feature flag - Set to true for full ChatGPT processing
+  const [isMobile, setIsMobile] = useState(false);
   
   // Debug: Log cart prop received by OrderSummary
   console.log('📋 OrderSummary: Received cart prop:', cart);
@@ -84,6 +86,17 @@ const OrderSummary = ({
       quantity: item.quantity
     })));
   }
+  
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   const calculateTax = useCallback(async () => {
     console.log('Calculating tax for cart:', cart.length, 'items, restaurantId:', restaurantId);
@@ -365,13 +378,18 @@ const OrderSummary = ({
   
   return (
     <div style={{ 
-      width: '100%', 
-      height: '100%', 
+      width: isMobile ? '100vw' : '100%', 
+      height: isMobile ? '100vh' : '100%',
+      position: isMobile ? 'fixed' : 'relative',
+      top: isMobile ? 0 : 'auto',
+      left: isMobile ? 0 : 'auto',
+      zIndex: isMobile ? 1000 : 'auto',
       backgroundColor: 'white', 
-      borderLeft: '2px solid #e5e7eb', 
+      borderLeft: isMobile ? 'none' : '2px solid #e5e7eb', 
       display: 'flex', 
       flexDirection: 'column',
-      boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.08)'
+      boxShadow: isMobile ? 'none' : '-4px 0 20px rgba(0, 0, 0, 0.08)',
+      overflowY: 'auto'
     }}>
       {/* Header - More Compact */}
       <div style={{ 
@@ -403,6 +421,26 @@ const OrderSummary = ({
           zIndex: 2
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {/* Close Button for Mobile */}
+            {isMobile && onClose && (
+              <button
+                onClick={onClose}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: 'white'
+                }}
+              >
+                <FaTimes size={14} />
+              </button>
+            )}
             <div style={{
               width: '24px',
               height: '24px',
@@ -416,10 +454,10 @@ const OrderSummary = ({
               <FaShoppingCart size={12} />
             </div>
             <div style={{ flex: 1 }}>
-              <h2 style={{ fontSize: '13px', fontWeight: 'bold', margin: 0 }}>
+              <h2 style={{ fontSize: isMobile ? '14px' : '13px', fontWeight: 'bold', margin: 0 }}>
                 {t('dashboard.orderSummary')}
               </h2>
-              <p style={{ fontSize: '9px', margin: '1px 0 0 0', opacity: 0.8 }}>
+              <p style={{ fontSize: isMobile ? '10px' : '9px', margin: '1px 0 0 0', opacity: 0.8 }}>
                 {cart.reduce((sum, item) => sum + item.quantity, 0)} {t('common.items')}
               </p>
             </div>
@@ -452,27 +490,27 @@ const OrderSummary = ({
             </div>
           )}
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '6px' }}>
             {/* Order Type Selector - Text Based */}
-            <div style={{ display: 'flex', gap: '4px' }}>
+            <div style={{ display: 'flex', gap: isMobile ? '3px' : '4px' }}>
               <button
                 onClick={() => setOrderType('dine-in')}
                 style={{
                   backgroundColor: orderType === 'dine-in' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.1)',
                   color: 'white',
                   border: orderType === 'dine-in' ? '2px solid white' : '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '6px',
-                  padding: '6px 10px',
-                  fontSize: '11px',
+                  borderRadius: isMobile ? '4px' : '6px',
+                  padding: isMobile ? '4px 6px' : '6px 10px',
+                  fontSize: isMobile ? '9px' : '11px',
                   fontWeight: '700',
                   cursor: 'pointer',
                   backdropFilter: 'blur(10px)',
-                  minWidth: '50px',
+                  minWidth: isMobile ? '40px' : '50px',
                   boxShadow: orderType === 'dine-in' ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
                 }}
                 title="Dine In"
               >
-                {t('dashboard.dineIn')}
+                {isMobile ? 'DINE IN' : t('dashboard.dineIn')}
               </button>
               <button
                 onClick={() => setOrderType('takeaway')}
@@ -480,18 +518,18 @@ const OrderSummary = ({
                   backgroundColor: orderType === 'takeaway' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.1)',
                   color: 'white',
                   border: orderType === 'takeaway' ? '2px solid white' : '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '6px',
-                  padding: '6px 10px',
-                  fontSize: '11px',
+                  borderRadius: isMobile ? '4px' : '6px',
+                  padding: isMobile ? '4px 6px' : '6px 10px',
+                  fontSize: isMobile ? '9px' : '11px',
                   fontWeight: '700',
                   cursor: 'pointer',
                   backdropFilter: 'blur(10px)',
-                  minWidth: '50px',
+                  minWidth: isMobile ? '40px' : '50px',
                   boxShadow: orderType === 'takeaway' ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
                 }}
                 title="Takeaway"
               >
-                {t('dashboard.takeaway')}
+                {isMobile ? 'TAKEAWAY' : t('dashboard.takeaway')}
               </button>
               <button
                 onClick={() => setOrderType('delivery')}
@@ -499,62 +537,66 @@ const OrderSummary = ({
                   backgroundColor: orderType === 'delivery' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.1)',
                   color: 'white',
                   border: orderType === 'delivery' ? '2px solid white' : '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '6px',
-                  padding: '6px 10px',
-                  fontSize: '11px',
+                  borderRadius: isMobile ? '4px' : '6px',
+                  padding: isMobile ? '4px 6px' : '6px 10px',
+                  fontSize: isMobile ? '9px' : '11px',
                   fontWeight: '700',
                   cursor: 'pointer',
                   backdropFilter: 'blur(10px)',
-                  minWidth: '50px',
+                  minWidth: isMobile ? '40px' : '50px',
                   boxShadow: orderType === 'delivery' ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
                 }}
                 title="Delivery"
               >
-                Delivery
+                {isMobile ? 'DELIVERY' : 'Delivery'}
               </button>
             </div>
             
-            {/* QR Code Button */}
-            <button
-              onClick={onShowQRCode}
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '4px',
-                padding: '4px',
-                color: 'white',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backdropFilter: 'blur(10px)',
-                transition: 'all 0.2s ease'
-              }}
-              title="Generate QR Code for Customer Orders"
-            >
-              <FaQrcode size={10} />
-            </button>
+            {/* QR Code Button - Hide on Mobile */}
+            {!isMobile && (
+              <button
+                onClick={onShowQRCode}
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '4px',
+                  padding: '4px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease'
+                }}
+                title="Generate QR Code for Customer Orders"
+              >
+                <FaQrcode size={10} />
+              </button>
+            )}
             
-            {/* Clear Button - Icon Only */}
-            <button
-              onClick={onClearCart}
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '4px',
-                padding: '4px',
-                color: 'white',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backdropFilter: 'blur(10px)',
-                transition: 'all 0.2s ease'
-              }}
-              title="Clear Cart"
-            >
-              <FaTrash size={8} />
-            </button>
+            {/* Clear Button - Hide on Mobile */}
+            {!isMobile && (
+              <button
+                onClick={onClearCart}
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '4px',
+                  padding: '4px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease'
+                }}
+                title="Clear Cart"
+              >
+                <FaTrash size={8} />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -1174,6 +1216,10 @@ const OrderSummary = ({
             onClick={() => {
               setOrderSuccess(null);
               onClearCart();
+              // Close modal on mobile after starting new order
+              if (isMobile && onClose) {
+                setTimeout(() => onClose(), 300);
+              }
             }}
             style={{
               background: 'linear-gradient(135deg, #22c55e, #16a34a)',
@@ -1267,68 +1313,77 @@ const OrderSummary = ({
                 
                 <div style={{ 
                   display: 'flex', 
-                  gap: '8px',
-                  alignItems: 'center'
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: isMobile ? '10px' : '8px',
+                  alignItems: isMobile ? 'stretch' : 'center'
                 }}>
-                  {/* Customer Name */}
-                  <input
-                    type="text"
-                    placeholder={t('dashboard.customerName')}
-                    value={customerName || ''}
-                    style={{
-                      flex: 1,
-                      padding: '8px 10px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      outline: 'none',
-                      backgroundColor: '#f9fafb',
-                      transition: 'border-color 0.2s'
-                    }}
-                    onChange={(e) => {
-                      if (typeof onCustomerNameChange === 'function') {
-                        onCustomerNameChange(e.target.value);
-                      }
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#ef4444'}
-                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                  />
+                  {/* First Row on Mobile: Customer Name & Mobile Number */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    flex: isMobile ? '0 0 auto' : '1'
+                  }}>
+                    {/* Customer Name */}
+                    <input
+                      type="text"
+                      placeholder={t('dashboard.customerName')}
+                      value={customerName || ''}
+                      style={{
+                        flex: 1,
+                        padding: isMobile ? '10px 12px' : '8px 10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: isMobile ? '14px' : '12px',
+                        outline: 'none',
+                        backgroundColor: '#f9fafb',
+                        transition: 'border-color 0.2s'
+                      }}
+                      onChange={(e) => {
+                        if (typeof onCustomerNameChange === 'function') {
+                          onCustomerNameChange(e.target.value);
+                        }
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#ef4444'}
+                      onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                    />
+                    
+                    {/* Customer Mobile */}
+                    <input
+                      type="tel"
+                      placeholder="Mobile Number"
+                      value={customerMobile || ''}
+                      style={{
+                        flex: 1,
+                        padding: isMobile ? '10px 12px' : '8px 10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: isMobile ? '14px' : '12px',
+                        outline: 'none',
+                        backgroundColor: '#f9fafb',
+                        transition: 'border-color 0.2s'
+                      }}
+                      onChange={(e) => {
+                        if (typeof onCustomerMobileChange === 'function') {
+                          onCustomerMobileChange(e.target.value);
+                        }
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#ef4444'}
+                      onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                    />
+                  </div>
                   
-                  {/* Customer Mobile */}
-                  <input
-                    type="tel"
-                    placeholder="Mobile Number"
-                    value={customerMobile || ''}
-                    style={{
-                      flex: 1,
-                      padding: '8px 10px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      outline: 'none',
-                      backgroundColor: '#f9fafb',
-                      transition: 'border-color 0.2s'
-                    }}
-                    onChange={(e) => {
-                      if (typeof onCustomerMobileChange === 'function') {
-                        onCustomerMobileChange(e.target.value);
-                      }
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#ef4444'}
-                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                  />
-                  
+                  {/* Second Row on Mobile: Table Number (Full Width) */}
                   {/* Table Number */}
                   <input
                     type="text"
                     placeholder="Table No"
                     value={tableNumber || ''}
                     style={{
-                      width: '20%',
-                      padding: '8px 10px',
+                      width: isMobile ? '100%' : '20%',
+                      padding: isMobile ? '10px 12px' : '8px 10px',
                       border: '1px solid #d1d5db',
                       borderRadius: '6px',
-                      fontSize: '12px',
+                      fontSize: isMobile ? '14px' : '12px',
                       outline: 'none',
                       backgroundColor: '#f9fafb',
                       transition: 'border-color 0.2s'
@@ -1398,7 +1453,15 @@ const OrderSummary = ({
                 {/* First Row - Save and Place Order */}
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <button 
-                    onClick={onSaveOrder}
+                    onClick={() => {
+                      if (typeof onSaveOrder === 'function') {
+                        onSaveOrder();
+                      }
+                      // Close modal on mobile after saving order
+                      if (isMobile && onClose) {
+                        setTimeout(() => onClose(), 500); // Small delay to show success
+                      }
+                    }}
                     style={{
                       flex: 1,
                       background: 'linear-gradient(135deg, #f97316, #ea580c)',
@@ -1425,6 +1488,10 @@ const OrderSummary = ({
                     onClick={() => {
                       if (typeof onPlaceOrder === 'function') {
                         onPlaceOrder();
+                      }
+                      // Close modal on mobile after placing order
+                      if (isMobile && onClose) {
+                        setTimeout(() => onClose(), 500); // Small delay to show success
                       }
                     }}
                     disabled={placingOrder || cart.length === 0 || (currentOrder && currentOrder.status === 'completed')}

@@ -2780,130 +2780,171 @@ function RestaurantPOSContent() {
             </div>
           ) : (
           <>
-            {/* Compact Header - Redesigned */}
-          <div style={{ padding: '12px', backgroundColor: 'white', borderBottom: '1px solid #f3f4f6' }}>
-            {/* Single Row - Cool Design Layout */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-              {/* Main Menu Search - Cool Design */}
-              <div style={{ position: 'relative', width: '250px' }}>
-                <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#6b7280' }} size={12} />
-                <input
-                  type="text"
-                  placeholder="Search menu..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{
-                    width: '100%',
-                    height: '36px',
-                    paddingLeft: '36px',
-                    paddingRight: '12px',
-                    border: 'none',
-                    borderBottom: '2px solid #e5e7eb',
-                    borderRadius: '0px',
-                    backgroundColor: '#f8fafc',
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    outline: 'none',
-                    transition: 'all 0.2s ease',
-                    color: '#374151'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderBottomColor = '#e5e7eb';
-                    e.target.style.backgroundColor = '#f8fafc';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderBottomColor = '#e5e7eb';
-                    e.target.style.backgroundColor = '#f8fafc';
-                  }}
-                />
-            </div>
-            
-              {/* Voice Listening Widget */}
+            {/* Compact Header - Mobile Optimized */}
+          <div style={{ padding: isMobile ? '8px' : '12px', backgroundColor: 'white', borderBottom: '1px solid #f3f4f6' }}>
+            {/* Responsive Layout */}
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: isMobile ? 'stretch' : 'center', 
+              justifyContent: 'space-between', 
+              gap: isMobile ? '8px' : '10px' 
+            }}>
+              {/* First Row on Mobile - Search & Voice */}
               <div style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '8px',
-                backgroundColor: isListeningVoice ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                padding: '6px 12px',
-                borderRadius: '20px',
-                minWidth: isListeningVoice ? '200px' : '60px',
-                transition: 'all 0.3s ease',
-                animation: isListeningVoice ? 'pulse 1.5s ease-in-out infinite' : 'none'
+                flex: isMobile ? '0 0 auto' : '1',
+                justifyContent: isMobile ? 'space-between' : 'flex-start',
+                width: isMobile ? '100%' : 'auto'
               }}>
-                {isListeningVoice ? (
-                  <>
-                    <FaMicrophoneSlash 
-                      size={16} 
-                      color="#ef4444" 
-                      style={{ animation: 'pulse 1s ease-in-out infinite' }}
-                    />
-                    <span style={{ 
-                      fontSize: '12px', 
-                      fontWeight: '600', 
-                      color: '#ef4444' 
-                    }}>
-                      Listening...
-                    </span>
-                    <button
-                      onClick={stopVoiceListening}
-                      style={{
-                        marginLeft: '8px',
-                        padding: '4px 8px',
-                        background: '#ef4444',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        fontSize: '10px',
-                        cursor: 'pointer',
-                        fontWeight: '600'
-                      }}
-                    >
-                      Stop
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={startVoiceListening}
-                    style={{
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: '32px',
-                      height: '32px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
-                    }}
-                    title="Start Voice Order"
-                  >
-                    <FaMicrophone size={14} />
-                  </button>
-                )}
-              </div>
-            
-              {/* Right Side Controls */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {/* Order ID Search - Cool Design (Moved First, Made Bigger) */}
-                <div style={{ position: 'relative', width: '110px' }}>
+                {/* Main Menu Search - Mobile Optimized */}
+                <div style={{ position: 'relative', flex: isMobile ? '1' : '0 0 250px', maxWidth: isMobile ? 'none' : '250px' }}>
+                  <FaSearch style={{ 
+                    position: 'absolute', 
+                    left: '12px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    color: '#6b7280' 
+                  }} size={isMobile ? 14 : 12} />
                   <input
                     type="text"
-                    placeholder="Order ID"
+                    placeholder={isMobile ? "Search..." : "Search menu..."}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                      width: '100%',
+                      height: isMobile ? '38px' : '36px',
+                      paddingLeft: isMobile ? '38px' : '36px',
+                      paddingRight: '12px',
+                      border: 'none',
+                      borderBottom: '2px solid #e5e7eb',
+                      borderRadius: '0px',
+                      backgroundColor: '#f8fafc',
+                      fontSize: isMobile ? '14px' : '12px',
+                      fontWeight: '500',
+                      outline: 'none',
+                      transition: 'all 0.2s ease',
+                      color: '#374151'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottomColor = '#e5e7eb';
+                      e.target.style.backgroundColor = '#f8fafc';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottomColor = '#e5e7eb';
+                      e.target.style.backgroundColor = '#f8fafc';
+                    }}
+                  />
+                </div>
+            
+                {/* Voice Listening Widget - Mobile Optimized */}
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: isMobile ? '6px' : '8px',
+                  backgroundColor: isListeningVoice ? 'rgba(239, 68, 68, 0.1)' : isProcessingVoice ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                  padding: isMobile ? '4px 8px' : '6px 12px',
+                  borderRadius: '20px',
+                  minWidth: isListeningVoice || isProcessingVoice ? (isMobile ? '130px' : '200px') : (isMobile ? '42px' : '60px'),
+                  transition: 'all 0.3s ease',
+                  animation: isListeningVoice ? 'pulse 1.5s ease-in-out infinite' : 'none',
+                  flexShrink: 0
+                }}>
+                  {isProcessingVoice ? (
+                    <>
+                      <FaMicrophone size={isMobile ? 12 : 14} color="#3b82f6" style={{ animation: 'pulse 1s ease-in-out infinite' }} />
+                      <span style={{ 
+                        fontSize: isMobile ? '10px' : '12px', 
+                        fontWeight: '600', 
+                        color: '#3b82f6' 
+                      }}>
+                        {isMobile ? 'Processing...' : 'Processing...'}
+                      </span>
+                    </>
+                  ) : isListeningVoice ? (
+                    <>
+                      <FaMicrophoneSlash 
+                        size={isMobile ? 12 : 16} 
+                        color="#ef4444" 
+                        style={{ animation: 'pulse 1s ease-in-out infinite' }}
+                      />
+                      <span style={{ 
+                        fontSize: isMobile ? '10px' : '12px', 
+                        fontWeight: '600', 
+                        color: '#ef4444' 
+                      }}>
+                        {isMobile ? 'Listening' : 'Listening...'}
+                      </span>
+                      <button
+                        onClick={stopVoiceListening}
+                        style={{
+                          marginLeft: isMobile ? '4px' : '8px',
+                          padding: isMobile ? '3px 6px' : '4px 8px',
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: isMobile ? '9px' : '10px',
+                          cursor: 'pointer',
+                          fontWeight: '600'
+                        }}
+                      >
+                        Stop
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={startVoiceListening}
+                      style={{
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: isMobile ? '28px' : '32px',
+                        height: isMobile ? '28px' : '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+                      }}
+                      title="Start Voice Order"
+                    >
+                      <FaMicrophone size={isMobile ? 12 : 14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            
+              {/* Right Side Controls - Mobile Optimized */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: isMobile ? '6px' : '10px',
+                flexWrap: 'nowrap',
+                justifyContent: isMobile ? 'space-between' : 'flex-start',
+                width: '100%'
+              }}>
+                {/* Order ID Search - Mobile Optimized */}
+                <div style={{ position: 'relative', flex: isMobile ? '1' : '0 0 110px', minWidth: isMobile ? '0' : '110px' }}>
+                  <input
+                    type="text"
+                    placeholder={isMobile ? "Order" : "Order ID"}
                     value={orderLookup}
                     onChange={(e) => setOrderLookup(e.target.value)}
                     onKeyPress={handleOrderLookup}
                     style={{
                       width: '100%',
                       height: '36px',
-                      paddingLeft: '8px',
-                      paddingRight: '8px',
+                      paddingLeft: isMobile ? '8px' : '8px',
+                      paddingRight: isMobile ? '8px' : '8px',
                       border: 'none',
-                      borderRadius: '3px',
+                      borderRadius: '8px',
                       backgroundColor: '#fef3c7',
-                      fontSize: isMobile ? '16px' : '11px',
+                      fontSize: isMobile ? '12px' : '11px',
                       fontWeight: '600',
                       outline: 'none',
                       textAlign: 'center',
@@ -2919,30 +2960,30 @@ function RestaurantPOSContent() {
                   />
                 </div>
 
-                {/* Short Code Search - Cool Design (Moved Second, Renamed) */}
-                <div style={{ position: 'relative', width: '70px' }}>
+                {/* Short Code Search - Mobile Optimized */}
+                <div style={{ position: 'relative', flex: isMobile ? '1' : '0 0 70px', minWidth: isMobile ? '0' : '70px' }}>
                   <input
                     type="text"
-                    placeholder="Short Code"
+                    placeholder={isMobile ? "SC" : "SHORT C"}
                     value={shortCodeSearch}
                     onChange={(e) => setShortCodeSearch(e.target.value)}
                     onKeyPress={handleShortCodeSearch}
                     style={{
                       width: '100%',
                       height: '36px',
-                      paddingLeft: '8px',
-                      paddingRight: '8px',
+                      paddingLeft: isMobile ? '8px' : '8px',
+                      paddingRight: isMobile ? '8px' : '8px',
                       border: 'none',
-                      borderRadius: '3px',
+                      borderRadius: '8px',
                       backgroundColor: '#d1fae5',
-                      fontSize: isMobile ? '16px' : '11px',
+                      fontSize: isMobile ? '12px' : '11px',
                       fontWeight: '600',
                       outline: 'none',
                       textAlign: 'center',
                       transition: 'all 0.2s ease',
                       color: '#374151',
                       textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
+                      letterSpacing: '0px'
                     }}
                     onFocus={(e) => {
                       e.target.style.backgroundColor = '#d1fae5';
@@ -2953,27 +2994,30 @@ function RestaurantPOSContent() {
                   />
                 </div>
 
-                {/* Fresh Order Button - Cool Design */}
+                {/* Fresh Order Button - Mobile Optimized */}
                 <button
                   onClick={handleFreshOrder}
                   style={{
                     height: '36px',
-                    paddingLeft: '16px',
-                    paddingRight: '16px',
+                    paddingLeft: isMobile ? '12px' : '16px',
+                    paddingRight: isMobile ? '12px' : '16px',
                     background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                     color: 'white',
                     border: 'none',
-                    borderRadius: '12px',
-                    fontSize: '11px',
+                    borderRadius: '8px',
+                    fontSize: isMobile ? '10px' : '11px',
                     fontWeight: '700',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    justifyContent: 'center',
                     transition: 'all 0.3s ease',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                    letterSpacing: '0.3px',
+                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    flex: isMobile ? '1.2' : '0 0 auto'
                   }}
                   onMouseEnter={(e) => {
                     e.target.style.transform = 'translateY(-2px)';
@@ -2984,43 +3028,44 @@ function RestaurantPOSContent() {
                     e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
                   }}
                 >
-                  <FaPlus size={10} />
-                  Fresh Order
+                  FRESH ORDER
                 </button>
 
-                {/* Compact Toggle Below Fresh Order */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ fontSize: '9px', color: '#6b7280', fontWeight: '500' }}>
-                    {useModernCards ? 'M' : 'C'}
-                  </span>
-                <button
-                    onClick={() => setUseModernCards(!useModernCards)}
-                  style={{
-                      width: '20px',
-                      height: '12px',
-                      borderRadius: '6px',
-                    border: 'none',
-                      backgroundColor: useModernCards ? '#ef4444' : '#d1d5db',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                      justifyContent: useModernCards ? 'flex-end' : 'flex-start',
-                      padding: '1px',
-                      transition: 'all 0.3s ease',
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                    }}
-                  >
-                    <div style={{
-                      width: '10px',
-                      height: '10px',
-                      borderRadius: '50%',
-                      backgroundColor: 'white',
-                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
-                      transition: 'all 0.3s ease'
-                    }} />
-                </button>
+                {/* Compact Toggle - Only show on desktop */}
+                {!isMobile && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '9px', color: '#6b7280', fontWeight: '500' }}>
+                      {useModernCards ? 'M' : 'C'}
+                    </span>
+                    <button
+                      onClick={() => setUseModernCards(!useModernCards)}
+                      style={{
+                        width: '20px',
+                        height: '12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        backgroundColor: useModernCards ? '#ef4444' : '#d1d5db',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: useModernCards ? 'flex-end' : 'flex-start',
+                        padding: '1px',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                      }}
+                    >
+                      <div style={{
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        backgroundColor: 'white',
+                        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+                        transition: 'all 0.3s ease'
+                      }} />
+                    </button>
+                  </div>
+                )}
               </div>
-                    </div>
             </div>
           </div>
           
@@ -3117,113 +3162,45 @@ function RestaurantPOSContent() {
         </div>
             )}
 
-            {/* Mobile Order Summary Bottom Sheet */}
-            {isMobile && (
-              <div style={{
-                position: 'fixed',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                backgroundColor: 'white',
-                borderTop: '1px solid #e5e7eb',
-                borderTopLeftRadius: '20px',
-                borderTopRightRadius: '20px',
-                boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
-                zIndex: 1000,
-                maxHeight: '70vh',
-                overflowY: 'auto',
-                transform: showMobileCart ? 'translateY(0)' : 'translateY(100%)',
-                transition: 'transform 0.3s ease-in-out'
-              }}>
-                <div style={{
-                  padding: '16px',
-                  borderBottom: '1px solid #f3f4f6',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}>
-                  <h3 style={{
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    color: '#1f2937',
-                    margin: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <FaShoppingCart size={16} />
-                    {t('dashboard.orderSummary')}
-                    {cart.length > 0 && (
-                      <span style={{
-                        backgroundColor: '#ef4444',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: '20px',
-                        height: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '12px',
-                        fontWeight: 'bold'
-                      }}>
-                        {cart.reduce((sum, item) => sum + item.quantity, 0)}
-                      </span>
-                    )}
-                  </h3>
-                  <button
-                    onClick={() => setShowMobileCart(false)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      fontSize: '20px',
-                      cursor: 'pointer',
-                      color: '#6b7280',
-                      padding: '4px'
-                    }}
-                  >
-                    <FaTimes />
-                  </button>
-                </div>
-                
-                <div style={{ padding: '16px' }}>
-                  {console.log('📱 Dashboard: Rendering Mobile OrderSummary with cart:', cart)}
-                  <OrderSummary
-                    cart={cart}
-                    orderType={orderType}
-                    setOrderType={setOrderType}
-                    paymentMethod={paymentMethod}
-                    setPaymentMethod={setPaymentMethod}
-                    onClearCart={clearCart}
-                    onProcessOrder={processOrder}
-                    onSaveOrder={saveOrder}
-                    onPlaceOrder={placeOrder}
-                    onRemoveFromCart={removeFromCart}
-                    onAddToCart={addToCart}
-                    onTableNumberChange={setTableNumber}
-                    onCustomerNameChange={setCustomerName}
-                    onCustomerMobileChange={setCustomerMobile}
-                    processing={processing}
-                    placingOrder={placingOrder}
-                    orderSuccess={orderSuccess}
-                    setOrderSuccess={setOrderSuccess}
-                    error={error}
-                    getTotalAmount={getTotalAmount}
-                    tableNumber={tableNumber}
-                    customerName={customerName}
-                    customerMobile={customerMobile}
-                    orderLookup={orderLookup}
-                    setOrderLookup={setOrderLookup}
-                    currentOrder={currentOrder}
-                    setCurrentOrder={setCurrentOrder}
-                    onShowQRCode={handleShowQRCode}
-                    restaurantId={selectedRestaurant?.id}
-                    restaurantName={selectedRestaurant?.name}
-                    taxSettings={taxSettings}
-                    menuItems={menuItems}
-                    isMobile={true}
-                  />
-                </div>
-              </div>
+            {/* Mobile Order Summary - Full Screen */}
+            {isMobile && showMobileCart && (
+              <OrderSummary
+                cart={cart}
+                setCart={setCart}
+                orderType={orderType}
+                setOrderType={setOrderType}
+                paymentMethod={paymentMethod}
+                setPaymentMethod={setPaymentMethod}
+                onClearCart={clearCart}
+                onProcessOrder={processOrder}
+                onSaveOrder={saveOrder}
+                onPlaceOrder={placeOrder}
+                onRemoveFromCart={removeFromCart}
+                onAddToCart={addToCart}
+                onUpdateCartItemQuantity={updateCartItemQuantity}
+                onTableNumberChange={setTableNumber}
+                onCustomerNameChange={setCustomerName}
+                onCustomerMobileChange={setCustomerMobile}
+                processing={processing}
+                placingOrder={placingOrder}
+                orderSuccess={orderSuccess}
+                setOrderSuccess={setOrderSuccess}
+                error={error}
+                getTotalAmount={getTotalAmount}
+                tableNumber={tableNumber}
+                customerName={customerName}
+                customerMobile={customerMobile}
+                orderLookup={orderLookup}
+                setOrderLookup={setOrderLookup}
+                currentOrder={currentOrder}
+                setCurrentOrder={setCurrentOrder}
+                onShowQRCode={handleShowQRCode}
+                restaurantId={selectedRestaurant?.id}
+                restaurantName={selectedRestaurant?.name}
+                taxSettings={taxSettings}
+                menuItems={menuItems}
+                onClose={() => setShowMobileCart(false)}
+              />
             )}
           </>
         )}
