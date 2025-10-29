@@ -1,223 +1,227 @@
 /**
- * Smart Placeholder Image Utility
- * 
- * This utility matches menu item names to appropriate placeholder images
- * when the restaurant owner hasn't uploaded a custom image.
- * 
- * Priority:
- * 1. User uploaded image (if exists)
- * 2. Smart keyword matching
- * 3. Category-based fallback
- * 4. Generic food image
+ * Smart Placeholder Image System
+ * Returns the appropriate image for a menu item:
+ * 1. User-uploaded image (first priority)
+ * 2. Keyword-matched placeholder (second priority)
+ * 3. Category-based placeholder (third priority)
+ * 4. Generic food image (fallback)
  */
 
 /**
- * Get the appropriate placeholder image for a menu item
- * @param {string} itemName - Name of the menu item
- * @param {string} category - Category of the menu item
- * @param {string|null} userImage - User uploaded image URL
- * @returns {string} - Image URL or path
+ * Get the best matching placeholder image name based on item name and category
+ * @param {string} itemName - The name of the menu item
+ * @param {string} category - The category of the item
+ * @param {boolean} isVeg - Whether the item is vegetarian
+ * @returns {string|null} - The placeholder image filename or null
  */
-export const getMenuItemImage = (itemName, category, userImage = null) => {
-  // Priority 1: Use user uploaded image if available
-  if (userImage) {
-    return userImage;
-  }
-
-  // Priority 2: Smart keyword matching
-  const name = (itemName || '').toLowerCase();
+function getPlaceholderImageName(itemName, category, isVeg) {
+  if (!itemName) return null;
   
-  // CHINESE DISHES
-  if (name.includes('noodle')) {
-    return '/placeholder-images/noodles.jpg';
+  const name = itemName.toLowerCase().trim();
+  const cat = category ? category.toLowerCase().trim() : '';
+  
+  // Chinese dishes - High priority exact matches
+  if (name.includes('hakka noodles') || name.includes('chowmein') || name.includes('chow mein')) {
+    return 'noodles.jpeg';
   }
-  if (name.includes('fried rice') || name.includes('rice')) {
-    return '/placeholder-images/fried-rice.jpg';
+  if (name.includes('fried rice')) {
+    return 'fried-rice.jpeg';
   }
-  if (name.includes('manchurian')) {
-    return '/placeholder-images/manchurian.jpg';
+  if (name.includes('manchurian') || name.includes('manchurian')) {
+    return 'manchurian.jpeg';
   }
   if (name.includes('spring roll')) {
-    return '/placeholder-images/spring-rolls.jpg';
+    return 'spring-rolls.jpeg';
   }
-  if (name.includes('chilli paneer') || name.includes('paneer chilli')) {
-    return '/placeholder-images/chilli-paneer.jpg';
+  if (name.includes('chilli paneer') || name.includes('chilly paneer')) {
+    return 'chilli-paneer.jpeg';
   }
-  if (name.includes('chinese platter')) {
-    return '/placeholder-images/chinese-platter.jpg';
+  if (name.includes('chinese platter') || (name.includes('platter') && cat.includes('chinese'))) {
+    return 'chinese-platter.jpeg';
   }
-
-  // PANEER DISHES
+  
+  // Broader Chinese/Indo-Chinese matches
+  if (name.includes('noodles')) {
+    return 'noodles.jpeg';
+  }
+  
+  // Appetizers & Starters
   if (name.includes('paneer tikka')) {
-    return '/placeholder-images/paneer-tikka.jpg';
+    return 'paneer-tikka.jpeg';
   }
-  if (name.includes('paneer') && !name.includes('chilli')) {
-    return '/placeholder-images/paneer-curry.jpg';
-  }
-
-  // KEBABS
   if (name.includes('kebab') || name.includes('kabab')) {
-    return '/placeholder-images/kebab.jpg';
+    return 'kebab.jpg';
   }
-
-  // SOYA CHAAP
-  if (name.includes('chaap') || name.includes('champ')) {
-    return '/placeholder-images/soya-chaap.jpg';
+  if (name.includes('soya chaap') || name.includes('chaap')) {
+    return 'soya-chaap.jpeg';
   }
-
-  // CORN
-  if (name.includes('corn')) {
-    return '/placeholder-images/crispy-corn.jpg';
+  if (name.includes('crispy corn') || name.includes('corn')) {
+    return 'crispy-corn.jpeg';
   }
-
-  // POTATO DISHES
   if (name.includes('potato') || name.includes('aloo')) {
-    return '/placeholder-images/potato-dish.jpg';
+    return 'potato-dish.jpg';
   }
-
-  // TANDOORI
-  if (name.includes('tandoori platter') || name.includes('tandoori sizzler')) {
-    return '/placeholder-images/tandoori-platter.jpg';
+  if (name.includes('tandoori platter') || name.includes('sizzler') || name.includes('mixed platter')) {
+    return 'tandoori-platter.jpeg';
   }
-
-  // SALT & PEPPER
   if (name.includes('salt') && name.includes('pepper')) {
-    return '/placeholder-images/salt-pepper.jpg';
+    return 'salt-pepper.jpeg';
   }
-
-  // THALI
+  
+  // Main Course dishes
   if (name.includes('thali')) {
-    return '/placeholder-images/thali.jpg';
+    return 'thali.jpeg';
   }
-
-  // DAL
-  if (name.includes('dal') || name.includes('daal')) {
-    return '/placeholder-images/dal.jpg';
+  if (name.includes('paneer') && (name.includes('curry') || name.includes('masala') || name.includes('gravy'))) {
+    return 'paneer-curry.jpeg';
   }
-  if (name.includes('chole') || name.includes('mattar') || name.includes('matar')) {
-    return '/placeholder-images/dal.jpg';
+  if (name.includes('dal') || name.includes('daal') || name.includes('makhani')) {
+    return 'daal-makhni.jpg';
   }
-
-  // BREAD
+  if (name.includes('bhaji') || name.includes('pav bhaji')) {
+    return 'bhaji.jpeg';
+  }
+  
+  // Breads
   if (name.includes('kulcha') || name.includes('bhatura') || name.includes('pao') || 
-      name.includes('naan') || name.includes('roti') || name.includes('paratha')) {
-    return '/placeholder-images/indian-bread.jpg';
+      name.includes('naan') || name.includes('roti') || name.includes('paratha') || 
+      name.includes('chapati')) {
+    return 'indian-bread.jpeg';
   }
-
-  // BHAJI
-  if (name.includes('bhaji')) {
-    return '/placeholder-images/bhaji.jpg';
-  }
-
-  // PAPAD
-  if (name.includes('papad')) {
-    return '/placeholder-images/appetizer.jpg';
-  }
-
-  // CURD
-  if (name.includes('curd') || name.includes('dahi') || name.includes('raita')) {
-    return '/placeholder-images/appetizer.jpg';
-  }
-
-  // Priority 3: Category-based fallback
-  const cat = (category || '').toLowerCase();
   
-  if (cat === 'chinese') {
-    return '/placeholder-images/chinese-platter.jpg';
+  // Desserts & Sweets
+  if (name.includes('ice cream') || name.includes('icecream')) {
+    return 'icecream.jpeg';
   }
-  if (cat === 'appetizer' || cat === 'starter' || cat === 'starters') {
-    return '/placeholder-images/appetizer.jpg';
+  if (name.includes('chocolate') || name.includes('brownie')) {
+    return 'chocolate.jpeg';
   }
-  if (cat === 'main-course' || cat === 'main course' || cat === 'maincourse') {
-    return '/placeholder-images/paneer-curry.jpg';
+  if (name.includes('pastry') || name.includes('cake')) {
+    return 'pastry.jpeg';
   }
-  if (cat === 'bread' || cat === 'breads') {
-    return '/placeholder-images/indian-bread.jpg';
+  if (name.includes('croissant')) {
+    return 'croissant.jpeg';
   }
-  if (cat === 'dal' || cat === 'dals') {
-    return '/placeholder-images/dal.jpg';
+  
+  // Fast Food
+  if (name.includes('burger')) {
+    return 'burgers.jpeg';
   }
-  if (cat === 'dessert' || cat === 'desserts' || cat === 'sweet' || cat === 'sweets') {
-    return '/placeholder-images/generic-food.jpg'; // You can add dessert.jpg later
+  if (name.includes('pasta')) {
+    return 'pasta.jpeg';
   }
-  if (cat === 'beverage' || cat === 'beverages' || cat === 'drink' || cat === 'drinks') {
-    return '/placeholder-images/generic-food.jpg'; // You can add beverage.jpg later
+  
+  // Category-based fallbacks (less specific matching)
+  if (cat.includes('chinese') || cat.includes('indo-chinese') || cat.includes('indo chinese')) {
+    // If it's Chinese category but didn't match above, check for common Chinese items
+    if (name.includes('rice')) return 'fried-rice.jpeg';
+    if (name.includes('noodles')) return 'noodles.jpeg';
+    // General Chinese fallback
+    return 'chinese-platter.jpeg';
   }
-
-  // Priority 4: Generic fallback
-  return '/placeholder-images/generic-food.jpg';
-};
+  
+  if (cat.includes('appetizer') || cat.includes('starter') || cat.includes('snacks')) {
+    return 'appetizer.jpeg';
+  }
+  
+  if (cat.includes('main course') || cat.includes('main-course') || cat.includes('curry') || cat.includes('gravy')) {
+    // Check if it's paneer-based
+    if (name.includes('paneer')) return 'paneer-curry.jpeg';
+    // Generic curry fallback
+    return 'paneer-curry.jpeg';
+  }
+  
+  if (cat.includes('bread') || cat.includes('roti') || cat.includes('naan')) {
+    return 'indian-bread.jpeg';
+  }
+  
+  if (cat.includes('dal') || cat.includes('lentil')) {
+    return 'daal-makhni.jpg';
+  }
+  
+  if (cat.includes('dessert') || cat.includes('sweet')) {
+    return 'icecream.jpeg';
+  }
+  
+  if (cat.includes('beverage') || cat.includes('drink') || cat.includes('juice')) {
+    return 'chocolate.jpeg';
+  }
+  
+  if (cat.includes('burger') || cat.includes('fast food')) {
+    return 'burgers.jpeg';
+  }
+  
+  if (cat.includes('pasta') || cat.includes('italian')) {
+    return 'pasta.jpeg';
+  }
+  
+  // No match found
+  return null;
+}
 
 /**
- * Get placeholder type for database storage (optional)
- * This can be stored in DB for faster lookups
+ * Get the display image URL for a menu item
+ * @param {Object} menuItem - The menu item object
+ * @param {string} menuItem.name - Item name
+ * @param {string} menuItem.category - Item category
+ * @param {boolean} menuItem.isVeg - Whether item is veg
+ * @param {string} menuItem.image - Legacy single image URL
+ * @param {Array} menuItem.images - Array of image objects with url property
+ * @returns {string|null} - The image URL to display, or null to hide image
  */
-export const getPlaceholderType = (itemName, category) => {
-  const name = (itemName || '').toLowerCase();
+export function getDisplayImage(menuItem) {
+  // Priority 1: User-uploaded images (new format - array)
+  if (menuItem.images && Array.isArray(menuItem.images) && menuItem.images.length > 0) {
+    const firstImage = menuItem.images[0];
+    if (firstImage && firstImage.url) {
+      return firstImage.url;
+    }
+  }
   
-  if (name.includes('noodle')) return 'noodles';
-  if (name.includes('fried rice') || name.includes('rice')) return 'fried-rice';
-  if (name.includes('manchurian')) return 'manchurian';
-  if (name.includes('spring roll')) return 'spring-rolls';
-  if (name.includes('chilli paneer')) return 'chilli-paneer';
-  if (name.includes('paneer tikka')) return 'paneer-tikka';
-  if (name.includes('paneer')) return 'paneer-curry';
-  if (name.includes('kebab')) return 'kebab';
-  if (name.includes('chaap')) return 'soya-chaap';
-  if (name.includes('corn')) return 'crispy-corn';
-  if (name.includes('potato') || name.includes('aloo')) return 'potato-dish';
-  if (name.includes('tandoori platter')) return 'tandoori-platter';
-  if (name.includes('thali')) return 'thali';
-  if (name.includes('dal') || name.includes('chole') || name.includes('mattar')) return 'dal';
-  if (name.includes('kulcha') || name.includes('bhatura') || name.includes('pao')) return 'indian-bread';
-  if (name.includes('bhaji')) return 'bhaji';
-
-  const cat = (category || '').toLowerCase();
-  if (cat === 'chinese') return 'chinese-platter';
-  if (cat === 'appetizer') return 'appetizer';
-  if (cat === 'bread') return 'indian-bread';
-  if (cat === 'dal') return 'dal';
-
-  return 'generic-food';
-};
-
-/**
- * Check if an item has a user-uploaded image
- */
-export const hasUserImage = (item) => {
-  return !!(
-    item.image || 
-    item.imageUrl || 
-    (item.images && Array.isArray(item.images) && item.images.length > 0)
+  // Priority 2: User-uploaded image (legacy format - single string)
+  if (menuItem.image && typeof menuItem.image === 'string' && menuItem.image.trim() !== '') {
+    return menuItem.image;
+  }
+  
+  // Priority 3: Smart keyword-matched placeholder
+  const placeholderName = getPlaceholderImageName(
+    menuItem.name, 
+    menuItem.category, 
+    menuItem.isVeg
   );
-};
+  
+  if (placeholderName) {
+    return `/placeholder-images/${placeholderName}`;
+  }
+  
+  // Priority 4: Generic fallback - try multiple formats
+  // First try appetizer as generic, then thali
+  return '/placeholder-images/appetizer.jpeg';
+}
 
 /**
- * Get the final display image for a menu item
- * Handles multiple image field formats
+ * List of all available placeholder images
+ * Useful for documentation and validation
  */
-export const getDisplayImage = (item) => {
-  // Check for user uploaded images
-  if (item.image && item.image !== '') {
-    return item.image;
-  }
-  
-  if (item.imageUrl && item.imageUrl !== '') {
-    return item.imageUrl;
-  }
-  
-  if (item.images && Array.isArray(item.images) && item.images.length > 0) {
-    return item.images[0].url || item.images[0];
-  }
-
-  // Use smart placeholder
-  return getMenuItemImage(item.name, item.category, null);
-};
-
-export default {
-  getMenuItemImage,
-  getPlaceholderType,
-  hasUserImage,
-  getDisplayImage
-};
-
+export const AVAILABLE_PLACEHOLDERS = [
+  'noodles.jpg',
+  'fried-rice.jpg',
+  'manchurian.jpg',
+  'spring-rolls.jpg',
+  'chilli-paneer.jpg',
+  'chinese-platter.jpg',
+  'paneer-tikka.jpg',
+  'kebab.jpg',
+  'soya-chaap.jpg',
+  'crispy-corn.jpg',
+  'potato-dish.jpg',
+  'tandoori-platter.jpg',
+  'salt-pepper.jpg',
+  'appetizer.jpg',
+  'thali.jpg',
+  'paneer-curry.jpg',
+  'bhaji.jpg',
+  'indian-bread.jpg',
+  'dal.jpg',
+  'generic-food.jpg'
+];

@@ -9,6 +9,7 @@ import ImageUpload from '../../../components/ImageUpload';
 import QRCodeModal from '../../../components/QRCodeModal';
 import apiClient from '../../../lib/api';
 import { t } from '../../../lib/i18n';
+import { getDisplayImage } from '../../../utils/placeholderImages';
 import { 
   FaPlus, 
   FaEdit, 
@@ -528,28 +529,44 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
             autoPlayInterval={4000}
             className="w-full h-full"
           />
-        ) : (
-          <div style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            {/* Category Icon */}
+        ) : (() => {
+          const placeholderUrl = getDisplayImage(item);
+          return placeholderUrl ? (
+            <img
+              src={placeholderUrl}
+              alt={item.name}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          ) : (
             <div style={{
-              fontSize: '32px',
-              color: 'rgba(75, 85, 99, 0.6)',
-              zIndex: 2,
-              position: 'relative'
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-              {getCategoryEmoji(item.category)}
-          </div>
-        </div>
-        )}
+              {/* Category Icon */}
+              <div style={{
+                fontSize: '32px',
+                color: 'rgba(75, 85, 99, 0.6)',
+                zIndex: 2,
+                position: 'relative'
+              }}>
+                {getCategoryEmoji(item.category)}
+              </div>
+            </div>
+          );
+        })()}
         
         {/* Overlay Gradient */}
         <div style={{

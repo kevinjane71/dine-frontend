@@ -1,6 +1,7 @@
 'use client';
 
 import { FaPlus, FaMinus, FaLeaf, FaDrumstickBite, FaStar, FaFire, FaClock } from 'react-icons/fa';
+import { getDisplayImage } from '../utils/placeholderImages';
 
 const MenuItemCard = ({ 
   item, 
@@ -212,6 +213,9 @@ const MenuItemCard = ({
   }
 
   // Compact Modern Design (Professional & Efficient)
+  const imageUrl = getDisplayImage(item);
+  const hasImage = imageUrl !== null;
+
   return (
     <div
       className="menu-item-card"
@@ -220,20 +224,76 @@ const MenuItemCard = ({
         border: '1px solid #e5e7eb',
         borderRadius: '4px',
         cursor: 'pointer',
-        height: isMobile ? '120px' : '130px',
+        height: isMobile ? (hasImage ? '180px' : '120px') : (hasImage ? '190px' : '130px'),
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        padding: '12px',
+        padding: hasImage ? '0' : '12px',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
         position: 'relative',
         overflow: 'hidden',
         background: '#ffffff',
-        borderTop: `3px solid ${isVeg ? '#22c55e' : '#ef4444'}`,
+        borderTop: hasImage ? 'none' : `3px solid ${isVeg ? '#22c55e' : '#ef4444'}`,
         transition: 'all 0.2s ease'
       }}
       onClick={() => onAddToCart(item)}
     >
+      {/* Image Section - Only if image exists */}
+      {hasImage && (
+        <div style={{
+          position: 'relative',
+          width: '100%',
+          height: isMobile ? '80px' : '90px',
+          overflow: 'hidden',
+          borderTopLeftRadius: '4px',
+          borderTopRightRadius: '4px',
+          backgroundColor: '#f3f4f6'
+        }}>
+          <img
+            src={imageUrl}
+            alt={item.name}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover'
+            }}
+            onError={(e) => {
+              // Hide image on error
+              e.target.style.display = 'none';
+            }}
+          />
+          
+          {/* Gradient Overlay */}
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '30px',
+            background: 'linear-gradient(to top, rgba(0,0,0,0.3), transparent)',
+            pointerEvents: 'none'
+          }} />
+
+          {/* Veg/Non-Veg Stripe */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '3px',
+            backgroundColor: isVeg ? '#22c55e' : '#ef4444'
+          }} />
+        </div>
+      )}
+      
+      {/* Content Section */}
+      <div style={{
+        padding: hasImage ? '12px' : '0',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        flex: 1
+      }}>
       
       {/* Top Badges - Compact */}
       <div style={{
@@ -298,7 +358,7 @@ const MenuItemCard = ({
         )}
       </div>
 
-      {/* Veg/Non-Veg Indicator - Compact */}
+      {/* Veg/Non-Veg Indicator - On Image */}
       <div style={{
         position: 'absolute',
         top: '8px',
@@ -311,7 +371,7 @@ const MenuItemCard = ({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 10,
-        boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 1px 4px rgba(0, 0, 0, 0.3)',
         border: '2px solid white'
       }}>
         {isVeg ? (
@@ -321,7 +381,7 @@ const MenuItemCard = ({
         )}
       </div>
 
-      {/* Spicy Indicator - Compact */}
+      {/* Spicy Indicator - On Image */}
       {isSpicy && (
         <div style={{
           position: 'absolute',
@@ -335,7 +395,7 @@ const MenuItemCard = ({
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 10,
-          boxShadow: '0 1px 4px rgba(220, 38, 38, 0.2)',
+          boxShadow: '0 1px 4px rgba(220, 38, 38, 0.3)',
           border: '2px solid white'
         }}>
           <FaFire size={8} color="white" />
@@ -508,6 +568,7 @@ const MenuItemCard = ({
           )}
         </div>
       </div>
+      </div> {/* End Content Section */}
 
     </div>
   );
