@@ -3129,15 +3129,8 @@ function RestaurantPOSContent() {
                     boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
                     whiteSpace: 'nowrap',
                     flexShrink: 0,
-                    flex: isMobile ? '1.2' : '0 0 auto'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+                    flex: isMobile ? '1.2' : '0 0 auto',
+                    alignSelf: 'flex-start'
                   }}
                 >
                   FRESH ORDER
@@ -3179,6 +3172,7 @@ function RestaurantPOSContent() {
                     color: '#ef4444',
                     border: '1.5px solid #ef4444',
                     borderRadius: '8px',
+                    fontSize: isMobile ? '10px' : '11px',
                     fontWeight: '700',
                     cursor: 'pointer',
                     position: 'relative',
