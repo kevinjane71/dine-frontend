@@ -1481,8 +1481,11 @@ const MenuManagement = () => {
     images: [],
     tempImages: [],
     isAvailable: true,
-    stockQuantity: null
+    stockQuantity: null,
+    variants: [],
+    customizations: []
   });
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
   // Generic categories
   const genericCategories = [
@@ -1671,10 +1674,27 @@ const MenuManagement = () => {
       setProcessing(true);
       setError('');
 
+      // Clean up variants - parse prices and filter out empty ones
+      const cleanedVariants = (formData.variants || []).filter(v => v.name && v.price).map(v => ({
+        name: v.name,
+        price: parseFloat(v.price) || 0,
+        description: v.description || ''
+      }));
+
+      // Clean up customizations - parse prices and filter out empty ones
+      const cleanedCustomizations = (formData.customizations || []).filter(c => c.name).map(c => ({
+        id: c.id || Date.now().toString(),
+        name: c.name,
+        price: parseFloat(c.price) || 0,
+        description: c.description || ''
+      }));
+
       const itemData = {
         ...formData,
         price: parseFloat(formData.price),
-        restaurantId: currentRestaurant.id
+        restaurantId: currentRestaurant.id,
+        variants: cleanedVariants,
+        customizations: cleanedCustomizations
       };
 
       if (editingItem) {
@@ -1723,6 +1743,47 @@ const MenuManagement = () => {
     }
   };
 
+  // Helper functions for variants and customizations
+  const addVariant = () => {
+    setFormData({
+      ...formData,
+      variants: [...(formData.variants || []), { name: '', price: '', description: '' }]
+    });
+  };
+
+  const removeVariant = (index) => {
+    setFormData({
+      ...formData,
+      variants: formData.variants.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateVariant = (index, field, value) => {
+    const updatedVariants = [...(formData.variants || [])];
+    updatedVariants[index] = { ...updatedVariants[index], [field]: value };
+    setFormData({ ...formData, variants: updatedVariants });
+  };
+
+  const addCustomization = () => {
+    setFormData({
+      ...formData,
+      customizations: [...(formData.customizations || []), { id: Date.now().toString(), name: '', price: '', description: '' }]
+    });
+  };
+
+  const removeCustomization = (index) => {
+    setFormData({
+      ...formData,
+      customizations: formData.customizations.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateCustomization = (index, field, value) => {
+    const updatedCustomizations = [...(formData.customizations || [])];
+    updatedCustomizations[index] = { ...updatedCustomizations[index], [field]: value };
+    setFormData({ ...formData, customizations: updatedCustomizations });
+  };
+
   const handleEdit = (item) => {
     console.log('Editing item:', item);
     setFormData({
@@ -1735,10 +1796,13 @@ const MenuManagement = () => {
       image: item.image || '',
       images: item.images || [],
       isAvailable: item.isAvailable !== false,
-      stockQuantity: item.stockQuantity || null
+      stockQuantity: item.stockQuantity || null,
+      variants: item.variants || [],
+      customizations: item.customizations || []
     });
     setEditingItem(item);
     setShowAddForm(true);
+    setShowAdvancedOptions(false); // Collapse advanced options when editing
     // Don't trigger any loading states - just open the form
   };
 
@@ -1797,10 +1861,13 @@ const MenuManagement = () => {
       images: [],
       tempImages: [],
       isAvailable: true,
-      stockQuantity: null
+      stockQuantity: null,
+      variants: [],
+      customizations: []
     });
     setEditingItem(null);
     setShowAddForm(false);
+    setShowAdvancedOptions(false);
   };
 
   const getSpiceLevel = (level) => {
@@ -3061,6 +3128,323 @@ const MenuManagement = () => {
                       }}>
                     💡 You can upload images anytime - they&apos;ll be saved when you submit the form
                       </p>
+              </div>
+              
+              {/* Advanced Options - Variants & Customizations */}
+              <div style={{ marginTop: '24px', marginBottom: '16px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                  style={{
+                    width: '100%',
+                    padding: '14px 16px',
+                    backgroundColor: showAdvancedOptions ? '#fee2e2' : '#f9fafb',
+                    border: `2px solid ${showAdvancedOptions ? '#ef4444' : '#e5e7eb'}`,
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    transition: 'all 0.2s ease',
+                    marginBottom: showAdvancedOptions ? '16px' : '0'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!showAdvancedOptions) {
+                      e.target.style.backgroundColor = '#f3f4f6';
+                      e.target.style.borderColor = '#d1d5db';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!showAdvancedOptions) {
+                      e.target.style.backgroundColor = '#f9fafb';
+                      e.target.style.borderColor = '#e5e7eb';
+                    }
+                  }}
+                >
+                  <span style={{
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    color: showAdvancedOptions ? '#dc2626' : '#374151',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <FaTags size={14} />
+                    Advanced Options (Variants & Toppings)
+                  </span>
+                  {showAdvancedOptions ? <FaChevronUp size={14} /> : <FaChevronDown size={14} />}
+                </button>
+
+                {showAdvancedOptions && (
+                  <div style={{
+                    padding: '20px',
+                    backgroundColor: '#fef7f0',
+                    borderRadius: '8px',
+                    border: '1px solid #fed7aa',
+                    marginTop: '12px'
+                  }}>
+                    {/* Variants Section */}
+                    <div style={{ marginBottom: '24px' }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '12px'
+                      }}>
+                        <label style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#374151'
+                        }}>
+                          Variants (Different Sizes/Portions)
+                        </label>
+                        <button
+                          type="button"
+                          onClick={addVariant}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <FaPlus size={10} />
+                          Add Variant
+                        </button>
+                      </div>
+                      {formData.variants && formData.variants.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {formData.variants.map((variant, index) => (
+                            <div
+                              key={index}
+                              style={{
+                                padding: '14px',
+                                backgroundColor: 'white',
+                                border: '1px solid #fde68a',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '10px'
+                              }}
+                            >
+                              <div style={{ 
+                                display: 'grid', 
+                                gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : '1fr 120px auto',
+                                gap: '10px' 
+                              }}>
+                                <input
+                                  type="text"
+                                  placeholder="Variant name (e.g., Half, Full, Small)"
+                                  value={variant.name}
+                                  onChange={(e) => updateVariant(index, 'name', e.target.value)}
+                                  style={{
+                                    padding: '10px 12px',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '6px',
+                                    fontSize: '13px',
+                                    outline: 'none'
+                                  }}
+                                />
+                                <input
+                                  type="number"
+                                  placeholder="Price"
+                                  value={variant.price}
+                                  onChange={(e) => updateVariant(index, 'price', e.target.value)}
+                                  style={{
+                                    padding: '10px 12px',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '6px',
+                                    fontSize: '13px',
+                                    outline: 'none'
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeVariant(index)}
+                                  style={{
+                                    padding: '10px',
+                                    backgroundColor: '#fee2e2',
+                                    color: '#dc2626',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    fontWeight: '600'
+                                  }}
+                                >
+                                  <FaTrash size={10} />
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="Description (optional)"
+                                value={variant.description || ''}
+                                onChange={(e) => updateVariant(index, 'description', e.target.value)}
+                                style={{
+                                  padding: '10px 12px',
+                                  border: '1px solid #e5e7eb',
+                                  borderRadius: '6px',
+                                  fontSize: '13px',
+                                  outline: 'none'
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p style={{
+                          fontSize: '13px',
+                          color: '#6b7280',
+                          fontStyle: 'italic',
+                          padding: '12px',
+                          backgroundColor: 'white',
+                          borderRadius: '6px',
+                          border: '1px dashed #d1d5db'
+                        }}>
+                          No variants added. Add variants if this item has different sizes or portions (e.g., Half ₹100, Full ₹200).
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Customizations Section */}
+                    <div>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '12px'
+                      }}>
+                        <label style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#374151'
+                        }}>
+                          Customizations (Toppings/Add-ons)
+                        </label>
+                        <button
+                          type="button"
+                          onClick={addCustomization}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <FaPlus size={10} />
+                          Add Topping
+                        </button>
+                      </div>
+                      {formData.customizations && formData.customizations.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {formData.customizations.map((customization, index) => (
+                            <div
+                              key={customization.id || index}
+                              style={{
+                                padding: '14px',
+                                backgroundColor: 'white',
+                                border: '1px solid #fde68a',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '10px'
+                              }}
+                            >
+                              <div style={{ 
+                                display: 'grid', 
+                                gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : '1fr 120px auto',
+                                gap: '10px' 
+                              }}>
+                                <input
+                                  type="text"
+                                  placeholder="Topping/Add-on name (e.g., Extra Cheese)"
+                                  value={customization.name}
+                                  onChange={(e) => updateCustomization(index, 'name', e.target.value)}
+                                  style={{
+                                    padding: '10px 12px',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '6px',
+                                    fontSize: '13px',
+                                    outline: 'none'
+                                  }}
+                                />
+                                <input
+                                  type="number"
+                                  placeholder="Extra Price"
+                                  value={customization.price}
+                                  onChange={(e) => updateCustomization(index, 'price', e.target.value)}
+                                  style={{
+                                    padding: '10px 12px',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '6px',
+                                    fontSize: '13px',
+                                    outline: 'none'
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeCustomization(index)}
+                                  style={{
+                                    padding: '10px',
+                                    backgroundColor: '#fee2e2',
+                                    color: '#dc2626',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    minWidth: '40px'
+                                  }}
+                                >
+                                  <FaTrash size={10} />
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="Description (optional)"
+                                value={customization.description || ''}
+                                onChange={(e) => updateCustomization(index, 'description', e.target.value)}
+                                style={{
+                                  padding: '10px 12px',
+                                  border: '1px solid #e5e7eb',
+                                  borderRadius: '6px',
+                                  fontSize: '13px',
+                                  outline: 'none'
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p style={{
+                          fontSize: '13px',
+                          color: '#6b7280',
+                          fontStyle: 'italic',
+                          padding: '12px',
+                          backgroundColor: 'white',
+                          borderRadius: '6px',
+                          border: '1px dashed #d1d5db'
+                        }}>
+                          No customizations added. Add toppings/add-ons if this item can be customized (e.g., Pizza toppings, Extra Cheese).
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* Actions - Mobile-friendly */}

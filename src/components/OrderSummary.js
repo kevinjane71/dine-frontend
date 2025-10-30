@@ -97,6 +97,17 @@ const OrderSummary = ({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Compute unit price for an item considering variant and selected customizations
+  const getItemUnitPrice = (cartItem) => {
+    const basePrice = (cartItem?.selectedVariant?.price)
+      ?? (typeof cartItem?.basePrice === 'number' ? cartItem.basePrice : undefined)
+      ?? (typeof cartItem?.price === 'number' ? cartItem.price : 0);
+    const extras = Array.isArray(cartItem?.selectedCustomizations)
+      ? cartItem.selectedCustomizations.reduce((sum, c) => sum + (c?.price || 0), 0)
+      : (typeof cartItem?.customizationPrice === 'number' ? cartItem.customizationPrice : 0);
+    return (basePrice || 0) + (extras || 0);
+  };
   
   const calculateTax = useCallback(async () => {
     console.log('Calculating tax for cart:', cart.length, 'items, restaurantId:', restaurantId);
@@ -800,6 +811,30 @@ const OrderSummary = ({
                         </span>
                       )}
                     </h4>
+                    {/* Variant and toppings sub-content */}
+                    {(item?.selectedVariant || (Array.isArray(item?.selectedCustomizations) && item.selectedCustomizations.length > 0)) && (
+                      <div style={{ margin: '2px 0 4px 0', color: '#6b7280' }}>
+                        {item?.selectedVariant && (
+                          <div style={{ fontSize: '10px' }}>
+                            Variant: <span style={{ fontWeight: 600, color: '#374151' }}>{item.selectedVariant.name}</span>
+                            {typeof item.selectedVariant.price === 'number' && (
+                              <span> (₹{item.selectedVariant.price})</span>
+                            )}
+                          </div>
+                        )}
+                        {Array.isArray(item?.selectedCustomizations) && item.selectedCustomizations.length > 0 && (
+                          <div style={{ fontSize: '10px' }}>
+                            Toppings: {item.selectedCustomizations.map((c, idx) => (
+                              <span key={idx}>
+                                {idx > 0 ? ', ' : ''}
+                                {c.name}{typeof c.price === 'number' && c.price > 0 ? ` (+₹${c.price})` : ''}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ 
@@ -807,14 +842,14 @@ const OrderSummary = ({
                           fontWeight: '600', 
                           color: '#6b7280' 
                         }}>
-                          Subtotal: ₹{item.price * item.quantity}
+                          Subtotal: ₹{(getItemUnitPrice(item) * item.quantity)}
                         </span>
                         <span style={{ 
                           fontSize: '12px', 
                           fontWeight: 'bold', 
                           color: '#ef4444' 
                         }}>
-                          ₹{item.price}
+                          ₹{getItemUnitPrice(item)}
                         </span>
                         <div style={{
                           padding: '1px 4px',
@@ -879,7 +914,7 @@ const OrderSummary = ({
                       gap: '2px'
                     }}>
                       <button
-                        onClick={() => onRemoveFromCart(item.id)}
+                        onClick={() => onRemoveFromCart(item.cartId || item.id)}
                         style={{
                           width: '22px',
                           height: '22px',
@@ -908,7 +943,7 @@ const OrderSummary = ({
                         onChange={(e) => {
                           const newQuantity = parseInt(e.target.value) || 1;
                           if (newQuantity > 0 && onUpdateCartItemQuantity) {
-                            onUpdateCartItemQuantity(item.id, newQuantity);
+                            onUpdateCartItemQuantity(item.cartId || item.id, newQuantity);
                           }
                         }}
                         onBlur={(e) => {
@@ -917,7 +952,7 @@ const OrderSummary = ({
                           if (quantity < 1) {
                             e.target.value = 1;
                             if (onUpdateCartItemQuantity) {
-                              onUpdateCartItemQuantity(item.id, 1);
+                              onUpdateCartItemQuantity(item.cartId || item.id, 1);
                             }
                           }
                         }}
@@ -935,7 +970,7 @@ const OrderSummary = ({
                         }}
                       />
                       <button
-                        onClick={() => onAddToCart(item)}
+                        onClick={() => onUpdateCartItemQuantity && onUpdateCartItemQuantity((item.cartId || item.id), (item.quantity || 1) + 1)}
                         style={{
                           width: '22px',
                           height: '22px',

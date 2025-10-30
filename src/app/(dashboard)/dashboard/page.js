@@ -10,6 +10,7 @@ import OrderSummary from '../../../components/OrderSummary';
 import Notification from '../../../components/Notification';
 import QRCodeModal from '../../../components/QRCodeModal';
 import BulkMenuUpload from '../../../components/BulkMenuUpload';
+import ItemCustomizationModal from '../../../components/ItemCustomizationModal';
 import { 
   FaSearch, 
   FaShoppingCart, 
@@ -63,6 +64,10 @@ function RestaurantPOSContent() {
   const [selectedCategory, setSelectedCategory] = useState('all-items');
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Customization modal state
+  const [customizationModalOpen, setCustomizationModalOpen] = useState(false);
+  const [selectedItemForCustomization, setSelectedItemForCustomization] = useState(null);
   const [quickSearch, setQuickSearch] = useState('');
   const [shortCodeSearch, setShortCodeSearch] = useState('');
   const [orderType, setOrderType] = useState('dine-in');
@@ -774,18 +779,41 @@ function RestaurantPOSContent() {
     }
     
     setCart(prevCart => {
-      const existingItemIndex = prevCart.findIndex(cartItem => cartItem.id === item.id);
-      if (existingItemIndex !== -1) {
-        // Update existing item in place (don't move it)
-        const updatedCart = [...prevCart];
-        updatedCart[existingItemIndex] = { 
-          ...updatedCart[existingItemIndex], 
-          quantity: updatedCart[existingItemIndex].quantity + 1 
+      // Build a signature for matching same-config items
+      const variantKey = item?.selectedVariant?.name || null;
+      const toppingsIds = Array.isArray(item?.selectedCustomizations)
+        ? [...item.selectedCustomizations].map(c => c.id || c.name).sort().join('|')
+        : null;
+
+      // Try to find an existing cart line with same menu item and same configuration
+      const existingIndex = prevCart.findIndex(ci => {
+        const ciVariant = ci?.selectedVariant?.name || null;
+        const ciToppings = Array.isArray(ci?.selectedCustomizations)
+          ? [...ci.selectedCustomizations].map(c => c.id || c.name).sort().join('|')
+          : null;
+        return ci.id === item.id && ciVariant === variantKey && ciToppings === toppingsIds;
+      });
+
+      if (existingIndex !== -1) {
+        const updated = [...prevCart];
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          quantity: (updated[existingIndex].quantity || 0) + (item.quantity || 1)
         };
-        return updatedCart;
+        return updated;
       }
-      // Add new item to top
-      return [{ ...item, quantity: 1 }, ...prevCart];
+
+      // Ensure a stable cartId for customized lines
+      const withId = item.cartId
+        ? item
+        : {
+            ...item,
+            cartId: item.selectedVariant || item.selectedCustomizations
+              ? `${item.id}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`
+              : undefined
+          };
+
+      return [{ ...withId, quantity: withId.quantity || 1 }, ...prevCart];
     });
   };
 
@@ -797,6 +825,18 @@ function RestaurantPOSContent() {
           : cartItem
       ).filter(cartItem => cartItem.quantity > 0);
     });
+  };
+
+  // Handler to open customization modal
+  const handleItemCustomization = (item) => {
+    setSelectedItemForCustomization(item);
+    setCustomizationModalOpen(true);
+  };
+
+  // Handler to close customization modal
+  const handleCloseCustomizationModal = () => {
+    setCustomizationModalOpen(false);
+    setSelectedItemForCustomization(null);
   };
 
   // Handle short code search
@@ -830,7 +870,7 @@ function RestaurantPOSContent() {
   const updateCartItemQuantity = (itemId, newQuantity) => {
     setCart(prevCart => {
       return prevCart.map(cartItem =>
-        cartItem.id === itemId
+        (cartItem.cartId ? cartItem.cartId === itemId : cartItem.id === itemId)
           ? { ...cartItem, quantity: Math.max(1, newQuantity) }
           : cartItem
       ).filter(cartItem => cartItem.quantity > 0);
@@ -839,8 +879,14 @@ function RestaurantPOSContent() {
 
   const getTotalAmount = () => {
     const total = cart.reduce((sum, item) => {
-      const itemTotal = item.price * item.quantity;
-      console.log(`💰 Cart item: ${item.name} - Price: ${item.price}, Qty: ${item.quantity}, Total: ${itemTotal}`);
+      const base = (item?.selectedVariant?.price)
+        ?? (typeof item?.basePrice === 'number' ? item.basePrice : undefined)
+        ?? (typeof item?.price === 'number' ? item.price : 0);
+      const extras = Array.isArray(item?.selectedCustomizations)
+        ? item.selectedCustomizations.reduce((s, c) => s + (c?.price || 0), 0)
+        : (typeof item?.customizationPrice === 'number' ? item.customizationPrice : 0);
+      const unit = (base || 0) + (extras || 0);
+      const itemTotal = unit * (item.quantity || 1);
       return sum + itemTotal;
     }, 0);
     console.log(`💰 Cart total: ${total}`);
@@ -1381,7 +1427,10 @@ function RestaurantPOSContent() {
           quantity: item.quantity,
           notes: '',
           name: item.name,
-          price: item.price
+          // Pass configuration so backend can price and persist for KOT
+          selectedVariant: item.selectedVariant || null,
+          selectedCustomizations: Array.isArray(item.selectedCustomizations) ? item.selectedCustomizations : [],
+          basePrice: typeof item.basePrice === 'number' ? item.basePrice : item.price
         })),
         customerInfo: {
             name: customerName || 'Walk-in Customer',
@@ -1687,7 +1736,10 @@ function RestaurantPOSContent() {
           items: cart.map(item => ({
             menuItemId: item.id,
             quantity: item.quantity,
-            notes: ''
+            notes: '',
+            selectedVariant: item.selectedVariant || null,
+            selectedCustomizations: Array.isArray(item.selectedCustomizations) ? item.selectedCustomizations : [],
+            basePrice: typeof item.basePrice === 'number' ? item.basePrice : item.price
           })),
           customerInfo: {
             name: customerName || null,
@@ -3098,6 +3150,7 @@ function RestaurantPOSContent() {
                     quantityInCart={quantityInCart}
                     onAddToCart={addToCart}
                     onRemoveFromCart={removeFromCart}
+                    onItemClick={handleItemCustomization}
                     isMobile={isMobile}
                     useModernDesign={useModernCards}
                   />
@@ -3830,6 +3883,14 @@ function RestaurantPOSContent() {
         restaurantId={selectedRestaurant?.id}
         onMenuItemsAdded={handleMenuItemsAdded}
         currentMenuItems={menuItems}
+      />
+
+      {/* Item Customization Modal */}
+      <ItemCustomizationModal
+        isOpen={customizationModalOpen}
+        item={selectedItemForCustomization}
+        onClose={handleCloseCustomizationModal}
+        onAddToCart={addToCart}
       />
 
       {/* RAG Initializer */}

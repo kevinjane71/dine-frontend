@@ -8,6 +8,7 @@ const MenuItemCard = ({
   quantityInCart, 
   onAddToCart, 
   onRemoveFromCart, 
+  onItemClick, // New prop for opening customization modal
   isMobile = false,
   useModernDesign = true
 }) => {
@@ -15,6 +16,30 @@ const MenuItemCard = ({
   const isPopular = item.isPopular || item.rating > 4.5;
   const isSpicy = item.spiceLevel === 'hot' || item.spiceLevel === 'very-hot';
   const isNew = item.isNew || item.createdAt > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  
+  // Check if item has variants or customizations
+  const hasVariants = item.variants && Array.isArray(item.variants) && item.variants.length > 0;
+  const hasCustomizations = item.customizations && Array.isArray(item.customizations) && item.customizations.length > 0;
+  const needsCustomization = hasVariants || hasCustomizations;
+  
+  // Get display price - show "From ₹X" if variants exist, otherwise show regular price
+  const getDisplayPrice = () => {
+    if (hasVariants && item.variants.length > 0) {
+      const minPrice = Math.min(...item.variants.map(v => v.price || item.price || 0));
+      return `From ₹${minPrice}`;
+    }
+    return `₹${item.price || 0}`;
+  };
+  
+  // Handle card click - if needs customization, open modal; otherwise add directly
+  const handleCardClick = (e) => {
+    if (needsCustomization && onItemClick) {
+      e.stopPropagation();
+      onItemClick(item);
+    } else if (!needsCustomization) {
+      onAddToCart(item);
+    }
+  };
   
   if (!useModernDesign) {
     // Original Compact Design (Exact old style)
@@ -37,7 +62,7 @@ const MenuItemCard = ({
         overflow: 'hidden',
         transition: 'none'
       }}
-        onClick={() => onAddToCart(item)}
+        onClick={handleCardClick}
       >
         {/* Short Code - Top Left Corner */}
         {item.shortCode && (
@@ -109,11 +134,12 @@ const MenuItemCard = ({
               fontWeight: '700',
               lineHeight: 1
             }}>
-              ₹{item.price}
+              {getDisplayPrice()}
             </span>
           </div>
           
-          {/* Add Button */}
+          {/* Add Button - Hidden if needs customization */}
+          {!needsCustomization && (
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -207,6 +233,7 @@ const MenuItemCard = ({
               </button>
             )}
           </div>
+          )}
         </div>
       </div>
     );
@@ -236,7 +263,7 @@ const MenuItemCard = ({
           transition: 'all 0.3s ease',
           border: 'none'
         }}
-        onClick={() => onAddToCart(item)}
+        onClick={handleCardClick}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'translateY(-4px)';
           e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.25)';
@@ -394,10 +421,11 @@ const MenuItemCard = ({
               textShadow: '0 2px 4px rgba(0, 0, 0, 0.6)',
               letterSpacing: '0.3px'
             }}>
-              ₹{item.price}
+              {getDisplayPrice()}
             </span>
             
-            {/* Add Button */}
+            {/* Add Button - Hidden if needs customization */}
+            {!needsCustomization && (
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -492,6 +520,7 @@ const MenuItemCard = ({
                 </button>
               )}
             </div>
+            )}
           </div>
         </div>
       </div>
@@ -519,7 +548,7 @@ const MenuItemCard = ({
         borderTop: `3px solid ${isVeg ? '#22c55e' : '#ef4444'}`,
         transition: 'all 0.2s ease'
       }}
-      onClick={() => onAddToCart(item)}
+      onClick={handleCardClick}
     >
       {/* Content Section */}
       <div style={{
@@ -703,10 +732,11 @@ const MenuItemCard = ({
           fontWeight: '700',
           lineHeight: 1
         }}>
-          ₹{item.price}
+          {getDisplayPrice()}
         </span>
         
-        {/* Add Button - Compact */}
+        {/* Add Button - Compact - Hidden if needs customization */}
+        {!needsCustomization && (
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -802,6 +832,7 @@ const MenuItemCard = ({
             </button>
           )}
         </div>
+        )}
       </div>
       </div> {/* End Content Section */}
 

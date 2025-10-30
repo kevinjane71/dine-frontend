@@ -409,6 +409,27 @@ const KitchenOrderTicket = () => {
     return <FaFire style={{ color: spiceColors[level] }} size={12} />;
   };
 
+  // Derive variant/toppings from multiple possible shapes coming from BE
+  const getVariantName = (item) => {
+    if (!item) return null;
+    if (item.selectedVariant?.name) return item.selectedVariant.name;
+    if (typeof item.variantName === 'string' && item.variantName.trim()) return item.variantName;
+    if (item.variant?.name) return item.variant.name;
+    // Some systems may store as size/portion
+    if (item.size) return item.size;
+    if (item.portion) return item.portion;
+    return null;
+  };
+
+  const getToppings = (item) => {
+    if (!item) return [];
+    if (Array.isArray(item.selectedCustomizations)) return item.selectedCustomizations;
+    if (Array.isArray(item.customizations)) return item.customizations;
+    if (Array.isArray(item.addons)) return item.addons;
+    if (Array.isArray(item.toppings)) return item.toppings;
+    return [];
+  };
+
   const updateKotStatus = async (kotId, orderId, newStatus) => {
     try {
       // Update status via API
@@ -1269,6 +1290,37 @@ const KitchenOrderTicket = () => {
                                 }}>
                                   {item.name}
                                 </div>
+                                {/* Sub-content: Variant and Toppings for kitchen clarity */}
+                                {(getVariantName(item) || getToppings(item).length > 0) && (
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '2px' }}>
+                                    {getVariantName(item) && (
+                                      <span style={{
+                                        fontSize: '10px',
+                                        fontWeight: '700',
+                                        color: '#c2410c',
+                                        backgroundColor: '#fff7ed',
+                                        border: '1px solid #fed7aa',
+                                        padding: '2px 6px',
+                                        borderRadius: '999px'
+                                      }}>
+                                        {getVariantName(item)}
+                                      </span>
+                                    )}
+                                    {getToppings(item).map((c, idx) => (
+                                      <span key={idx} style={{
+                                        fontSize: '10px',
+                                        fontWeight: '600',
+                                        color: '#065f46',
+                                        backgroundColor: '#ecfdf5',
+                                        border: '1px solid #a7f3d0',
+                                        padding: '2px 6px',
+                                        borderRadius: '999px'
+                                      }}>
+                                        {c.name || c}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                   {getSpiceIcon(item.spiceLevel)}
                                   {item.notes && (
@@ -1916,6 +1968,37 @@ const KitchenOrderTicket = () => {
                             {item.category}
                           </span>
                         </div>
+                        {/* Variant + Toppings (detail modal) */}
+                        {(getVariantName(item) || getToppings(item).length > 0) && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', margin: '4px 0 6px 0' }}>
+                            {getVariantName(item) && (
+                              <span style={{
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                color: '#c2410c',
+                                backgroundColor: '#fff7ed',
+                                border: '1px solid #fed7aa',
+                                padding: '3px 8px',
+                                borderRadius: '999px'
+                              }}>
+                                {getVariantName(item)}
+                              </span>
+                            )}
+                            {getToppings(item).map((c, idx) => (
+                              <span key={idx} style={{
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                color: '#065f46',
+                                backgroundColor: '#ecfdf5',
+                                border: '1px solid #a7f3d0',
+                                padding: '3px 8px',
+                                borderRadius: '999px'
+                              }}>
+                                {c.name || c}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         {item.notes && (
                           <p style={{ fontSize: '14px', color: '#f59e0b', fontWeight: '500', margin: 0 }}>
                             📝 {item.notes}
