@@ -7,6 +7,7 @@ import EmptyMenuPrompt from '../../../components/EmptyMenuPrompt';
 import MenuItemCard from '../../../components/MenuItemCard';
 import CategoryButton from '../../../components/CategoryButton';
 import OrderSummary from '../../../components/OrderSummary';
+import DashboardTablesPanel from '../../../components/DashboardTablesPanel';
 import Notification from '../../../components/Notification';
 import QRCodeModal from '../../../components/QRCodeModal';
 import BulkMenuUpload from '../../../components/BulkMenuUpload';
@@ -64,6 +65,9 @@ function RestaurantPOSContent() {
   const [selectedCategory, setSelectedCategory] = useState('all-items');
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState('orders'); // 'orders' | 'tables'
+  const [tablesData, setTablesData] = useState({ floors: [], tables: [] });
+  const [tablesRefreshing, setTablesRefreshing] = useState(false);
   
   // Customization modal state
   const [customizationModalOpen, setCustomizationModalOpen] = useState(false);
@@ -124,6 +128,24 @@ function RestaurantPOSContent() {
   // Fullscreen mode states
   const [isNavigationHidden, setIsNavigationHidden] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Prefetch tables/floors once restaurant is known
+  const prefetchTables = useCallback(async (rid) => {
+    if (!rid) return;
+    try {
+      setTablesRefreshing(true);
+      const [floorsRes, tablesRes] = await Promise.all([
+        apiClient.getFloors(rid).catch(() => ({ floors: [] })),
+        apiClient.getTables(rid).catch(() => ({ tables: [] }))
+      ]);
+      setTablesData({
+        floors: floorsRes?.floors || floorsRes || [],
+        tables: tablesRes?.tables || tablesRes || []
+      });
+    } finally {
+      setTablesRefreshing(false);
+    }
+  }, []);
   const [fullscreenStep, setFullscreenStep] = useState(0); // 0: normal, 1: nav hidden, 2: fullscreen
   const [showLogoutDropdown, setShowLogoutDropdown] = useState(false);
   const [user, setUser] = useState(null);
@@ -451,7 +473,8 @@ function RestaurantPOSContent() {
         // Load menu and floors/tables for selected restaurant
         await Promise.all([
           loadMenu(restaurant.id),
-          loadFloors(restaurant.id)
+          loadFloors(restaurant.id),
+          prefetchTables(restaurant.id)
         ]);
         console.log('✅ Restaurant data loaded successfully');
       } else {
@@ -907,6 +930,13 @@ function RestaurantPOSContent() {
       }
     }
   };
+
+  // Background refresh when switching to tables
+  useEffect(() => {
+    if (viewMode === 'tables' && selectedRestaurant?.id) {
+      prefetchTables(selectedRestaurant.id);
+    }
+  }, [viewMode, selectedRestaurant?.id, prefetchTables]);
 
   // Reset UI state for fresh order
   const handleFreshOrder = () => {
@@ -1517,6 +1547,11 @@ function RestaurantPOSContent() {
         return { orderId };
       }
 
+      // Background refresh tables view data if order tied to a table
+      if (tableToUse) {
+        prefetchTables(selectedRestaurant.id);
+      }
+
     } catch (error) {
       console.error('Order processing error:', error);
       
@@ -1723,6 +1758,11 @@ function RestaurantPOSContent() {
             show: true,
             message: 'Order Updated! ✏️'
           });
+          // Switch to tables view and refresh so status reflects
+          if (tableNumber || selectedTable?.number) {
+            setViewMode('tables');
+            prefetchTables(selectedRestaurant?.id);
+          }
           
           // Clear current order and cart
           setCurrentOrder(null);
@@ -1768,6 +1808,11 @@ function RestaurantPOSContent() {
           // Note: Table status management is now handled by backend
           console.log(`🪑 Table ${tableNumber || 'N/A'} - status managed by backend`);
 
+          // Background refresh tables so instant switch shows latest state
+          if (tableNumber || selectedTable?.number) {
+            prefetchTables(selectedRestaurant?.id);
+          }
+
           // Show notification in top-right corner
           setNotification({
             type: 'success',
@@ -1783,6 +1828,12 @@ function RestaurantPOSContent() {
             show: true,
             message: 'Order Placed to Kitchen! 👨‍🍳'
           });
+
+          // Switch to tables view instantly and refresh in background
+          if (tableNumber || selectedTable?.number) {
+            setViewMode('tables');
+            prefetchTables(selectedRestaurant?.id);
+          }
           
           // Clear cart after showing success
           clearCart();
@@ -2289,6 +2340,7 @@ function RestaurantPOSContent() {
                   Support
                 </div>
               </div>
+              
             </div>
             
             {/* CTA Button */}
@@ -2546,7 +2598,7 @@ function RestaurantPOSContent() {
         minHeight: isMobile ? 'calc(100vh - 80px)' : '100%' // Account for navigation height
       }}>
         {/* Desktop Menu Sections Sidebar - Redesigned */}
-        {!isMobile && (
+        {!isMobile && viewMode === 'orders' && (
           <div style={{ 
             width: sidebarCollapsed ? '60px' : '280px', 
             height: '100%',
@@ -2848,10 +2900,11 @@ function RestaurantPOSContent() {
                 alignItems: 'center', 
                 gap: '8px',
                 flex: isMobile ? '0 0 auto' : '1',
-                justifyContent: isMobile ? 'space-between' : 'flex-start',
+              justifyContent: 'flex-end',
                 width: isMobile ? '100%' : 'auto'
               }}>
                 {/* Main Menu Search - Mobile Optimized */}
+                {viewMode === 'orders' && (
                 <div style={{ position: 'relative', flex: isMobile ? '1' : '0 0 250px', maxWidth: isMobile ? 'none' : '250px' }}>
                   <FaSearch style={{ 
                     position: 'absolute', 
@@ -2890,8 +2943,10 @@ function RestaurantPOSContent() {
                     }}
                   />
                 </div>
+                )}
             
                 {/* Voice Listening Widget - Mobile Optimized */}
+                {false && (
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -2969,6 +3024,7 @@ function RestaurantPOSContent() {
                     </button>
                   )}
                 </div>
+                )}
               </div>
             
               {/* Right Side Controls - Mobile Optimized */}
@@ -2981,6 +3037,7 @@ function RestaurantPOSContent() {
                 width: '100%'
               }}>
                 {/* Order ID Search - Mobile Optimized */}
+                {viewMode === 'orders' && (
                 <div style={{ position: 'relative', flex: isMobile ? '1' : '0 0 110px', minWidth: isMobile ? '0' : '110px' }}>
                   <input
                     type="text"
@@ -3011,8 +3068,10 @@ function RestaurantPOSContent() {
                     }}
                   />
                 </div>
+                )}
 
                 {/* Short Code Search - Mobile Optimized */}
+                {viewMode === 'orders' && (
                 <div style={{ position: 'relative', flex: isMobile ? '1' : '0 0 70px', minWidth: isMobile ? '0' : '70px' }}>
                   <input
                     type="text"
@@ -3045,6 +3104,7 @@ function RestaurantPOSContent() {
                     }}
                   />
                 </div>
+                )}
 
                 {/* Fresh Order Button - Mobile Optimized */}
                 <button
@@ -3081,6 +3141,53 @@ function RestaurantPOSContent() {
                   }}
                 >
                   FRESH ORDER
+                </button>
+
+                {/* push voice + tables to extreme right */}
+                <div style={{ flex: 1 }} />
+
+                {/* Simple Voice Button (moved to right group) */}
+                <button
+                  onClick={startVoiceListening}
+                  title="Start Voice Order"
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: isMobile ? '28px' : '32px',
+                    height: isMobile ? '28px' : '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+                  }}
+                >
+                  <FaMicrophone size={isMobile ? 12 : 14} />
+                </button>
+
+                {/* Tables Toggle Button - aligned on the same row */}
+                <button
+                  onClick={() => setViewMode(viewMode === 'orders' ? 'tables' : 'orders')}
+                  style={{
+                    height: '36px',
+                    paddingLeft: isMobile ? '12px' : '18px',
+                    paddingRight: isMobile ? '12px' : '18px',
+                    background: 'transparent',
+                    color: '#ef4444',
+                    border: '1.5px solid #ef4444',
+                    borderRadius: '8px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                  title={viewMode === 'orders' ? 'Switch to Tables' : 'Back to Orders'}
+                >
+                  {viewMode === 'orders' ? 'TABLES' : 'ORDERS'}
+                  {tablesRefreshing && (
+                    <span style={{ marginLeft: '6px', fontSize: '10px', color: '#6b7280' }}>• loading…</span>
+                  )}
                 </button>
 
                 {/* Compact Toggle - Only show on desktop */}
@@ -3129,18 +3236,19 @@ function RestaurantPOSContent() {
             scrollbarWidth: 'none',
             msOverflowStyle: 'none'
           }} className="hide-scrollbar">
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: useModernCards 
-                ? (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))')
-                : (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))'),
-              gap: useModernCards 
-                ? (isMobile ? '12px' : '16px')
-                : (isMobile ? '8px' : '10px'),
-              justifyContent: 'center',
-              padding: useModernCards ? '0 8px' : '0 6px'
-            }}>
-              {filteredItems.map((item) => {
+            {viewMode === 'orders' ? (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: useModernCards 
+                  ? (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))')
+                  : (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))'),
+                gap: useModernCards 
+                  ? (isMobile ? '12px' : '16px')
+                  : (isMobile ? '8px' : '10px'),
+                justifyContent: 'center',
+                padding: useModernCards ? '0 8px' : '0 6px'
+              }}>
+                {filteredItems.map((item) => {
                 const quantityInCart = getItemQuantityInCart(item.id);
                 
                 return (
@@ -3155,8 +3263,19 @@ function RestaurantPOSContent() {
                     useModernDesign={useModernCards}
                   />
                 );
-              })}
-            </div>
+                })}
+              </div>
+            ) : (
+              <DashboardTablesPanel
+                floors={tablesData.floors}
+                tables={tablesData.tables}
+                isRefreshing={tablesRefreshing}
+                onTakeOrder={(tbl) => {
+                  setTableNumber(tbl);
+                  setViewMode('orders');
+                }}
+              />
+            )}
           </div>
           </>
           )}
@@ -3944,3 +4063,5 @@ export default function RestaurantPOS() {
     </Suspense>
   );
 }
+
+
