@@ -2913,36 +2913,36 @@ function RestaurantPOSContent() {
                     transform: 'translateY(-50%)', 
                     color: '#6b7280' 
                   }} size={isMobile ? 14 : 12} />
-                  <input
-                    type="text"
+                <input
+                  type="text"
                     placeholder={isMobile ? "Search..." : "Search menu..."}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{
-                      width: '100%',
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    width: '100%',
                       height: isMobile ? '38px' : '36px',
                       paddingLeft: isMobile ? '38px' : '36px',
-                      paddingRight: '12px',
+                    paddingRight: '12px',
                       border: 'none',
                       borderBottom: '2px solid #e5e7eb',
                       borderRadius: '0px',
                       backgroundColor: '#f8fafc',
                       fontSize: isMobile ? '14px' : '12px',
-                      fontWeight: '500',
-                      outline: 'none',
-                      transition: 'all 0.2s ease',
-                      color: '#374151'
-                    }}
-                    onFocus={(e) => {
+                    fontWeight: '500',
+                    outline: 'none',
+                    transition: 'all 0.2s ease',
+                    color: '#374151'
+                  }}
+                  onFocus={(e) => {
                       e.target.style.borderBottomColor = '#e5e7eb';
                       e.target.style.backgroundColor = '#f8fafc';
-                    }}
-                    onBlur={(e) => {
+                  }}
+                  onBlur={(e) => {
                       e.target.style.borderBottomColor = '#e5e7eb';
                       e.target.style.backgroundColor = '#f8fafc';
-                    }}
-                  />
-                </div>
+                  }}
+                />
+            </div>
                 )}
             
                 {/* Voice Listening Widget - Mobile Optimized */}
@@ -3180,51 +3180,60 @@ function RestaurantPOSContent() {
                     border: '1.5px solid #ef4444',
                     borderRadius: '8px',
                     fontWeight: '700',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    position: 'relative',
+                    minWidth: isMobile ? '96px' : '112px'
                   }}
                   title={viewMode === 'orders' ? 'Switch to Tables' : 'Back to Orders'}
                 >
                   {viewMode === 'orders' ? 'TABLES' : 'ORDERS'}
                   {tablesRefreshing && (
-                    <span style={{ marginLeft: '6px', fontSize: '10px', color: '#6b7280' }}>• loading…</span>
+                    <div style={{ position: 'absolute', top: '-6px', right: '-6px' }}>
+                      <svg width="14" height="14" viewBox="0 0 50 50">
+                        <circle cx="25" cy="25" r="20" stroke="#ef4444" strokeWidth="6" fill="none" opacity="0.2" />
+                        <path d="M25 5 a20 20 0 0 1 0 40 a20 20 0 0 1 0-40" stroke="#ef4444" strokeWidth="6" fill="none">
+                          <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.9s" repeatCount="indefinite" />
+                        </path>
+                      </svg>
+                    </div>
                   )}
                 </button>
 
                 {/* Compact Toggle - Only show on desktop */}
                 {!isMobile && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '9px', color: '#6b7280', fontWeight: '500' }}>
-                      {useModernCards ? 'M' : 'C'}
-                    </span>
-                    <button
-                      onClick={() => setUseModernCards(!useModernCards)}
-                      style={{
-                        width: '20px',
-                        height: '12px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        backgroundColor: useModernCards ? '#ef4444' : '#d1d5db',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: useModernCards ? 'flex-end' : 'flex-start',
-                        padding: '1px',
-                        transition: 'all 0.3s ease',
-                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                      }}
-                    >
-                      <div style={{
-                        width: '10px',
-                        height: '10px',
-                        borderRadius: '50%',
-                        backgroundColor: 'white',
-                        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
-                        transition: 'all 0.3s ease'
-                      }} />
-                    </button>
-                  </div>
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: '9px', color: '#6b7280', fontWeight: '500' }}>
+                    {useModernCards ? 'M' : 'C'}
+                  </span>
+                <button
+                    onClick={() => setUseModernCards(!useModernCards)}
+                  style={{
+                      width: '20px',
+                      height: '12px',
+                      borderRadius: '6px',
+                    border: 'none',
+                      backgroundColor: useModernCards ? '#ef4444' : '#d1d5db',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                      justifyContent: useModernCards ? 'flex-end' : 'flex-start',
+                      padding: '1px',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}
+                  >
+                    <div style={{
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: '50%',
+                      backgroundColor: 'white',
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+                      transition: 'all 0.3s ease'
+                    }} />
+                </button>
               </div>
+                )}
+                    </div>
             </div>
           </div>
           
@@ -3237,18 +3246,18 @@ function RestaurantPOSContent() {
             msOverflowStyle: 'none'
           }} className="hide-scrollbar">
             {viewMode === 'orders' ? (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: useModernCards 
-                  ? (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))')
-                  : (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))'),
-                gap: useModernCards 
-                  ? (isMobile ? '12px' : '16px')
-                  : (isMobile ? '8px' : '10px'),
-                justifyContent: 'center',
-                padding: useModernCards ? '0 8px' : '0 6px'
-              }}>
-                {filteredItems.map((item) => {
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: useModernCards 
+                ? (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))')
+                : (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))'),
+              gap: useModernCards 
+                ? (isMobile ? '12px' : '16px')
+                : (isMobile ? '8px' : '10px'),
+              justifyContent: 'center',
+              padding: useModernCards ? '0 8px' : '0 6px'
+            }}>
+              {filteredItems.map((item) => {
                 const quantityInCart = getItemQuantityInCart(item.id);
                 
                 return (
@@ -3263,8 +3272,8 @@ function RestaurantPOSContent() {
                     useModernDesign={useModernCards}
                   />
                 );
-                })}
-              </div>
+              })}
+            </div>
             ) : (
               <DashboardTablesPanel
                 floors={tablesData.floors}
@@ -3336,43 +3345,43 @@ function RestaurantPOSContent() {
 
             {/* Mobile Order Summary - Full Screen */}
             {isMobile && showMobileCart && (
-              <OrderSummary
-                cart={cart}
+                  <OrderSummary
+                    cart={cart}
                 setCart={setCart}
-                orderType={orderType}
-                setOrderType={setOrderType}
-                paymentMethod={paymentMethod}
-                setPaymentMethod={setPaymentMethod}
-                onClearCart={clearCart}
-                onProcessOrder={processOrder}
-                onSaveOrder={saveOrder}
-                onPlaceOrder={placeOrder}
-                onRemoveFromCart={removeFromCart}
-                onAddToCart={addToCart}
+                    orderType={orderType}
+                    setOrderType={setOrderType}
+                    paymentMethod={paymentMethod}
+                    setPaymentMethod={setPaymentMethod}
+                    onClearCart={clearCart}
+                    onProcessOrder={processOrder}
+                    onSaveOrder={saveOrder}
+                    onPlaceOrder={placeOrder}
+                    onRemoveFromCart={removeFromCart}
+                    onAddToCart={addToCart}
                 onUpdateCartItemQuantity={updateCartItemQuantity}
-                onTableNumberChange={setTableNumber}
-                onCustomerNameChange={setCustomerName}
-                onCustomerMobileChange={setCustomerMobile}
-                processing={processing}
-                placingOrder={placingOrder}
-                orderSuccess={orderSuccess}
-                setOrderSuccess={setOrderSuccess}
-                error={error}
-                getTotalAmount={getTotalAmount}
-                tableNumber={tableNumber}
-                customerName={customerName}
-                customerMobile={customerMobile}
-                orderLookup={orderLookup}
-                setOrderLookup={setOrderLookup}
-                currentOrder={currentOrder}
-                setCurrentOrder={setCurrentOrder}
-                onShowQRCode={handleShowQRCode}
-                restaurantId={selectedRestaurant?.id}
-                restaurantName={selectedRestaurant?.name}
-                taxSettings={taxSettings}
+                    onTableNumberChange={setTableNumber}
+                    onCustomerNameChange={setCustomerName}
+                    onCustomerMobileChange={setCustomerMobile}
+                    processing={processing}
+                    placingOrder={placingOrder}
+                    orderSuccess={orderSuccess}
+                    setOrderSuccess={setOrderSuccess}
+                    error={error}
+                    getTotalAmount={getTotalAmount}
+                    tableNumber={tableNumber}
+                    customerName={customerName}
+                    customerMobile={customerMobile}
+                    orderLookup={orderLookup}
+                    setOrderLookup={setOrderLookup}
+                    currentOrder={currentOrder}
+                    setCurrentOrder={setCurrentOrder}
+                    onShowQRCode={handleShowQRCode}
+                    restaurantId={selectedRestaurant?.id}
+                    restaurantName={selectedRestaurant?.name}
+                    taxSettings={taxSettings}
                 menuItems={menuItems}
                 onClose={() => setShowMobileCart(false)}
-              />
+                  />
             )}
           </>
         )}

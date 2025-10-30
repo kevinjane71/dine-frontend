@@ -5,8 +5,10 @@ import { useMemo } from 'react';
 const statusStyles = {
   available: { bg: '#ecfdf5', text: '#065f46', border: '#a7f3d0' },
   serving: { bg: '#eff6ff', text: '#1e40af', border: '#bfdbfe' },
-  occupied: { bg: '#fef2f2', text: '#991b1b', border: '#fecaca' },
-  reserved: { bg: '#fef3c7', text: '#92400e', border: '#fde68a' },
+  // occupied: switch to yellow theme
+  occupied: { bg: '#fef9c3', text: '#92400e', border: '#fde68a' },
+  // reserved: switch to blue theme
+  reserved: { bg: '#eff6ff', text: '#1e40af', border: '#bfdbfe' },
   'out-of-service': { bg: '#f3f4f6', text: '#374151', border: '#e5e7eb' },
   maintenance: { bg: '#f3f4f6', text: '#374151', border: '#e5e7eb' }
 };
@@ -35,6 +37,11 @@ export default function DashboardTablesPanel({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <style jsx>{`
+        @keyframes tableSpin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       {grouped.map((group, idx) => (
         <div key={idx} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px' }}>
           <div style={{
@@ -57,11 +64,14 @@ export default function DashboardTablesPanel({
           }}>
             {(group.tables || []).map((t, tIdx) => {
               const st = statusStyles[t.status] || statusStyles.available;
+              const isOccupied = (t.status === 'occupied');
+              const occupiedBorderColor = '#f59e0b';
               return (
                 <div key={t.id || tIdx}
                   style={{
+                    position: 'relative',
                     background: '#ffffff',
-                    border: `1px solid ${st.border}`,
+                    border: `${isOccupied ? '1px solid transparent' : '1px solid ' + st.border}`,
                     borderRadius: '10px',
                     padding: '12px',
                     display: 'flex',
@@ -69,6 +79,35 @@ export default function DashboardTablesPanel({
                     gap: '8px',
                     boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
                   }}>
+                  {isOccupied && (
+                    <svg
+                      viewBox="0 0 300 200"
+                      preserveAspectRatio="none"
+                      style={{
+                        position: 'absolute',
+                        inset: '-6px',
+                        width: 'calc(100% + 12px)',
+                        height: 'calc(100% + 12px)',
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      <rect
+                        x="1.5"
+                        y="1.5"
+                        width="297"
+                        height="197"
+                        rx="12"
+                        ry="12"
+                        fill="none"
+                        stroke={occupiedBorderColor}
+                        strokeWidth="2.5"
+                        strokeDasharray="5,5"
+                        strokeDashoffset="100"
+                      >
+                        <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2s" repeatCount="indefinite" />
+                      </rect>
+                    </svg>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ fontWeight: 800, color: '#111827', fontSize: '16px' }}>{t.name || t.number}</div>
                     <div style={{ fontSize: '10px', color: st.text, fontWeight: 700, background: st.bg, borderRadius: '999px', padding: '2px 8px', border: `1px solid ${st.border}` }}>
