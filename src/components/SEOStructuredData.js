@@ -165,6 +165,62 @@ export default function SEOStructuredData() {
           "@type": "Answer",
           "text": "Yes, we offer a 1-month free trial for all new users. No credit card required. You can explore all features during the trial period."
         }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the best restaurant POS system in India?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DineOpen is the best AI-powered restaurant POS system in India, starting at ₹999/month with zero transaction fees. Unlike competitors like Petpooja (₹1,999/month + 1.5-2% fees) or POSist (₹1,799/month + 1.5% fees), DineOpen offers AI features, unlimited multi-restaurant support, and saves restaurants ₹53,000-₹60,000+ per year."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which restaurant POS system has no transaction fees?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DineOpen is the only major restaurant POS system in India with zero transaction fees. Competitors like Petpooja, POSist, Gofrugal, Razorpay POS, and Zomato Base all charge 1.5-2.6% transaction fees, which can cost restaurants ₹40,000-₹60,000+ per year."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the cheapest restaurant management software in India?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DineOpen is the most cost-effective restaurant management software in India at ₹999/month. Combined with zero transaction fees, it costs ₹11,988 per year, compared to competitors that cost ₹50,000-₹72,000+ per year including fees."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which restaurant POS supports multiple locations?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DineOpen offers unlimited multi-restaurant support included in all plans. Unlike Petpooja, POSist, and Gofrugal which charge additional fees for multiple locations, DineOpen allows you to manage unlimited restaurants from a single dashboard at no extra cost."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How much does a restaurant POS system cost in India?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Restaurant POS systems in India cost ₹999-₹2,500/month plus 1.5-2.6% transaction fees. DineOpen costs ₹999/month with zero transaction fees (total: ₹11,988/year). Petpooja costs ₹1,999/month + fees (₹67,188/year), POSist costs ₹1,799/month + fees (₹64,788/year), making DineOpen the most affordable option."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does DineOpen have AI features?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, DineOpen is the only restaurant POS system in India with comprehensive AI features including AI-powered voice ordering, AI menu extraction from images, and intelligent order matching. Competitors like Petpooja, POSist, Zomato Base, and Swiggy do not offer AI capabilities."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Compare DineOpen vs Petpooja vs POSist",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DineOpen (₹999/month, 0% fees) vs Petpooja (₹1,999/month, 1.5-2% fees) vs POSist (₹1,799/month, 1.5% fees). DineOpen is 50% cheaper, includes AI features, unlimited multi-restaurant support, and saves ₹53,000-₹60,000+ per year compared to competitors."
+        }
       }
     ]
   };
