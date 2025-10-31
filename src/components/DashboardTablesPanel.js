@@ -76,7 +76,9 @@ export default function DashboardTablesPanel({
                     padding: '12px',
                     display: 'flex',
                     flexDirection: 'column',
+                    justifyContent: 'space-between',
                     gap: '8px',
+                    minHeight: '150px',
                     boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
                   }}>
                   {isOccupied && (
@@ -115,24 +117,28 @@ export default function DashboardTablesPanel({
                     </div>
                   </div>
                   <div style={{ fontSize: '12px', color: '#6b7280' }}>Seats: {t.capacity || '-'}</div>
-                  {(t.status === 'available' || t.status === 'serving') && (
-                    <button
-                      onClick={() => onTakeOrder && onTakeOrder(t.name || t.number)}
-                      style={{
-                        marginTop: '2px',
-                        background: t.status === 'available' ? '#22c55e' : '#3b82f6',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        padding: '6px 8px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {t.status === 'available' ? 'TAKE ORDER' : 'ADD ITEMS'}
-                    </button>
-                  )}
+                  <div style={{ height: '34px', marginTop: '2px' }}>
+                    {(t.status === 'available' || t.status === 'serving') ? (
+                      <button
+                        onClick={() => onTakeOrder && onTakeOrder(t.name || t.number)}
+                        style={{
+                          width: '100%',
+                          background: t.status === 'available' ? '#22c55e' : '#3b82f6',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          padding: '6px 8px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {t.status === 'available' ? 'TAKE ORDER' : 'ADD ITEMS'}
+                      </button>
+                    ) : (
+                      <div style={{ height: '100%', borderRadius: '8px', visibility: 'hidden' }} />
+                    )}
+                  </div>
                 </div>
               );
             })}
