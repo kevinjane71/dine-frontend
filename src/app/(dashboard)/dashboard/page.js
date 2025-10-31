@@ -3308,6 +3308,28 @@ function RestaurantPOSContent() {
                   setTableNumber(tbl);
                   setViewMode('orders');
                 }}
+                onViewOrder={async (orderId, table) => {
+                  // Switch to orders view
+                  setViewMode('orders');
+                  
+                  // Load the order
+                  if (orderId) {
+                    await triggerOrderLookup(orderId);
+                    
+                    // Set the table number if available
+                    if (table && (table.name || table.number)) {
+                      setTableNumber(table.name || table.number);
+                    }
+                    
+                    // Show notification
+                    setNotification({
+                      type: 'info',
+                      title: 'Order Loaded',
+                      message: `Order loaded for ${table?.name || table?.number || 'table'}. You can view, update, or complete it.`,
+                      show: true
+                    });
+                  }
+                }}
               />
             )}
           </div>

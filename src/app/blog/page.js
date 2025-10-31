@@ -75,6 +75,13 @@ const blogPosts = [
     date: '2024-12-20',
     category: 'Comparison',
   },
+  {
+    slug: 'best-restaurant-pos-systems-2025-global-comparison',
+    title: '7 Best Restaurant POS Systems 2025: Complete Global Comparison',
+    excerpt: 'Discover the top restaurant POS systems including Square, Toast, Clover, SpotOn, SumUp, Epos Now, and DineOpen. Compare pricing, features, and find the best POS for your restaurant.',
+    date: '2025-01-15',
+    category: 'Comparison',
+  },
 ];
 
 export default function BlogPage() {

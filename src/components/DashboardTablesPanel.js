@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { FaEye } from 'react-icons/fa';
 
 const statusStyles = {
   available: { bg: '#ecfdf5', text: '#065f46', border: '#a7f3d0' },
@@ -17,7 +18,8 @@ export default function DashboardTablesPanel({
   floors = [],
   tables = [],
   isRefreshing = false,
-  onTakeOrder
+  onTakeOrder,
+  onViewOrder
 }) {
   // Prefer floor.tables if present; fall back to flat tables prop
   const grouped = useMemo(() => {
@@ -58,13 +60,15 @@ export default function DashboardTablesPanel({
           </div>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-            gap: '10px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+            gap: '16px',
             padding: '12px'
           }}>
             {(group.tables || []).map((t, tIdx) => {
               const st = statusStyles[t.status] || statusStyles.available;
               const isOccupied = (t.status === 'occupied');
+              const isReserved = (t.status === 'reserved');
+              const isBooked = isOccupied || isReserved;
               const occupiedBorderColor = '#f59e0b';
               return (
                 <div key={t.id || tIdx}
@@ -72,14 +76,16 @@ export default function DashboardTablesPanel({
                     position: 'relative',
                     background: '#ffffff',
                     border: `${isOccupied ? '1px solid transparent' : '1px solid ' + st.border}`,
-                    borderRadius: '10px',
-                    padding: '12px',
+                    borderRadius: '12px',
+                    padding: '14px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    gap: '8px',
-                    minHeight: '150px',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                    gap: '10px',
+                    height: '160px',
+                    width: '100%',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                    transition: 'all 0.2s ease'
                   }}>
                   {isOccupied && (
                     <svg
@@ -110,34 +116,80 @@ export default function DashboardTablesPanel({
                       </rect>
                     </svg>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ fontWeight: 800, color: '#111827', fontSize: '16px' }}>{t.name || t.number}</div>
-                    <div style={{ fontSize: '10px', color: st.text, fontWeight: 700, background: st.bg, borderRadius: '999px', padding: '2px 8px', border: `1px solid ${st.border}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <div style={{ fontWeight: 800, color: '#111827', fontSize: '17px', flex: 1 }}>{t.name || t.number}</div>
+                    <div style={{ fontSize: '10px', color: st.text, fontWeight: 700, background: st.bg, borderRadius: '999px', padding: '3px 9px', border: `1px solid ${st.border}`, whiteSpace: 'nowrap' }}>
                       {t.status || 'available'}
                     </div>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#6b7280' }}>Seats: {t.capacity || '-'}</div>
-                  <div style={{ height: '34px', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: 500 }}>Seats: {t.capacity || '-'}</div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: 'auto' }}>
+                    {isBooked && t.currentOrderId && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onViewOrder) {
+                            onViewOrder(t.currentOrderId, t);
+                          }
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: '#3b82f6',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          width: '32px',
+                          height: '32px',
+                          cursor: 'pointer',
+                          flexShrink: 0,
+                          transition: 'all 0.2s ease',
+                          boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = '#2563eb';
+                          e.target.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = '#3b82f6';
+                          e.target.style.transform = 'scale(1)';
+                        }}
+                        title="View Order"
+                      >
+                        <FaEye size={14} />
+                      </button>
+                    )}
                     {(t.status === 'available' || t.status === 'serving') ? (
                       <button
                         onClick={() => onTakeOrder && onTakeOrder(t.name || t.number)}
                         style={{
-                          width: '100%',
+                          flex: 1,
                           background: t.status === 'available' ? '#22c55e' : '#3b82f6',
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
                           fontSize: '12px',
                           fontWeight: 700,
-                          padding: '6px 8px',
-                          cursor: 'pointer'
+                          padding: '8px 12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          boxShadow: '0 2px 4px rgba(34, 197, 94, 0.2)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = 'translateY(-1px)';
+                          e.target.style.boxShadow = '0 4px 8px rgba(34, 197, 94, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'translateY(0)';
+                          e.target.style.boxShadow = '0 2px 4px rgba(34, 197, 94, 0.2)';
                         }}
                       >
                         {t.status === 'available' ? 'TAKE ORDER' : 'ADD ITEMS'}
                       </button>
-                    ) : (
-                      <div style={{ height: '100%', borderRadius: '8px', visibility: 'hidden' }} />
-                    )}
+                    ) : isBooked && !t.currentOrderId ? (
+                      <div style={{ flex: 1, height: '32px', borderRadius: '8px', visibility: 'hidden' }} />
+                    ) : null}
                   </div>
                 </div>
               );
