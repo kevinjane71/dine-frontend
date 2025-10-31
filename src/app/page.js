@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '../lib/api';
+import SEOStructuredData from '../components/SEOStructuredData';
 import { 
   FaUtensils,
   FaChartBar,
@@ -2196,6 +2197,9 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      {/* SEO Structured Data */}
+      <SEOStructuredData />
     </div>
   );
 }
