@@ -118,7 +118,8 @@ const KitchenOrderTicket = () => {
       // Get KOT orders for this restaurant using the specific API endpoint
       const kotApiUrl = `https://dine-backend-lake.vercel.app/api/kot/${restaurantId}`;
       console.log('🌐 Making KOT API call to:', kotApiUrl);
-      console.log('🔑 Auth token present:', !!localStorage.getItem('authToken'));
+      // SECURITY: Commented out to prevent exposing sensitive token data in console logs
+      // console.log('🔑 Auth token present:', !!localStorage.getItem('authToken'));
       
       const response = await fetch(kotApiUrl, {
         method: 'GET',

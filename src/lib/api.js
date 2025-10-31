@@ -9,10 +9,11 @@ class ApiClient {
     const url = `${this.baseURL}${endpoint}`;
     const token = this.getToken();
     
-    console.log('🌐 API Request:', { endpoint, hasToken: !!token, method: options.method || 'GET' });
-    if (token) {
-      console.log('🔑 Token preview:', token.substring(0, 20) + '...');
-    }
+    // SECURITY: Commented out to prevent exposing sensitive token data in console logs
+    // console.log('🌐 API Request:', { endpoint, hasToken: !!token, method: options.method || 'GET' });
+    // if (token) {
+    //   console.log('🔑 Token preview:', token.substring(0, 20) + '...');
+    // }
 
     const config = {
       headers: {
@@ -24,15 +25,16 @@ class ApiClient {
       ...options,
     };
 
-    console.log('🔧 Final request config:', {
-      url,
-      method: config.method,
-      headers: config.headers,
-      hasAuth: !!config.headers.Authorization,
-      authValue: config.headers.Authorization ? config.headers.Authorization.substring(0, 20) + '...' : 'none',
-      allHeaders: Object.keys(config.headers),
-      optionsHeaders: options.headers ? Object.keys(options.headers) : 'none'
-    });
+    // SECURITY: Commented out to prevent exposing sensitive auth data in console logs
+    // console.log('🔧 Final request config:', {
+    //   url,
+    //   method: config.method,
+    //   headers: config.headers,
+    //   hasAuth: !!config.headers.Authorization,
+    //   authValue: config.headers.Authorization ? config.headers.Authorization.substring(0, 20) + '...' : 'none',
+    //   allHeaders: Object.keys(config.headers),
+    //   optionsHeaders: options.headers ? Object.keys(options.headers) : 'none'
+    // });
 
     if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
       config.body = JSON.stringify(config.body);
@@ -77,16 +79,18 @@ class ApiClient {
   getToken() {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('authToken');
-      console.log('🔍 getToken() called:', {
-        hasWindow: typeof window !== 'undefined',
-        hasToken: !!token,
-        tokenLength: token ? token.length : 0,
-        tokenPreview: token ? token.substring(0, 20) + '...' : 'null',
-        localStorageKeys: Object.keys(localStorage)
-      });
+      // SECURITY: Commented out to prevent exposing sensitive token data in console logs
+      // console.log('🔍 getToken() called:', {
+      //   hasWindow: typeof window !== 'undefined',
+      //   hasToken: !!token,
+      //   tokenLength: token ? token.length : 0,
+      //   tokenPreview: token ? token.substring(0, 20) + '...' : 'null',
+      //   localStorageKeys: Object.keys(localStorage)
+      // });
       return token;
     }
-    console.log('🔍 getToken() called: No window object');
+    // SECURITY: Commented out to prevent exposing sensitive data
+    // console.log('🔍 getToken() called: No window object');
     return null;
   }
 
@@ -867,9 +871,11 @@ class ApiClient {
 
   // Send query to DineBot (Simple Intent-Based API)
   async queryDineBot(query, restaurantId) {
-    console.log('🤖 DineBot queryDineBot called with:', { query, restaurantId });
+    // SECURITY: Commented out to prevent exposing sensitive token data in console logs
+    // console.log('🤖 DineBot queryDineBot called with:', { query, restaurantId });
     const token = this.getToken();
-    console.log('🔑 Token in queryDineBot:', !!token, token ? token.substring(0, 20) + '...' : 'null');
+    // SECURITY: Commented out to prevent exposing sensitive token data in console logs
+    // console.log('🔑 Token in queryDineBot:', !!token, token ? token.substring(0, 20) + '...' : 'null');
     
     return this.request('/api/dinebot/query', {
       method: 'POST',

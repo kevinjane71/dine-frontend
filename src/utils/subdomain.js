@@ -23,7 +23,8 @@ export function redirectToSubdomain(subdomainUrl, token, userData = null) {
     urlWithToken += `&user=${encodeURIComponent(JSON.stringify(userData))}`;
   }
   
-  console.log('🔄 Redirecting to subdomain:', urlWithToken);
+  // SECURITY: Commented out to prevent exposing token in URL in console logs
+  // console.log('🔄 Redirecting to subdomain:', urlWithToken);
   
   // Redirect to subdomain
   window.location.href = urlWithToken;
@@ -41,7 +42,8 @@ export function extractTokenFromUrl() {
   const userData = urlParams.get('user');
   
   if (token) {
-    console.log('🔑 Token found in URL, storing in localStorage');
+    // SECURITY: Commented out to prevent exposing sensitive token data in console logs
+    // console.log('🔑 Token found in URL, storing in localStorage');
     
     // Store token in localStorage
     localStorage.setItem('authToken', token);

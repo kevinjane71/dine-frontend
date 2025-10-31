@@ -17,7 +17,8 @@ const TokenExtractor = () => {
     const token = extractTokenFromUrl();
     
     if (token) {
-      console.log('✅ Token extracted and stored from URL');
+      // SECURITY: Commented out to prevent exposing sensitive token data in console logs
+      // console.log('✅ Token extracted and stored from URL');
       
       // If we're on a subdomain and have a token, clean up URL but don't redirect
       // Let the dashboard page handle the authentication and redirect

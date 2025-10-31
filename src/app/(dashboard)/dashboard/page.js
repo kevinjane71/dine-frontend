@@ -163,7 +163,8 @@ function RestaurantPOSContent() {
       const userInUrl = urlParams.get('user');
       
       if (tokenInUrl) {
-        console.log('🔄 Token found in URL, processing...');
+        // SECURITY: Commented out to prevent exposing sensitive token data in console logs
+        // console.log('🔄 Token found in URL, processing...');
         
         // Store token and user data immediately
         localStorage.setItem('authToken', tokenInUrl);
@@ -171,7 +172,8 @@ function RestaurantPOSContent() {
           try {
             const userData = JSON.parse(decodeURIComponent(userInUrl));
             localStorage.setItem('user', JSON.stringify(userData));
-            console.log('✅ Token and user data stored from URL');
+            // SECURITY: Commented out to prevent exposing sensitive data
+            // console.log('✅ Token and user data stored from URL');
           } catch (error) {
             console.error('Failed to parse user data from URL:', error);
           }

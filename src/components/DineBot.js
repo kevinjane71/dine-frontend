@@ -74,9 +74,10 @@ const DineBot = ({ restaurantId, isOpen, onClose }) => {
     setIsLoading(true);
 
     try {
-      console.log('🤖 DineBot query attempt:', { inputText, restaurantId });
-      console.log('🔑 Auth token available:', !!localStorage.getItem('authToken'));
-      console.log('🔑 Token value:', localStorage.getItem('authToken')?.substring(0, 20) + '...');
+      // SECURITY: Commented out to prevent exposing sensitive token data in console logs
+      // console.log('🤖 DineBot query attempt:', { inputText, restaurantId });
+      // console.log('🔑 Auth token available:', !!localStorage.getItem('authToken'));
+      // console.log('🔑 Token value:', localStorage.getItem('authToken')?.substring(0, 20) + '...');
       
       const response = await apiClient.queryDineBot(inputText, restaurantId);
       
