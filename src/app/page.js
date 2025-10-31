@@ -774,7 +774,41 @@ export default function LandingPage() {
                 <FaRocket size={20} />
                 <span>Start 1 Month Free Trial</span>
               </button>
+              {/* Book Demo Button */}
               <button
+                onClick={() => setShowDemoModal(true)}
+                style={{
+                  padding: '18px 36px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  color: 'white',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: '16px',
+                  fontWeight: '600',
+                  fontSize: isMobile ? '14px' : '16px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  width: isMobile ? '100%' : 'auto',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                }}
+              >
+                <FaClock size={16} />
+                <span>Book Demo</span>
+              </button>
+              
+              {/* See Real Demo Button - Commented out */}
+              {/* <button
                 onClick={handleDemoLogin}
                 style={{
                   padding: '18px 36px',
@@ -804,7 +838,7 @@ export default function LandingPage() {
               >
                 <FaPlay size={16} />
                 <span>See Real Demo</span>
-              </button>
+              </button> */}
             </div>
             
             {/* Key Features */}

@@ -2866,7 +2866,11 @@ function RestaurantPOSContent() {
           height: isMobile ? 'auto' : '100%',
           minHeight: isMobile ? '400px' : '100%',
           paddingBottom: isMobile ? '80px' : '0', // Add bottom padding for mobile cart button
-          maxHeight: isMobile ? 'none' : '100%'
+          maxHeight: isMobile ? 'none' : '100%',
+          // Constrain width when Order Summary is hidden (table view) to prevent expansion
+          // Keep same effective width as orders view (70% of total - sidebar width)
+          width: !isMobile && viewMode === 'tables' ? 'calc(70% - ' + (sidebarCollapsed ? '60px' : '280px') + ')' : undefined,
+          maxWidth: !isMobile && viewMode === 'tables' ? 'calc(70% - ' + (sidebarCollapsed ? '60px' : '280px') + ')' : undefined
         }}>
           {/* Show empty menu prompt if no menu items */}
           {filteredItems.length === 0 && (menuItems || []).length === 0 && !loading ? (
@@ -2887,14 +2891,20 @@ function RestaurantPOSContent() {
           ) : (
           <>
             {/* Compact Header - Mobile Optimized */}
-          <div style={{ padding: isMobile ? '8px' : '12px', backgroundColor: 'white', borderBottom: '1px solid #f3f4f6' }}>
+          <div style={{ 
+            padding: isMobile ? '8px' : '12px', 
+            backgroundColor: 'white', 
+            borderBottom: '1px solid #f3f4f6'
+          }}>
             {/* Responsive Layout */}
             <div style={{ 
               display: 'flex', 
               flexDirection: isMobile ? 'column' : 'row',
               alignItems: isMobile ? 'stretch' : 'center', 
               justifyContent: 'space-between', 
-              gap: isMobile ? '8px' : '10px' 
+              gap: isMobile ? '8px' : '10px',
+              // Ensure consistent width
+              width: '100%'
             }}>
               {/* First Row on Mobile - Search & Voice */}
               <div style={{ 
@@ -3035,7 +3045,7 @@ function RestaurantPOSContent() {
                 alignItems: 'center', 
                 gap: isMobile ? '6px' : '10px',
                 flexWrap: 'nowrap',
-                justifyContent: isMobile ? 'space-between' : 'flex-start',
+                justifyContent: isMobile ? 'space-between' : 'space-between', // Changed to space-between
                 width: '100%'
               }}>
                 {/* Order ID Search - Mobile Optimized */}
@@ -3138,62 +3148,80 @@ function RestaurantPOSContent() {
                   FRESH ORDER
                 </button>
 
-                {/* push voice + tables to extreme right */}
-                <div style={{ flex: 1 }} />
+                {/* Right Side Group: Voice + Tables Button - Fixed Position */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: isMobile ? '6px' : '10px',
+                  flexShrink: 0,
+                  marginLeft: 'auto' // Push to the right, stay fixed
+                }}>
+                  {/* Simple Voice Button */}
+                  <button
+                    onClick={startVoiceListening}
+                    title="Start Voice Order"
+                    style={{
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: isMobile ? '28px' : '32px',
+                      height: isMobile ? '28px' : '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                      flexShrink: 0
+                    }}
+                  >
+                    <FaMicrophone size={isMobile ? 12 : 14} />
+                  </button>
 
-                {/* Simple Voice Button (moved to right group) */}
-                <button
-                  onClick={startVoiceListening}
-                  title="Start Voice Order"
-                  style={{
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: isMobile ? '28px' : '32px',
-                    height: isMobile ? '28px' : '32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
-                  }}
-                >
-                  <FaMicrophone size={isMobile ? 12 : 14} />
+                  {/* Tables Toggle Button - Fixed width and position */}
+                  <button
+                    onClick={() => setViewMode(viewMode === 'orders' ? 'tables' : 'orders')}
+                    style={{
+                      height: '36px',
+                      width: isMobile ? '96px' : '112px', // Fixed width instead of minWidth
+                      paddingLeft: isMobile ? '12px' : '18px',
+                      paddingRight: isMobile ? '12px' : '18px',
+                      background: 'transparent',
+                      color: '#ef4444',
+                      border: '1.5px solid #ef4444',
+                      borderRadius: '8px',
+                      fontSize: isMobile ? '10px' : '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0, // Prevent shrinking
+                      whiteSpace: 'nowrap' // Prevent text wrapping
+                    }}
+                    title={viewMode === 'orders' ? 'Switch to Tables' : 'Back to Orders'}
+                  >
+                    <span style={{ 
+                      display: 'inline-block',
+                      width: '100%',
+                      textAlign: 'center'
+                    }}>
+                      {viewMode === 'orders' ? 'TABLES' : 'ORDERS'}
+                    </span>
+                    {tablesRefreshing && (
+                      <div style={{ position: 'absolute', top: '-6px', right: '-6px' }}>
+                        <svg width="14" height="14" viewBox="0 0 50 50">
+                          <circle cx="25" cy="25" r="20" stroke="#ef4444" strokeWidth="6" fill="none" opacity="0.2" />
+                          <path d="M25 5 a20 20 0 0 1 0 40 a20 20 0 0 1 0-40" stroke="#ef4444" strokeWidth="6" fill="none">
+                            <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.9s" repeatCount="indefinite" />
+                          </path>
+                        </svg>
+                      </div>
+                    )}
                 </button>
-
-                {/* Tables Toggle Button - aligned on the same row */}
-                <button
-                  onClick={() => setViewMode(viewMode === 'orders' ? 'tables' : 'orders')}
-                  style={{
-                    height: '36px',
-                    paddingLeft: isMobile ? '12px' : '18px',
-                    paddingRight: isMobile ? '12px' : '18px',
-                    background: 'transparent',
-                    color: '#ef4444',
-                    border: '1.5px solid #ef4444',
-                    borderRadius: '8px',
-                    fontSize: isMobile ? '10px' : '11px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    position: 'relative',
-                    minWidth: isMobile ? '96px' : '112px'
-                  }}
-                  title={viewMode === 'orders' ? 'Switch to Tables' : 'Back to Orders'}
-                >
-                  {viewMode === 'orders' ? 'TABLES' : 'ORDERS'}
-                  {tablesRefreshing && (
-                    <div style={{ position: 'absolute', top: '-6px', right: '-6px' }}>
-                      <svg width="14" height="14" viewBox="0 0 50 50">
-                        <circle cx="25" cy="25" r="20" stroke="#ef4444" strokeWidth="6" fill="none" opacity="0.2" />
-                        <path d="M25 5 a20 20 0 0 1 0 40 a20 20 0 0 1 0-40" stroke="#ef4444" strokeWidth="6" fill="none">
-                          <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.9s" repeatCount="indefinite" />
-                        </path>
-                      </svg>
-                    </div>
-                  )}
-                </button>
+                </div>
 
                 {/* Compact Toggle - Only show on desktop */}
                 {!isMobile && (
@@ -3239,7 +3267,8 @@ function RestaurantPOSContent() {
             overflowY: isMobile ? 'visible' : 'auto',
             height: isMobile ? 'auto' : '100%',
             scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
+            msOverflowStyle: 'none',
+            width: viewMode === 'tables' ? '100%' : undefined
           }} className="hide-scrollbar">
             {viewMode === 'orders' ? (
             <div style={{
@@ -3292,15 +3321,17 @@ function RestaurantPOSContent() {
           <>
             {/* Desktop Order Summary */}
             {!isMobile && (
-          <div style={{ 
-            width: '30%', 
-            minWidth: '320px',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
-          {console.log('🖥️ Dashboard: Rendering OrderSummary with cart:', cart)}
-          <OrderSummary
+              <>
+                {viewMode === 'orders' ? (
+                  <div style={{ 
+                    width: '30%', 
+                    minWidth: '320px',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}>
+                    {console.log('🖥️ Dashboard: Rendering OrderSummary with cart:', cart)}
+                    <OrderSummary
             cart={cart}
             setCart={setCart}
             orderType={orderType}
@@ -3336,11 +3367,23 @@ function RestaurantPOSContent() {
             taxSettings={taxSettings}
             menuItems={menuItems}
           />
-        </div>
+                  </div>
+                ) : (
+                  // Spacer to maintain layout width when Order Summary is hidden
+                  <div style={{ 
+                    width: '30%', 
+                    minWidth: '320px',
+                    height: '100%',
+                    flexShrink: 0,
+                    visibility: 'hidden', // Hide but keep space
+                    pointerEvents: 'none'
+                  }} />
+                )}
+              </>
             )}
 
             {/* Mobile Order Summary - Full Screen */}
-            {isMobile && showMobileCart && (
+            {isMobile && showMobileCart && viewMode === 'orders' && (
                   <OrderSummary
                     cart={cart}
                 setCart={setCart}
@@ -3384,7 +3427,7 @@ function RestaurantPOSContent() {
       </div>
 
       {/* Mobile Category Sidebar */}
-      {isMobile && showMobileSidebar && (
+      {isMobile && showMobileSidebar && viewMode === 'orders' && (
         <>
           <div 
             style={{
