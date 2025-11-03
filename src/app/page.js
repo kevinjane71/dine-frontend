@@ -1798,9 +1798,6 @@ export default function LandingPage() {
                 <li style={{ marginBottom: '8px' }}>
                   <a href="#pricing" style={{ color: '#9ca3af', textDecoration: 'none' }}>Pricing</a>
                 </li>
-                <li style={{ marginBottom: '8px' }}>
-                  <a href="/api-docs" style={{ color: '#9ca3af', textDecoration: 'none' }}>API</a>
-                </li>
               </ul>
     </div>
             
@@ -1818,10 +1815,16 @@ export default function LandingPage() {
                   <a href="/help" style={{ color: '#9ca3af', textDecoration: 'none' }}>Help Center</a>
                 </li>
                 <li style={{ marginBottom: '8px' }}>
-                  <a href="/contact" style={{ color: '#9ca3af', textDecoration: 'none' }}>Contact</a>
-                </li>
-                <li style={{ marginBottom: '8px' }}>
-                  <a href="/status" style={{ color: '#9ca3af', textDecoration: 'none' }}>Status</a>
+                  <a 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowDemoModal(true);
+                    }}
+                    style={{ color: '#9ca3af', textDecoration: 'none', cursor: 'pointer' }}
+                  >
+                    Contact
+                  </a>
                 </li>
               </ul>
             </div>
@@ -1949,16 +1952,44 @@ export default function LandingPage() {
                 fontSize: '24px',
                 fontWeight: 'bold',
                 color: '#1f2937',
-                margin: '0 0 8px 0'
+                margin: '0 0 12px 0'
               }}>
-                Book a Demo
+                Contact Us
               </h2>
+              <div style={{
+                backgroundColor: '#f0f9ff',
+                border: '1px solid #bfdbfe',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '12px'
+              }}>
+                <p style={{
+                  fontSize: '14px',
+                  color: '#1e40af',
+                  margin: '0 0 4px 0',
+                  fontWeight: '600'
+                }}>
+                  📧 Email us at:
+                </p>
+                <a 
+                  href="mailto:info@dineopen.com" 
+                  style={{
+                    fontSize: '16px',
+                    color: '#2563eb',
+                    textDecoration: 'none',
+                    fontWeight: '600'
+                  }}
+                >
+                  info@dineopen.com
+                </a>
+              </div>
               <p style={{
                 fontSize: '14px',
                 color: '#6b7280',
-                margin: 0
+                margin: '12px 0 0 0',
+                fontWeight: '500'
               }}>
-                Schedule a personalized demo and see how DineOpen can transform your restaurant
+                Or fill the form below to get in touch
               </p>
             </div>
 
