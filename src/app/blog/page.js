@@ -82,6 +82,13 @@ const blogPosts = [
     date: '2025-01-15',
     category: 'Comparison',
   },
+  {
+    slug: 'major-pos-systems-quick-comparison',
+    title: 'Major Restaurant POS Systems: Quick Comparison Guide',
+    excerpt: 'Quick comparison of major POS systems: Square, Toast, Clover, SpotOn, DineOpen, and more. Compare pricing, fees, and key features at a glance.',
+    date: '2025-01-20',
+    category: 'Comparison',
+  },
 ];
 
 export default function BlogPage() {
