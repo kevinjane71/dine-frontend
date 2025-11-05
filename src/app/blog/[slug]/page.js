@@ -1716,8 +1716,69 @@ export default function BlogDetail() {
     setLoading(false);
   }, [params.slug, blogPosts]);
 
+  // Handle image errors to prevent retry loops
+  useEffect(() => {
+    if (!blogPost) return;
+
+    const handleImageError = (e) => {
+      const img = e.target;
+      // Mark as handled to prevent multiple triggers
+      if (img.dataset.errorHandled !== 'true') {
+        img.dataset.errorHandled = 'true';
+        // Remove src to prevent browser retries - set to 1x1 transparent SVG
+        img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1" height="1"%3E%3C/svg%3E';
+        // Hide the image to stop retries
+        img.style.display = 'none';
+        // Stop error propagation
+        if (e.stopPropagation) e.stopPropagation();
+        if (e.preventDefault) e.preventDefault();
+        // Return false to prevent default behavior
+        return false;
+      }
+    };
+
+    // Use setTimeout to ensure DOM is ready after dangerouslySetInnerHTML
+    const timeoutId = setTimeout(() => {
+      // Find all images in the blog content and add error handlers
+      const contentElement = document.getElementById('blog-content');
+      if (contentElement) {
+        const images = contentElement.querySelectorAll('img');
+        images.forEach((img) => {
+          // Only add handler if not already added
+          if (!img.dataset.errorHandlerAdded) {
+            img.dataset.errorHandlerAdded = 'true';
+            // Set loading="lazy" to prevent eager loading
+            img.loading = 'lazy';
+            // Add event listener with once to prevent multiple calls
+            img.addEventListener('error', handleImageError, { once: true, capture: true });
+            // Also set onerror as primary handler (browsers prefer this)
+            img.onerror = handleImageError;
+          }
+        });
+      }
+    }, 100);
+
+    // Cleanup function
+    return () => {
+      clearTimeout(timeoutId);
+      const contentElement = document.getElementById('blog-content');
+      if (contentElement) {
+        const images = contentElement.querySelectorAll('img');
+        images.forEach((img) => {
+          img.onerror = null;
+          // Remove event listener if it exists
+          try {
+            img.removeEventListener('error', handleImageError);
+          } catch (e) {
+            // Ignore errors if listener doesn't exist
+          }
+        });
+      }
+    };
+  }, [blogPost]);
+
   const handleBack = () => {
-    router.push('/#blog');
+    router.push('/blog');
   };
 
   const handleShare = (platform) => {
@@ -1973,15 +2034,17 @@ export default function BlogDetail() {
           </div>
 
           {/* Blog Content */}
-          <article style={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            padding: '40px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-            lineHeight: '1.8',
-            fontSize: '18px',
-            color: '#374151'
-          }}>
+          <article 
+            id="blog-content"
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '16px',
+              padding: '40px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+              lineHeight: '1.8',
+              fontSize: '18px',
+              color: '#374151'
+            }}>
             <div dangerouslySetInnerHTML={{ __html: blogPost.content }} />
           </article>
 
