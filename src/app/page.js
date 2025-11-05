@@ -1490,7 +1490,9 @@ export default function LandingPage() {
                 </div>
 
           <div style={{ textAlign: 'center' }}>
-            <button style={{
+            <button 
+            onClick={() => router.push('/blog')}
+            style={{
               padding: '12px 24px',
                   backgroundColor: 'transparent',
               color: '#ef4444',
@@ -1812,9 +1814,6 @@ export default function LandingPage() {
               </h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 <li style={{ marginBottom: '8px' }}>
-                  <a href="/help" style={{ color: '#9ca3af', textDecoration: 'none' }}>Help Center</a>
-                </li>
-                <li style={{ marginBottom: '8px' }}>
                   <a 
                     href="#" 
                     onClick={(e) => {
@@ -1951,21 +1950,21 @@ export default function LandingPage() {
               <h2 style={{
                 fontSize: '24px',
                 fontWeight: 'bold',
-                color: '#1f2937',
+                color: '#ef4444',
                 margin: '0 0 12px 0'
               }}>
                 Contact Us
               </h2>
               <div style={{
-                backgroundColor: '#f0f9ff',
-                border: '1px solid #bfdbfe',
+                backgroundColor: '#fef2f2',
+                border: '1px solid #fecaca',
                 borderRadius: '8px',
                 padding: '12px',
                 marginBottom: '12px'
               }}>
                 <p style={{
                   fontSize: '14px',
-                  color: '#1e40af',
+                  color: '#991b1b',
                   margin: '0 0 4px 0',
                   fontWeight: '600'
                 }}>
@@ -1975,7 +1974,7 @@ export default function LandingPage() {
                   href="mailto:info@dineopen.com" 
                   style={{
                     fontSize: '16px',
-                    color: '#2563eb',
+                    color: '#ef4444',
                     textDecoration: 'none',
                     fontWeight: '600'
                   }}
