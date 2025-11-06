@@ -2867,10 +2867,9 @@ function RestaurantPOSContent() {
           minHeight: isMobile ? '400px' : '100%',
           paddingBottom: isMobile ? '80px' : '0', // Add bottom padding for mobile cart button
           maxHeight: isMobile ? 'none' : '100%',
-          // Constrain width when Order Summary is hidden (table view) to prevent expansion
-          // Keep same effective width as orders view (70% of total - sidebar width)
-          width: !isMobile && viewMode === 'tables' ? 'calc(70% - ' + (sidebarCollapsed ? '60px' : '280px') + ')' : undefined,
-          maxWidth: !isMobile && viewMode === 'tables' ? 'calc(70% - ' + (sidebarCollapsed ? '60px' : '280px') + ')' : undefined
+          // Expand to full width when in tables view
+          width: viewMode === 'tables' ? '100%' : undefined,
+          flex: viewMode === 'tables' ? '1 1 100%' : 1
         }}>
           {/* Show empty menu prompt if no menu items */}
           {filteredItems.length === 0 && (menuItems || []).length === 0 && !loading ? (
@@ -3391,15 +3390,8 @@ function RestaurantPOSContent() {
           />
                   </div>
                 ) : (
-                  // Spacer to maintain layout width when Order Summary is hidden
-                  <div style={{ 
-                    width: '30%', 
-                    minWidth: '320px',
-                    height: '100%',
-                    flexShrink: 0,
-                    visibility: 'hidden', // Hide but keep space
-                    pointerEvents: 'none'
-                  }} />
+                  // No spacer needed - tables view should expand to full width
+                  null
                 )}
               </>
             )}

@@ -23,46 +23,52 @@ export default function DashboardTablesPanel({
 }) {
   // Prefer floor.tables if present; fall back to flat tables prop
   const grouped = useMemo(() => {
+    let allGroups = [];
     if (Array.isArray(floors) && floors.length > 0 && floors.some(f => Array.isArray(f.tables))) {
-      return floors.map(f => ({ info: { id: f.id, name: f.name || f.floorName || 'Floor' }, tables: f.tables || [] }));
+      allGroups = floors.map(f => ({ info: { id: f.id, name: f.name || f.floorName || 'Floor' }, tables: f.tables || [] }));
+    } else {
+      // Group flat tables by floor
+      const byFloor = {};
+      floors.forEach(f => { byFloor[f.id || f.name || 'default'] = { info: { name: f.name || 'Floor' }, tables: [] }; });
+      (tables || []).forEach(t => {
+        const key = t.floorId || t.floor || t.floorName || 'default';
+        if (!byFloor[key]) byFloor[key] = { info: { name: t.floorName || t.floor || 'Floor' }, tables: [] };
+        byFloor[key].tables.push(t);
+      });
+      allGroups = Object.values(byFloor);
     }
-    // Group flat tables by floor
-    const byFloor = {};
-    floors.forEach(f => { byFloor[f.id || f.name || 'default'] = { info: { name: f.name || 'Floor' }, tables: [] }; });
-    (tables || []).forEach(t => {
-      const key = t.floorId || t.floor || t.floorName || 'default';
-      if (!byFloor[key]) byFloor[key] = { info: { name: t.floorName || t.floor || 'Floor' }, tables: [] };
-      byFloor[key].tables.push(t);
-    });
-    return Object.values(byFloor);
+    // Filter out floors with no tables
+    return allGroups.filter(group => group.tables && group.tables.length > 0);
   }, [floors, tables]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '0 24px', maxWidth: '100%' }}>
       <style jsx>{`
         @keyframes tableSpin {
           to { transform: rotate(360deg); }
         }
       `}</style>
       {grouped.map((group, idx) => (
-        <div key={idx} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px' }}>
-          <div style={{
-            padding: '10px 12px',
-            borderBottom: '1px solid #f3f4f6',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <div style={{ fontWeight: 700, color: '#1f2937' }}>{group.info?.name || `Floor ${idx + 1}`}</div>
-            {isRefreshing && (
-              <div style={{ fontSize: '11px', color: '#6b7280' }}>Refreshing…</div>
-            )}
-          </div>
+        <div key={idx} style={{ background: '#fff', border: grouped.length > 1 ? '1px solid #e5e7eb' : 'none', borderRadius: '12px' }}>
+          {grouped.length > 1 && (
+            <div style={{
+              padding: '10px 12px',
+              borderBottom: '1px solid #f3f4f6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ fontWeight: 700, color: '#1f2937' }}>{group.info?.name || `Floor ${idx + 1}`}</div>
+              {isRefreshing && (
+                <div style={{ fontSize: '11px', color: '#6b7280' }}>Refreshing…</div>
+              )}
+            </div>
+          )}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-            gap: '16px',
-            padding: '12px'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+            gap: '24px',
+            padding: '20px'
           }}>
             {(group.tables || []).map((t, tIdx) => {
               const st = statusStyles[t.status] || statusStyles.available;
@@ -74,18 +80,22 @@ export default function DashboardTablesPanel({
                 <div key={t.id || tIdx}
                   style={{
                     position: 'relative',
-                    background: '#ffffff',
+                    background: st.bg,
                     border: `${isOccupied ? '1px solid transparent' : '1px solid ' + st.border}`,
                     borderRadius: '12px',
-                    padding: '14px',
+                    padding: '12px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    gap: '10px',
-                    height: '160px',
+                    gap: '8px',
+                    height: '130px',
+                    minHeight: '130px',
+                    maxHeight: '130px',
                     width: '100%',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    overflow: 'visible',
+                    boxSizing: 'border-box'
                   }}>
                   {isOccupied && (
                     <svg
@@ -96,7 +106,9 @@ export default function DashboardTablesPanel({
                         inset: '-6px',
                         width: 'calc(100% + 12px)',
                         height: 'calc(100% + 12px)',
-                        pointerEvents: 'none'
+                        pointerEvents: 'none',
+                        overflow: 'visible',
+                        zIndex: 1
                       }}
                     >
                       <rect
@@ -116,14 +128,14 @@ export default function DashboardTablesPanel({
                       </rect>
                     </svg>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                    <div style={{ fontWeight: 800, color: '#111827', fontSize: '17px', flex: 1 }}>{t.name || t.number}</div>
-                    <div style={{ fontSize: '10px', color: st.text, fontWeight: 700, background: st.bg, borderRadius: '999px', padding: '3px 9px', border: `1px solid ${st.border}`, whiteSpace: 'nowrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', flexShrink: 0 }}>
+                    <div style={{ fontWeight: 800, color: '#111827', fontSize: '16px', flex: 1 }}>{t.name || t.number}</div>
+                    <div style={{ fontSize: '9px', color: st.text, fontWeight: 700, background: st.bg, borderRadius: '999px', padding: '3px 8px', border: `1px solid ${st.border}`, whiteSpace: 'nowrap', flexShrink: 0 }}>
                       {t.status || 'available'}
                     </div>
                   </div>
-                  <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: 500 }}>Seats: {t.capacity || '-'}</div>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: 'auto' }}>
+                  <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: 500, flexShrink: 0 }}>Seats: {t.capacity || '-'}</div>
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: 'auto', flexShrink: 0, minHeight: '28px' }}>
                     {isBooked && t.currentOrderId && (
                       <button
                         onClick={(e) => {
@@ -140,8 +152,8 @@ export default function DashboardTablesPanel({
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
-                          width: '32px',
-                          height: '32px',
+                          width: '28px',
+                          height: '28px',
                           cursor: 'pointer',
                           flexShrink: 0,
                           transition: 'all 0.2s ease',
@@ -157,7 +169,7 @@ export default function DashboardTablesPanel({
                         }}
                         title="View Order"
                       >
-                        <FaEye size={14} />
+                        <FaEye size={12} />
                       </button>
                     )}
                     {(t.status === 'available' || t.status === 'serving') ? (
@@ -168,13 +180,17 @@ export default function DashboardTablesPanel({
                           background: t.status === 'available' ? '#22c55e' : '#3b82f6',
                           color: 'white',
                           border: 'none',
-                          borderRadius: '8px',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          fontSize: '9px',
+                          fontWeight: 600,
+                          padding: '4px 8px',
                           cursor: 'pointer',
                           transition: 'all 0.2s ease',
-                          boxShadow: '0 2px 4px rgba(34, 197, 94, 0.2)'
+                          boxShadow: '0 2px 4px rgba(34, 197, 94, 0.2)',
+                          height: '24px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
                         }}
                         onMouseEnter={(e) => {
                           e.target.style.transform = 'translateY(-1px)';
@@ -188,7 +204,7 @@ export default function DashboardTablesPanel({
                         {t.status === 'available' ? 'TAKE ORDER' : 'ADD ITEMS'}
                       </button>
                     ) : isBooked && !t.currentOrderId ? (
-                      <div style={{ flex: 1, height: '32px', borderRadius: '8px', visibility: 'hidden' }} />
+                      <div style={{ flex: 1, height: '28px', borderRadius: '8px', visibility: 'hidden' }} />
                     ) : null}
                   </div>
                 </div>
