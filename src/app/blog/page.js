@@ -21,10 +21,10 @@ const blogPosts = [
   },
   {
     slug: 'how-to-reduce-restaurant-operating-costs',
-    title: 'How to Reduce Restaurant Operating Costs by 30%',
-    excerpt: 'Practical strategies and tools to cut costs without compromising quality or customer experience.',
-    date: '2024-12-10',
-    category: 'Cost Management',
+    title: 'How to Reduce Restaurant Operating Costs: 10 Proven Strategies',
+    excerpt: 'Discover practical strategies to cut restaurant operating costs without compromising quality. Learn how smart technology and efficient processes can save thousands annually.',
+    date: '2025-01-22',
+    category: 'Operations',
   },
   {
     slug: 'ultimate-guide-restaurant-inventory-management',
@@ -35,16 +35,9 @@ const blogPosts = [
   },
   {
     slug: 'why-qr-code-menus-are-essential-in-2024',
-    title: 'Why QR Code Menus Are Essential in 2024',
-    excerpt: 'Discover how QR code menus improve customer experience, reduce costs, and streamline operations.',
-    date: '2024-11-28',
-    category: 'Technology',
-  },
-  {
-    slug: 'ai-powered-restaurant-management-guide',
-    title: 'AI-Powered Restaurant Management: Complete Guide',
-    excerpt: 'Explore how artificial intelligence is transforming restaurant operations and what it means for your business.',
-    date: '2024-11-20',
+    title: 'Why QR Code Menus Are Essential in 2026: The Future of Dining',
+    excerpt: 'Discover why QR code menus are essential in 2026. Learn how AI-powered digital menus improve customer experience, reduce costs, and streamline operations.',
+    date: '2025-11-06',
     category: 'Technology',
   },
   {
@@ -63,9 +56,9 @@ const blogPosts = [
   },
   {
     slug: 'restaurant-technology-trends-2024',
-    title: 'Restaurant Technology Trends to Watch in 2024',
-    excerpt: 'Stay ahead with the latest technology trends shaping the restaurant industry.',
-    date: '2024-11-05',
+    title: 'Restaurant Technology Trends to Watch in 2026: The AI Revolution',
+    excerpt: 'Stay ahead with the latest technology trends shaping the restaurant industry in 2026. Discover how AI, automation, and smart systems are transforming dining experiences.',
+    date: '2025-11-06',
     category: 'Technology',
   },
   {
