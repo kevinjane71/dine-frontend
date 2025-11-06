@@ -3303,9 +3303,58 @@ function RestaurantPOSContent() {
                 floors={tablesData.floors}
                 tables={tablesData.tables}
                 isRefreshing={tablesRefreshing}
+                selectedRestaurant={selectedRestaurant}
+                cart={cart}
+                setCart={setCart}
+                orderType={orderType}
+                setOrderType={setOrderType}
+                paymentMethod={paymentMethod}
+                setPaymentMethod={setPaymentMethod}
+                onClearCart={clearCart}
+                onProcessOrder={processOrder}
+                onSaveOrder={saveOrder}
+                onPlaceOrder={placeOrder}
+                onRemoveFromCart={removeFromCart}
+                onAddToCart={addToCart}
+                onUpdateCartItemQuantity={updateCartItemQuantity}
+                onTableNumberChange={setTableNumber}
+                onCustomerNameChange={setCustomerName}
+                onCustomerMobileChange={setCustomerMobile}
+                processing={processing}
+                placingOrder={placingOrder}
+                orderSuccess={orderSuccess}
+                setOrderSuccess={setOrderSuccess}
+                error={error}
+                getTotalAmount={getTotalAmount}
+                tableNumber={tableNumber}
+                customerName={customerName}
+                customerMobile={customerMobile}
+                orderLookup={orderLookup}
+                setOrderLookup={setOrderLookup}
+                currentOrder={currentOrder}
+                setCurrentOrder={setCurrentOrder}
+                onShowQRCode={handleShowQRCode}
+                restaurantName={selectedRestaurant?.name}
+                taxSettings={taxSettings}
+                menuItems={menuItems}
                 onTakeOrder={(tbl) => {
+                  // Clear previous order data when taking order from a new table
+                  setCart([]);
+                  setCurrentOrder(null);
+                  setOrderLookup('');
+                  setCustomerName('');
+                  setCustomerMobile('');
+                  setOrderType('dine-in');
+                  setPaymentMethod('cash');
+                  setOrderSuccess(null);
+                  setError('');
                   setTableNumber(tbl);
                   setViewMode('orders');
+                }}
+                onSliderClose={() => {
+                  // This will be called from DashboardTablesPanel to close the slider
+                  // The slider state is managed internally, but we can trigger a re-render
+                  // by clearing the cart which will cause the slider to update
                 }}
                 onViewOrder={async (orderId, table) => {
                   // Switch to orders view
@@ -3344,15 +3393,15 @@ function RestaurantPOSContent() {
             {!isMobile && (
               <>
                 {viewMode === 'orders' ? (
-                  <div style={{ 
-                    width: '30%', 
-                    minWidth: '320px',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column'
-                  }}>
-                    {console.log('🖥️ Dashboard: Rendering OrderSummary with cart:', cart)}
-                    <OrderSummary
+          <div style={{ 
+            width: '30%', 
+            minWidth: '320px',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+          {console.log('🖥️ Dashboard: Rendering OrderSummary with cart:', cart)}
+          <OrderSummary
             cart={cart}
             setCart={setCart}
             orderType={orderType}
@@ -3388,7 +3437,7 @@ function RestaurantPOSContent() {
             taxSettings={taxSettings}
             menuItems={menuItems}
           />
-                  </div>
+        </div>
                 ) : (
                   // No spacer needed - tables view should expand to full width
                   null
