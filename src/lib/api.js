@@ -196,9 +196,50 @@ class ApiClient {
   }
 
   getUser() {
-    if (typeof window === 'undefined') return null;
-    const userData = localStorage.getItem('user');
-    return userData ? JSON.parse(userData) : null;
+    // Use cookie-based storage for cross-subdomain SSO
+    if (typeof document !== 'undefined') {
+      // First try cookie (shared across subdomains)
+      const cookieUser = this.getCookie('dine_user_data');
+      if (cookieUser) {
+        try {
+          const userData = JSON.parse(decodeURIComponent(cookieUser));
+          // Sync to localStorage for backward compatibility
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('user', JSON.stringify(userData));
+          }
+          return userData;
+        } catch (error) {
+          console.error('Failed to parse user data from cookie:', error);
+        }
+      }
+      
+      // Fallback to localStorage (same domain)
+      if (typeof window !== 'undefined') {
+        const localUser = localStorage.getItem('user');
+        if (localUser) {
+          try {
+            const userData = JSON.parse(localUser);
+            // Sync to cookie for cross-subdomain access
+            this.setCookie('dine_user_data', encodeURIComponent(localUser), 30, '.dineopen.com');
+            return userData;
+          } catch (error) {
+            console.error('Failed to parse user data from localStorage:', error);
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  setUser(userData) {
+    // Store in both cookie (for cross-subdomain) and localStorage (for backward compatibility)
+    const userJson = JSON.stringify(userData);
+    if (typeof document !== 'undefined') {
+      this.setCookie('dine_user_data', encodeURIComponent(userJson), 30, '.dineopen.com');
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', userJson);
+    }
   }
 
   getRedirectPath() {
