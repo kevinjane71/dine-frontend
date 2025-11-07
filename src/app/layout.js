@@ -52,7 +52,8 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
         <link 
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" 
-          rel="stylesheet" 
+          rel="stylesheet"
+          data-next-font="true"
         />
         {/* Analytics Script */}
         {/* <script
@@ -73,6 +74,7 @@ export default function RootLayout({ children }) {
           src="https://fixflow-fe.vercel.app/sdk.js" 
           data-api-key="ff_9938c164292e9424678ed4d33e9ed7b672d18a648e81cb9903304fbe46849916" 
           data-api-url="https://fixflow-be.vercel.app/api/events"
+          async
         ></script>
       </body>
     </html>
