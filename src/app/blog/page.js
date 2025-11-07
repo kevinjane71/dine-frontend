@@ -1,4 +1,8 @@
 import BlogCard from '../../components/BlogCard';
+import { blogPosts } from './blogData';
+
+// This page is statically generated at build time
+export const dynamic = 'force-static';
 
 export const metadata = {
   title: 'Restaurant Management Blog | DineOpen - Tips, Guides & Industry Insights',
@@ -10,86 +14,6 @@ export const metadata = {
     url: 'https://www.dineopen.com/blog',
   },
 };
-
-const blogPosts = [
-  {
-    slug: 'why-dineopen-future-restaurant-management',
-    title: 'Why DineOpen is the Future of Restaurant Management',
-    excerpt: 'Discover how our AI-powered POS system is revolutionizing restaurant operations and why it\'s outperforming traditional competitors.',
-    date: '2024-12-15',
-    category: 'Industry Insights',
-  },
-  {
-    slug: 'how-to-reduce-restaurant-operating-costs',
-    title: 'How to Reduce Restaurant Operating Costs: 10 Proven Strategies',
-    excerpt: 'Discover practical strategies to cut restaurant operating costs without compromising quality. Learn how smart technology and efficient processes can save thousands annually.',
-    date: '2025-01-22',
-    category: 'Operations',
-  },
-  {
-    slug: 'ultimate-guide-restaurant-inventory-management',
-    title: 'The Ultimate Guide to Restaurant Inventory Management',
-    excerpt: 'Learn best practices for managing restaurant inventory, reducing waste, and optimizing stock levels.',
-    date: '2024-12-05',
-    category: 'Operations',
-  },
-  {
-    slug: 'why-qr-code-menus-are-essential-in-2024',
-    title: 'Why QR Code Menus Are Essential in 2026: The Future of Dining',
-    excerpt: 'Discover why QR code menus are essential in 2026. Learn how AI-powered digital menus improve customer experience, reduce costs, and streamline operations.',
-    date: '2025-11-06',
-    category: 'Technology',
-  },
-  {
-    slug: 'best-practices-restaurant-staff-management',
-    title: 'Best Practices for Restaurant Staff Management',
-    excerpt: 'Essential tips for managing your restaurant team, improving productivity, and reducing turnover.',
-    date: '2024-11-15',
-    category: 'Staff Management',
-  },
-  {
-    slug: 'how-to-increase-restaurant-revenue',
-    title: 'How to Increase Restaurant Revenue: 10 Proven Strategies',
-    excerpt: 'Actionable strategies to boost your restaurant\'s revenue and profitability.',
-    date: '2024-11-10',
-    category: 'Revenue',
-  },
-  {
-    slug: 'restaurant-technology-trends-2024',
-    title: 'Restaurant Technology Trends to Watch in 2026: The AI Revolution',
-    excerpt: 'Stay ahead with the latest technology trends shaping the restaurant industry in 2026. Discover how AI, automation, and smart systems are transforming dining experiences.',
-    date: '2025-11-06',
-    category: 'Technology',
-  },
-  {
-    slug: 'best-restaurant-pos-systems-india-comparison-2024',
-    title: 'Best Restaurant POS Systems in India 2024: Complete Comparison Guide',
-    excerpt: 'Compare top restaurant POS systems in India including Zomato Base, Razorpay POS, Square, and more. See pricing, features, and why DineOpen\'s AI-powered solution leads the market.',
-    date: '2024-12-20',
-    category: 'Comparison',
-  },
-  {
-    slug: 'best-restaurant-pos-systems-2025-global-comparison',
-    title: '7 Best Restaurant POS Systems 2025: Complete Global Comparison',
-    excerpt: 'Discover the top restaurant POS systems including Square, Toast, Clover, SpotOn, SumUp, Epos Now, and DineOpen. Compare pricing, features, and find the best POS for your restaurant.',
-    date: '2025-01-15',
-    category: 'Comparison',
-  },
-  {
-    slug: 'major-pos-systems-quick-comparison',
-    title: 'Major Restaurant POS Systems: Quick Comparison Guide',
-    excerpt: 'Quick comparison of major POS systems: Square, Toast, Clover, SpotOn, DineOpen, and more. Compare pricing, fees, and key features at a glance.',
-    date: '2025-01-20',
-    category: 'Comparison',
-  },
-  {
-    slug: 'complete-cafe-coffee-shop-pos-system-guide',
-    title: 'Complete Cafe & Coffee Shop POS System Guide: DineOpen vs Gofrugal vs Zoho',
-    excerpt: 'Discover the best POS system for your cafe or coffee shop. Compare DineOpen, Gofrugal, and Zoho POS. Learn about express billing, inventory management, and how to boost your cafe sales.',
-    date: '2025-01-25',
-    category: 'Comparison',
-  },
-];
 
 export default function BlogPage() {
   return (
