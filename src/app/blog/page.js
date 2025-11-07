@@ -82,6 +82,13 @@ const blogPosts = [
     date: '2025-01-20',
     category: 'Comparison',
   },
+  {
+    slug: 'complete-cafe-coffee-shop-pos-system-guide',
+    title: 'Complete Cafe & Coffee Shop POS System Guide: DineOpen vs Gofrugal vs Zoho',
+    excerpt: 'Discover the best POS system for your cafe or coffee shop. Compare DineOpen, Gofrugal, and Zoho POS. Learn about express billing, inventory management, and how to boost your cafe sales.',
+    date: '2025-01-25',
+    category: 'Comparison',
+  },
 ];
 
 export default function BlogPage() {
