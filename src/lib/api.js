@@ -77,27 +77,79 @@ class ApiClient {
   }
 
   getToken() {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken');
-      // SECURITY: Commented out to prevent exposing sensitive token data in console logs
-      // console.log('🔍 getToken() called:', {
-      //   hasWindow: typeof window !== 'undefined',
-      //   hasToken: !!token,
-      //   tokenLength: token ? token.length : 0,
-      //   tokenPreview: token ? token.substring(0, 20) + '...' : 'null',
-      //   localStorageKeys: Object.keys(localStorage)
-      // });
-      return token;
+    // Use cookie-based storage for cross-subdomain SSO
+    if (typeof document !== 'undefined') {
+      // First try cookie (shared across subdomains)
+      const cookieToken = this.getCookie('dine_auth_token');
+      if (cookieToken) {
+        // Sync to localStorage for backward compatibility
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('authToken', cookieToken);
+        }
+        return cookieToken;
+      }
+      
+      // Fallback to localStorage (same domain)
+      if (typeof window !== 'undefined') {
+        const localToken = localStorage.getItem('authToken');
+        // If found in localStorage but not cookie, sync to cookie
+        if (localToken) {
+          this.setCookie('dine_auth_token', localToken, 30, '.dineopen.com');
+        }
+        return localToken;
+      }
     }
-    // SECURITY: Commented out to prevent exposing sensitive data
-    // console.log('🔍 getToken() called: No window object');
     return null;
   }
 
   setToken(token) {
+    // Store in both cookie (for cross-subdomain SSO) and localStorage (for backward compatibility)
+    if (typeof document !== 'undefined') {
+      this.setCookie('dine_auth_token', token, 30, '.dineopen.com');
+    }
     if (typeof window !== 'undefined') {
       localStorage.setItem('authToken', token);
     }
+  }
+
+  // Cookie helper methods for cross-subdomain SSO
+  setCookie(name, value, days = 30, domain = '.dineopen.com') {
+    if (typeof document === 'undefined') return;
+    
+    const expires = new Date();
+    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+    
+    // Set cookie with domain for subdomain sharing
+    const isProduction = typeof window !== 'undefined' && window.location.hostname.includes('dineopen.com');
+    const cookieString = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Lax${isProduction ? ';Secure' : ''}${isProduction ? `;domain=${domain}` : ''}`;
+    document.cookie = cookieString;
+  }
+
+  getCookie(name) {
+    if (typeof document === 'undefined') return null;
+    
+    const nameEQ = name + '=';
+    const ca = document.cookie.split(';');
+    
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) === 0) {
+        return decodeURIComponent(c.substring(nameEQ.length, c.length));
+      }
+    }
+    
+    return null;
+  }
+
+  deleteCookie(name, domain = '.dineopen.com') {
+    if (typeof document === 'undefined') return;
+    
+    const isProduction = typeof window !== 'undefined' && window.location.hostname.includes('dineopen.com');
+    // Set expiration to past date
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Lax${isProduction ? ';Secure' : ''}${isProduction ? `;domain=${domain}` : ''}`;
+    // Also try without domain for current domain
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Lax${isProduction ? ';Secure' : ''}`;
   }
 
   clearToken() {

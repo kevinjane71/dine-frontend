@@ -511,9 +511,9 @@ const Login = () => {
         const firebaseData = await firebaseResponse.json();
         
         if (firebaseResponse.ok) {
-          // Store auth token and user data
-          localStorage.setItem('authToken', firebaseData.token);
-          localStorage.setItem('user', JSON.stringify(firebaseData.user));
+          // Store auth token and user data in both cookie (for cross-subdomain) and localStorage
+          apiClient.setToken(firebaseData.token); // Stores in both cookie and localStorage
+          apiClient.setUser(firebaseData.user); // Stores in both cookie and localStorage
           
           // Handle first-time user experience
           if (firebaseData.firstTimeUser) {
@@ -563,9 +563,9 @@ const Login = () => {
         const data = await response.json();
         
         if (response.ok) {
-          // Store auth token in localStorage
-          localStorage.setItem('authToken', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
+          // Store auth token in both cookie (for cross-subdomain) and localStorage
+          apiClient.setToken(data.token); // Stores in both cookie and localStorage
+          apiClient.setUser(data.user); // Stores in both cookie and localStorage
           
           // Handle first-time user experience
           if (data.firstTimeUser) {
@@ -675,9 +675,9 @@ const Login = () => {
       const googleData = await googleResponse.json();
       
       if (googleResponse.ok) {
-        // Store auth token and user data
-        localStorage.setItem('authToken', googleData.token);
-        localStorage.setItem('user', JSON.stringify(googleData.user));
+        // Store auth token and user data in both cookie (for cross-subdomain) and localStorage
+        apiClient.setToken(googleData.token); // Stores in both cookie and localStorage
+        apiClient.setUser(googleData.user); // Stores in both cookie and localStorage
         
         console.log('Google login successful:', googleData);
         console.log('Is new user:', googleData.isNewUser);
@@ -778,7 +778,8 @@ const Login = () => {
       const data = await response.json();
       
       if (response.ok) {
-        localStorage.setItem('authToken', data.token);
+        // Store auth token in both cookie (for cross-subdomain) and localStorage
+        apiClient.setToken(data.token);
         
         // Store user data with restaurant and owner info
         const userData = {
@@ -786,7 +787,7 @@ const Login = () => {
           restaurant: data.restaurant,
           owner: data.owner
         };
-        localStorage.setItem('user', JSON.stringify(userData));
+        apiClient.setUser(userData); // Stores in both cookie and localStorage
         
         // Staff goes to main POS page
         router.replace('/dashboard');

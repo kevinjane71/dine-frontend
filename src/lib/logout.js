@@ -46,11 +46,19 @@ export const performLogout = () => {
   // Clear sessionStorage as well
   sessionStorage.clear();
   
+  // Clear cookies (for cross-subdomain SSO)
+  if (typeof document !== 'undefined') {
+    const isProduction = window.location.hostname.includes('dineopen.com');
+    const domain = isProduction ? '.dineopen.com' : '';
+    document.cookie = `dine_auth_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Lax${isProduction ? ';Secure' : ''}${domain ? `;domain=${domain}` : ''}`;
+    document.cookie = `dine_user_data=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Lax${isProduction ? ';Secure' : ''}${domain ? `;domain=${domain}` : ''}`;
+    // Also try without domain
+    document.cookie = `dine_auth_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Lax${isProduction ? ';Secure' : ''}`;
+    document.cookie = `dine_user_data=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Lax${isProduction ? ';Secure' : ''}`;
+  }
+  
   // Redirect to main domain login page
   window.location.href = 'https://dineopen.com/login';
 };
 
 export default performLogout;
-
-
-
