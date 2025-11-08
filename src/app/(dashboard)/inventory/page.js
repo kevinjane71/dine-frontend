@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import apiClient from '../../../lib/api';
 import { 
   FaBoxes, 
@@ -31,7 +31,10 @@ import {
   FaPrint,
   FaTimes,
   FaSave,
-  FaTimesCircle
+  FaTimesCircle,
+  FaMicrophone,
+  FaStop,
+  FaCamera
 } from 'react-icons/fa';
 
 // Custom Dropdown Component
@@ -208,6 +211,7 @@ const CustomDropdown = ({ options, value, onChange, placeholder }) => {
 export default function InventoryManagement() {
   const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -281,6 +285,76 @@ export default function InventoryManagement() {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [reportData, setReportData] = useState(null);
   
+  // New SCM state
+  const [grns, setGrns] = useState([]);
+  const [purchaseRequisitions, setPurchaseRequisitions] = useState([]);
+  const [supplierInvoices, setSupplierInvoices] = useState([]);
+  const [supplierPerformance, setSupplierPerformance] = useState([]);
+  const [aiReorderSuggestions, setAiReorderSuggestions] = useState([]);
+  const [wastePredictions, setWastePredictions] = useState([]);
+  const [wasteSummary, setWasteSummary] = useState(null);
+  const [supplierReturns, setSupplierReturns] = useState([]);
+  const [stockTransfers, setStockTransfers] = useState([]);
+  
+  // Modal states for new features
+  const [showAddGRNModal, setShowAddGRNModal] = useState(false);
+  const [showAddRequisitionModal, setShowAddRequisitionModal] = useState(false);
+  const [showAddInvoiceModal, setShowAddInvoiceModal] = useState(false);
+  const [showAddReturnModal, setShowAddReturnModal] = useState(false);
+  const [showAddTransferModal, setShowAddTransferModal] = useState(false);
+  
+  // Voice and AI states
+  const [isListeningVoice, setIsListeningVoice] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
+  const [voiceError, setVoiceError] = useState('');
+  const [processingVoice, setProcessingVoice] = useState(false);
+  const [smartSuggestions, setSmartSuggestions] = useState(null);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [processingInvoiceOCR, setProcessingInvoiceOCR] = useState(false);
+  const invoiceFileInputRef = useRef(null);
+  const [selectedPOForGRN, setSelectedPOForGRN] = useState(null);
+  const [selectedRequisition, setSelectedRequisition] = useState(null);
+  
+  // Form states for new modals
+  const [grnFormData, setGrnFormData] = useState({
+    purchaseOrderId: '',
+    items: []
+  });
+  
+  const [requisitionFormData, setRequisitionFormData] = useState({
+    items: [],
+    priority: 'medium',
+    reason: '',
+    notes: ''
+  });
+  
+  const [invoiceFormData, setInvoiceFormData] = useState({
+    supplierId: '',
+    invoiceNumber: '',
+    invoiceDate: new Date().toISOString().split('T')[0],
+    items: [],
+    totalAmount: 0,
+    imageUrl: '',
+    notes: ''
+  });
+  
+  const [returnFormData, setReturnFormData] = useState({
+    purchaseOrderId: '',
+    supplierId: '',
+    items: [],
+    returnType: 'damaged',
+    reason: '',
+    notes: ''
+  });
+  
+  const [transferFormData, setTransferFormData] = useState({
+    fromLocation: '',
+    toLocation: '',
+    items: [],
+    reason: '',
+    notes: ''
+  });
+  
   // Modal states
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
@@ -288,13 +362,192 @@ export default function InventoryManagement() {
   useEffect(() => {
     setIsClient(true);
     loadRestaurantContext();
+    
+    // Mobile detection
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
     if (currentRestaurant) {
       loadInventoryData();
+      loadSCMData();
+      loadSmartSuggestions();
     }
   }, [currentRestaurant, searchTerm, selectedCategory]);
+
+  // Load smart suggestions
+  const loadSmartSuggestions = async () => {
+    if (!currentRestaurant) return;
+    try {
+      setLoadingSuggestions(true);
+      const suggestions = await apiClient.getSmartSuggestions(currentRestaurant.id, 'po');
+      setSmartSuggestions(suggestions);
+    } catch (error) {
+      console.error('Error loading smart suggestions:', error);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  // Voice functions for Purchase Order
+  const startVoiceListeningPO = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      setVoiceError('Speech recognition not supported. Please use Chrome or Edge.');
+      return;
+    }
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    
+    recognition.onstart = () => {
+      setIsListeningVoice(true);
+      setVoiceTranscript('');
+      setVoiceError('');
+    };
+    
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      console.log('🎤 Voice transcript:', transcript);
+      setVoiceTranscript(transcript);
+      
+      // Process the transcript
+      await processVoicePOCommand(transcript);
+      
+      setTimeout(() => {
+        recognition.stop();
+        setIsListeningVoice(false);
+      }, 100);
+    };
+    
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setVoiceError(`Error: ${event.error}`);
+      setIsListeningVoice(false);
+      recognition.stop();
+    };
+    
+    recognition.onend = () => {
+      setIsListeningVoice(false);
+    };
+    
+    recognition.start();
+  };
+
+  const stopVoiceListeningPO = () => {
+    setIsListeningVoice(false);
+  };
+
+  const processVoicePOCommand = async (transcript) => {
+    if (!currentRestaurant) return;
+    
+    try {
+      setProcessingVoice(true);
+      setError(null);
+      
+      const response = await apiClient.processVoicePurchaseOrder(transcript, currentRestaurant.id);
+      
+      if (response.success && response.items) {
+        // Auto-fill the PO form
+        setPurchaseOrderFormData({
+          supplierId: response.supplierId || '',
+          items: response.items.map(item => ({
+            inventoryItemId: item.inventoryItemId,
+            inventoryItemName: item.inventoryItemName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            unit: item.unit
+          })),
+          expectedDeliveryDate: response.expectedDeliveryDate || '',
+          notes: response.notes || ''
+        });
+        
+        // Open the modal
+        setShowAddPurchaseOrderModal(true);
+        
+        setSuccess(`Voice command processed! ${response.items.length} item(s) added.`);
+        setTimeout(() => setSuccess(null), 5000);
+      } else {
+        setError('Could not process voice command. Please try again.');
+      }
+    } catch (error) {
+      console.error('Voice PO processing error:', error);
+      setError(error.message || 'Failed to process voice command');
+    } finally {
+      setProcessingVoice(false);
+    }
+  };
+
+  const loadSCMData = async () => {
+    if (!currentRestaurant) return;
+    
+    try {
+      // Load SCM data based on active tab
+      if (activeTab === 'grn') {
+        const grnsData = await apiClient.getGRNs(currentRestaurant.id);
+        setGrns(grnsData.grns || []);
+      } else if (activeTab === 'requisitions') {
+        const reqsData = await apiClient.getPurchaseRequisitions(currentRestaurant.id);
+        setPurchaseRequisitions(reqsData.requisitions || []);
+      } else if (activeTab === 'invoices') {
+        const invoicesData = await apiClient.getSupplierInvoices(currentRestaurant.id);
+        setSupplierInvoices(invoicesData.invoices || []);
+      } else if (activeTab === 'suppliers') {
+        const perfData = await apiClient.getAllSuppliersPerformance(currentRestaurant.id);
+        setSupplierPerformance(perfData.performances || []);
+      } else if (activeTab === 'returns') {
+        const returnsData = await apiClient.getSupplierReturns(currentRestaurant.id);
+        setSupplierReturns(returnsData.returns || []);
+      } else if (activeTab === 'transfers') {
+        const transfersData = await apiClient.getStockTransfers(currentRestaurant.id);
+        setStockTransfers(transfersData.transfers || []);
+      } else if (activeTab === 'ai-insights') {
+        const suggestionsData = await apiClient.getAIReorderSuggestions(currentRestaurant.id);
+        setAiReorderSuggestions(suggestionsData.suggestions || []);
+        const wasteData = await apiClient.getAIWastePrediction(currentRestaurant.id);
+        setWastePredictions(wasteData.predictions || []);
+        const summaryData = await apiClient.getAIWasteSummary(currentRestaurant.id);
+        setWasteSummary(summaryData.summary || null);
+      }
+    } catch (error) {
+      console.error('Error loading SCM data:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (currentRestaurant && activeTab) {
+      loadSCMData();
+    }
+  }, [activeTab, currentRestaurant]);
+
+  // Auto-dismiss success messages
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
+  // Auto-dismiss error messages
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const loadRestaurantContext = async () => {
     try {
@@ -848,19 +1101,59 @@ export default function InventoryManagement() {
   // Helper functions
   const getOrderStatusColor = (status) => {
     switch (status) {
-      case 'pending': return '#f59e0b';
-      case 'received': return '#10b981';
-      case 'cancelled': return '#ef4444';
-      default: return '#6b7280';
+      case 'pending': return '#f59e0b'; // Yellow - awaiting approval
+      case 'approved': return '#3b82f6'; // Blue - approved, ready to send
+      case 'sent': return '#8b5cf6'; // Purple - sent to supplier
+      case 'received': return '#10b981'; // Green - received
+      case 'delivered': return '#059669'; // Dark green - completed
+      case 'cancelled': return '#ef4444'; // Red - cancelled
+      default: return '#6b7280'; // Gray - unknown
     }
   };
+
+  // Mobile-friendly modal styles
+  const getModalStyles = () => ({
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    alignItems: isMobile ? 'flex-start' : 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: isMobile ? '0' : '20px',
+    overflowY: 'auto'
+  });
+
+  const getModalContentStyles = () => ({
+    backgroundColor: 'white',
+    borderRadius: isMobile ? '0' : '24px',
+    padding: isMobile ? '20px' : '32px',
+    width: '100%',
+    maxWidth: isMobile ? '100%' : '700px',
+    maxHeight: isMobile ? '100vh' : '90vh',
+    overflowY: 'auto',
+    boxShadow: isMobile ? 'none' : '0 25px 50px rgba(0,0,0,0.25)',
+    border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.2)',
+    animation: isMobile ? 'none' : 'slideInUp 0.3s ease-out',
+    minHeight: isMobile ? '100vh' : 'auto'
+  });
 
   const tabs = [
     { id: 'dashboard', name: 'Dashboard', icon: FaChartLine },
     { id: 'items', name: 'Inventory Items', icon: FaBoxes },
     { id: 'recipes', name: 'Recipes', icon: FaClipboardList },
     { id: 'suppliers', name: 'Suppliers', icon: FaWarehouse },
+    { id: 'requisitions', name: 'Requisitions', icon: FaClipboardList },
     { id: 'purchase', name: 'Purchase Orders', icon: FaShoppingCart },
+    { id: 'grn', name: 'Goods Receipt', icon: FaBoxes },
+    { id: 'invoices', name: 'Invoices', icon: FaEnvelope },
+    { id: 'returns', name: 'Returns', icon: FaTimesCircle },
+    { id: 'transfers', name: 'Transfers', icon: FaDownload },
+    { id: 'ai-insights', name: 'AI Insights', icon: FaChartLine },
     { id: 'reports', name: 'Reports', icon: FaChartLine }
   ];
 
@@ -889,7 +1182,7 @@ export default function InventoryManagement() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
             
-      <div style={{ padding: isClient && window.innerWidth <= 768 ? '16px' : '24px' }}>
+      <div style={{ padding: isMobile ? '12px' : '24px', maxWidth: '100%', overflowX: 'hidden' }}>
         {/* Header */}
         <div style={{ 
           marginBottom: '24px',
@@ -1038,19 +1331,19 @@ export default function InventoryManagement() {
                 border: 'none',
                 color: '#dc2626',
                 cursor: 'pointer',
-                padding: '4px'
+                fontSize: '18px',
+                padding: '0 8px'
               }}
             >
-              <FaTimes size={14} />
+              ×
             </button>
           </div>
         )}
-
         {success && (
           <div style={{
             backgroundColor: '#d1fae5',
             border: '1px solid #a7f3d0',
-            color: '#059669',
+            color: '#065f46',
             padding: '12px 16px',
             borderRadius: '8px',
             marginBottom: '20px',
@@ -1066,26 +1359,30 @@ export default function InventoryManagement() {
                 marginLeft: 'auto',
                 background: 'none',
                 border: 'none',
-                color: '#059669',
+                color: '#065f46',
                 cursor: 'pointer',
-                padding: '4px'
+                fontSize: '18px',
+                padding: '0 8px'
               }}
             >
-              <FaTimes size={14} />
+              ×
             </button>
           </div>
         )}
 
         {/* Tabs */}
         <div style={{ 
-          marginBottom: '24px',
+          marginBottom: isMobile ? '16px' : '24px',
           display: 'flex',
-          gap: '4px',
+          gap: isMobile ? '2px' : '4px',
           backgroundColor: 'white',
-          padding: '4px',
+          padding: isMobile ? '2px' : '4px',
           borderRadius: '12px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          overflowX: 'auto'
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
         }}>
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
@@ -1094,23 +1391,24 @@ export default function InventoryManagement() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  padding: '12px 20px',
+                  padding: isMobile ? '10px 12px' : '12px 20px',
                   borderRadius: '8px',
                   border: 'none',
                   backgroundColor: activeTab === tab.id ? '#059669' : 'transparent',
                   color: activeTab === tab.id ? 'white' : '#6b7280',
                   fontWeight: '600',
-                  fontSize: '14px',
+                  fontSize: isMobile ? '12px' : '14px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
+                  gap: isMobile ? '4px' : '8px',
                   transition: 'all 0.2s',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  minHeight: isMobile ? '44px' : 'auto' // Touch-friendly
                 }}
               >
-                <IconComponent size={14} />
-                {tab.name}
+                <IconComponent size={isMobile ? 12 : 14} />
+                {isMobile ? (tab.name.length > 8 ? tab.name.substring(0, 8) : tab.name) : tab.name}
               </button>
             );
           })}
@@ -1118,7 +1416,12 @@ export default function InventoryManagement() {
 
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))', 
+            gap: isMobile ? '12px' : '20px', 
+            marginBottom: isMobile ? '16px' : '24px' 
+          }}>
             {/* Key Metrics Cards */}
             <div style={{
               backgroundColor: 'white',
@@ -1212,16 +1515,16 @@ export default function InventoryManagement() {
             {/* Filters */}
             <div style={{
               backgroundColor: 'white',
-              padding: '20px',
+              padding: isMobile ? '16px' : '20px',
               borderRadius: '12px',
               boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-              marginBottom: '20px',
+              marginBottom: isMobile ? '16px' : '20px',
               display: 'flex',
-              gap: '16px',
+              gap: isMobile ? '12px' : '16px',
               flexWrap: 'wrap',
               alignItems: 'center'
             }}>
-              <div style={{ position: 'relative', flex: '1', minWidth: '200px' }}>
+              <div style={{ position: 'relative', flex: '1', minWidth: isMobile ? '100%' : '200px' }}>
                 <FaSearch style={{ 
                   position: 'absolute', 
                   left: '12px', 
@@ -1236,12 +1539,13 @@ export default function InventoryManagement() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '12px 12px 12px 40px',
+                    padding: isMobile ? '14px 14px 14px 40px' : '12px 12px 12px 40px',
                     border: '1px solid #e5e7eb',
                     borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    transition: 'border-color 0.2s'
+                    transition: 'border-color 0.2s',
+                    minHeight: isMobile ? '44px' : 'auto'
                   }}
                   onFocus={(e) => e.target.style.borderColor = '#059669'}
                   onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
@@ -1252,13 +1556,14 @@ export default function InventoryManagement() {
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 style={{
-                  padding: '12px 16px',
+                  padding: isMobile ? '14px 16px' : '12px 16px',
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px',
                   fontSize: '14px',
                   outline: 'none',
                   backgroundColor: 'white',
-                  minWidth: '150px'
+                  minWidth: isMobile ? '100%' : '150px',
+                  minHeight: isMobile ? '44px' : 'auto'
                 }}
               >
                 <option value="all">All Categories</option>
@@ -1272,12 +1577,13 @@ export default function InventoryManagement() {
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   style={{
-                    padding: '12px 16px',
+                    padding: isMobile ? '14px 16px' : '12px 16px',
                     border: '1px solid #e5e7eb',
                     borderRadius: '8px',
                     fontSize: '14px',
                     outline: 'none',
-                    backgroundColor: 'white'
+                    backgroundColor: 'white',
+                    minHeight: isMobile ? '44px' : 'auto'
                   }}
                 >
                   <option value="name">Sort by Name</option>
@@ -1289,14 +1595,16 @@ export default function InventoryManagement() {
                 <button
                   onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                   style={{
-                    padding: '12px',
+                    padding: isMobile ? '14px' : '12px',
                     border: '1px solid #e5e7eb',
                     borderRadius: '8px',
                     backgroundColor: 'white',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    minWidth: isMobile ? '44px' : 'auto'
                   }}
                 >
                   {sortOrder === 'asc' ? <FaSortAmountUp /> : <FaSortAmountDown />}
@@ -1307,8 +1615,8 @@ export default function InventoryManagement() {
             {/* Items Grid */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-              gap: '20px'
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(350px, 1fr))',
+              gap: isMobile ? '12px' : '20px'
             }}>
               {sortedItems.map((item) => (
                 <div
@@ -1397,7 +1705,7 @@ export default function InventoryManagement() {
                       {item.name}
                     </h3>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '8px' : '12px', marginBottom: '16px' }}>
                       <div>
                         <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Current Stock</div>
                         <div style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>
@@ -1412,7 +1720,7 @@ export default function InventoryManagement() {
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '8px' : '12px', marginBottom: '16px' }}>
                       <div>
                         <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Min Stock</div>
                         <div style={{ fontSize: '14px', fontWeight: '500', color: '#ef4444' }}>
@@ -1542,10 +1850,12 @@ export default function InventoryManagement() {
 
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: '20px'
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: isMobile ? '12px' : '20px'
             }}>
-              {suppliers.map((supplier) => (
+              {suppliers.map((supplier) => {
+                const perf = supplierPerformance.find(p => p.supplierId === supplier.id);
+                return (
                 <div
                   key={supplier.id}
                   style={{
@@ -1557,9 +1867,28 @@ export default function InventoryManagement() {
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                    <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
                       {supplier.name}
                     </h4>
+                        {perf && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                            <span style={{
+                              padding: '2px 8px',
+                              borderRadius: '8px',
+                              fontSize: '10px',
+                              fontWeight: '600',
+                              backgroundColor: perf.grade === 'A' ? '#d1fae5' : perf.grade === 'B' ? '#dbeafe' : perf.grade === 'C' ? '#fef3c7' : '#fee2e2',
+                              color: perf.grade === 'A' ? '#065f46' : perf.grade === 'B' ? '#1e40af' : perf.grade === 'C' ? '#92400e' : '#991b1b'
+                            }}>
+                              Grade: {perf.grade}
+                            </span>
+                            <span style={{ fontSize: '11px', color: '#6b7280' }}>
+                              Score: {perf.overallScore?.toFixed(0) || 'N/A'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     <div style={{ display: 'flex', gap: '4px' }}>
                       <button
                         onClick={() => handleEditSupplier(supplier)}
@@ -1589,6 +1918,43 @@ export default function InventoryManagement() {
                       </button>
                     </div>
                   </div>
+
+                    {perf && (
+                      <div style={{
+                        padding: '12px',
+                        backgroundColor: '#f9fafb',
+                        borderRadius: '8px',
+                        marginBottom: '12px',
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '8px'
+                      }}>
+                        <div>
+                          <div style={{ fontSize: '10px', color: '#6b7280', marginBottom: '2px' }}>On-Time Rate</div>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#059669' }}>
+                            {perf.onTimeRate?.toFixed(0) || 0}%
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '10px', color: '#6b7280', marginBottom: '2px' }}>Quality Score</div>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#3b82f6' }}>
+                            {perf.qualityScore?.toFixed(0) || 0}%
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '10px', color: '#6b7280', marginBottom: '2px' }}>Total Orders</div>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
+                            {perf.totalOrders || 0}
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '10px', color: '#6b7280', marginBottom: '2px' }}>Total Amount</div>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
+                            ₹{(perf.totalAmount || 0).toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                   <div style={{ marginBottom: '12px' }}>
                     <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Contact Person</div>
@@ -1630,7 +1996,8 @@ export default function InventoryManagement() {
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -1674,7 +2041,7 @@ export default function InventoryManagement() {
 
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(350px, 1fr))',
               gap: '20px'
             }}>
               {recipes.map((recipe) => (
@@ -1780,6 +2147,8 @@ export default function InventoryManagement() {
               justifyContent: 'space-between',
               alignItems: 'center'
             }}>
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
                 Purchase Orders
               </h3>
@@ -1833,27 +2202,126 @@ export default function InventoryManagement() {
                   style={{
                     backgroundColor: '#059669',
                     color: 'white',
-                    padding: '10px 16px',
+                    padding: isMobile ? '12px 14px' : '10px 16px',
                     borderRadius: '8px',
                     border: 'none',
                     fontWeight: '600',
-                    fontSize: '14px',
+                    fontSize: isMobile ? '13px' : '14px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px'
+                    gap: '8px',
+                    minHeight: isMobile ? '44px' : 'auto'
                   }}
                 >
-                  <FaPlus size={14} />
+                  <FaPlus size={isMobile ? 12 : 14} />
                   Create Order
                 </button>
+                
+                {/* Voice Button */}
+                <button
+                  onClick={isListeningVoice ? stopVoiceListeningPO : startVoiceListeningPO}
+                  disabled={processingVoice}
+                  style={{
+                    backgroundColor: isListeningVoice ? '#dc2626' : '#3b82f6',
+                    color: 'white',
+                    padding: isMobile ? '12px' : '10px 14px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '13px' : '14px',
+                    cursor: processingVoice ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    opacity: processingVoice ? 0.6 : 1,
+                    minHeight: isMobile ? '44px' : 'auto',
+                    minWidth: isMobile ? '44px' : 'auto',
+                    position: 'relative',
+                    animation: isListeningVoice ? 'pulse 1.5s ease-in-out infinite' : 'none'
+                  }}
+                  title={isListeningVoice ? 'Stop listening' : 'Create PO with voice'}
+                >
+                  {isListeningVoice ? <FaStop size={isMobile ? 12 : 14} /> : <FaMicrophone size={isMobile ? 12 : 14} />}
+                  {!isMobile && (isListeningVoice ? ' Stop' : ' Voice')}
+                </button>
+                  </div>
+                </div>
+                
+                {/* Voice Status */}
+                {voiceTranscript && (
+                  <div style={{
+                    backgroundColor: '#f0f9ff',
+                    border: '1px solid #bfdbfe',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginTop: '12px',
+                    fontSize: '13px',
+                    color: '#1e40af'
+                  }}>
+                    <strong>Voice Command:</strong> {voiceTranscript}
+                    {processingVoice && <span style={{ marginLeft: '8px', color: '#059669' }}>Processing...</span>}
+                  </div>
+                )}
+                
+                {voiceError && (
+                  <div style={{
+                    backgroundColor: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginTop: '12px',
+                    fontSize: '13px',
+                    color: '#dc2626'
+                  }}>
+                    {voiceError}
+                  </div>
+                )}
+                
+                {/* Info Box: When to use Direct PO vs Requisition */}
+                <div style={{
+                  backgroundColor: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: '8px',
+                  padding: '12px 16px',
+                  fontSize: '13px',
+                  color: '#1e40af'
+                }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '16px' }}>💡</span>
+                    <div style={{ flex: 1 }}>
+                      <strong style={{ display: 'block', marginBottom: '6px' }}>Two Ways to Create Purchase Orders:</strong>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '12px' : '16px', marginTop: '8px' }}>
+                        <div>
+                          <strong style={{ color: '#059669' }}>✓ Direct PO Creation</strong> <span style={{ fontSize: '11px', color: '#6b7280' }}>(Click "Create Order" above)</span>
+                          <ul style={{ margin: '6px 0 0 16px', padding: 0, fontSize: '12px', lineHeight: '1.6', color: '#374151' }}>
+                            <li>Urgent/emergency orders</li>
+                            <li>Regular recurring orders</li>
+                            <li>Owner/manager direct authority</li>
+                            <li>Small businesses</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <strong style={{ color: '#3b82f6' }}>✓ Requisition → PO Flow</strong> <span style={{ fontSize: '11px', color: '#6b7280' }}>(Go to Requisitions tab)</span>
+                          <ul style={{ margin: '6px 0 0 16px', padding: 0, fontSize: '12px', lineHeight: '1.6', color: '#374151' }}>
+                            <li>Budget approval needed</li>
+                            <li>Multi-level authorization</li>
+                            <li>Department requests</li>
+                            <li>Cost control & tracking</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
-              gap: '20px'
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(400px, 1fr))',
+              gap: isMobile ? '12px' : '20px'
             }}>
               {purchaseOrders.map((order) => (
                 <div
@@ -1915,12 +2383,68 @@ export default function InventoryManagement() {
                     </div>
                   )}
 
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                    {/* Email Order Button */}
+                  {/* Show requisition link if exists */}
+                  {order.requisitionId && (
+                    <div style={{ 
+                      padding: '6px 10px', 
+                      backgroundColor: '#fef3c7', 
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      color: '#92400e',
+                      marginBottom: '8px'
+                    }}>
+                      📋 From Requisition: #{order.requisitionId.slice(-8)}
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
+                    {/* Status-based action buttons */}
+                    {order.status === 'pending' && (
+                      <>
+                        <button
+                          onClick={() => handleUpdateOrderStatus(order.id, 'approved')}
+                          style={{
+                            flex: 1,
+                            minWidth: '100px',
+                            backgroundColor: '#10b981',
+                            color: 'white',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontWeight: '600',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleUpdateOrderStatus(order.id, 'cancelled')}
+                          style={{
+                            flex: 1,
+                            minWidth: '100px',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontWeight: '600',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    )}
+
+                    {order.status === 'approved' && (
+                      <>
                     <button
                       onClick={() => handleEmailPurchaseOrder(order)}
                       style={{
                         flex: 1,
+                            minWidth: '100px',
                         backgroundColor: '#3b82f6',
                         color: 'white',
                         padding: '8px 12px',
@@ -1936,16 +2460,14 @@ export default function InventoryManagement() {
                       }}
                     >
                       <FaEnvelope size={12} />
-                      Email Order
+                          Send to Supplier
                     </button>
-
-                    {order.status === 'pending' && (
-                      <>
                         <button
-                          onClick={() => handleUpdateOrderStatus(order.id, 'received')}
+                          onClick={() => handleUpdateOrderStatus(order.id, 'sent')}
                           style={{
                             flex: 1,
-                            backgroundColor: '#10b981',
+                            minWidth: '100px',
+                            backgroundColor: '#8b5cf6',
                             color: 'white',
                             padding: '8px 12px',
                             borderRadius: '6px',
@@ -1955,12 +2477,13 @@ export default function InventoryManagement() {
                             cursor: 'pointer'
                           }}
                         >
-                          Mark Received
+                          Mark as Sent
                         </button>
                         <button
                           onClick={() => handleUpdateOrderStatus(order.id, 'cancelled')}
                           style={{
                             flex: 1,
+                            minWidth: '100px',
                             backgroundColor: '#ef4444',
                             color: 'white',
                             padding: '8px 12px',
@@ -1974,6 +2497,78 @@ export default function InventoryManagement() {
                           Cancel
                         </button>
                       </>
+                    )}
+
+                    {order.status === 'sent' && (
+                      <>
+                        <button
+                          onClick={() => handleUpdateOrderStatus(order.id, 'received')}
+                          style={{
+                            flex: 1,
+                            minWidth: '100px',
+                            backgroundColor: '#10b981',
+                            color: 'white',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontWeight: '600',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Mark Received
+                        </button>
+                        <button
+                          onClick={() => handleUpdateOrderStatus(order.id, 'delivered')}
+                          style={{
+                            flex: 1,
+                            minWidth: '100px',
+                            backgroundColor: '#059669',
+                            color: 'white',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontWeight: '600',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Mark Delivered
+                        </button>
+                      </>
+                    )}
+
+                    {order.status === 'received' && (
+                      <button
+                        onClick={() => handleUpdateOrderStatus(order.id, 'delivered')}
+                        style={{
+                          flex: 1,
+                          minWidth: '100px',
+                          backgroundColor: '#059669',
+                          color: 'white',
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          fontWeight: '600',
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Mark Delivered
+                      </button>
+                    )}
+
+                    {(order.status === 'delivered' || order.status === 'cancelled') && (
+                      <div style={{ 
+                        padding: '8px 12px', 
+                        backgroundColor: order.status === 'delivered' ? '#d1fae5' : '#fee2e2',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        color: order.status === 'delivered' ? '#065f46' : '#991b1b',
+                        fontWeight: '600'
+                      }}>
+                        {order.status === 'delivered' ? '✓ Completed' : '✗ Cancelled'}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1995,7 +2590,7 @@ export default function InventoryManagement() {
               <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: '0 0 16px 0' }}>
                 Inventory Reports
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: isMobile ? '12px' : '16px' }}>
                 <button
                   onClick={() => generateReport('low-stock')}
                   style={{
@@ -2117,8 +2712,1020 @@ export default function InventoryManagement() {
           </div>
         )}
 
+        {/* Purchase Requisitions Tab */}
+        {activeTab === 'requisitions' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                Purchase Requisitions
+              </h2>
+              <button
+                onClick={() => setShowAddRequisitionModal(true)}
+                style={{
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <FaPlus size={14} />
+                New Requisition
+              </button>
+            </div>
+            
+            {purchaseRequisitions.length === 0 ? (
+          <div style={{
+            backgroundColor: 'white',
+            padding: '40px',
+            borderRadius: '16px',
+            textAlign: 'center'
+          }}>
+                <p style={{ color: '#6b7280' }}>No purchase requisitions found</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '16px' }}>
+                {purchaseRequisitions.map(req => (
+                  <div key={req.id} style={{
+                    backgroundColor: 'white',
+                    padding: '20px',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
+                          Requisition #{req.id.slice(-8)}
+            </h3>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                          Created: {req.createdAt ? new Date(req.createdAt?.toDate?.() || req.createdAt).toLocaleDateString() : 'N/A'}
+            </p>
+          </div>
+                      <span style={{
+                        padding: '4px 12px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        backgroundColor: req.status === 'approved' ? '#d1fae5' : req.status === 'rejected' ? '#fee2e2' : '#fef3c7',
+                        color: req.status === 'approved' ? '#065f46' : req.status === 'rejected' ? '#991b1b' : '#92400e'
+                      }}>
+                        {req.status?.toUpperCase()}
+                      </span>
+                    </div>
+                    <div style={{ marginBottom: '12px' }}>
+                      <p style={{ fontSize: '14px', color: '#374151', margin: '0 0 8px 0' }}>
+                        <strong>Items:</strong> {req.items?.length || 0}
+                      </p>
+                      <p style={{ fontSize: '14px', color: '#374151', margin: 0 }}>
+                        <strong>Priority:</strong> {req.priority || 'medium'}
+                      </p>
+                    </div>
+                    {req.status === 'pending' && (
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button
+                          onClick={async () => {
+                            // Show modal to select supplier for auto-creating PO
+                            const supplierId = suppliers.length > 0 ? suppliers[0].id : null;
+                            if (!supplierId) {
+                              setError('Please add a supplier first');
+                              return;
+                            }
+                            
+                            // For now, auto-create PO with first supplier
+                            // In future, can add a modal to select supplier
+                            try {
+                              const result = await apiClient.updatePurchaseRequisition(currentRestaurant.id, req.id, { 
+                                status: 'approved',
+                                supplierId: supplierId,
+                                autoCreatePO: true
+                              });
+                              
+                              if (result.purchaseOrder) {
+                                setSuccess('Requisition approved and Purchase Order created automatically');
+                              } else {
+                                setSuccess('Requisition approved. Please create Purchase Order manually.');
+                              }
+                              loadSCMData();
+                              loadInventoryData();
+                            } catch (error) {
+                              setError(error.message);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#059669',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Approve & Create PO
+                        </button>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await apiClient.updatePurchaseRequisition(currentRestaurant.id, req.id, { 
+                                status: 'approved',
+                                autoCreatePO: false
+                              });
+                              setSuccess('Requisition approved (PO not created)');
+                              loadSCMData();
+                            } catch (error) {
+                              setError(error.message);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#3b82f6',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Approve Only
+                        </button>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await apiClient.updatePurchaseRequisition(currentRestaurant.id, req.id, { status: 'rejected' });
+                              setSuccess('Requisition rejected');
+                              loadSCMData();
+                            } catch (error) {
+                              setError(error.message);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Reject
+                        </button>
+          </div>
+        )}
+                    {req.status === 'approved' && !req.purchaseOrderId && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            // Convert requisition to PO
+                            const poData = {
+                              supplierId: req.supplierId || suppliers[0]?.id || '',
+                              items: req.items.map(item => ({
+                                inventoryItemId: item.inventoryItemId,
+                                inventoryItemName: item.inventoryItemName,
+                                quantity: item.quantity,
+                                unit: item.unit,
+                                unitPrice: item.estimatedCost || 0
+                              })),
+                              notes: `Converted from Requisition #${req.id.slice(-8)}`
+                            };
+                            
+                            await apiClient.convertRequisitionToPO(currentRestaurant.id, req.id, poData);
+                            setSuccess('Purchase Order created successfully');
+                            loadSCMData();
+                            loadInventoryData();
+                          } catch (error) {
+                            setError(error.message);
+                          }
+                        }}
+                        style={{
+                          backgroundColor: '#3b82f6',
+                          color: 'white',
+                          padding: '8px 16px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Convert to PO
+                      </button>
+                    )}
+                    {req.purchaseOrderId && (
+          <div style={{
+                        padding: '8px 12px', 
+                        backgroundColor: '#eff6ff', 
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        color: '#1e40af'
+                      }}>
+                        ✓ PO Created: #{req.purchaseOrderId.slice(-8)}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* GRN Tab */}
+        {activeTab === 'grn' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                Goods Receipt Notes
+              </h2>
+              <button
+                onClick={() => {
+                  // Show PO selection modal first
+                  setShowAddGRNModal(true);
+                }}
+                style={{
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <FaPlus size={14} />
+                New GRN
+              </button>
+            </div>
+            
+            {grns.length === 0 ? (
+              <div style={{
+                backgroundColor: 'white',
+                padding: '40px',
+                borderRadius: '16px',
+                textAlign: 'center'
+              }}>
+                <p style={{ color: '#6b7280' }}>No GRNs found. Create one from a Purchase Order.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '16px' }}>
+                {grns.map(grn => (
+                  <div key={grn.id} style={{
+                    backgroundColor: 'white',
+            padding: '20px',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
+                          GRN #{grn.id.slice(-8)}
+                        </h3>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                          Received: {grn.receivedAt ? new Date(grn.receivedAt?.toDate?.() || grn.receivedAt).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </div>
+                      <span style={{
+                        padding: '4px 12px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        backgroundColor: grn.status === 'complete' ? '#d1fae5' : '#fef3c7',
+                        color: grn.status === 'complete' ? '#065f46' : '#92400e'
+                      }}>
+                        {grn.status?.toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '14px', color: '#374151', margin: 0 }}>
+                        <strong>Items:</strong> {grn.items?.length || 0}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Invoices Tab */}
+        {activeTab === 'invoices' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                Supplier Invoices
+              </h2>
+              <button
+                onClick={() => setShowAddInvoiceModal(true)}
+                style={{
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <FaPlus size={14} />
+                New Invoice
+              </button>
+            </div>
+            
+            {supplierInvoices.length === 0 ? (
+            <div style={{
+              backgroundColor: 'white',
+                padding: '40px',
+                borderRadius: '16px',
+                textAlign: 'center'
+              }}>
+                <p style={{ color: '#6b7280' }}>No invoices found</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '16px' }}>
+                {supplierInvoices.map(invoice => (
+                  <div key={invoice.id} style={{
+                    backgroundColor: 'white',
+                    padding: '20px',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
+                          {invoice.invoiceNumber}
+                        </h3>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                          Date: {invoice.invoiceDate ? new Date(invoice.invoiceDate?.toDate?.() || invoice.invoiceDate).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{
+                          padding: '4px 12px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          backgroundColor: invoice.status === 'paid' ? '#d1fae5' : invoice.status === 'matched' ? '#dbeafe' : '#fef3c7',
+                          color: invoice.status === 'paid' ? '#065f46' : invoice.status === 'matched' ? '#1e40af' : '#92400e',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>
+                          {invoice.status?.toUpperCase()}
+                        </span>
+                        <p style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                          ₹{invoice.totalAmount?.toLocaleString() || '0'}
+                        </p>
+                      </div>
+                    </div>
+                    {invoice.matchStatus === 'pending' && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await apiClient.matchInvoice(currentRestaurant.id, invoice.id);
+                            loadSCMData();
+                            setSuccess('Invoice matched successfully');
+                          } catch (error) {
+                            setError(error.message);
+                          }
+                        }}
+                        style={{
+                          backgroundColor: '#3b82f6',
+                          color: 'white',
+                          padding: '8px 16px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          marginTop: '8px'
+                        }}
+                      >
+                        Match with PO/GRN
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Returns Tab */}
+        {activeTab === 'returns' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                Supplier Returns
+              </h2>
+              <button
+                onClick={() => setShowAddReturnModal(true)}
+                style={{
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <FaPlus size={14} />
+                New Return
+              </button>
+            </div>
+            
+            {supplierReturns.length === 0 ? (
+              <div style={{
+                backgroundColor: 'white',
+                padding: '40px',
+                borderRadius: '16px',
+                textAlign: 'center'
+              }}>
+                <p style={{ color: '#6b7280' }}>No return orders found</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '16px' }}>
+                {supplierReturns.map(returnOrder => (
+                  <div key={returnOrder.id} style={{
+                    backgroundColor: 'white',
+                    padding: '20px',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
+                          Return #{returnOrder.id.slice(-8)}
+                        </h3>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>
+                          Created: {returnOrder.createdAt ? new Date(returnOrder.createdAt?.toDate?.() || returnOrder.createdAt).toLocaleDateString() : 'N/A'}
+                        </p>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                          Type: {returnOrder.returnType || 'N/A'}
+                        </p>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{
+                          padding: '4px 12px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          backgroundColor: returnOrder.status === 'credited' ? '#d1fae5' : returnOrder.status === 'returned' ? '#dbeafe' : returnOrder.status === 'rejected' ? '#fee2e2' : '#fef3c7',
+                          color: returnOrder.status === 'credited' ? '#065f46' : returnOrder.status === 'returned' ? '#1e40af' : returnOrder.status === 'rejected' ? '#991b1b' : '#92400e',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>
+                          {returnOrder.status?.toUpperCase()}
+                        </span>
+                        <p style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                          ₹{returnOrder.totalAmount?.toLocaleString() || '0'}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: '12px' }}>
+                      <p style={{ fontSize: '14px', color: '#374151', margin: '0 0 4px 0' }}>
+                        <strong>Items:</strong> {returnOrder.items?.length || 0}
+                      </p>
+                      {returnOrder.reason && (
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                          {returnOrder.reason}
+                        </p>
+                      )}
+                    </div>
+                    {returnOrder.status === 'pending' && (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await apiClient.updateSupplierReturn(currentRestaurant.id, returnOrder.id, { status: 'approved' });
+                              loadSCMData();
+                              setSuccess('Return approved');
+                            } catch (error) {
+                              setError(error.message);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#059669',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await apiClient.updateSupplierReturn(currentRestaurant.id, returnOrder.id, { status: 'rejected' });
+                              loadSCMData();
+                              setSuccess('Return rejected');
+                            } catch (error) {
+                              setError(error.message);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                    {returnOrder.status === 'approved' && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await apiClient.updateSupplierReturn(currentRestaurant.id, returnOrder.id, { status: 'returned' });
+                            loadSCMData();
+                            setSuccess('Return marked as returned');
+                          } catch (error) {
+                            setError(error.message);
+                          }
+                        }}
+                        style={{
+                          backgroundColor: '#3b82f6',
+                          color: 'white',
+                          padding: '8px 16px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Mark as Returned
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Stock Transfers Tab */}
+        {activeTab === 'transfers' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                Stock Transfers
+              </h2>
+              <button
+                onClick={() => setShowAddTransferModal(true)}
+                style={{
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <FaPlus size={14} />
+                New Transfer
+              </button>
+            </div>
+            
+            {stockTransfers.length === 0 ? (
+              <div style={{
+                backgroundColor: 'white',
+                padding: '40px',
+                borderRadius: '16px',
+                textAlign: 'center'
+              }}>
+                <p style={{ color: '#6b7280' }}>No stock transfers found</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '16px' }}>
+                {stockTransfers.map(transfer => (
+                  <div key={transfer.id} style={{
+                    backgroundColor: 'white',
+                    padding: '20px',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
+                          Transfer #{transfer.id.slice(-8)}
+                        </h3>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>
+                          From: <strong>{transfer.fromLocation}</strong> → To: <strong>{transfer.toLocation}</strong>
+                        </p>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                          Created: {transfer.createdAt ? new Date(transfer.createdAt?.toDate?.() || transfer.createdAt).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </div>
+                      <span style={{
+                        padding: '4px 12px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        backgroundColor: transfer.status === 'completed' ? '#d1fae5' : transfer.status === 'approved' ? '#dbeafe' : transfer.status === 'cancelled' ? '#fee2e2' : '#fef3c7',
+                        color: transfer.status === 'completed' ? '#065f46' : transfer.status === 'approved' ? '#1e40af' : transfer.status === 'cancelled' ? '#991b1b' : '#92400e'
+                      }}>
+                        {transfer.status?.toUpperCase()}
+                      </span>
+                    </div>
+                    <div style={{ marginBottom: '12px' }}>
+                      <p style={{ fontSize: '14px', color: '#374151', margin: '0 0 4px 0' }}>
+                        <strong>Items:</strong> {transfer.items?.length || 0}
+                      </p>
+                      {transfer.reason && (
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                          {transfer.reason}
+                        </p>
+                      )}
+                    </div>
+                    {transfer.status === 'pending' && (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await apiClient.updateStockTransfer(currentRestaurant.id, transfer.id, { status: 'approved' });
+                              loadSCMData();
+                              setSuccess('Transfer approved');
+                            } catch (error) {
+                              setError(error.message);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#059669',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await apiClient.updateStockTransfer(currentRestaurant.id, transfer.id, { status: 'cancelled' });
+                              loadSCMData();
+                              setSuccess('Transfer cancelled');
+                            } catch (error) {
+                              setError(error.message);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                    {transfer.status === 'approved' && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await apiClient.updateStockTransfer(currentRestaurant.id, transfer.id, { status: 'completed' });
+                            loadSCMData();
+                            setSuccess('Transfer completed');
+                          } catch (error) {
+                            setError(error.message);
+                          }
+                        }}
+                        style={{
+                          backgroundColor: '#3b82f6',
+                          color: 'white',
+                          padding: '8px 16px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Mark as Completed
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* AI Insights Tab */}
+        {activeTab === 'ai-insights' && (
+          <div>
+            <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', marginBottom: '24px' }}>
+              AI Insights
+            </h2>
+            
+            {/* AI Reorder Suggestions */}
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                  🤖 Smart Reorder Suggestions
+                </h3>
+                <button
+                  onClick={async () => {
+                    try {
+                      const data = await apiClient.getAIReorderSuggestions(currentRestaurant.id);
+                      setAiReorderSuggestions(data.suggestions || []);
+                    } catch (error) {
+                      setError(error.message);
+                    }
+                  }}
+                  style={{
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Refresh
+                </button>
+              </div>
+              
+              {aiReorderSuggestions.length === 0 ? (
+                <div style={{
+                  backgroundColor: 'white',
+                  padding: '40px',
+                  borderRadius: '16px',
+                  textAlign: 'center'
+                }}>
+                  <p style={{ color: '#6b7280' }}>No reorder suggestions at this time</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {aiReorderSuggestions.slice(0, 10).map((suggestion, idx) => (
+                    <div key={idx} style={{
+                      backgroundColor: 'white',
+                      padding: '16px',
+                      borderRadius: '12px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                      borderLeft: `4px solid ${suggestion.urgency === 'high' ? '#ef4444' : suggestion.urgency === 'medium' ? '#f59e0b' : '#3b82f6'}`
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                        <div style={{ flex: 1 }}>
+                          <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
+                            {suggestion.inventoryItemName}
+                          </h4>
+                          <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 8px 0' }}>
+                            Current: {suggestion.currentStock} | Min: {suggestion.minStock} | Suggested: {suggestion.suggestedQuantity}
+                          </p>
+                          <p style={{ fontSize: '11px', color: '#6b7280', margin: 0, fontStyle: 'italic' }}>
+                            {suggestion.reasoning}
+                          </p>
+                        </div>
+                        <div style={{ textAlign: 'right', marginLeft: '16px' }}>
+                          <p style={{ fontSize: '14px', fontWeight: '600', color: '#059669', margin: '0 0 4px 0' }}>
+                            ₹{suggestion.estimatedCost?.toLocaleString() || '0'}
+                          </p>
+                          <span style={{
+                            padding: '2px 8px',
+                            borderRadius: '8px',
+                            fontSize: '10px',
+                            fontWeight: '600',
+                            backgroundColor: suggestion.urgency === 'high' ? '#fee2e2' : suggestion.urgency === 'medium' ? '#fef3c7' : '#dbeafe',
+                            color: suggestion.urgency === 'high' ? '#991b1b' : suggestion.urgency === 'medium' ? '#92400e' : '#1e40af'
+                          }}>
+                            {suggestion.urgency?.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Waste Prediction */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                  🗑️ Waste Risk Prediction
+                </h3>
+                <button
+                  onClick={async () => {
+                    try {
+                      const data = await apiClient.getAIWastePrediction(currentRestaurant.id);
+                      setWastePredictions(data.predictions || []);
+                      const summary = await apiClient.getAIWasteSummary(currentRestaurant.id);
+                      setWasteSummary(summary.summary || null);
+                    } catch (error) {
+                      setError(error.message);
+                    }
+                  }}
+                  style={{
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Refresh
+                </button>
+              </div>
+              
+              {wasteSummary && (
+                <div style={{
+                  backgroundColor: 'white',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  marginBottom: '16px',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                  gap: '16px'
+                }}>
+                  <div>
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Items at Risk</p>
+                    <p style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                      {wasteSummary.totalItemsAtRisk}
+                    </p>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Estimated Loss</p>
+                    <p style={{ fontSize: '24px', fontWeight: '600', color: '#ef4444', margin: 0 }}>
+                      ₹{wasteSummary.totalEstimatedLoss?.toLocaleString() || '0'}
+                    </p>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>Critical Risk</p>
+                    <p style={{ fontSize: '24px', fontWeight: '600', color: '#dc2626', margin: 0 }}>
+                      {wasteSummary.criticalRisk}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {wastePredictions.length === 0 ? (
+                <div style={{
+                  backgroundColor: 'white',
+                  padding: '40px',
+                  borderRadius: '16px',
+                  textAlign: 'center'
+                }}>
+                  <p style={{ color: '#6b7280' }}>No waste risk detected</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {wastePredictions.slice(0, 10).map((prediction, idx) => (
+                    <div key={idx} style={{
+                      backgroundColor: 'white',
+                      padding: '16px',
+                      borderRadius: '12px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                      borderLeft: `4px solid ${prediction.wasteRisk === 'critical' ? '#dc2626' : prediction.wasteRisk === 'high' ? '#ef4444' : prediction.wasteRisk === 'medium' ? '#f59e0b' : '#3b82f6'}`
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                        <div>
+                          <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
+                            {prediction.inventoryItemName}
+                          </h4>
+                          <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                            Expires in {prediction.daysToExpiry} days | Risk: {prediction.wasteRisk}
+                          </p>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <p style={{ fontSize: '14px', fontWeight: '600', color: '#ef4444', margin: '0 0 4px 0' }}>
+                            ₹{prediction.estimatedLoss?.toLocaleString() || '0'}
+                          </p>
+                          <span style={{
+                            padding: '2px 8px',
+                            borderRadius: '8px',
+                            fontSize: '10px',
+                            fontWeight: '600',
+                            backgroundColor: prediction.wasteRisk === 'critical' ? '#fee2e2' : prediction.wasteRisk === 'high' ? '#fee2e2' : '#fef3c7',
+                            color: prediction.wasteRisk === 'critical' ? '#991b1b' : prediction.wasteRisk === 'high' ? '#991b1b' : '#92400e'
+                          }}>
+                            {prediction.wasteRisk?.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                      {prediction.recommendations && prediction.recommendations.length > 0 && (
+                        <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #e5e7eb' }}>
+                          <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 4px 0', fontWeight: '600' }}>
+                            Recommendations:
+                          </p>
+                          <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '11px', color: '#6b7280' }}>
+                            {prediction.recommendations.slice(0, 3).map((rec, i) => (
+                              <li key={i}>{rec}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Price Intelligence */}
+            <div style={{ marginTop: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                  💰 Price Intelligence
+                </h3>
+                <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                  Compare prices across suppliers and analyze trends
+                </p>
+              </div>
+              
+              <div style={{
+                backgroundColor: 'white',
+                padding: '20px',
+                borderRadius: '12px',
+                marginBottom: '16px'
+              }}>
+                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 12px 0' }}>
+                  Select an inventory item to view price comparison and trends
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                  {inventoryItems.slice(0, 6).map(item => (
+                    <button
+                      key={item.id}
+                      onClick={async () => {
+                        try {
+                          const comparison = await apiClient.getPriceComparison(currentRestaurant.id, item.id);
+                          const bestSupplier = await apiClient.getBestSupplier(currentRestaurant.id, item.id);
+                          const trend = await apiClient.getPriceTrend(currentRestaurant.id, item.id);
+                          
+                          // Show results in a modal or expandable section
+                          alert(`Price Intelligence for ${item.name}:\n\nBest Supplier: ${bestSupplier.recommendedSupplier?.supplierName || 'N/A'}\nAverage Price: ₹${comparison.comparison?.marketAverage || '0'}\nTrend: ${trend.trend || 'stable'}`);
+                        } catch (error) {
+                          setError(error.message);
+                        }
+                      }}
+                      style={{
+                        backgroundColor: '#f9fafb',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#f3f4f6';
+                        e.target.style.borderColor = '#059669';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#f9fafb';
+                        e.target.style.borderColor = '#e5e7eb';
+                      }}
+                    >
+                      <p style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
+                        {item.name}
+                      </p>
+                      <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                        Click to analyze
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Other tabs placeholder */}
-        {!['dashboard', 'items', 'suppliers', 'recipes', 'purchase', 'reports'].includes(activeTab) && (
+        {!['dashboard', 'items', 'suppliers', 'recipes', 'purchase', 'reports', 'requisitions', 'grn', 'invoices', 'returns', 'transfers', 'ai-insights'].includes(activeTab) && (
           <div style={{
             backgroundColor: 'white',
             padding: '40px',
@@ -2137,33 +3744,8 @@ export default function InventoryManagement() {
 
         {/* Modern Add Item Modal */}
         {showAddModal && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px',
-            animation: 'fadeIn 0.3s ease-out'
-          }}>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '24px',
-              padding: '32px',
-              width: '100%',
-              maxWidth: '600px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              animation: 'slideInUp 0.3s ease-out'
-            }}>
+          <div style={getModalStyles()}>
+            <div style={{...getModalContentStyles(), maxWidth: isMobile ? '100%' : '600px'}}>
               {/* Modal Header */}
               <div style={{ 
                 display: 'flex', 
@@ -2897,33 +4479,8 @@ export default function InventoryManagement() {
 
         {/* Modern Add Purchase Order Modal */}
         {showAddPurchaseOrderModal && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px',
-            animation: 'fadeIn 0.3s ease-out'
-          }}>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '24px',
-              padding: '32px',
-              width: '100%',
-              maxWidth: '600px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              animation: 'slideInUp 0.3s ease-out'
-            }}>
+          <div style={getModalStyles()}>
+            <div style={{...getModalContentStyles(), maxWidth: isMobile ? '100%' : '600px'}}>
               {/* Modal Header */}
               <div style={{ 
                 display: 'flex', 
@@ -2959,7 +4516,7 @@ export default function InventoryManagement() {
                       Create Purchase Order
                     </h2>
                     <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 0 0' }}>
-                      Order inventory items from suppliers
+                      Direct order creation - For urgent orders or when approval not needed
                     </p>
                   </div>
                 </div>
@@ -3033,6 +4590,42 @@ export default function InventoryManagement() {
                       </option>
                     ))}
                   </select>
+                  
+                  {/* Smart Suggestions */}
+                  {smartSuggestions && smartSuggestions.topSuppliers && smartSuggestions.topSuppliers.length > 0 && (
+                    <div style={{
+                      marginTop: '12px',
+                      padding: '12px',
+                      backgroundColor: '#f0f9ff',
+                      border: '1px solid #bfdbfe',
+                      borderRadius: '8px',
+                      fontSize: '13px'
+                    }}>
+                      <div style={{ fontWeight: '600', color: '#1e40af', marginBottom: '8px' }}>
+                        💡 Smart Suggestions (Most Used):
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {smartSuggestions.topSuppliers.slice(0, 3).map(supplier => (
+                          <button
+                            key={supplier.id}
+                            onClick={() => setPurchaseOrderFormData({...purchaseOrderFormData, supplierId: supplier.id})}
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: purchaseOrderFormData.supplierId === supplier.id ? '#3b82f6' : 'white',
+                              color: purchaseOrderFormData.supplierId === supplier.id ? 'white' : '#1e40af',
+                              border: '1px solid #bfdbfe',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              fontWeight: '500'
+                            }}
+                          >
+                            {supplier.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Order Items */}
@@ -3078,10 +4671,10 @@ export default function InventoryManagement() {
                   {purchaseOrderFormData.items.map((item, index) => (
                     <div key={index} style={{
                       display: 'grid',
-                      gridTemplateColumns: '2fr 1fr 1fr auto',
-                      gap: '12px',
+                      gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr auto',
+                      gap: isMobile ? '8px' : '12px',
                       alignItems: 'end',
-                      padding: '16px',
+                      padding: isMobile ? '12px' : '16px',
                       backgroundColor: '#f9fafb',
                       borderRadius: '12px',
                       marginBottom: '12px'
@@ -3343,33 +4936,8 @@ export default function InventoryManagement() {
 
         {/* Modern Add Supplier Modal */}
         {showAddSupplierModal && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px',
-            animation: 'fadeIn 0.3s ease-out'
-          }}>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '24px',
-              padding: '32px',
-              width: '100%',
-              maxWidth: '500px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              animation: 'slideInUp 0.3s ease-out'
-            }}>
+          <div style={getModalStyles()}>
+            <div style={{...getModalContentStyles(), maxWidth: isMobile ? '100%' : '500px'}}>
               {/* Modal Header */}
               <div style={{ 
                 display: 'flex', 
@@ -4397,7 +5965,1109 @@ export default function InventoryManagement() {
             </div>
           </div>
         )}
+
+        {/* GRN Modal */}
+        {showAddGRNModal && (
+          <div style={getModalStyles()}>
+            <div style={getModalContentStyles()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? '20px' : '24px' }}>
+                <h2 style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Create Goods Receipt Note</h2>
+                <button 
+                  onClick={() => setShowAddGRNModal(false)} 
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    fontSize: isMobile ? '28px' : '24px', 
+                    cursor: 'pointer', 
+                    color: '#6b7280',
+                    padding: isMobile ? '8px' : '4px',
+                    minWidth: isMobile ? '44px' : 'auto',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >×</button>
+              </div>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Select Purchase Order *</label>
+                <select
+                  value={grnFormData.purchaseOrderId}
+                  onChange={(e) => {
+                    const po = purchaseOrders.find(p => p.id === e.target.value);
+                    setGrnFormData({
+                      purchaseOrderId: e.target.value,
+                      items: po ? po.items.map(item => ({ ...item, receivedQuantity: item.quantity })) : []
+                    });
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    fontSize: '14px'
+                  }}
+                >
+                  <option value="">Select a Purchase Order</option>
+                  {purchaseOrders.filter(po => po.status === 'approved' || po.status === 'partially_received').map(po => (
+                    <option key={po.id} value={po.id}>
+                      PO #{po.id.slice(-8)} - {po.supplierName || 'Supplier'} - ₹{po.totalAmount?.toLocaleString() || '0'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {grnFormData.items.length > 0 && (
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '12px', fontWeight: '600', color: '#374151' }}>Items to Receive</label>
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    {grnFormData.items.map((item, idx) => (
+                      <div key={idx} style={{ padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ fontWeight: '600' }}>{item.inventoryItemName || item.name}</span>
+                          <span style={{ color: '#6b7280' }}>Ordered: {item.quantity} {item.unit}</span>
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '12px', color: '#6b7280' }}>Received Quantity *</label>
+                          <input
+                            type="number"
+                            value={item.receivedQuantity || item.quantity}
+                            onChange={(e) => {
+                              const newItems = [...grnFormData.items];
+                              newItems[idx].receivedQuantity = parseFloat(e.target.value) || 0;
+                              setGrnFormData({ ...grnFormData, items: newItems });
+                            }}
+                            max={item.quantity}
+                            min={0}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              borderRadius: '6px',
+                              border: '1px solid #e5e7eb',
+                              marginTop: '4px'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', justifyContent: 'flex-end', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+                <button
+                  onClick={() => setShowAddGRNModal(false)}
+                  style={{
+                    padding: isMobile ? '14px 20px' : '12px 24px',
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '14px' : '16px',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    flex: isMobile ? '1' : 'none',
+                    minWidth: isMobile ? '120px' : 'auto'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const po = purchaseOrders.find(p => p.id === grnFormData.purchaseOrderId);
+                      if (!po) {
+                        setError('Please select a purchase order');
+                        return;
+                      }
+                      
+                      await apiClient.createGRN(currentRestaurant.id, {
+                        purchaseOrderId: grnFormData.purchaseOrderId,
+                        items: grnFormData.items.map(item => ({
+                          inventoryItemId: item.inventoryItemId,
+                          inventoryItemName: item.inventoryItemName || item.name,
+                          orderedQuantity: item.quantity,
+                          receivedQuantity: item.receivedQuantity || item.quantity,
+                          unit: item.unit,
+                          unitPrice: item.unitPrice || item.costPerUnit
+                        }))
+                      });
+                      
+                      setSuccess('GRN created successfully');
+                      setShowAddGRNModal(false);
+                      setGrnFormData({ purchaseOrderId: '', items: [] });
+                      loadSCMData();
+                      loadInventoryData();
+                    } catch (error) {
+                      setError(error.message);
+                    }
+                  }}
+                  style={{
+                    padding: isMobile ? '14px 20px' : '12px 24px',
+                    backgroundColor: '#059669',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '14px' : '16px',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    flex: isMobile ? '1' : 'none',
+                    minWidth: isMobile ? '120px' : 'auto'
+                  }}
+                >
+                  Create GRN
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Purchase Requisition Modal */}
+        {showAddRequisitionModal && (
+          <div style={getModalStyles()}>
+            <div style={getModalContentStyles()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? '20px' : '24px' }}>
+                <h2 style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Create Purchase Requisition</h2>
+                <button 
+                  onClick={() => setShowAddRequisitionModal(false)} 
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    fontSize: isMobile ? '28px' : '24px', 
+                    cursor: 'pointer', 
+                    color: '#6b7280',
+                    padding: isMobile ? '8px' : '4px',
+                    minWidth: isMobile ? '44px' : 'auto',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >×</button>
+              </div>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Priority</label>
+                <select
+                  value={requisitionFormData.priority}
+                  onChange={(e) => setRequisitionFormData({ ...requisitionFormData, priority: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    fontSize: '14px'
+                  }}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Add Items</label>
+                <button
+                  onClick={() => {
+                    setRequisitionFormData({
+                      ...requisitionFormData,
+                      items: [...requisitionFormData.items, { inventoryItemId: '', inventoryItemName: '', quantity: 1, unit: '', estimatedCost: 0 }]
+                    });
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    marginBottom: '12px'
+                  }}
+                >
+                  + Add Item
+                </button>
+                
+                {requisitionFormData.items.map((item, idx) => (
+                  <div key={idx} style={{ padding: isMobile ? '12px' : '16px', backgroundColor: '#f9fafb', borderRadius: '8px', marginBottom: '12px' }}>
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr', 
+                      gap: isMobile ? '8px' : '12px', 
+                      marginBottom: '8px' 
+                    }}>
+                      <select
+                        value={item.inventoryItemId}
+                        onChange={(e) => {
+                          const selectedItem = inventoryItems.find(i => i.id === e.target.value);
+                          const newItems = [...requisitionFormData.items];
+                          newItems[idx] = {
+                            ...newItems[idx],
+                            inventoryItemId: e.target.value,
+                            inventoryItemName: selectedItem?.name || '',
+                            unit: selectedItem?.unit || ''
+                          };
+                          setRequisitionFormData({ ...requisitionFormData, items: newItems });
+                        }}
+                        style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+                      >
+                        <option value="">Select Item</option>
+                        {inventoryItems.map(invItem => (
+                          <option key={invItem.id} value={invItem.id}>{invItem.name}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        placeholder="Quantity"
+                        value={item.quantity}
+                        onChange={(e) => {
+                          const newItems = [...requisitionFormData.items];
+                          newItems[idx].quantity = parseFloat(e.target.value) || 0;
+                          setRequisitionFormData({ ...requisitionFormData, items: newItems });
+                        }}
+                        style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+                      />
+                      <button
+                        onClick={() => {
+                          setRequisitionFormData({
+                            ...requisitionFormData,
+                            items: requisitionFormData.items.filter((_, i) => i !== idx)
+                          });
+                        }}
+                        style={{
+                          padding: '8px',
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Reason</label>
+                <textarea
+                  value={requisitionFormData.reason}
+                  onChange={(e) => setRequisitionFormData({ ...requisitionFormData, reason: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    minHeight: '80px'
+                  }}
+                  placeholder="Reason for requisition"
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', justifyContent: 'flex-end', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+                <button
+                  onClick={() => setShowAddRequisitionModal(false)}
+                  style={{
+                    padding: isMobile ? '14px 20px' : '12px 24px',
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '14px' : '16px',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    flex: isMobile ? '1' : 'none',
+                    minWidth: isMobile ? '120px' : 'auto'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      if (requisitionFormData.items.length === 0) {
+                        setError('Please add at least one item');
+                        return;
+                      }
+                      
+                      await apiClient.createPurchaseRequisition(currentRestaurant.id, {
+                        items: requisitionFormData.items.map(item => ({
+                          inventoryItemId: item.inventoryItemId,
+                          inventoryItemName: item.inventoryItemName,
+                          quantity: item.quantity,
+                          unit: item.unit,
+                          estimatedCost: item.estimatedCost || 0
+                        })),
+                        priority: requisitionFormData.priority,
+                        reason: requisitionFormData.reason,
+                        notes: requisitionFormData.notes
+                      });
+                      
+                      setSuccess('Purchase requisition created successfully');
+                      setShowAddRequisitionModal(false);
+                      setRequisitionFormData({ items: [], priority: 'medium', reason: '', notes: '' });
+                      loadSCMData();
+                    } catch (error) {
+                      setError(error.message);
+                    }
+                  }}
+                  style={{
+                    padding: isMobile ? '14px 20px' : '12px 24px',
+                    backgroundColor: '#059669',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '14px' : '16px',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    flex: isMobile ? '1' : 'none',
+                    minWidth: isMobile ? '120px' : 'auto'
+                  }}
+                >
+                  Create Requisition
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Supplier Return Modal */}
+        {showAddReturnModal && (
+          <div style={getModalStyles()}>
+            <div style={getModalContentStyles()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? '20px' : '24px' }}>
+                <h2 style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Create Supplier Return</h2>
+                <button 
+                  onClick={() => setShowAddReturnModal(false)} 
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    fontSize: isMobile ? '28px' : '24px', 
+                    cursor: 'pointer', 
+                    color: '#6b7280',
+                    padding: isMobile ? '8px' : '4px',
+                    minWidth: isMobile ? '44px' : 'auto',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >×</button>
+              </div>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Supplier *</label>
+                <select
+                  value={returnFormData.supplierId}
+                  onChange={(e) => setReturnFormData({ ...returnFormData, supplierId: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    fontSize: '14px'
+                  }}
+                >
+                  <option value="">Select Supplier</option>
+                  {suppliers.map(supplier => (
+                    <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Return Type</label>
+                <select
+                  value={returnFormData.returnType}
+                  onChange={(e) => setReturnFormData({ ...returnFormData, returnType: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    fontSize: '14px'
+                  }}
+                >
+                  <option value="damaged">Damaged</option>
+                  <option value="defective">Defective</option>
+                  <option value="wrong_item">Wrong Item</option>
+                  <option value="excess">Excess</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Add Items</label>
+                <button
+                  onClick={() => {
+                    setReturnFormData({
+                      ...returnFormData,
+                      items: [...returnFormData.items, { inventoryItemId: '', inventoryItemName: '', quantity: 1, unit: '', costPerUnit: 0, reason: '' }]
+                    });
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    marginBottom: '12px'
+                  }}
+                >
+                  + Add Item
+                </button>
+                
+                {returnFormData.items.map((item, idx) => (
+                  <div key={idx} style={{ padding: isMobile ? '12px' : '16px', backgroundColor: '#f9fafb', borderRadius: '8px', marginBottom: '12px' }}>
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr 1fr', 
+                      gap: isMobile ? '8px' : '8px', 
+                      marginBottom: '8px' 
+                    }}>
+                      <select
+                        value={item.inventoryItemId}
+                        onChange={(e) => {
+                          const selectedItem = inventoryItems.find(i => i.id === e.target.value);
+                          const newItems = [...returnFormData.items];
+                          newItems[idx] = {
+                            ...newItems[idx],
+                            inventoryItemId: e.target.value,
+                            inventoryItemName: selectedItem?.name || '',
+                            unit: selectedItem?.unit || '',
+                            costPerUnit: selectedItem?.costPerUnit || 0
+                          };
+                          setReturnFormData({ ...returnFormData, items: newItems });
+                        }}
+                        style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+                      >
+                        <option value="">Select Item</option>
+                        {inventoryItems.map(invItem => (
+                          <option key={invItem.id} value={invItem.id}>{invItem.name}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        placeholder="Qty"
+                        value={item.quantity}
+                        onChange={(e) => {
+                          const newItems = [...returnFormData.items];
+                          newItems[idx].quantity = parseFloat(e.target.value) || 0;
+                          setReturnFormData({ ...returnFormData, items: newItems });
+                        }}
+                        style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+                      />
+                      <input
+                        type="number"
+                        placeholder="Cost/Unit"
+                        value={item.costPerUnit}
+                        onChange={(e) => {
+                          const newItems = [...returnFormData.items];
+                          newItems[idx].costPerUnit = parseFloat(e.target.value) || 0;
+                          setReturnFormData({ ...returnFormData, items: newItems });
+                        }}
+                        style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+                      />
+                      <button
+                        onClick={() => {
+                          setReturnFormData({
+                            ...returnFormData,
+                            items: returnFormData.items.filter((_, i) => i !== idx)
+                          });
+                        }}
+                        style={{
+                          padding: '8px',
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Return reason for this item"
+                      value={item.reason}
+                      onChange={(e) => {
+                        const newItems = [...returnFormData.items];
+                        newItems[idx].reason = e.target.value;
+                        setReturnFormData({ ...returnFormData, items: newItems });
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px',
+                        borderRadius: '6px',
+                        border: '1px solid #e5e7eb',
+                        marginTop: '8px'
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Notes</label>
+                <textarea
+                  value={returnFormData.notes}
+                  onChange={(e) => setReturnFormData({ ...returnFormData, notes: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    minHeight: '80px'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', justifyContent: 'flex-end', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+                <button
+                  onClick={() => setShowAddReturnModal(false)}
+                  style={{
+                    padding: isMobile ? '14px 20px' : '12px 24px',
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '14px' : '16px',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    flex: isMobile ? '1' : 'none',
+                    minWidth: isMobile ? '120px' : 'auto'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      if (!returnFormData.supplierId || returnFormData.items.length === 0) {
+                        setError('Please select supplier and add items');
+                        return;
+                      }
+                      
+                      await apiClient.createSupplierReturn(currentRestaurant.id, returnFormData);
+                      
+                      setSuccess('Return order created successfully');
+                      setShowAddReturnModal(false);
+                      setReturnFormData({ purchaseOrderId: '', supplierId: '', items: [], returnType: 'damaged', reason: '', notes: '' });
+                      loadSCMData();
+                      loadInventoryData();
+                    } catch (error) {
+                      setError(error.message);
+                    }
+                  }}
+                  style={{
+                    padding: isMobile ? '14px 20px' : '12px 24px',
+                    backgroundColor: '#059669',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '14px' : '16px',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    flex: isMobile ? '1' : 'none',
+                    minWidth: isMobile ? '120px' : 'auto'
+                  }}
+                >
+                  Create Return
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stock Transfer Modal */}
+        {showAddTransferModal && (
+          <div style={getModalStyles()}>
+            <div style={getModalContentStyles()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? '20px' : '24px' }}>
+                <h2 style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Create Stock Transfer</h2>
+                <button 
+                  onClick={() => setShowAddTransferModal(false)} 
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    fontSize: isMobile ? '28px' : '24px', 
+                    cursor: 'pointer', 
+                    color: '#6b7280',
+                    padding: isMobile ? '8px' : '4px',
+                    minWidth: isMobile ? '44px' : 'auto',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >×</button>
+              </div>
+              
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
+                gap: isMobile ? '12px' : '16px', 
+                marginBottom: '20px' 
+              }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>From Location *</label>
+                  <input
+                    type="text"
+                    value={transferFormData.fromLocation}
+                    onChange={(e) => setTransferFormData({ ...transferFormData, fromLocation: e.target.value })}
+                    placeholder="e.g., Main Store"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: '1px solid #e5e7eb',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>To Location *</label>
+                  <input
+                    type="text"
+                    value={transferFormData.toLocation}
+                    onChange={(e) => setTransferFormData({ ...transferFormData, toLocation: e.target.value })}
+                    placeholder="e.g., Branch Store"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: '1px solid #e5e7eb',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Add Items</label>
+                <button
+                  onClick={() => {
+                    setTransferFormData({
+                      ...transferFormData,
+                      items: [...transferFormData.items, { inventoryItemId: '', inventoryItemName: '', quantity: 1, unit: '' }]
+                    });
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    marginBottom: '12px'
+                  }}
+                >
+                  + Add Item
+                </button>
+                
+                {transferFormData.items.map((item, idx) => (
+                  <div key={idx} style={{ padding: isMobile ? '12px' : '16px', backgroundColor: '#f9fafb', borderRadius: '8px', marginBottom: '12px' }}>
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr', 
+                      gap: isMobile ? '8px' : '12px' 
+                    }}>
+                      <select
+                        value={item.inventoryItemId}
+                        onChange={(e) => {
+                          const selectedItem = inventoryItems.find(i => i.id === e.target.value);
+                          const newItems = [...transferFormData.items];
+                          newItems[idx] = {
+                            ...newItems[idx],
+                            inventoryItemId: e.target.value,
+                            inventoryItemName: selectedItem?.name || '',
+                            unit: selectedItem?.unit || ''
+                          };
+                          setTransferFormData({ ...transferFormData, items: newItems });
+                        }}
+                        style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+                      >
+                        <option value="">Select Item</option>
+                        {inventoryItems.map(invItem => (
+                          <option key={invItem.id} value={invItem.id}>{invItem.name}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        placeholder="Quantity"
+                        value={item.quantity}
+                        onChange={(e) => {
+                          const newItems = [...transferFormData.items];
+                          newItems[idx].quantity = parseFloat(e.target.value) || 0;
+                          setTransferFormData({ ...transferFormData, items: newItems });
+                        }}
+                        style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+                      />
+                      <button
+                        onClick={() => {
+                          setTransferFormData({
+                            ...transferFormData,
+                            items: transferFormData.items.filter((_, i) => i !== idx)
+                          });
+                        }}
+                        style={{
+                          padding: '8px',
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Reason</label>
+                <textarea
+                  value={transferFormData.reason}
+                  onChange={(e) => setTransferFormData({ ...transferFormData, reason: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    minHeight: '80px'
+                  }}
+                  placeholder="Reason for transfer"
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', justifyContent: 'flex-end', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+                <button
+                  onClick={() => setShowAddTransferModal(false)}
+                  style={{
+                    padding: isMobile ? '14px 20px' : '12px 24px',
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '14px' : '16px',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    flex: isMobile ? '1' : 'none',
+                    minWidth: isMobile ? '120px' : 'auto'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      if (!transferFormData.fromLocation || !transferFormData.toLocation || transferFormData.items.length === 0) {
+                        setError('Please fill all required fields');
+                        return;
+                      }
+                      
+                      await apiClient.createStockTransfer(currentRestaurant.id, transferFormData);
+                      
+                      setSuccess('Stock transfer created successfully');
+                      setShowAddTransferModal(false);
+                      setTransferFormData({ fromLocation: '', toLocation: '', items: [], reason: '', notes: '' });
+                      loadSCMData();
+                      loadInventoryData();
+                    } catch (error) {
+                      setError(error.message);
+                    }
+                  }}
+                  style={{
+                    padding: isMobile ? '14px 20px' : '12px 24px',
+                    backgroundColor: '#059669',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '14px' : '16px',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    flex: isMobile ? '1' : 'none',
+                    minWidth: isMobile ? '120px' : 'auto'
+                  }}
+                >
+                  Create Transfer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Invoice Modal */}
+        {showAddInvoiceModal && (
+          <div style={getModalStyles()}>
+            <div style={{...getModalContentStyles(), maxWidth: isMobile ? '100%' : '600px'}}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? '20px' : '24px' }}>
+                <h2 style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Create Supplier Invoice</h2>
+                <button 
+                  onClick={() => setShowAddInvoiceModal(false)} 
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    fontSize: isMobile ? '28px' : '24px', 
+                    cursor: 'pointer', 
+                    color: '#6b7280',
+                    padding: isMobile ? '8px' : '4px',
+                    minWidth: isMobile ? '44px' : 'auto',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >×</button>
+              </div>
+              
+              {/* Invoice OCR Button */}
+              <div style={{ marginBottom: '20px' }}>
+                <button
+                  type="button"
+                  onClick={() => invoiceFileInputRef.current?.click()}
+                  disabled={processingInvoiceOCR}
+                  style={{
+                    width: '100%',
+                    padding: isMobile ? '14px' : '12px 20px',
+                    backgroundColor: processingInvoiceOCR ? '#9ca3af' : '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: processingInvoiceOCR ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    minHeight: isMobile ? '44px' : 'auto'
+                  }}
+                >
+                  {processingInvoiceOCR ? (
+                    <>
+                      <div style={{
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid white',
+                        borderTop: '2px solid transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }} />
+                      Processing Invoice...
+                    </>
+                  ) : (
+                    <>
+                      <FaCamera size={16} />
+                      Create from Photo/Image
+                    </>
+                  )}
+                </button>
+                <input
+                  ref={invoiceFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file || !currentRestaurant) return;
+                    
+                    try {
+                      setProcessingInvoiceOCR(true);
+                      setError(null);
+                      
+                      const response = await apiClient.processInvoiceOCR(file, currentRestaurant.id);
+                      
+                      if (response.success) {
+                        // Auto-fill invoice form
+                        setInvoiceFormData({
+                          supplierId: response.supplierId || '',
+                          invoiceNumber: response.invoiceNumber || '',
+                          invoiceDate: response.invoiceDate || new Date().toISOString().split('T')[0],
+                          totalAmount: response.totalAmount || 0,
+                          items: response.items || [],
+                          imageUrl: '',
+                          notes: response.notes || ''
+                        });
+                        
+                        setSuccess('Invoice data extracted successfully!');
+                        setTimeout(() => setSuccess(null), 5000);
+                      }
+                    } catch (error) {
+                      console.error('Invoice OCR error:', error);
+                      setError(error.message || 'Failed to process invoice image');
+                    } finally {
+                      setProcessingInvoiceOCR(false);
+                      // Reset file input
+                      if (invoiceFileInputRef.current) {
+                        invoiceFileInputRef.current.value = '';
+                      }
+                    }
+                  }}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Supplier *</label>
+                <select
+                  value={invoiceFormData.supplierId}
+                  onChange={(e) => setInvoiceFormData({ ...invoiceFormData, supplierId: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    fontSize: '14px'
+                  }}
+                >
+                  <option value="">Select Supplier</option>
+                  {suppliers.map(supplier => (
+                    <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Invoice Number *</label>
+                <input
+                  type="text"
+                  value={invoiceFormData.invoiceNumber}
+                  onChange={(e) => setInvoiceFormData({ ...invoiceFormData, invoiceNumber: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    fontSize: '14px'
+                  }}
+                  placeholder="INV-2024-001"
+                />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Invoice Date *</label>
+                <input
+                  type="date"
+                  value={invoiceFormData.invoiceDate}
+                  onChange={(e) => setInvoiceFormData({ ...invoiceFormData, invoiceDate: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Total Amount *</label>
+                <input
+                  type="number"
+                  value={invoiceFormData.totalAmount}
+                  onChange={(e) => setInvoiceFormData({ ...invoiceFormData, totalAmount: parseFloat(e.target.value) || 0 })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    fontSize: '14px'
+                  }}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', justifyContent: 'flex-end', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+                <button
+                  onClick={() => setShowAddInvoiceModal(false)}
+                  style={{
+                    padding: isMobile ? '14px 20px' : '12px 24px',
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '14px' : '16px',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    flex: isMobile ? '1' : 'none',
+                    minWidth: isMobile ? '120px' : 'auto'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      if (!invoiceFormData.supplierId || !invoiceFormData.invoiceNumber || !invoiceFormData.totalAmount) {
+                        setError('Please fill all required fields');
+                        return;
+                      }
+                      
+                      await apiClient.createSupplierInvoice(currentRestaurant.id, {
+                        supplierId: invoiceFormData.supplierId,
+                        invoiceNumber: invoiceFormData.invoiceNumber,
+                        invoiceDate: new Date(invoiceFormData.invoiceDate),
+                        totalAmount: invoiceFormData.totalAmount,
+                        items: [],
+                        notes: invoiceFormData.notes
+                      });
+                      
+                      setSuccess('Invoice created successfully');
+                      setShowAddInvoiceModal(false);
+                      setInvoiceFormData({
+                        supplierId: '',
+                        invoiceNumber: '',
+                        invoiceDate: new Date().toISOString().split('T')[0],
+                        items: [],
+                        totalAmount: 0,
+                        imageUrl: '',
+                        notes: ''
+                      });
+                      loadSCMData();
+                    } catch (error) {
+                      setError(error.message);
+                    }
+                  }}
+                  style={{
+                    padding: isMobile ? '14px 20px' : '12px 24px',
+                    backgroundColor: '#059669',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '14px' : '16px',
+                    minHeight: isMobile ? '44px' : 'auto',
+                    flex: isMobile ? '1' : 'none',
+                    minWidth: isMobile ? '120px' : 'auto'
+                  }}
+                >
+                  Create Invoice
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
+

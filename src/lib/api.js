@@ -889,6 +889,194 @@ class ApiClient {
     });
   }
 
+  async getSupplier(restaurantId, supplierId) {
+    return this.request(`/api/suppliers/${restaurantId}/${supplierId}`);
+  }
+
+  // GRN (Goods Receipt Note) endpoints
+  async getGRNs(restaurantId, filters = {}) {
+    const query = new URLSearchParams(filters).toString();
+    const queryString = query ? `?${query}` : '';
+    return this.request(`/api/grn/${restaurantId}${queryString}`);
+  }
+
+  async getGRN(restaurantId, grnId) {
+    return this.request(`/api/grn/${restaurantId}/${grnId}`);
+  }
+
+  async createGRN(restaurantId, grnData) {
+    return this.request(`/api/grn/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify(grnData),
+    });
+  }
+
+  async updateGRN(restaurantId, grnId, updateData) {
+    return this.request(`/api/grn/${restaurantId}/${grnId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  // Purchase Requisitions endpoints
+  async getPurchaseRequisitions(restaurantId, filters = {}) {
+    const query = new URLSearchParams(filters).toString();
+    const queryString = query ? `?${query}` : '';
+    return this.request(`/api/purchase-requisitions/${restaurantId}${queryString}`);
+  }
+
+  async createPurchaseRequisition(restaurantId, requisitionData) {
+    return this.request(`/api/purchase-requisitions/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify(requisitionData),
+    });
+  }
+
+  async updatePurchaseRequisition(restaurantId, reqId, updateData) {
+    return this.request(`/api/purchase-requisitions/${restaurantId}/${reqId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  async convertRequisitionToPO(restaurantId, reqId, poData) {
+    return this.request(`/api/purchase-requisitions/${restaurantId}/${reqId}/convert-to-po`, {
+      method: 'POST',
+      body: JSON.stringify(poData),
+    });
+  }
+
+  // Supplier Invoices endpoints
+  async getSupplierInvoices(restaurantId, filters = {}) {
+    const query = new URLSearchParams(filters).toString();
+    const queryString = query ? `?${query}` : '';
+    return this.request(`/api/supplier-invoices/${restaurantId}${queryString}`);
+  }
+
+  async createSupplierInvoice(restaurantId, invoiceData) {
+    return this.request(`/api/supplier-invoices/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify(invoiceData),
+    });
+  }
+
+  async matchInvoice(restaurantId, invoiceId) {
+    return this.request(`/api/supplier-invoices/${restaurantId}/${invoiceId}/match`, {
+      method: 'POST',
+    });
+  }
+
+  async updateSupplierInvoice(restaurantId, invoiceId, updateData) {
+    return this.request(`/api/supplier-invoices/${restaurantId}/${invoiceId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  // Supplier Performance endpoints
+  async getSupplierPerformance(restaurantId, supplierId) {
+    return this.request(`/api/suppliers/${restaurantId}/${supplierId}/performance`);
+  }
+
+  async getAllSuppliersPerformance(restaurantId) {
+    return this.request(`/api/suppliers/${restaurantId}/performance`);
+  }
+
+  // AI Services endpoints
+  async getAIReorderSuggestions(restaurantId) {
+    return this.request(`/api/ai/reorder-suggestions/${restaurantId}`);
+  }
+
+  async getAIDemandPrediction(restaurantId, itemId, daysAhead = 7) {
+    return this.request(`/api/ai/demand-prediction/${restaurantId}/${itemId}?daysAhead=${daysAhead}`);
+  }
+
+  async getAIWastePrediction(restaurantId) {
+    return this.request(`/api/ai/waste-prediction/${restaurantId}`);
+  }
+
+  async getAIWasteSummary(restaurantId) {
+    return this.request(`/api/ai/waste-summary/${restaurantId}`);
+  }
+
+  async processInvoiceOCR(restaurantId, imageUrl) {
+    return this.request(`/api/ai/invoice-ocr/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify({ imageUrl }),
+    });
+  }
+
+  // Price Intelligence endpoints
+  async getPriceComparison(restaurantId, itemId) {
+    return this.request(`/api/ai/price-comparison/${restaurantId}/${itemId}`);
+  }
+
+  async getPriceTrend(restaurantId, itemId, days = 90) {
+    return this.request(`/api/ai/price-trend/${restaurantId}/${itemId}?days=${days}`);
+  }
+
+  async getPriceAnomalies(restaurantId, itemId) {
+    return this.request(`/api/ai/price-anomalies/${restaurantId}/${itemId}`);
+  }
+
+  async getBestSupplier(restaurantId, itemId) {
+    return this.request(`/api/ai/best-supplier/${restaurantId}/${itemId}`);
+  }
+
+  // Supplier Returns endpoints
+  async getSupplierReturns(restaurantId, filters = {}) {
+    const query = new URLSearchParams(filters).toString();
+    const queryString = query ? `?${query}` : '';
+    return this.request(`/api/supplier-returns/${restaurantId}${queryString}`);
+  }
+
+  async createSupplierReturn(restaurantId, returnData) {
+    return this.request(`/api/supplier-returns/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify(returnData),
+    });
+  }
+
+  async updateSupplierReturn(restaurantId, returnId, updateData) {
+    return this.request(`/api/supplier-returns/${restaurantId}/${returnId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  async deleteSupplierReturn(restaurantId, returnId) {
+    return this.request(`/api/supplier-returns/${restaurantId}/${returnId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Stock Transfers endpoints
+  async getStockTransfers(restaurantId, filters = {}) {
+    const query = new URLSearchParams(filters).toString();
+    const queryString = query ? `?${query}` : '';
+    return this.request(`/api/stock-transfers/${restaurantId}${queryString}`);
+  }
+
+  async createStockTransfer(restaurantId, transferData) {
+    return this.request(`/api/stock-transfers/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify(transferData),
+    });
+  }
+
+  async updateStockTransfer(restaurantId, transferId, updateData) {
+    return this.request(`/api/stock-transfers/${restaurantId}/${transferId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  async deleteStockTransfer(restaurantId, transferId) {
+    return this.request(`/api/stock-transfers/${restaurantId}/${transferId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Admin Settings endpoints
   async getAdminSettings(restaurantId) {
     return this.request(`/api/admin/settings/${restaurantId}`);
@@ -1096,6 +1284,31 @@ class ApiClient {
       method: 'POST',
       body: { transcript, restaurantId },
     });
+  }
+
+  // Voice Purchase Order processing
+  async processVoicePurchaseOrder(transcript, restaurantId) {
+    return this.request(`/api/voice/process-purchase-order`, {
+      method: 'POST',
+      body: { transcript, restaurantId },
+    });
+  }
+
+  // Invoice OCR
+  async processInvoiceOCR(imageFile, restaurantId) {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    formData.append('restaurantId', restaurantId);
+    
+    return this.request(`/api/invoice/ocr`, {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  // Smart suggestions
+  async getSmartSuggestions(restaurantId, type = 'po') {
+    return this.request(`/api/smart-suggestions/${restaurantId}?type=${type}`);
   }
 
   // Demo request endpoint - public, no auth required
