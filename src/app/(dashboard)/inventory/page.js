@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import apiClient from '../../../lib/api';
 import { 
   FaBoxes, 
@@ -359,6 +359,104 @@ export default function InventoryManagement() {
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
 
+  // Load smart suggestions
+  const loadSmartSuggestions = useCallback(async () => {
+    if (!currentRestaurant) return;
+    try {
+      setLoadingSuggestions(true);
+      const suggestions = await apiClient.getSmartSuggestions(currentRestaurant.id, 'po');
+      setSmartSuggestions(suggestions);
+    } catch (error) {
+      console.error('Error loading smart suggestions:', error);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  }, [currentRestaurant]);
+
+  const loadSCMData = useCallback(async () => {
+    if (!currentRestaurant) return;
+    
+    try {
+      // Load SCM data based on active tab
+      if (activeTab === 'grn') {
+        const grnsData = await apiClient.getGRNs(currentRestaurant.id);
+        setGrns(grnsData.grns || []);
+      } else if (activeTab === 'requisitions') {
+        const reqsData = await apiClient.getPurchaseRequisitions(currentRestaurant.id);
+        setPurchaseRequisitions(reqsData.requisitions || []);
+      } else if (activeTab === 'invoices') {
+        const invoicesData = await apiClient.getSupplierInvoices(currentRestaurant.id);
+        setSupplierInvoices(invoicesData.invoices || []);
+      } else if (activeTab === 'suppliers') {
+        const perfData = await apiClient.getAllSuppliersPerformance(currentRestaurant.id);
+        setSupplierPerformance(perfData.performances || []);
+      } else if (activeTab === 'returns') {
+        const returnsData = await apiClient.getSupplierReturns(currentRestaurant.id);
+        setSupplierReturns(returnsData.returns || []);
+      } else if (activeTab === 'transfers') {
+        const transfersData = await apiClient.getStockTransfers(currentRestaurant.id);
+        setStockTransfers(transfersData.transfers || []);
+      } else if (activeTab === 'ai-insights') {
+        const suggestionsData = await apiClient.getAIReorderSuggestions(currentRestaurant.id);
+        setAiReorderSuggestions(suggestionsData.suggestions || []);
+        const wasteData = await apiClient.getAIWastePrediction(currentRestaurant.id);
+        setWastePredictions(wasteData.predictions || []);
+        const summaryData = await apiClient.getAIWasteSummary(currentRestaurant.id);
+        setWasteSummary(summaryData.summary || null);
+      }
+    } catch (error) {
+      console.error('Error loading SCM data:', error);
+    }
+  }, [currentRestaurant, activeTab]);
+
+  const loadInventoryData = useCallback(async () => {
+    if (!currentRestaurant) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Load inventory items
+      const filters = {};
+      if (searchTerm) filters.search = searchTerm;
+      if (selectedCategory !== 'all') filters.category = selectedCategory;
+
+      // Load data with individual error handling
+      const results = await Promise.allSettled([
+        apiClient.getInventoryItems(currentRestaurant.id, filters),
+        apiClient.getInventoryCategories(currentRestaurant.id),
+        apiClient.getSuppliers(currentRestaurant.id),
+        apiClient.getInventoryDashboard(currentRestaurant.id),
+        apiClient.getRecipes(currentRestaurant.id),
+        apiClient.getPurchaseOrders(currentRestaurant.id)
+      ]);
+
+      // Process results and handle individual failures
+      const [itemsResult, categoriesResult, suppliersResult, dashboardResult, recipesResult, ordersResult] = results;
+
+      // Set data with fallbacks for failed requests
+      setInventoryItems(itemsResult.status === 'fulfilled' ? (itemsResult.value.items || []) : []);
+      setCategories(categoriesResult.status === 'fulfilled' ? (categoriesResult.value.categories || []) : []);
+      setSuppliers(suppliersResult.status === 'fulfilled' ? (suppliersResult.value.suppliers || []) : []);
+      setDashboardStats(dashboardResult.status === 'fulfilled' ? (dashboardResult.value.stats || null) : null);
+      setRecipes(recipesResult.status === 'fulfilled' ? (recipesResult.value.recipes || []) : []);
+      setPurchaseOrders(ordersResult.status === 'fulfilled' ? (ordersResult.value.orders || []) : []);
+
+      // Log any failures for debugging
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.warn(`Failed to load data at index ${index}:`, result.reason);
+        }
+      });
+
+    } catch (error) {
+      console.error('Error loading inventory data:', error);
+      setError('Failed to load inventory data');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentRestaurant, searchTerm, selectedCategory]);
+
   useEffect(() => {
     setIsClient(true);
     loadRestaurantContext();
@@ -379,21 +477,7 @@ export default function InventoryManagement() {
       loadSCMData();
       loadSmartSuggestions();
     }
-  }, [currentRestaurant, searchTerm, selectedCategory]);
-
-  // Load smart suggestions
-  const loadSmartSuggestions = async () => {
-    if (!currentRestaurant) return;
-    try {
-      setLoadingSuggestions(true);
-      const suggestions = await apiClient.getSmartSuggestions(currentRestaurant.id, 'po');
-      setSmartSuggestions(suggestions);
-    } catch (error) {
-      console.error('Error loading smart suggestions:', error);
-    } finally {
-      setLoadingSuggestions(false);
-    }
-  };
+  }, [currentRestaurant, searchTerm, selectedCategory, loadInventoryData, loadSCMData, loadSmartSuggestions]);
 
   // Voice functions for Purchase Order
   const startVoiceListeningPO = () => {
@@ -487,47 +571,11 @@ export default function InventoryManagement() {
     }
   };
 
-  const loadSCMData = async () => {
-    if (!currentRestaurant) return;
-    
-    try {
-      // Load SCM data based on active tab
-      if (activeTab === 'grn') {
-        const grnsData = await apiClient.getGRNs(currentRestaurant.id);
-        setGrns(grnsData.grns || []);
-      } else if (activeTab === 'requisitions') {
-        const reqsData = await apiClient.getPurchaseRequisitions(currentRestaurant.id);
-        setPurchaseRequisitions(reqsData.requisitions || []);
-      } else if (activeTab === 'invoices') {
-        const invoicesData = await apiClient.getSupplierInvoices(currentRestaurant.id);
-        setSupplierInvoices(invoicesData.invoices || []);
-      } else if (activeTab === 'suppliers') {
-        const perfData = await apiClient.getAllSuppliersPerformance(currentRestaurant.id);
-        setSupplierPerformance(perfData.performances || []);
-      } else if (activeTab === 'returns') {
-        const returnsData = await apiClient.getSupplierReturns(currentRestaurant.id);
-        setSupplierReturns(returnsData.returns || []);
-      } else if (activeTab === 'transfers') {
-        const transfersData = await apiClient.getStockTransfers(currentRestaurant.id);
-        setStockTransfers(transfersData.transfers || []);
-      } else if (activeTab === 'ai-insights') {
-        const suggestionsData = await apiClient.getAIReorderSuggestions(currentRestaurant.id);
-        setAiReorderSuggestions(suggestionsData.suggestions || []);
-        const wasteData = await apiClient.getAIWastePrediction(currentRestaurant.id);
-        setWastePredictions(wasteData.predictions || []);
-        const summaryData = await apiClient.getAIWasteSummary(currentRestaurant.id);
-        setWasteSummary(summaryData.summary || null);
-      }
-    } catch (error) {
-      console.error('Error loading SCM data:', error);
-    }
-  };
-
   useEffect(() => {
     if (currentRestaurant && activeTab) {
       loadSCMData();
     }
-  }, [activeTab, currentRestaurant]);
+  }, [activeTab, currentRestaurant, loadSCMData]);
 
   // Auto-dismiss success messages
   useEffect(() => {
@@ -561,54 +609,6 @@ export default function InventoryManagement() {
     } catch (error) {
       console.error('Error loading restaurant context:', error);
       setError('Failed to load restaurant context');
-    }
-  };
-
-  const loadInventoryData = async () => {
-    if (!currentRestaurant) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Load inventory items
-      const filters = {};
-      if (searchTerm) filters.search = searchTerm;
-      if (selectedCategory !== 'all') filters.category = selectedCategory;
-
-      // Load data with individual error handling
-      const results = await Promise.allSettled([
-        apiClient.getInventoryItems(currentRestaurant.id, filters),
-        apiClient.getInventoryCategories(currentRestaurant.id),
-        apiClient.getSuppliers(currentRestaurant.id),
-        apiClient.getInventoryDashboard(currentRestaurant.id),
-        apiClient.getRecipes(currentRestaurant.id),
-        apiClient.getPurchaseOrders(currentRestaurant.id)
-      ]);
-
-      // Process results and handle individual failures
-      const [itemsResult, categoriesResult, suppliersResult, dashboardResult, recipesResult, ordersResult] = results;
-
-      // Set data with fallbacks for failed requests
-      setInventoryItems(itemsResult.status === 'fulfilled' ? (itemsResult.value.items || []) : []);
-      setCategories(categoriesResult.status === 'fulfilled' ? (categoriesResult.value.categories || []) : []);
-      setSuppliers(suppliersResult.status === 'fulfilled' ? (suppliersResult.value.suppliers || []) : []);
-      setDashboardStats(dashboardResult.status === 'fulfilled' ? (dashboardResult.value.stats || null) : null);
-      setRecipes(recipesResult.status === 'fulfilled' ? (recipesResult.value.recipes || []) : []);
-      setPurchaseOrders(ordersResult.status === 'fulfilled' ? (ordersResult.value.orders || []) : []);
-
-      // Log any failures for debugging
-      results.forEach((result, index) => {
-        if (result.status === 'rejected') {
-          console.warn(`Failed to load data at index ${index}:`, result.reason);
-        }
-      });
-
-    } catch (error) {
-      console.error('Error loading inventory data:', error);
-      setError('Failed to load inventory data');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -2294,7 +2294,7 @@ export default function InventoryManagement() {
                       <strong style={{ display: 'block', marginBottom: '6px' }}>Two Ways to Create Purchase Orders:</strong>
                       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '12px' : '16px', marginTop: '8px' }}>
                         <div>
-                          <strong style={{ color: '#059669' }}>✓ Direct PO Creation</strong> <span style={{ fontSize: '11px', color: '#6b7280' }}>(Click "Create Order" above)</span>
+                          <strong style={{ color: '#059669' }}>✓ Direct PO Creation</strong> <span style={{ fontSize: '11px', color: '#6b7280' }}>(Click &quot;Create Order&quot; above)</span>
                           <ul style={{ margin: '6px 0 0 16px', padding: 0, fontSize: '12px', lineHeight: '1.6', color: '#374151' }}>
                             <li>Urgent/emergency orders</li>
                             <li>Regular recurring orders</li>
