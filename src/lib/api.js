@@ -966,6 +966,13 @@ class ApiClient {
     });
   }
 
+  async generateInvoiceFromPO(restaurantId, purchaseOrderId) {
+    return this.request(`/api/supplier-invoices/${restaurantId}/generate-from-po`, {
+      method: 'POST',
+      body: JSON.stringify({ purchaseOrderId }),
+    });
+  }
+
   async updateSupplierInvoice(restaurantId, invoiceId, updateData) {
     return this.request(`/api/supplier-invoices/${restaurantId}/${invoiceId}`, {
       method: 'PATCH',

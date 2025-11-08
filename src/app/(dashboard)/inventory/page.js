@@ -2539,35 +2539,135 @@ export default function InventoryManagement() {
                     )}
 
                     {order.status === 'received' && (
-                      <button
-                        onClick={() => handleUpdateOrderStatus(order.id, 'delivered')}
-                        style={{
-                          flex: 1,
-                          minWidth: '100px',
-                          backgroundColor: '#059669',
-                          color: 'white',
-                          padding: '8px 12px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          fontWeight: '600',
-                          fontSize: '12px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Mark Delivered
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleUpdateOrderStatus(order.id, 'delivered')}
+                          style={{
+                            flex: 1,
+                            minWidth: '100px',
+                            backgroundColor: '#059669',
+                            color: 'white',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontWeight: '600',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Mark Delivered
+                        </button>
+                        {!supplierInvoices.find(inv => inv.purchaseOrderId === order.id) && (
+                          <button
+                            onClick={async () => {
+                              try {
+                                setError(null);
+                                setSuccess(null);
+                                
+                                const response = await apiClient.generateInvoiceFromPO(currentRestaurant.id, order.id);
+                                
+                                if (response.success) {
+                                  setSuccess('Invoice generated successfully!');
+                                  setTimeout(() => setSuccess(null), 5000);
+                                  loadSCMData();
+                                  loadInventoryData();
+                                }
+                              } catch (error) {
+                                console.error('Generate invoice error:', error);
+                                setError(error.message || 'Failed to generate invoice');
+                              }
+                            }}
+                            style={{
+                              flex: 1,
+                              minWidth: '100px',
+                              backgroundColor: '#3b82f6',
+                              color: 'white',
+                              padding: '8px 12px',
+                              borderRadius: '6px',
+                              border: 'none',
+                              fontWeight: '600',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <FaEnvelope size={12} />
+                            Generate Invoice
+                          </button>
+                        )}
+                      </>
                     )}
 
-                    {(order.status === 'delivered' || order.status === 'cancelled') && (
+                    {order.status === 'delivered' && (
+                      <>
+                        {!supplierInvoices.find(inv => inv.purchaseOrderId === order.id) ? (
+                          <button
+                            onClick={async () => {
+                              try {
+                                setError(null);
+                                setSuccess(null);
+                                
+                                const response = await apiClient.generateInvoiceFromPO(currentRestaurant.id, order.id);
+                                
+                                if (response.success) {
+                                  setSuccess('Invoice generated successfully!');
+                                  setTimeout(() => setSuccess(null), 5000);
+                                  loadSCMData();
+                                  loadInventoryData();
+                                }
+                              } catch (error) {
+                                console.error('Generate invoice error:', error);
+                                setError(error.message || 'Failed to generate invoice');
+                              }
+                            }}
+                            style={{
+                              flex: 1,
+                              minWidth: '100px',
+                              backgroundColor: '#3b82f6',
+                              color: 'white',
+                              padding: '8px 12px',
+                              borderRadius: '6px',
+                              border: 'none',
+                              fontWeight: '600',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <FaEnvelope size={12} />
+                            Generate Invoice
+                          </button>
+                        ) : (
+                          <div style={{ 
+                            padding: '8px 12px', 
+                            backgroundColor: '#d1fae5',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            color: '#065f46',
+                            fontWeight: '600'
+                          }}>
+                            ✓ Invoice Generated
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {order.status === 'cancelled' && (
                       <div style={{ 
                         padding: '8px 12px', 
-                        backgroundColor: order.status === 'delivered' ? '#d1fae5' : '#fee2e2',
+                        backgroundColor: '#fee2e2',
                         borderRadius: '6px',
                         fontSize: '12px',
-                        color: order.status === 'delivered' ? '#065f46' : '#991b1b',
+                        color: '#991b1b',
                         fontWeight: '600'
                       }}>
-                        {order.status === 'delivered' ? '✓ Completed' : '✗ Cancelled'}
+                        ✗ Cancelled
                       </div>
                     )}
                   </div>
@@ -3018,38 +3118,120 @@ export default function InventoryManagement() {
         {/* Invoices Tab */}
         {activeTab === 'invoices' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+              <h2 style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
                 Supplier Invoices
               </h2>
-              <button
-                onClick={() => setShowAddInvoiceModal(true)}
-                style={{
-                  backgroundColor: '#059669',
-                  color: 'white',
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-              >
-                <FaPlus size={14} />
-                New Invoice
-              </button>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setShowAddInvoiceModal(true)}
+                  style={{
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    padding: isMobile ? '10px 16px' : '12px 24px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    fontWeight: '600',
+                    fontSize: isMobile ? '12px' : '14px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    minHeight: isMobile ? '44px' : 'auto'
+                  }}
+                >
+                  <FaCamera size={14} />
+                  Upload Invoice
+                </button>
+              </div>
             </div>
+
+            {/* Purchase Orders Ready for Invoice */}
+            {purchaseOrders.filter(po => 
+              (po.status === 'received' || po.status === 'delivered') && 
+              !supplierInvoices.find(inv => inv.purchaseOrderId === po.id)
+            ).length > 0 && (
+              <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px' }}>
+                  📋 Purchase Orders Ready for Invoice
+                </h3>
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {purchaseOrders.filter(po => 
+                    (po.status === 'received' || po.status === 'delivered') && 
+                    !supplierInvoices.find(inv => inv.purchaseOrderId === po.id)
+                  ).map(po => (
+                    <div key={po.id} style={{
+                      backgroundColor: 'white',
+                      padding: '16px',
+                      borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                      border: '1px solid #e5e7eb'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px', flexWrap: 'wrap', gap: '12px' }}>
+                        <div style={{ flex: 1 }}>
+                          <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
+                            PO #{po.orderNumber || po.id.slice(-8)}
+                          </h4>
+                          <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0' }}>
+                            Supplier: {suppliers.find(s => s.id === po.supplierId)?.name || 'N/A'}
+                          </p>
+                          <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                            Items: {po.items?.length || 0} | Total: ₹{po.totalAmount?.toLocaleString() || '0'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            try {
+                              setError(null);
+                              setSuccess(null);
+                              
+                              // Generate invoice from PO
+                              const response = await apiClient.generateInvoiceFromPO(currentRestaurant.id, po.id);
+                              
+                              if (response.success) {
+                                setSuccess('Invoice generated from Purchase Order successfully!');
+                                setTimeout(() => setSuccess(null), 5000);
+                                loadSCMData();
+                                loadInventoryData();
+                              }
+                            } catch (error) {
+                              console.error('Generate invoice error:', error);
+                              setError(error.message || 'Failed to generate invoice from PO');
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#059669',
+                            color: 'white',
+                            padding: isMobile ? '10px 16px' : '10px 20px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            fontWeight: '600',
+                            fontSize: isMobile ? '12px' : '14px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            whiteSpace: 'nowrap',
+                            minHeight: isMobile ? '44px' : 'auto'
+                          }}
+                        >
+                          <FaPlus size={12} />
+                          Generate Invoice
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {supplierInvoices.length === 0 ? (
             <div style={{
               backgroundColor: 'white',
                 padding: '40px',
                 borderRadius: '16px',
-                textAlign: 'center'
-              }}>
+            textAlign: 'center'
+          }}>
                 <p style={{ color: '#6b7280' }}>No invoices found</p>
               </div>
             ) : (
@@ -3062,13 +3244,23 @@ export default function InventoryManagement() {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
-                      <div>
+                      <div style={{ flex: 1 }}>
                         <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 4px 0' }}>
                           {invoice.invoiceNumber}
-                        </h3>
-                        <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+            </h3>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px 0' }}>
                           Date: {invoice.invoiceDate ? new Date(invoice.invoiceDate?.toDate?.() || invoice.invoiceDate).toLocaleDateString() : 'N/A'}
                         </p>
+                        {invoice.receivedDate && (
+                          <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 2px 0' }}>
+                            Received: {new Date(invoice.receivedDate?.toDate?.() || invoice.receivedDate).toLocaleDateString()}
+                          </p>
+                        )}
+                        {invoice.receivedMethod && (
+                          <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>
+                            Method: {invoice.receivedMethod === 'email' ? '📧 Email' : invoice.receivedMethod === 'physical' ? '📄 Physical' : invoice.receivedMethod === 'uploaded' ? '⬆️ Uploaded' : invoice.receivedMethod === 'generated' ? '⚡ Auto-generated' : '✍️ Manual'}
+                          </p>
+                        )}
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <span style={{
@@ -3083,36 +3275,104 @@ export default function InventoryManagement() {
                         }}>
                           {invoice.status?.toUpperCase()}
                         </span>
+                        {invoice.paymentStatus && (
+                          <span style={{
+                            padding: '4px 12px',
+                            borderRadius: '12px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            backgroundColor: invoice.paymentStatus === 'paid' ? '#d1fae5' : invoice.paymentStatus === 'partial' ? '#fef3c7' : '#fee2e2',
+                            color: invoice.paymentStatus === 'paid' ? '#065f46' : invoice.paymentStatus === 'partial' ? '#92400e' : '#991b1b',
+                            display: 'block',
+                            marginBottom: '4px'
+                          }}>
+                            {invoice.paymentStatus === 'paid' ? '✓ Paid' : invoice.paymentStatus === 'partial' ? '⚠ Partial' : '○ Unpaid'}
+                          </span>
+                        )}
                         <p style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
                           ₹{invoice.totalAmount?.toLocaleString() || '0'}
                         </p>
                       </div>
                     </div>
-                    {invoice.matchStatus === 'pending' && (
-                      <button
-                        onClick={async () => {
-                          try {
-                            await apiClient.matchInvoice(currentRestaurant.id, invoice.id);
-                            loadSCMData();
-                            setSuccess('Invoice matched successfully');
-                          } catch (error) {
-                            setError(error.message);
-                          }
-                        }}
-                        style={{
-                          backgroundColor: '#3b82f6',
-                          color: 'white',
-                          padding: '8px 16px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          marginTop: '8px'
-                        }}
-                      >
-                        Match with PO/GRN
-                      </button>
-                    )}
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
+                      {invoice.invoiceFileUrl && (
+                        <button
+                          onClick={() => window.open(invoice.invoiceFileUrl, '_blank')}
+                          style={{
+                            backgroundColor: '#f3f4f6',
+                            color: '#374151',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid #e5e7eb',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <FaDownload size={12} />
+                          View Invoice
+                        </button>
+                      )}
+                      {invoice.matchStatus === 'pending' && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              await apiClient.matchInvoice(currentRestaurant.id, invoice.id);
+                              loadSCMData();
+                              setSuccess('Invoice matched successfully');
+                            } catch (error) {
+                              setError(error.message);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#3b82f6',
+                            color: 'white',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          Match with PO/GRN
+                        </button>
+                      )}
+                      {invoice.paymentStatus !== 'paid' && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              const paidAmount = prompt(`Enter paid amount (Total: ₹${invoice.totalAmount})`, invoice.totalAmount);
+                              if (paidAmount !== null) {
+                                await apiClient.updateSupplierInvoice(currentRestaurant.id, invoice.id, {
+                                  paidAmount: parseFloat(paidAmount),
+                                  paymentMethod: 'cash'
+                                });
+                                loadSCMData();
+                                setSuccess('Payment recorded');
+                              }
+                            } catch (error) {
+                              setError(error.message);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: '#059669',
+                            color: 'white',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Mark Paid
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -3149,7 +3409,7 @@ export default function InventoryManagement() {
             </div>
             
             {supplierReturns.length === 0 ? (
-              <div style={{
+          <div style={{
                 backgroundColor: 'white',
                 padding: '40px',
                 borderRadius: '16px',
@@ -3303,8 +3563,8 @@ export default function InventoryManagement() {
                   fontWeight: '600',
                   fontSize: '14px',
                   cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
+            display: 'flex',
+            alignItems: 'center',
                   gap: '8px'
                 }}
               >
@@ -3327,7 +3587,7 @@ export default function InventoryManagement() {
                 {stockTransfers.map(transfer => (
                   <div key={transfer.id} style={{
                     backgroundColor: 'white',
-                    padding: '20px',
+            padding: '20px',
                     borderRadius: '12px',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                   }}>
@@ -3480,8 +3740,8 @@ export default function InventoryManagement() {
               </div>
               
               {aiReorderSuggestions.length === 0 ? (
-                <div style={{
-                  backgroundColor: 'white',
+            <div style={{
+              backgroundColor: 'white',
                   padding: '40px',
                   borderRadius: '16px',
                   textAlign: 'center'
@@ -6838,6 +7098,24 @@ export default function InventoryManagement() {
                 >×</button>
               </div>
               
+              {/* Info Box */}
+              <div style={{
+                padding: '12px',
+                backgroundColor: '#f0f9ff',
+                border: '1px solid #bfdbfe',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                fontSize: '13px',
+                color: '#1e40af'
+              }}>
+                <strong>💡 How to create invoices:</strong>
+                <ul style={{ margin: '8px 0 0 20px', padding: 0, lineHeight: '1.8' }}>
+                  <li><strong>From Purchase Order:</strong> Go to Purchase Orders tab → Click &quot;Generate Invoice&quot; on delivered orders</li>
+                  <li><strong>Upload Supplier Invoice:</strong> Use the button below to upload invoice image (OCR will extract data)</li>
+                  <li><strong>Manual Entry:</strong> Fill the form below if supplier sent invoice separately</li>
+                </ul>
+              </div>
+
               {/* Invoice OCR Button */}
               <div style={{ marginBottom: '20px' }}>
                 <button
@@ -6876,7 +7154,7 @@ export default function InventoryManagement() {
                   ) : (
                     <>
                       <FaCamera size={16} />
-                      Create from Photo/Image
+                      Upload Invoice from Photo/Image (OCR)
                     </>
                   )}
                 </button>
