@@ -34,6 +34,7 @@ export default function LandingPage() {
   const [demoSubmitting, setDemoSubmitting] = useState(false);
   const [demoSuccess, setDemoSuccess] = useState(false);
   const [demoError, setDemoError] = useState('');
+  const [currency, setCurrency] = useState('INR'); // 'INR' or 'USD'
 
   useEffect(() => {
     const checkMobile = () => {
@@ -96,7 +97,8 @@ export default function LandingPage() {
   const plans = [
     {
       name: "Starter",
-      price: "₹999",
+      priceINR: 999,
+      priceUSD: 12,
       period: "per month",
       description: "Perfect for small cafes and food stalls",
       features: [
@@ -113,7 +115,8 @@ export default function LandingPage() {
     },
     {
       name: "Professional",
-      price: "₹2,499",
+      priceINR: 2499,
+      priceUSD: 30,
       period: "per month",
       description: "Ideal for growing restaurants",
       features: [
@@ -132,7 +135,8 @@ export default function LandingPage() {
     },
     {
       name: "Enterprise",
-      price: "₹4,999",
+      priceINR: 4999,
+      priceUSD: 60,
       period: "per month",
       description: "For restaurant chains and large operations",
       features: [
@@ -1543,10 +1547,53 @@ export default function LandingPage() {
               color: '#6b7280',
               maxWidth: '600px',
               margin: '0 auto',
-              lineHeight: '1.5'
+              lineHeight: '1.5',
+              marginBottom: '20px'
             }}>
               Start free and scale as you grow. All plans include 14-day free trial.
             </p>
+            
+            {/* Currency Toggle */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px',
+              marginBottom: '20px'
+            }}>
+              <button
+                onClick={() => setCurrency('INR')}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '8px',
+                  border: currency === 'INR' ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                  backgroundColor: currency === 'INR' ? '#ef4444' : 'white',
+                  color: currency === 'INR' ? 'white' : '#6b7280',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                ₹ INR
+              </button>
+              <button
+                onClick={() => setCurrency('USD')}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '8px',
+                  border: currency === 'USD' ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                  backgroundColor: currency === 'USD' ? '#ef4444' : 'white',
+                  color: currency === 'USD' ? 'white' : '#6b7280',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                $ USD
+              </button>
+            </div>
             </div>
             
           <div style={{
@@ -1606,7 +1653,10 @@ export default function LandingPage() {
                       fontWeight: 'bold',
                       color: '#1f2937'
                     }}>
-                      {plan.price}
+                      {currency === 'USD' 
+                        ? `$${plan.priceUSD.toLocaleString()}` 
+                        : `₹${plan.priceINR.toLocaleString()}`
+                      }
                   </span>
                     <span style={{ color: '#6b7280', fontSize: isMobile ? '14px' : '16px' }}>/{plan.period}</span>
                 </div>
