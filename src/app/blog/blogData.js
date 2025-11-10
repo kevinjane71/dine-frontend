@@ -122,6 +122,46 @@ export const blogPosts = [
     category: 'Comparison',
     categoryColor: '#ef4444',
   },
+  {
+    slug: 'how-to-create-online-menu-restaurant',
+    title: 'How to Create an Online Menu for Your Restaurant: Complete Guide 2025',
+    excerpt: 'Learn how to create a stunning online menu for your restaurant. Discover best practices, design tips, and how digital menus can increase sales and improve customer experience.',
+    date: '2025-02-05',
+    category: 'Technology',
+    categoryColor: '#3b82f6',
+  },
+  {
+    slug: 'beer-bar-inventory-management-complete-guide',
+    title: 'Beer Bar Inventory Management: Complete Guide for 2025',
+    excerpt: 'Master beer bar inventory management with our comprehensive guide. Learn how to track stock, prevent pilferage, optimize ordering, and maximize profits in your bar or brewery.',
+    date: '2025-02-06',
+    category: 'Operations',
+    categoryColor: '#10b981',
+  },
+  {
+    slug: '5-ways-increase-restaurant-sales-digital-menus',
+    title: '5 Ways to Increase Restaurant Sales with Digital Menus in 2025',
+    excerpt: 'Discover proven strategies to boost restaurant sales using digital menus. Learn how QR code menus, dynamic pricing, and smart menu design can increase revenue by up to 30%.',
+    date: '2025-02-07',
+    category: 'Revenue',
+    categoryColor: '#f59e0b',
+  },
+  {
+    slug: 'restaurant-inventory-management-best-practices-2025',
+    title: 'Restaurant Inventory Management: Best Practices for 2025',
+    excerpt: 'Learn the best practices for restaurant inventory management. Discover how to reduce waste, optimize stock levels, track ingredients, and save thousands annually with smart inventory systems.',
+    date: '2025-02-08',
+    category: 'Operations',
+    categoryColor: '#10b981',
+  },
+  {
+    slug: 'qr-code-menu-benefits-restaurants',
+    title: 'QR Code Menu Benefits for Restaurants: Why Every Restaurant Needs One',
+    excerpt: 'Discover the top benefits of QR code menus for restaurants. Learn how contactless menus improve hygiene, reduce costs, increase sales, and enhance customer experience.',
+    date: '2025-02-09',
+    category: 'Technology',
+    categoryColor: '#3b82f6',
+  },
 ];
 
 // Blog post content - for static generation
@@ -2418,6 +2458,1068 @@ export const blogPostContent = {
     category: 'Comparison',
     categoryColor: '#ef4444',
     tags: ['Bar POS', 'Brewery POS', 'POS Comparison', 'PetPooja', 'Square', 'Toast', 'Clover', 'Bar Management', 'Alcohol Inventory', 'Bar Technology']
+  },
+  'how-to-create-online-menu-restaurant': {
+    id: 'how-to-create-online-menu-restaurant',
+    title: 'How to Create an Online Menu for Your Restaurant: Complete Guide 2025',
+    excerpt: 'Learn how to create a stunning online menu for your restaurant. Discover best practices, design tips, and how digital menus can increase sales and improve customer experience.',
+    content: `
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Restaurant Online Menu" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Modern digital menu displayed on tablet in restaurant</p>
+        </div>
+
+        <p>In 2025, having an online menu is no longer optional—it's essential. Whether you're running a fine dining restaurant, a casual cafe, or a food truck, a well-designed online menu can significantly boost your sales, improve customer experience, and streamline operations.</p>
+
+        <p>This comprehensive guide will walk you through everything you need to know about creating an online menu that not only looks great but also drives revenue and customer satisfaction.</p>
+
+        <h2>📱 Why Online Menus Are Essential in 2025</h2>
+        <p>The restaurant industry has evolved dramatically. Here's why online menus have become indispensable:</p>
+
+        <ul>
+          <li><strong>Contactless Experience:</strong> Customers prefer touchless ordering, especially post-pandemic</li>
+          <li><strong>Cost Savings:</strong> No printing costs, easy updates, and reduced menu waste</li>
+          <li><strong>Increased Sales:</strong> Digital menus can increase average order value by 15-30%</li>
+          <li><strong>Better Customer Experience:</strong> High-quality images, detailed descriptions, and easy navigation</li>
+          <li><strong>Real-time Updates:</strong> Instantly update prices, add specials, or mark items as sold out</li>
+          <li><strong>Analytics:</strong> Track which items are viewed most and optimize your menu accordingly</li>
+        </ul>
+
+        <h2>🎨 Step-by-Step Guide to Creating Your Online Menu</h2>
+
+        <h3>Step 1: Choose the Right Platform</h3>
+        <p>Selecting the right platform is crucial. Look for features like:</p>
+        <ul>
+          <li>Easy menu builder with drag-and-drop functionality</li>
+          <li>Mobile-responsive design</li>
+          <li>QR code generation</li>
+          <li>Image upload capabilities</li>
+          <li>Real-time updates</li>
+          <li>Analytics and insights</li>
+        </ul>
+
+        <p><strong>DineOpen</strong> offers all these features and more, making it the perfect choice for restaurants looking to create professional online menus.</p>
+
+        <h3>Step 2: Organize Your Menu Structure</h3>
+        <p>A well-organized menu structure helps customers find what they want quickly:</p>
+        <ul>
+          <li><strong>Categories:</strong> Group items logically (Appetizers, Main Courses, Desserts, Beverages)</li>
+          <li><strong>Subcategories:</strong> For larger menus, use subcategories (Vegetarian, Non-Vegetarian, etc.)</li>
+          <li><strong>Featured Items:</strong> Highlight your bestsellers or specials at the top</li>
+          <li><strong>Dietary Information:</strong> Clearly mark vegetarian, vegan, gluten-free, and other dietary options</li>
+        </ul>
+
+        <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+          <p style="margin: 0; color: #1e40af; font-weight: 600;">💡 Pro Tip:</p>
+          <p style="margin: 8px 0 0 0; color: #1e3a8a;">Place your highest-margin items at the top of each category. Studies show customers are more likely to order items they see first.</p>
+        </div>
+
+        <h3>Step 3: Write Compelling Menu Descriptions</h3>
+        <p>Great descriptions sell food. Here's how to write them:</p>
+        <ul>
+          <li><strong>Be Specific:</strong> "Grilled chicken breast" is better than "Chicken"</li>
+          <li><strong>Use Sensory Words:</strong> "Crispy," "tender," "aromatic," "creamy"</li>
+          <li><strong>Highlight Unique Ingredients:</strong> "Locally sourced," "house-made," "organic"</li>
+          <li><strong>Keep It Concise:</strong> 1-2 sentences maximum per item</li>
+          <li><strong>Include Key Information:</strong> Spice level, portion size, preparation method</li>
+        </ul>
+
+        <h3>Step 4: Add High-Quality Images</h3>
+        <p>Food photography can make or break your online menu. Follow these tips:</p>
+        <ul>
+          <li><strong>Professional Photography:</strong> Hire a food photographer or use high-quality stock images</li>
+          <li><strong>Consistent Style:</strong> Use the same lighting and angle for all photos</li>
+          <li><strong>Show Real Food:</strong> Customers want to see what they'll actually receive</li>
+          <li><strong>Multiple Angles:</strong> Consider showing close-ups and full-plate shots</li>
+          <li><strong>Optimize for Mobile:</strong> Ensure images load quickly on mobile devices</li>
+        </ul>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Food Photography" style="width: 100%; max-width: 600px; height: 300px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">High-quality food photography makes menu items irresistible</p>
+        </div>
+
+        <h3>Step 5: Set Competitive Pricing</h3>
+        <p>Pricing strategy is crucial for profitability:</p>
+        <ul>
+          <li><strong>Research Competitors:</strong> Check similar restaurants in your area</li>
+          <li><strong>Consider Costs:</strong> Factor in ingredients, labor, and overhead</li>
+          <li><strong>Psychological Pricing:</strong> Use prices ending in .99 or .95</li>
+          <li><strong>Bundle Options:</strong> Offer combos and meal deals</li>
+          <li><strong>Display Clearly:</strong> Make prices easy to read and understand</li>
+        </ul>
+
+        <h3>Step 6: Implement QR Code Technology</h3>
+        <p>QR codes make accessing your menu effortless:</p>
+        <ul>
+          <li><strong>Generate QR Codes:</strong> Use DineOpen's built-in QR code generator</li>
+          <li><strong>Place Strategically:</strong> Put QR codes on tables, walls, and entry points</li>
+          <li><strong>Provide Instructions:</strong> Add simple "Scan to view menu" text</li>
+          <li><strong>Test Regularly:</strong> Ensure QR codes work on all devices</li>
+        </ul>
+
+        <h2>🚀 Advanced Features to Boost Sales</h2>
+
+        <h3>1. Dynamic Pricing</h3>
+        <p>Adjust prices based on time of day, demand, or special events. For example, offer happy hour pricing automatically during specific hours.</p>
+
+        <h3>2. Upselling Suggestions</h3>
+        <p>Show "Frequently ordered together" or "You might also like" suggestions to increase average order value.</p>
+
+        <h3>3. Special Offers & Promotions</h3>
+        <p>Highlight daily specials, limited-time offers, and seasonal items prominently on your menu.</p>
+
+        <h3>4. Customer Reviews Integration</h3>
+        <p>Display ratings and reviews for popular items to build trust and encourage orders.</p>
+
+        <h3>5. Multi-language Support</h3>
+        <p>Offer your menu in multiple languages to serve diverse customer bases.</p>
+
+        <h2>📊 Best Practices for Online Menu Design</h2>
+
+        <ul>
+          <li><strong>Mobile-First Design:</strong> 70% of customers view menus on mobile devices</li>
+          <li><strong>Fast Loading Times:</strong> Optimize images and minimize load time</li>
+          <li><strong>Easy Navigation:</strong> Use clear categories and search functionality</li>
+          <li><strong>Accessibility:</strong> Ensure your menu is readable for all customers</li>
+          <li><strong>Brand Consistency:</strong> Match your menu design to your restaurant's brand</li>
+          <li><strong>Regular Updates:</strong> Keep your menu current with seasonal changes</li>
+        </ul>
+
+        <h2>💰 How Online Menus Increase Revenue</h2>
+
+        <p>Studies show that restaurants with well-designed online menus see significant revenue increases:</p>
+        <ul>
+          <li><strong>15-30% increase in average order value</strong> through strategic item placement</li>
+          <li><strong>20-40% reduction in printing costs</strong> by eliminating physical menus</li>
+          <li><strong>10-25% increase in customer satisfaction</strong> through better experience</li>
+          <li><strong>30-50% faster ordering process</strong> leading to higher table turnover</li>
+        </ul>
+
+        <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 32px; border-radius: 16px; color: white; margin: 30px 0;">
+          <h3 style="color: white; margin-bottom: 12px; font-size: 28px;">Ready to Create Your Online Menu?</h3>
+          <p style="font-size: 18px; margin-bottom: 24px; opacity: 0.95;">DineOpen makes it easy to create, manage, and optimize your online menu</p>
+          <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            <a href="/#pricing" style="display: inline-block; padding: 16px 32px; background: white; color: #10b981; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px;">Start Free Trial →</a>
+            <a href="/#contact" style="display: inline-block; padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px; border: 2px solid white;">Book Demo</a>
+          </div>
+        </div>
+
+        <h2>✅ Conclusion</h2>
+        <p>Creating an online menu is one of the best investments you can make for your restaurant in 2025. It improves customer experience, increases sales, reduces costs, and positions your restaurant as modern and customer-focused.</p>
+
+        <p>With DineOpen, you get:</p>
+        <ul>
+          <li>✅ Easy-to-use menu builder with drag-and-drop functionality</li>
+          <li>✅ Mobile-responsive design that works on all devices</li>
+          <li>✅ QR code generation for contactless ordering</li>
+          <li>✅ High-quality image uploads (up to 4 images per item)</li>
+          <li>✅ Real-time menu updates</li>
+          <li>✅ Analytics to track menu performance</li>
+          <li>✅ Multi-language support</li>
+          <li>✅ Integration with POS system</li>
+        </ul>
+
+        <p>Start creating your online menu today and watch your restaurant thrive in the digital age!</p>
+
+        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;"><em>Last updated: February 5, 2025</em></p>
+      `,
+    author: 'DineOpen Team',
+    authorRole: 'Restaurant Technology Specialist',
+    publishDate: 'February 5, 2025',
+    readTime: '10 min read',
+    category: 'Technology',
+    categoryColor: '#3b82f6',
+    tags: ['Online Menu', 'Digital Menu', 'QR Code Menu', 'Restaurant Technology', 'Menu Design', 'Restaurant Marketing', 'Contactless Ordering']
+  },
+  'beer-bar-inventory-management-complete-guide': {
+    id: 'beer-bar-inventory-management-complete-guide',
+    title: 'Beer Bar Inventory Management: Complete Guide for 2025',
+    excerpt: 'Master beer bar inventory management with our comprehensive guide. Learn how to track stock, prevent pilferage, optimize ordering, and maximize profits in your bar or brewery.',
+    content: `
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Beer Bar Inventory" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Well-organized beer bar inventory system</p>
+        </div>
+
+        <p>Managing inventory in a beer bar or brewery is one of the most challenging aspects of running a successful establishment. With hundreds of SKUs, varying shelf lives, and the constant threat of pilferage, effective inventory management can make the difference between profitability and losses.</p>
+
+        <p>This comprehensive guide will teach you everything you need to know about beer bar inventory management, from tracking stock levels to preventing theft and optimizing your ordering process.</p>
+
+        <h2>🍺 Why Beer Bar Inventory Management is Critical</h2>
+
+        <p>Poor inventory management in bars can lead to:</p>
+        <ul>
+          <li><strong>Significant Revenue Loss:</strong> Industry studies show bars lose 15-25% of revenue to inventory shrinkage</li>
+          <li><strong>Stockouts:</strong> Running out of popular items leads to lost sales and unhappy customers</li>
+          <li><strong>Overstocking:</strong> Tying up capital in slow-moving inventory reduces cash flow</li>
+          <li><strong>Waste:</strong> Expired or spoiled products result in direct losses</li>
+          <li><strong>Pilferage:</strong> Employee theft and unauthorized consumption can devastate profits</li>
+        </ul>
+
+        <div style="background: #fef2f2; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #ef4444;">
+          <p style="margin: 0; color: #991b1b; font-weight: 600;">⚠️ Critical Statistic:</p>
+          <p style="margin: 8px 0 0 0; color: #7f1d1d;">The average bar loses ₹2-5 lakhs annually due to poor inventory management and pilferage. Effective systems can recover 80-90% of these losses.</p>
+        </div>
+
+        <h2>📊 Key Inventory Metrics Every Bar Should Track</h2>
+
+        <h3>1. Inventory Turnover Ratio</h3>
+        <p>Measures how quickly inventory is sold and replaced:</p>
+        <p><strong>Formula:</strong> Cost of Goods Sold ÷ Average Inventory Value</p>
+        <p><strong>Target:</strong> 12-24 turns per year for beer, 8-12 for spirits</p>
+
+        <h3>2. Pour Cost Percentage</h3>
+        <p>The percentage of revenue spent on inventory:</p>
+        <p><strong>Formula:</strong> (Cost of Inventory Used ÷ Total Sales) × 100</p>
+        <p><strong>Target:</strong> 18-24% for beer, 15-20% for spirits</p>
+
+        <h3>3. Variance Percentage</h3>
+        <p>Difference between expected and actual inventory usage:</p>
+        <p><strong>Formula:</strong> ((Expected Usage - Actual Usage) ÷ Expected Usage) × 100</p>
+        <p><strong>Target:</strong> Less than 2% variance</p>
+
+        <h3>4. Days of Inventory</h3>
+        <p>How many days your current stock will last:</p>
+        <p><strong>Formula:</strong> Current Inventory Value ÷ (Daily Cost of Sales)</p>
+        <p><strong>Target:</strong> 7-14 days for fast-moving items, 30-45 days for slow movers</p>
+
+        <h2>🔍 Step-by-Step Inventory Management Process</h2>
+
+        <h3>Step 1: Establish Baseline Inventory</h3>
+        <p>Start by conducting a complete physical inventory count:</p>
+        <ul>
+          <li>Count all items in storage, bar, and display areas</li>
+          <li>Record quantities, brands, and purchase dates</li>
+          <li>Establish par levels (minimum stock quantities)</li>
+          <li>Set reorder points for each item</li>
+        </ul>
+
+        <h3>Step 2: Implement Regular Counting Schedule</h3>
+        <p>Consistent counting is essential:</p>
+        <ul>
+          <li><strong>Daily Counts:</strong> High-value items (premium spirits, wine)</li>
+          <li><strong>Weekly Counts:</strong> Fast-moving items (beer, popular cocktails)</li>
+          <li><strong>Monthly Counts:</strong> Complete inventory audit</li>
+          <li><strong>Quarterly Counts:</strong> Deep dive with variance analysis</li>
+        </ul>
+
+        <h3>Step 3: Use Technology for Tracking</h3>
+        <p>Modern inventory management systems offer:</p>
+        <ul>
+          <li>Barcode scanning for quick counts</li>
+          <li>Automated reorder alerts</li>
+          <li>Real-time inventory levels</li>
+          <li>Integration with POS systems</li>
+          <li>Pilferage detection algorithms</li>
+        </ul>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Bar Inventory System" style="width: 100%; max-width: 600px; height: 300px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Modern bar inventory management system</p>
+        </div>
+
+        <h2>🚫 Preventing Pilferage: The Silent Profit Killer</h2>
+
+        <p>Pilferage (theft and unauthorized consumption) is one of the biggest threats to bar profitability. Here's how to prevent it:</p>
+
+        <h3>1. Implement Strict Access Controls</h3>
+        <ul>
+          <li>Limit access to storage areas</li>
+          <li>Use keycard or biometric access systems</li>
+          <li>Maintain access logs</li>
+          <li>Conduct surprise audits</li>
+        </ul>
+
+        <h3>2. Use Technology to Detect Anomalies</h3>
+        <ul>
+          <li>Track pour counts vs. sales</li>
+          <li>Monitor unusual patterns (e.g., excessive voids)</li>
+          <li>Set alerts for high variance items</li>
+          <li>Compare staff performance metrics</li>
+        </ul>
+
+        <h3>3. Establish Clear Policies</h3>
+        <ul>
+          <li>Define acceptable staff consumption policies</li>
+          <li>Require manager approval for comps</li>
+          <li>Document all inventory movements</li>
+          <li>Conduct regular training on inventory procedures</li>
+        </ul>
+
+        <h3>4. Monitor Key Indicators</h3>
+        <ul>
+          <li>Pour cost by shift and staff member</li>
+          <li>Variance by category and item</li>
+          <li>Void and comp frequency</li>
+          <li>Inventory shrinkage trends</li>
+        </ul>
+
+        <h2>📦 Optimizing Your Ordering Process</h2>
+
+        <h3>1. Establish Par Levels</h3>
+        <p>Par levels are the minimum quantity you should always have in stock:</p>
+        <ul>
+          <li>Calculate based on sales velocity and lead time</li>
+          <li>Adjust for seasonality and events</li>
+          <li>Review and update quarterly</li>
+        </ul>
+
+        <h3>2. Build Strong Supplier Relationships</h3>
+        <ul>
+          <li>Negotiate volume discounts</li>
+          <li>Establish reliable delivery schedules</li>
+          <li>Maintain backup suppliers</li>
+          <li>Track supplier performance</li>
+        </ul>
+
+        <h3>3. Use Automated Reordering</h3>
+        <p>Modern systems can automatically:</p>
+        <ul>
+          <li>Generate purchase orders when par levels are reached</li>
+          <li>Factor in lead times and delivery schedules</li>
+          <li>Account for upcoming events or promotions</li>
+          <li>Optimize order quantities for best pricing</li>
+        </ul>
+
+        <h2>🍻 Special Considerations for Beer Inventory</h2>
+
+        <h3>1. Shelf Life Management</h3>
+        <p>Beer has expiration dates that must be tracked:</p>
+        <ul>
+          <li>Use FIFO (First In, First Out) rotation</li>
+          <li>Mark expiration dates clearly</li>
+          <li>Set alerts for items approaching expiration</li>
+          <li>Plan promotions for slow-moving items</li>
+        </ul>
+
+        <h3>2. Temperature Control</h3>
+        <p>Proper storage is critical for beer quality:</p>
+        <ul>
+          <li>Maintain consistent temperature (38-45°F for most beers)</li>
+          <li>Monitor temperature regularly</li>
+          <li>Store away from light</li>
+          <li>Keep inventory organized by type and date</li>
+        </ul>
+
+        <h3>3. Draft Beer Management</h3>
+        <p>Draft systems require special attention:</p>
+        <ul>
+          <li>Track keg levels and pour counts</li>
+          <li>Monitor line cleaning schedules</li>
+          <li>Calculate yield per keg</li>
+          <li>Track waste and spillage</li>
+        </ul>
+
+        <h2>💡 Best Practices for Bar Inventory Management</h2>
+
+        <ul>
+          <li><strong>Consistency is Key:</strong> Count at the same time, same day, with the same team</li>
+          <li><strong>Use Technology:</strong> Manual systems are error-prone and time-consuming</li>
+          <li><strong>Train Your Team:</strong> Everyone should understand inventory importance</li>
+          <li><strong>Review Regularly:</strong> Analyze trends and adjust processes</li>
+          <li><strong>Document Everything:</strong> Keep detailed records of all inventory movements</li>
+          <li><strong>Set Clear Goals:</strong> Establish targets for pour cost, variance, and turnover</li>
+          <li><strong>Invest in Security:</strong> Cameras, access controls, and monitoring systems</li>
+        </ul>
+
+        <h2>📈 How DineOpen Helps with Bar Inventory Management</h2>
+
+        <p>DineOpen's advanced inventory management system is specifically designed for bars and breweries:</p>
+
+        <ul>
+          <li><strong>AI-Powered Tracking:</strong> Automatically tracks inventory based on sales</li>
+          <li><strong>Pilferage Detection:</strong> Identifies unusual patterns and alerts you to potential theft</li>
+          <li><strong>Real-Time Updates:</strong> Inventory levels update automatically with each sale</li>
+          <li><strong>Automated Reordering:</strong> Generates purchase orders when par levels are reached</li>
+          <li><strong>Comprehensive Reports:</strong> Pour cost, variance, turnover, and more</li>
+          <li><strong>Multi-Location Support:</strong> Manage inventory across multiple bars or locations</li>
+          <li><strong>Mobile Access:</strong> Count and manage inventory from anywhere</li>
+          <li><strong>Integration:</strong> Seamlessly integrates with POS and accounting systems</li>
+        </ul>
+
+        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 32px; border-radius: 16px; color: white; margin: 30px 0;">
+          <h3 style="color: white; margin-bottom: 12px; font-size: 28px;">Take Control of Your Bar Inventory</h3>
+          <p style="font-size: 18px; margin-bottom: 24px; opacity: 0.95;">Join successful bar owners using DineOpen to reduce losses and maximize profits</p>
+          <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            <a href="/#pricing" style="display: inline-block; padding: 16px 32px; background: white; color: #ef4444; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px;">Start Free Trial →</a>
+            <a href="/#contact" style="display: inline-block; padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px; border: 2px solid white;">Book Demo</a>
+          </div>
+        </div>
+
+        <h2>✅ Conclusion</h2>
+        <p>Effective beer bar inventory management is essential for profitability. By implementing proper tracking, preventing pilferage, optimizing ordering, and using modern technology, you can significantly reduce losses and increase profits.</p>
+
+        <p>Key takeaways:</p>
+        <ul>
+          <li>✅ Track key metrics: pour cost, variance, turnover</li>
+          <li>✅ Conduct regular counts: daily for high-value, weekly for fast-moving items</li>
+          <li>✅ Prevent pilferage: use technology, access controls, and monitoring</li>
+          <li>✅ Optimize ordering: establish par levels and automate reordering</li>
+          <li>✅ Use technology: modern systems save time and reduce errors</li>
+          <li>✅ Train your team: everyone should understand inventory importance</li>
+        </ul>
+
+        <p>With DineOpen's advanced inventory management system, you can take control of your bar inventory and maximize profitability. Start your free trial today!</p>
+
+        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;"><em>Last updated: February 6, 2025</em></p>
+      `,
+    author: 'DineOpen Team',
+    authorRole: 'Bar & Inventory Management Specialist',
+    publishDate: 'February 6, 2025',
+    readTime: '12 min read',
+    category: 'Operations',
+    categoryColor: '#10b981',
+    tags: ['Beer Bar Inventory', 'Bar Inventory Management', 'Alcohol Inventory', 'Pilferage Prevention', 'Bar Operations', 'Inventory Tracking', 'Bar Management']
+  },
+  '5-ways-increase-restaurant-sales-digital-menus': {
+    id: '5-ways-increase-restaurant-sales-digital-menus',
+    title: '5 Ways to Increase Restaurant Sales with Digital Menus in 2025',
+    excerpt: 'Discover proven strategies to boost restaurant sales using digital menus. Learn how QR code menus, dynamic pricing, and smart menu design can increase revenue by up to 30%.',
+    content: `
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Digital Menu Sales" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Digital menus driving increased restaurant sales</p>
+        </div>
+
+        <p>In today's competitive restaurant landscape, increasing sales isn't just about great food—it's about how you present and sell that food. Digital menus have revolutionized the way restaurants interact with customers, and when implemented correctly, they can boost revenue by 15-30%.</p>
+
+        <p>This guide reveals five proven strategies that successful restaurants use to maximize sales through digital menu technology.</p>
+
+        <h2>📈 The Power of Digital Menus</h2>
+
+        <p>Before diving into strategies, let's understand why digital menus are so effective:</p>
+        <ul>
+          <li><strong>Visual Appeal:</strong> High-quality food images increase order value by 20-30%</li>
+          <li><strong>Easy Updates:</strong> Instantly promote specials, adjust prices, or highlight items</li>
+          <li><strong>Data-Driven:</strong> Track what customers view and order to optimize your menu</li>
+          <li><strong>Upselling Opportunities:</strong> Suggest add-ons and complementary items automatically</li>
+          <li><strong>Faster Ordering:</strong> Reduce wait times and increase table turnover</li>
+        </ul>
+
+        <h2>1. 🎯 Strategic Menu Item Placement</h2>
+
+        <p>Where items appear on your menu significantly impacts sales. Here's how to optimize placement:</p>
+
+        <h3>The Golden Triangle</h3>
+        <p>Research shows customers' eyes naturally follow a "Z" pattern when viewing menus. Place your highest-margin items in these prime locations:</p>
+        <ul>
+          <li><strong>Top Right:</strong> First place customers look</li>
+          <li><strong>Center:</strong> Natural focal point</li>
+          <li><strong>Bottom Left:</strong> Last place before decision</li>
+        </ul>
+
+        <h3>Category Ordering</h3>
+        <p>Order categories strategically:</p>
+        <ul>
+          <li>Start with appetizers (lower commitment, higher margins)</li>
+          <li>Feature main courses prominently</li>
+          <li>End with desserts (impulse purchases)</li>
+        </ul>
+
+        <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+          <p style="margin: 0; color: #1e40af; font-weight: 600;">💡 Pro Tip:</p>
+          <p style="margin: 8px 0 0 0; color: #1e3a8a;">Move your highest-margin items to the top of each category. This simple change can increase profits by 10-15% without changing prices.</p>
+        </div>
+
+        <h2>2. 📸 High-Quality Food Photography</h2>
+
+        <p>Visual appeal drives sales. Here's how to use images effectively:</p>
+
+        <h3>Why Images Matter</h3>
+        <ul>
+          <li>Items with photos sell 30% more than those without</li>
+          <li>Professional photos increase perceived value</li>
+          <li>Images help customers make decisions faster</li>
+        </ul>
+
+        <h3>Best Practices</h3>
+        <ul>
+          <li><strong>Use Real Photos:</strong> Show actual dishes, not stock images</li>
+          <li><strong>Consistent Style:</strong> Same lighting, angle, and background</li>
+          <li><strong>Show Details:</strong> Close-ups of ingredients and textures</li>
+          <li><strong>Multiple Angles:</strong> Consider showing full plate and detail shots</li>
+          <li><strong>Optimize for Mobile:</strong> Ensure fast loading on all devices</li>
+        </ul>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Food Photography" style="width: 100%; max-width: 600px; height: 300px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Professional food photography increases sales significantly</p>
+        </div>
+
+        <h2>3. 💰 Dynamic Pricing and Promotions</h2>
+
+        <p>Digital menus allow you to adjust pricing and promotions in real-time:</p>
+
+        <h3>Time-Based Pricing</h3>
+        <ul>
+          <li><strong>Happy Hour:</strong> Automatically reduce prices during slow periods</li>
+          <li><strong>Lunch Specials:</strong> Offer discounted combos during lunch hours</li>
+          <li><strong>Weekend Pricing:</strong> Adjust for peak demand times</li>
+        </ul>
+
+        <h3>Promotional Strategies</h3>
+        <ul>
+          <li><strong>Daily Specials:</strong> Highlight limited-time offers prominently</li>
+          <li><strong>Bundle Deals:</strong> Create meal combos that increase order value</li>
+          <li><strong>Seasonal Items:</strong> Feature seasonal dishes with special pricing</li>
+          <li><strong>Flash Sales:</strong> Create urgency with time-limited promotions</li>
+        </ul>
+
+        <h3>Upselling Techniques</h3>
+        <ul>
+          <li>Show "Frequently ordered together" suggestions</li>
+          <li>Highlight add-ons and extras</li>
+          <li>Display premium options prominently</li>
+          <li>Offer size upgrades</li>
+        </ul>
+
+        <h2>4. 🎨 Compelling Menu Descriptions</h2>
+
+        <p>Great descriptions sell food. Here's how to write them:</p>
+
+        <h3>The Art of Menu Copywriting</h3>
+        <ul>
+          <li><strong>Use Sensory Words:</strong> "Crispy," "tender," "aromatic," "creamy"</li>
+          <li><strong>Highlight Unique Ingredients:</strong> "Locally sourced," "house-made," "organic"</li>
+          <li><strong>Create Desire:</strong> Focus on benefits, not just features</li>
+          <li><strong>Be Specific:</strong> "Grilled 8-oz. chicken breast" beats "Chicken"</li>
+          <li><strong>Tell a Story:</strong> Share the origin or inspiration behind dishes</li>
+        </ul>
+
+        <h3>Example Transformations</h3>
+        <p><strong>Before:</strong> "Chicken Curry"</p>
+        <p><strong>After:</strong> "Tender chicken pieces slow-cooked in a rich, aromatic curry with fresh herbs and spices, served with basmati rice"</p>
+
+        <p>The second description creates desire and justifies a higher price point.</p>
+
+        <h2>5. 📊 Data-Driven Menu Optimization</h2>
+
+        <p>Digital menus provide valuable data to optimize your offerings:</p>
+
+        <h3>Track Key Metrics</h3>
+        <ul>
+          <li><strong>View Counts:</strong> See which items customers view most</li>
+          <li><strong>Order Frequency:</strong> Identify bestsellers and slow movers</li>
+          <li><strong>Time to Order:</strong> Measure how long customers spend viewing</li>
+          <li><strong>Abandonment Rate:</strong> Track items viewed but not ordered</li>
+        </ul>
+
+        <h3>Optimization Strategies</h3>
+        <ul>
+          <li><strong>Promote High-View, Low-Order Items:</strong> They're interesting but need better positioning</li>
+          <li><strong>Remove or Reposition Slow Movers:</strong> Free up space for better performers</li>
+          <li><strong>Test Different Placements:</strong> A/B test item positions</li>
+          <li><strong>Adjust Descriptions:</strong> Improve copy for underperforming items</li>
+        </ul>
+
+        <h2>🚀 Advanced Strategies for Maximum Impact</h2>
+
+        <h3>1. Personalization</h3>
+        <p>Use customer data to personalize menu recommendations:</p>
+        <ul>
+          <li>Show items based on past orders</li>
+          <li>Highlight dietary preferences</li>
+          <li>Suggest items similar to favorites</li>
+        </ul>
+
+        <h3>2. Social Proof</h3>
+        <p>Display ratings and reviews for menu items:</p>
+        <ul>
+          <li>Show star ratings for popular items</li>
+          <li>Display customer reviews</li>
+          <li>Highlight "Most Popular" badges</li>
+        </ul>
+
+        <h3>3. Scarcity and Urgency</h3>
+        <p>Create FOMO (Fear of Missing Out):</p>
+        <ul>
+          <li>Show "Only 3 left" for limited items</li>
+          <li>Display "Ordered 15 times today"</li>
+          <li>Highlight "Limited time only" specials</li>
+        </ul>
+
+        <h2>💰 Real Results: Case Studies</h2>
+
+        <p>Restaurants using these strategies report:</p>
+        <ul>
+          <li><strong>25-30% increase in average order value</strong></li>
+          <li><strong>20-40% reduction in printing costs</strong></li>
+          <li><strong>15-25% increase in customer satisfaction</strong></li>
+          <li><strong>30-50% faster ordering process</strong></li>
+          <li><strong>10-20% increase in repeat visits</strong></li>
+        </ul>
+
+        <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 32px; border-radius: 16px; color: white; margin: 30px 0;">
+          <h3 style="color: white; margin-bottom: 12px; font-size: 28px;">Ready to Increase Your Restaurant Sales?</h3>
+          <p style="font-size: 18px; margin-bottom: 24px; opacity: 0.95;">DineOpen's digital menu system helps restaurants increase sales by up to 30%</p>
+          <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            <a href="/#pricing" style="display: inline-block; padding: 16px 32px; background: white; color: #f59e0b; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px;">Start Free Trial →</a>
+            <a href="/#contact" style="display: inline-block; padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px; border: 2px solid white;">Book Demo</a>
+          </div>
+        </div>
+
+        <h2>✅ Conclusion</h2>
+        <p>Digital menus offer unprecedented opportunities to increase restaurant sales. By implementing strategic placement, high-quality images, dynamic pricing, compelling descriptions, and data-driven optimization, you can significantly boost revenue.</p>
+
+        <p>Key takeaways:</p>
+        <ul>
+          <li>✅ Place high-margin items in prime menu locations</li>
+          <li>✅ Use professional food photography to increase appeal</li>
+          <li>✅ Implement dynamic pricing and promotions</li>
+          <li>✅ Write compelling menu descriptions</li>
+          <li>✅ Use data to continuously optimize your menu</li>
+        </ul>
+
+        <p>With DineOpen's advanced digital menu system, you get all these features and more. Start your free trial today and see how digital menus can transform your restaurant's sales!</p>
+
+        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;"><em>Last updated: February 7, 2025</em></p>
+      `,
+    author: 'DineOpen Team',
+    authorRole: 'Restaurant Sales Optimization Specialist',
+    publishDate: 'February 7, 2025',
+    readTime: '8 min read',
+    category: 'Revenue',
+    categoryColor: '#f59e0b',
+    tags: ['Digital Menus', 'Restaurant Sales', 'Menu Optimization', 'Revenue Growth', 'QR Code Menus', 'Restaurant Marketing', 'Upselling']
+  },
+  'restaurant-inventory-management-best-practices-2025': {
+    id: 'restaurant-inventory-management-best-practices-2025',
+    title: 'Restaurant Inventory Management: Best Practices for 2025',
+    excerpt: 'Learn the best practices for restaurant inventory management. Discover how to reduce waste, optimize stock levels, track ingredients, and save thousands annually with smart inventory systems.',
+    content: `
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Restaurant Inventory Management" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Efficient restaurant inventory management system</p>
+        </div>
+
+        <p>Effective inventory management is the backbone of a profitable restaurant. Poor inventory control leads to waste, stockouts, overordering, and ultimately, lost revenue. In fact, restaurants lose an average of 4-10% of their revenue due to inventory mismanagement.</p>
+
+        <p>This comprehensive guide covers the best practices for restaurant inventory management in 2025, helping you reduce waste, optimize stock levels, and maximize profitability.</p>
+
+        <h2>📊 Why Inventory Management Matters</h2>
+
+        <p>Proper inventory management directly impacts your bottom line:</p>
+        <ul>
+          <li><strong>Reduce Waste:</strong> Minimize food spoilage and expiration losses</li>
+          <li><strong>Prevent Stockouts:</strong> Ensure you never run out of popular items</li>
+          <li><strong>Optimize Cash Flow:</strong> Avoid tying up capital in excess inventory</li>
+          <li><strong>Control Costs:</strong> Track food costs accurately and identify discrepancies</li>
+          <li><strong>Improve Efficiency:</strong> Streamline ordering and receiving processes</li>
+        </ul>
+
+        <div style="background: #fef2f2; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #ef4444;">
+          <p style="margin: 0; color: #991b1b; font-weight: 600;">💰 Cost Impact:</p>
+          <p style="margin: 8px 0 0 0; color: #7f1d1d;">A restaurant with ₹50 lakhs annual revenue can save ₹2-5 lakhs annually through effective inventory management—that's 4-10% of revenue!</p>
+        </div>
+
+        <h2>📋 Essential Inventory Management Practices</h2>
+
+        <h3>1. Establish a Regular Counting Schedule</h3>
+        <p>Consistent inventory counts are crucial:</p>
+        <ul>
+          <li><strong>Daily Counts:</strong> High-value items (meat, seafood, premium ingredients)</li>
+          <li><strong>Weekly Counts:</strong> Fast-moving items (vegetables, dairy, bread)</li>
+          <li><strong>Monthly Counts:</strong> Complete inventory audit</li>
+          <li><strong>Quarterly Reviews:</strong> Analyze trends and adjust processes</li>
+        </ul>
+
+        <h3>2. Use FIFO (First In, First Out)</h3>
+        <p>Always use older inventory before newer stock:</p>
+        <ul>
+          <li>Organize storage with oldest items in front</li>
+          <li>Label all items with received dates</li>
+          <li>Train staff on FIFO principles</li>
+          <li>Regularly rotate stock</li>
+        </ul>
+
+        <h3>3. Set Par Levels</h3>
+        <p>Par levels are minimum stock quantities you should always maintain:</p>
+        <ul>
+          <li>Calculate based on sales velocity and lead time</li>
+          <li>Adjust for seasonality and events</li>
+          <li>Review and update regularly</li>
+          <li>Set reorder points (when to order)</li>
+        </ul>
+
+        <h3>4. Track Key Metrics</h3>
+        <p>Monitor these important metrics:</p>
+        <ul>
+          <li><strong>Food Cost Percentage:</strong> (Cost of Goods Sold ÷ Total Sales) × 100</li>
+          <li><strong>Inventory Turnover:</strong> Cost of Goods Sold ÷ Average Inventory</li>
+          <li><strong>Waste Percentage:</strong> (Waste Value ÷ Total Inventory Value) × 100</li>
+          <li><strong>Variance:</strong> Difference between expected and actual usage</li>
+        </ul>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Inventory Tracking" style="width: 100%; max-width: 600px; height: 300px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Organized inventory storage with proper labeling</p>
+        </div>
+
+        <h2>🔧 Technology Solutions for Inventory Management</h2>
+
+        <h3>1. Automated Inventory Tracking</h3>
+        <p>Modern systems automatically track inventory:</p>
+        <ul>
+          <li>Update stock levels with each sale</li>
+          <li>Generate alerts when items are low</li>
+          <li>Track expiration dates</li>
+          <li>Calculate food costs in real-time</li>
+        </ul>
+
+        <h3>2. Barcode Scanning</h3>
+        <p>Speed up counting and reduce errors:</p>
+        <ul>
+          <li>Scan items during receiving</li>
+          <li>Quick inventory counts</li>
+          <li>Accurate data entry</li>
+          <li>Integration with POS systems</li>
+        </ul>
+
+        <h3>3. Integration with POS</h3>
+        <p>Connect inventory with your point of sale:</p>
+        <ul>
+          <li>Automatic deduction with each sale</li>
+          <li>Real-time inventory levels</li>
+          <li>Recipe costing</li>
+          <li>Sales forecasting</li>
+        </ul>
+
+        <h2>📦 Receiving and Storage Best Practices</h2>
+
+        <h3>Receiving Process</h3>
+        <ul>
+          <li><strong>Inspect All Deliveries:</strong> Check quality, quantity, and expiration dates</li>
+          <li><strong>Verify Against Purchase Orders:</strong> Ensure you received what you ordered</li>
+          <li><strong>Document Immediately:</strong> Record all received items</li>
+          <li><strong>Store Properly:</strong> Follow FIFO and proper storage guidelines</li>
+        </ul>
+
+        <h3>Storage Organization</h3>
+        <ul>
+          <li><strong>Label Everything:</strong> Use clear labels with dates</li>
+          <li><strong>Organize by Category:</strong> Group similar items together</li>
+          <li><strong>Maintain Temperature:</strong> Follow proper storage temperatures</li>
+          <li><strong>Control Access:</strong> Limit who can access storage areas</li>
+        </ul>
+
+        <h2>🚫 Reducing Waste and Loss</h2>
+
+        <h3>1. Track Waste</h3>
+        <p>Monitor and analyze waste:</p>
+        <ul>
+          <li>Record all waste with reasons</li>
+          <li>Categorize waste (spoilage, overproduction, etc.)</li>
+          <li>Identify patterns and trends</li>
+          <li>Set waste reduction goals</li>
+        </ul>
+
+        <h3>2. Optimize Portion Sizes</h3>
+        <ul>
+          <li>Use standardized recipes</li>
+          <li>Train staff on portion control</li>
+          <li>Monitor actual vs. expected usage</li>
+          <li>Adjust recipes based on data</li>
+        </ul>
+
+        <h3>3. Manage Expiration Dates</h3>
+        <ul>
+          <li>Track expiration dates for all items</li>
+          <li>Set alerts for items expiring soon</li>
+          <li>Plan specials for items nearing expiration</li>
+          <li>Donate or compost when appropriate</li>
+        </ul>
+
+        <h2>📈 Advanced Inventory Management Strategies</h2>
+
+        <h3>1. Recipe Costing</h3>
+        <p>Calculate the exact cost of each menu item:</p>
+        <ul>
+          <li>Break down recipes into ingredients</li>
+          <li>Calculate cost per serving</li>
+          <li>Update as ingredient prices change</li>
+          <li>Use for pricing decisions</li>
+        </ul>
+
+        <h3>2. Sales Forecasting</h3>
+        <p>Predict future demand:</p>
+        <ul>
+          <li>Analyze historical sales data</li>
+          <li>Factor in seasonality and events</li>
+          <li>Adjust inventory levels accordingly</li>
+          <li>Reduce waste from overordering</li>
+        </ul>
+
+        <h3>3. Supplier Management</h3>
+        <ul>
+          <li>Maintain relationships with reliable suppliers</li>
+          <li>Negotiate volume discounts</li>
+          <li>Have backup suppliers</li>
+          <li>Track supplier performance</li>
+        </ul>
+
+        <h2>💡 How DineOpen Simplifies Inventory Management</h2>
+
+        <p>DineOpen's inventory management system offers:</p>
+        <ul>
+          <li><strong>AI-Powered Tracking:</strong> Automatically tracks inventory based on sales</li>
+          <li><strong>Real-Time Updates:</strong> Inventory levels update with each transaction</li>
+          <li><strong>Automated Alerts:</strong> Get notified when items are low or expiring</li>
+          <li><strong>Recipe Costing:</strong> Calculate exact costs for menu items</li>
+          <li><strong>Waste Tracking:</strong> Monitor and analyze waste</li>
+          <li><strong>Comprehensive Reports:</strong> Food cost, turnover, variance, and more</li>
+          <li><strong>Mobile Access:</strong> Manage inventory from anywhere</li>
+          <li><strong>Multi-Location Support:</strong> Manage inventory across multiple restaurants</li>
+        </ul>
+
+        <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 32px; border-radius: 16px; color: white; margin: 30px 0;">
+          <h3 style="color: white; margin-bottom: 12px; font-size: 28px;">Streamline Your Inventory Management</h3>
+          <p style="font-size: 18px; margin-bottom: 24px; opacity: 0.95;">Join restaurants using DineOpen to reduce waste and maximize profits</p>
+          <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            <a href="/#pricing" style="display: inline-block; padding: 16px 32px; background: white; color: #10b981; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px;">Start Free Trial →</a>
+            <a href="/#contact" style="display: inline-block; padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px; border: 2px solid white;">Book Demo</a>
+          </div>
+        </div>
+
+        <h2>✅ Conclusion</h2>
+        <p>Effective inventory management is essential for restaurant profitability. By implementing regular counts, using FIFO, setting par levels, tracking metrics, and leveraging technology, you can significantly reduce waste and maximize profits.</p>
+
+        <p>Key takeaways:</p>
+        <ul>
+          <li>✅ Establish regular counting schedules</li>
+          <li>✅ Use FIFO for all inventory</li>
+          <li>✅ Set and maintain par levels</li>
+          <li>✅ Track key metrics regularly</li>
+          <li>✅ Leverage technology for automation</li>
+          <li>✅ Focus on waste reduction</li>
+          <li>✅ Train your team on best practices</li>
+        </ul>
+
+        <p>With DineOpen's advanced inventory management system, you can take control of your inventory and save thousands annually. Start your free trial today!</p>
+
+        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;"><em>Last updated: February 8, 2025</em></p>
+      `,
+    author: 'DineOpen Team',
+    authorRole: 'Inventory Management Specialist',
+    publishDate: 'February 8, 2025',
+    readTime: '10 min read',
+    category: 'Operations',
+    categoryColor: '#10b981',
+    tags: ['Inventory Management', 'Restaurant Operations', 'Food Cost Control', 'Waste Reduction', 'Inventory Tracking', 'Restaurant Efficiency']
+  },
+  'qr-code-menu-benefits-restaurants': {
+    id: 'qr-code-menu-benefits-restaurants',
+    title: 'QR Code Menu Benefits for Restaurants: Why Every Restaurant Needs One',
+    excerpt: 'Discover the top benefits of QR code menus for restaurants. Learn how contactless menus improve hygiene, reduce costs, increase sales, and enhance customer experience.',
+    content: `
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="QR Code Menu" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Customer scanning QR code to view digital menu</p>
+        </div>
+
+        <p>QR code menus have become a game-changer for restaurants worldwide. What started as a necessity during the pandemic has evolved into a powerful tool that improves operations, reduces costs, and enhances customer experience.</p>
+
+        <p>If you're still using traditional printed menus, you're missing out on significant benefits. This guide explores why every restaurant needs a QR code menu in 2025.</p>
+
+        <h2>📱 What Are QR Code Menus?</h2>
+
+        <p>QR (Quick Response) code menus allow customers to access your digital menu instantly by scanning a code with their smartphone. The code links directly to your online menu, which customers can view on their own devices.</p>
+
+        <h2>💡 Top 10 Benefits of QR Code Menus</h2>
+
+        <h3>1. 🧼 Improved Hygiene and Safety</h3>
+        <p>Contactless menus eliminate the need for physical menu handling:</p>
+        <ul>
+          <li>No shared surfaces that need constant cleaning</li>
+          <li>Reduced risk of germ transmission</li>
+          <li>Peace of mind for health-conscious customers</li>
+          <li>Compliance with health and safety regulations</li>
+        </ul>
+
+        <h3>2. 💰 Significant Cost Savings</h3>
+        <p>QR code menus eliminate printing costs:</p>
+        <ul>
+          <li><strong>No Printing Costs:</strong> Save ₹10,000-50,000 annually on menu printing</li>
+          <li><strong>No Reprinting:</strong> Update menus instantly without printing new copies</li>
+          <li><strong>Reduced Waste:</strong> No outdated menus to discard</li>
+          <li><strong>Lower Maintenance:</strong> No need to replace damaged or worn menus</li>
+        </ul>
+
+        <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+          <p style="margin: 0; color: #1e40af; font-weight: 600;">💰 Cost Savings Example:</p>
+          <p style="margin: 8px 0 0 0; color: #1e3a8a;">A restaurant printing 500 menus quarterly at ₹50 each spends ₹1 lakh annually. QR code menus cost virtually nothing to update and maintain.</p>
+        </div>
+
+        <h3>3. ⚡ Instant Updates</h3>
+        <p>Update your menu in real-time:</p>
+        <ul>
+          <li>Change prices instantly</li>
+          <li>Add or remove items immediately</li>
+          <li>Mark items as sold out</li>
+          <li>Promote daily specials</li>
+          <li>Update seasonal offerings</li>
+        </ul>
+
+        <h3>4. 📈 Increased Sales</h3>
+        <p>Digital menus drive higher sales:</p>
+        <ul>
+          <li><strong>High-Quality Images:</strong> Visual appeal increases order value by 20-30%</li>
+          <li><strong>Upselling Opportunities:</strong> Suggest add-ons and complementary items</li>
+          <li><strong>Strategic Placement:</strong> Highlight high-margin items</li>
+          <li><strong>Dynamic Pricing:</strong> Offer time-based promotions</li>
+        </ul>
+
+        <h3>5. 🎨 Enhanced Customer Experience</h3>
+        <p>Better experience leads to happier customers:</p>
+        <ul>
+          <li>Customers can zoom in to read details</li>
+          <li>Search functionality for easy navigation</li>
+          <li>Filter by dietary preferences</li>
+          <li>View in preferred language</li>
+          <li>Access allergen information</li>
+        </ul>
+
+        <h3>6. 📊 Valuable Analytics</h3>
+        <p>Track customer behavior and menu performance:</p>
+        <ul>
+          <li>See which items are viewed most</li>
+          <li>Track time spent viewing menu</li>
+          <li>Identify popular categories</li>
+          <li>Optimize menu based on data</li>
+        </ul>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="QR Code Scanning" style="width: 100%; max-width: 600px; height: 300px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Easy QR code scanning process</p>
+        </div>
+
+        <h3>7. 🌍 Multi-Language Support</h3>
+        <p>Serve diverse customer bases:</p>
+        <ul>
+          <li>Offer menu in multiple languages</li>
+          <li>Customers select preferred language</li>
+          <li>No need for separate printed menus</li>
+          <li>Expand your customer base</li>
+        </ul>
+
+        <h3>8. 🚀 Faster Service</h3>
+        <p>Speed up the ordering process:</p>
+        <ul>
+          <li>Customers browse at their own pace</li>
+          <li>No waiting for physical menus</li>
+          <li>Faster decision-making</li>
+          <li>Higher table turnover</li>
+        </ul>
+
+        <h3>9. 📱 Mobile-Friendly</h3>
+        <p>Optimized for smartphone viewing:</p>
+        <ul>
+          <li>70% of customers use mobile devices</li>
+          <li>Responsive design for all screen sizes</li>
+          <li>Fast loading times</li>
+          <li>Easy navigation</li>
+        </ul>
+
+        <h3>10. 🌱 Environmental Benefits</h3>
+        <p>Reduce your environmental impact:</p>
+        <ul>
+          <li>No paper waste</li>
+          <li>No ink or printing chemicals</li>
+          <li>Reduced carbon footprint</li>
+          <li>Appeal to eco-conscious customers</li>
+        </ul>
+
+        <h2>🎯 How to Implement QR Code Menus</h2>
+
+        <h3>Step 1: Create Your Digital Menu</h3>
+        <ul>
+          <li>Use a platform like DineOpen to build your menu</li>
+          <li>Add high-quality images</li>
+          <li>Write compelling descriptions</li>
+          <li>Organize into clear categories</li>
+        </ul>
+
+        <h3>Step 2: Generate QR Codes</h3>
+        <ul>
+          <li>Use DineOpen's built-in QR code generator</li>
+          <li>Create unique codes for each table</li>
+          <li>Test codes on multiple devices</li>
+        </ul>
+
+        <h3>Step 3: Place QR Codes Strategically</h3>
+        <ul>
+          <li>On every table</li>
+          <li>At the entrance</li>
+          <li>On walls and pillars</li>
+          <li>Include simple instructions</li>
+        </ul>
+
+        <h3>Step 4: Train Your Staff</h3>
+        <ul>
+          <li>Explain the benefits to customers</li>
+          <li>Help customers who need assistance</li>
+          <li>Keep backup printed menus for emergencies</li>
+        </ul>
+
+        <h2>💡 Best Practices for QR Code Menus</h2>
+
+        <ul>
+          <li><strong>Make It Easy:</strong> Provide clear scanning instructions</li>
+          <li><strong>Test Regularly:</strong> Ensure codes work on all devices</li>
+          <li><strong>Keep It Updated:</strong> Maintain current menu information</li>
+          <li><strong>Optimize for Mobile:</strong> Ensure fast loading and easy navigation</li>
+          <li><strong>Add Value:</strong> Include special offers and promotions</li>
+          <li><strong>Monitor Analytics:</strong> Track usage and optimize based on data</li>
+        </ul>
+
+        <h2>📊 Real Results from Restaurants</h2>
+
+        <p>Restaurants using QR code menus report:</p>
+        <ul>
+          <li><strong>20-40% reduction in printing costs</strong></li>
+          <li><strong>15-30% increase in average order value</strong></li>
+          <li><strong>30-50% faster ordering process</strong></li>
+          <li><strong>10-25% increase in customer satisfaction</strong></li>
+          <li><strong>Reduced wait times and higher table turnover</strong></li>
+        </ul>
+
+        <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 32px; border-radius: 16px; color: white; margin: 30px 0;">
+          <h3 style="color: white; margin-bottom: 12px; font-size: 28px;">Ready to Get Started with QR Code Menus?</h3>
+          <p style="font-size: 18px; margin-bottom: 24px; opacity: 0.95;">DineOpen makes it easy to create and manage QR code menus</p>
+          <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            <a href="/#pricing" style="display: inline-block; padding: 16px 32px; background: white; color: #3b82f6; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px;">Start Free Trial →</a>
+            <a href="/#contact" style="display: inline-block; padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px; border: 2px solid white;">Book Demo</a>
+          </div>
+        </div>
+
+        <h2>✅ Conclusion</h2>
+        <p>QR code menus offer numerous benefits that make them essential for modern restaurants. From cost savings and increased sales to improved hygiene and customer experience, the advantages are clear.</p>
+
+        <p>Key benefits:</p>
+        <ul>
+          <li>✅ Improved hygiene and safety</li>
+          <li>✅ Significant cost savings</li>
+          <li>✅ Instant menu updates</li>
+          <li>✅ Increased sales and revenue</li>
+          <li>✅ Enhanced customer experience</li>
+          <li>✅ Valuable analytics and insights</li>
+          <li>✅ Multi-language support</li>
+          <li>✅ Faster service and higher turnover</li>
+          <li>✅ Mobile-friendly design</li>
+          <li>✅ Environmental benefits</li>
+        </ul>
+
+        <p>With DineOpen, you get a complete QR code menu solution with easy setup, beautiful design, and powerful analytics. Start your free trial today and join thousands of restaurants benefiting from QR code menus!</p>
+
+        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;"><em>Last updated: February 9, 2025</em></p>
+      `,
+    author: 'DineOpen Team',
+    authorRole: 'Restaurant Technology Specialist',
+    publishDate: 'February 9, 2025',
+    readTime: '8 min read',
+    category: 'Technology',
+    categoryColor: '#3b82f6',
+    tags: ['QR Code Menu', 'Digital Menu', 'Contactless Ordering', 'Restaurant Technology', 'Menu Innovation', 'Customer Experience']
   }
 };
 
