@@ -106,6 +106,22 @@ export const blogPosts = [
     category: 'Comparison',
     categoryColor: '#ef4444',
   },
+  {
+    slug: '10-quick-tricks-attract-more-customers-restaurant',
+    title: '10 Quick Tricks to Attract More Customers to Your Restaurant',
+    excerpt: 'Simple, actionable tricks that bring more customers through your door. Learn proven strategies that work immediately without breaking the bank.',
+    date: '2025-01-31',
+    category: 'Restaurant',
+    categoryColor: '#ef4444',
+  },
+  {
+    slug: 'bar-brewery-pos-software-complete-guide-2026',
+    title: 'Bar & Brewery POS Software: Complete Guide 2026 | DineOpen vs PetPooja vs Square vs Toast',
+    excerpt: 'Discover the best POS system for your bar or brewery. Compare DineOpen, PetPooja, Square, Toast, and more. Learn about multi-terminal billing, alcohol inventory management, bill splitting, and how to maximize bar profits.',
+    date: '2025-02-01',
+    category: 'Comparison',
+    categoryColor: '#ef4444',
+  },
 ];
 
 // Blog post content - for static generation
@@ -1913,6 +1929,495 @@ export const blogPostContent = {
     category: 'Comparison',
     categoryColor: '#ef4444',
     tags: ['Ice Cream POS', 'Dessert Shop POS', 'POS Comparison', 'PetPooja', 'Ice Cream Shop Management', 'Dessert Shop Technology', 'Restaurant POS', 'Variations Management', 'Inventory Management']
+  },
+  '10-quick-tricks-attract-more-customers-restaurant': {
+    id: '10-quick-tricks-attract-more-customers-restaurant',
+    title: '10 Quick Tricks to Attract More Customers to Your Restaurant',
+    excerpt: 'Simple, actionable tricks that bring more customers through your door. Learn proven strategies that work immediately without breaking the bank.',
+    content: `
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Restaurant Customers" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">More customers mean more success for your restaurant</p>
+        </div>
+
+        <p>Want more customers walking through your door? You don't need a massive marketing budget or complicated strategies. Sometimes, the simplest tricks work the best. Here are 10 quick, proven tricks that can bring more customers to your restaurant—starting today.</p>
+
+        <h2>🎯 Trick #1: The "First Visit" Discount</h2>
+        <p><strong>What it is:</strong> Offer 20% off or a free appetizer for first-time customers.</p>
+        <p><strong>Why it works:</strong> People love trying new places when there's a deal. It removes the risk of a bad experience.</p>
+        <p><strong>How to do it:</strong> Print simple cards or use your POS system to track first-time visitors. Mention it on your social media and Google Business Profile.</p>
+
+        <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 8px;">
+          <strong>💡 Pro Tip:</strong> Use DineOpen's customer management to automatically identify first-time visitors and apply discounts instantly.
+        </div>
+
+        <h2>📸 Trick #2: Instagram-Worthy Food Photos</h2>
+        <p><strong>What it is:</strong> Make your food look absolutely stunning. Good lighting, nice plating, colorful ingredients.</p>
+        <p><strong>Why it works:</strong> 75% of people check Instagram before choosing a restaurant. Beautiful photos = more customers.</p>
+        <p><strong>How to do it:</strong> Take photos in natural light, use colorful garnishes, and post daily on Instagram. Tag your location!</p>
+
+        <h2>⭐ Trick #3: Ask for Reviews (The Right Way)</h2>
+        <p><strong>What it is:</strong> When a customer seems happy, ask: "Would you mind leaving us a quick Google review?"</p>
+        <p><strong>Why it works:</strong> 88% of people trust online reviews. More positive reviews = more customers.</p>
+        <p><strong>How to do it:</strong> Train your staff to ask satisfied customers. Make it easy—have a QR code on the receipt that links directly to your Google review page.</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Happy Restaurant Customers" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Happy customers become your best marketers</p>
+        </div>
+
+        <h2>🎁 Trick #4: The "Bring a Friend" Deal</h2>
+        <p><strong>What it is:</strong> "Bring 2 friends, get 1 free dessert" or "Refer a friend, both get 15% off."</p>
+        <p><strong>Why it works:</strong> People love sharing good deals. Your customers become your sales team.</p>
+        <p><strong>How to do it:</strong> Create a simple referral program. Track it with your POS system or use a simple spreadsheet.</p>
+
+        <h2>⏰ Trick #5: Happy Hour Magic</h2>
+        <p><strong>What it is:</strong> Offer special prices during slow hours (2-5 PM or 9-11 PM).</p>
+        <p><strong>Why it works:</strong> Fills empty tables during off-peak times. More revenue from hours that were previously dead.</p>
+        <p><strong>How to do it:</strong> Create a simple happy hour menu. Promote it on social media and with a sign outside.</p>
+
+        <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; margin: 20px 0; border-radius: 8px;">
+          <strong>💡 Pro Tip:</strong> Use DineOpen's analytics to identify your slowest hours, then create targeted promotions for those times.
+        </div>
+
+        <h2>📱 Trick #6: Quick Response on Social Media</h2>
+        <p><strong>What it is:</strong> Reply to every comment, message, and review within 2 hours.</p>
+        <p><strong>Why it works:</strong> Shows you care. People notice when restaurants respond quickly. It builds trust.</p>
+        <p><strong>How to do it:</strong> Set notifications on your phone. Keep responses friendly and personal. Thank people for positive reviews, address concerns quickly.</p>
+
+        <h2>🎨 Trick #7: Change Your Specials Daily</h2>
+        <p><strong>What it is:</strong> Have a "Today's Special" that changes every day.</p>
+        <p><strong>Why it works:</strong> Creates urgency. "I should go today because tomorrow it might be different!"</p>
+        <p><strong>How to do it:</strong> Post it on social media every morning. Put a chalkboard sign outside. Mention it when customers call.</p>
+
+        <h2>🤝 Trick #8: Partner with Local Businesses</h2>
+        <p><strong>What it is:</strong> Team up with nearby gyms, salons, or offices. "Show your gym membership, get 10% off."</p>
+        <p><strong>Why it works:</strong> Cross-promotion brings new customers from different circles.</p>
+        <p><strong>How to do it:</strong> Approach 3-5 local businesses. Offer them a deal, ask them to promote you. Simple win-win.</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Restaurant Service" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Great service brings customers back</p>
+        </div>
+
+        <h2>🎯 Trick #9: The "Birthday Freebie"</h2>
+        <p><strong>What it is:</strong> Free dessert or drink on birthdays. Simple, memorable, shareable.</p>
+        <p><strong>Why it works:</strong> Birthday people bring friends. Friends see the great service. They come back.</p>
+        <p><strong>How to do it:</strong> Ask for birthdays when customers sign up for your loyalty program or newsletter. Send a reminder email/SMS on their birthday.</p>
+
+        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0; border-radius: 8px;">
+          <strong>💡 Pro Tip:</strong> DineOpen's customer management system can automatically track birthdays and send reminders, making this trick effortless.
+        </div>
+
+        <h2>🚀 Trick #10: Speed Up Service (The Secret Weapon)</h2>
+        <p><strong>What it is:</strong> Faster service = happier customers = more word-of-mouth.</p>
+        <p><strong>Why it works:</strong> When service is fast, people notice. They tell friends. They come back more often.</p>
+        <p><strong>How to do it:</strong> Use a modern POS system like DineOpen. AI-powered ordering reduces wait time by 40%. Real-time kitchen communication eliminates delays.</p>
+
+        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 12px; padding: 28px; margin: 30px 0; color: white;">
+          <h3 style="color: white; margin-bottom: 16px; font-size: 22px;">💡 The DineOpen Advantage</h3>
+          <p style="margin: 0; opacity: 0.95; line-height: 1.8;">DineOpen doesn't just help you attract customers—it helps you keep them. With AI-powered voice ordering, express tablet billing, and real-time kitchen communication, your service becomes 40% faster. Happy customers become repeat customers, and repeat customers bring friends.</p>
+        </div>
+
+        <h2>🎬 Quick Start: Pick 3 Tricks Today</h2>
+        <p>Don't try to do all 10 at once. Pick 3 that feel easiest for your restaurant and start today:</p>
+
+        <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin: 30px 0;">
+          <h3 style="color: #1f2937; margin-bottom: 20px;">30-Minute Action Plan</h3>
+          <ol style="margin: 0; padding-left: 20px;">
+            <li><strong>Right now:</strong> Post a "First Visit Discount" on your Instagram and Google Business Profile</li>
+            <li><strong>This week:</strong> Set up a simple referral program ("Bring a friend, both save 15%")</li>
+            <li><strong>This month:</strong> Partner with 2-3 local businesses for cross-promotion</li>
+          </ol>
+        </div>
+
+        <h2>💡 Remember: Consistency Wins</h2>
+        <p>These tricks work, but only if you're consistent. Post on social media regularly. Always ask for reviews. Keep your specials fresh. The restaurants that do these things consistently see 3x more new customers.</p>
+
+        <p>And here's the best part: Most of these tricks cost nothing or very little. They're about being smart, not spending big.</p>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 32px; border-radius: 16px; color: white;">
+            <h3 style="color: white; margin-bottom: 12px; font-size: 28px;">Ready to Attract More Customers?</h3>
+            <p style="font-size: 18px; margin-bottom: 24px; opacity: 0.95;">DineOpen helps you implement these tricks effortlessly with smart customer management and fast service</p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+              <a href="/#pricing" style="display: inline-block; padding: 16px 32px; background: white; color: #ef4444; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px;">Start 1 Month Free Trial →</a>
+              <a href="/#contact" style="display: inline-block; padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px; border: 2px solid white;">Book Demo</a>
+            </div>
+          </div>
+        </div>
+
+        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;"><em>Last updated: January 31, 2025</em></p>
+      `,
+    author: 'DineOpen Team',
+    authorRole: 'Marketing Specialist',
+    publishDate: 'January 31, 2025',
+    readTime: '5 min read',
+    category: 'Restaurant',
+    categoryColor: '#ef4444',
+    tags: ['Customer Attraction', 'Restaurant Marketing', 'Quick Tips', 'Restaurant Growth', 'Marketing Tricks', 'Customer Acquisition']
+  },
+  'bar-brewery-pos-software-complete-guide-2026': {
+    id: 'bar-brewery-pos-software-complete-guide-2026',
+    title: 'Bar & Brewery POS Software: Complete Guide 2026 | DineOpen vs PetPooja vs Square vs Toast',
+    excerpt: 'Discover the best POS system for your bar or brewery. Compare DineOpen, PetPooja, Square, Toast, and more. Learn about multi-terminal billing, alcohol inventory management, bill splitting, and how to maximize bar profits.',
+    content: `
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Modern Bar Interior" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">A modern bar showcasing efficient operations with POS technology</p>
+        </div>
+
+        <p>Bars and breweries face unique challenges that require specialized POS software. From managing high-value alcohol inventory to handling complex bill splitting during happy hours, your POS system needs to handle operations that are fundamentally different from regular restaurants.</p>
+
+        <p>In this comprehensive guide, we'll explore everything you need to know about bar and brewery POS systems, compare DineOpen with major providers including PetPooja, Square, Toast, Clover, and SpotOn, and help you choose the best system to maximize your bar profits.</p>
+
+        <h2>🍺 Why Bars & Breweries Need Specialized POS Software</h2>
+        <p>Bars and breweries have unique operational requirements that generic POS systems struggle to handle:</p>
+        
+        <ul>
+          <li><strong>High-Value Inventory:</strong> Alcohol inventory represents significant investment and requires precise tracking</li>
+          <li><strong>Complex Bill Splitting:</strong> Customers often split bills by percentage, item, or person</li>
+          <li><strong>Multi-Terminal Operations:</strong> Separate billing stations for bar and food orders</li>
+          <li><strong>Happy Hour Management:</strong> Time-based pricing and promotions during peak hours</li>
+          <li><strong>Pilferage Tracking:</strong> Monitor alcohol consumption and identify discrepancies</li>
+          <li><strong>Staff Performance:</strong> Track waiter performance and tip distribution</li>
+          <li><strong>Rush Hour Efficiency:</strong> Fast service during busy periods is critical</li>
+        </ul>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1551538827-9c037cb4f32a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Bar Operations" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Efficient bar operations require specialized POS features</p>
+        </div>
+
+        <h2>📊 Complete POS Comparison: DineOpen vs Major Providers</h2>
+        
+        <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin: 30px 0;">
+          <h3 style="color: #1f2937; margin-bottom: 20px;">Feature Comparison Table</h3>
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; font-size: 14px;">
+              <thead>
+                <tr style="background: #ef4444; color: white;">
+                  <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dc2626;">Feature</th>
+                  <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dc2626;">DineOpen</th>
+                  <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dc2626;">PetPooja</th>
+                  <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dc2626;">Square</th>
+                  <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dc2626;">Toast</th>
+                  <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dc2626;">Clover</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 12px; font-weight: 600;">Multi-Terminal Billing</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Advanced</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 12px; font-weight: 600;">Alcohol Inventory</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ AI-Powered</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #f59e0b;">⚠️ Basic</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Advanced</td>
+                  <td style="padding: 12px; text-align: center; color: #f59e0b;">⚠️ Basic</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 12px; font-weight: 600;">Bill Splitting</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Flexible</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 12px; font-weight: 600;">Happy Hour Pricing</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Time-Based</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 12px; font-weight: 600;">Pilferage Tracking</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ AI Analytics</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #ef4444;">❌ Limited</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Available</td>
+                  <td style="padding: 12px; text-align: center; color: #ef4444;">❌ Limited</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 12px; font-weight: 600;">AI Voice Ordering</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Unique</td>
+                  <td style="padding: 12px; text-align: center; color: #ef4444;">❌ Not Available</td>
+                  <td style="padding: 12px; text-align: center; color: #ef4444;">❌ Not Available</td>
+                  <td style="padding: 12px; text-align: center; color: #ef4444;">❌ Not Available</td>
+                  <td style="padding: 12px; text-align: center; color: #ef4444;">❌ Not Available</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 12px; font-weight: 600;">Transaction Fees</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Zero Fees</td>
+                  <td style="padding: 12px; text-align: center; color: #ef4444;">❌ Charges Apply</td>
+                  <td style="padding: 12px; text-align: center; color: #ef4444;">❌ 2.6% + $0.10</td>
+                  <td style="padding: 12px; text-align: center; color: #ef4444;">❌ 2.99% + $0.15</td>
+                  <td style="padding: 12px; text-align: center; color: #ef4444;">❌ 2.3% + $0.10</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 12px; font-weight: 600;">Monthly Pricing</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">₹999/month</td>
+                  <td style="padding: 12px; text-align: center; color: #f59e0b;">⚠️ Contact Sales</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">$60-120/month</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">$165-300/month</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">$95-200/month</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 12px; font-weight: 600;">Free Trial</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ 1 Month</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Demo Available</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ 30 Days</td>
+                  <td style="padding: 12px; text-align: center; color: #ef4444;">❌ No Trial</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ 14 Days</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px; font-weight: 600;">Modern Interface</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ 2026 Design</td>
+                  <td style="padding: 12px; text-align: center; color: #f59e0b;">⚠️ Traditional</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Modern</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Modern</td>
+                  <td style="padding: 12px; text-align: center; color: #10b981;">✅ Modern</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <h2>🎯 Key Features for Bars & Breweries</h2>
+
+        <h3>1. Multi-Terminal Billing</h3>
+        <p>Bars often need separate billing stations for drinks and food. This prevents order overlap and speeds up service during rush hours.</p>
+
+        <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 20px 0; border-radius: 8px;">
+          <h4 style="color: #1f2937; margin-bottom: 12px;">DineOpen's Multi-Terminal System:</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li>Run smoothly on multiple billing counters simultaneously</li>
+            <li>Bar orders from one counter, food from another—all synced</li>
+            <li>Print and record station-wise KOTs to avoid overlapping orders</li>
+            <li>Real-time synchronization across all terminals</li>
+            <li>Master POS system controls all terminals</li>
+          </ul>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1551538827-9c037cb4f32a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Bar Multi-Terminal Billing" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Multi-terminal billing streamlines bar operations</p>
+        </div>
+
+        <h3>2. Alcohol Inventory Management</h3>
+        <p>Alcohol inventory is high-value and requires precise tracking. Manual inventory management is a nightmare that leads to losses.</p>
+
+        <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; margin: 20px 0; border-radius: 8px;">
+          <h4 style="color: #1f2937; margin-bottom: 12px;">DineOpen's Smart Alcohol Inventory:</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li>Record liquor stock item-wise with automatic tracking</li>
+            <li>Track consumption rate, pilferage, and expenses automatically</li>
+            <li>AI-powered alerts for low stock and unusual consumption patterns</li>
+            <li>Real-time inventory updates across all terminals</li>
+            <li>Detailed reports on alcohol sales and inventory turnover</li>
+            <li>Expiry date monitoring for perishable bar items</li>
+          </ul>
+        </div>
+
+        <h3>3. Bill Modifications & Splitting</h3>
+        <p>Bar customers often want to split bills in different ways—by percentage, price, or person. Your POS must handle this seamlessly.</p>
+
+        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 20px 0; border-radius: 8px;">
+          <h4 style="color: #1f2937; margin-bottom: 12px;">DineOpen's Flexible Bill Splitting:</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li>Split bills by percentage, price, or equal proportions</li>
+            <li>Create separate bills for food and drinks</li>
+            <li>Split by person or item</li>
+            <li>Handle complex scenarios like "going Dutch" or shared tabs</li>
+            <li>Quick split options for common scenarios</li>
+            <li>Print separate receipts for each split</li>
+          </ul>
+        </div>
+
+        <h3>4. Happy Hour Management</h3>
+        <p>Happy hours drive significant revenue but require time-based pricing and promotion management.</p>
+
+        <div style="background: #fce7f3; border-left: 4px solid #ec4899; padding: 20px; margin: 20px 0; border-radius: 8px;">
+          <h4 style="color: #1f2937; margin-bottom: 12px;">DineOpen's Happy Hour Features:</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li>Time-based automatic pricing changes</li>
+            <li>Schedule happy hour promotions in advance</li>
+            <li>Track happy hour sales separately</li>
+            <li>Analyze which drinks sell best during happy hours</li>
+            <li>Quick toggle for happy hour pricing</li>
+            <li>Comprehensive happy hour sales reports</li>
+          </ul>
+        </div>
+
+        <h3>5. Waiter Performance Reports</h3>
+        <p>Track staff performance to reward star performers and improve overall service quality.</p>
+
+        <div style="background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 20px; margin: 20px 0; border-radius: 8px;">
+          <h4 style="color: #1f2937; margin-bottom: 12px;">DineOpen's Staff Analytics:</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li>Track individual waiter performance metrics</li>
+            <li>Monitor sales per waiter, table turnover, and customer satisfaction</li>
+            <li>Identify star performers for rewards</li>
+            <li>Regular assessments for performance improvement</li>
+            <li>Tip distribution tracking</li>
+            <li>Staff scheduling optimization based on performance</li>
+          </ul>
+        </div>
+
+        <h2>💰 Cost Comparison: Annual Savings</h2>
+        <p>Transaction fees can eat into your profits significantly. Here's how much you can save:</p>
+
+        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 12px; padding: 32px; margin: 30px 0; color: white;">
+          <h3 style="color: white; margin-bottom: 24px; font-size: 28px;">Annual Cost Comparison (Based on ₹50 Lakhs Monthly Sales)</h3>
+          <div style="display: grid; gap: 16px;">
+            <div style="padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px; backdrop-filter: blur(10px);">
+              <strong style="font-size: 18px;">DineOpen:</strong> ₹11,988/year (₹999/month) + ₹0 transaction fees = ₹11,988 total
+            </div>
+            <div style="padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px; backdrop-filter: blur(10px);">
+              <strong style="font-size: 18px;">Square:</strong> ₹72,000-1,44,000/year + ₹15.6 Lakhs transaction fees = ₹16.3-17.1 Lakhs total
+            </div>
+            <div style="padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px; backdrop-filter: blur(10px);">
+              <strong style="font-size: 18px;">Toast:</strong> ₹1,98,000-3,60,000/year + ₹17.9 Lakhs transaction fees = ₹19.9-21.5 Lakhs total
+            </div>
+            <div style="padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px; backdrop-filter: blur(10px);">
+              <strong style="font-size: 18px;">Clover:</strong> ₹1,14,000-2,40,000/year + ₹13.8 Lakhs transaction fees = ₹15-16.2 Lakhs total
+            </div>
+            <div style="padding: 20px; background: rgba(255,255,255,0.2); border-radius: 8px; backdrop-filter: blur(10px); border: 2px solid white;">
+              <strong style="font-size: 20px;">💰 You Save with DineOpen:</strong> ₹15-21 Lakhs annually compared to competitors
+            </div>
+          </div>
+        </div>
+
+        <h2>💡 Why Choose DineOpen Over Competitors?</h2>
+
+        <div style="background: #f0fdf4; border-radius: 12px; padding: 24px; margin: 30px 0;">
+          <h3 style="color: #1f2937; margin-bottom: 20px;">DineOpen's Unique Advantages for Bars</h3>
+          <div style="display: grid; gap: 12px;">
+            <div style="padding: 16px; background: white; border-radius: 8px; border-left: 4px solid #10b981;">
+              <strong style="color: #1f2937;">🤖 AI-Powered Voice Ordering</strong>
+              <p style="margin: 8px 0 0 0; color: #6b7280;">Unique in the market—take orders hands-free during busy happy hours. Reduces order time by 40%.</p>
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px; border-left: 4px solid #3b82f6;">
+              <strong style="color: #1f2937;">💰 Zero Transaction Fees</strong>
+              <p style="margin: 8px 0 0 0; color: #6b7280;">Save ₹15-21 lakhs annually compared to Square, Toast, or Clover. Keep more of your profits.</p>
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px; border-left: 4px solid #f59e0b;">
+              <strong style="color: #1f2937;">📊 AI-Powered Inventory Analytics</strong>
+              <p style="margin: 8px 0 0 0; color: #6b7280;">Advanced pilferage tracking and consumption analysis that competitors don't offer.</p>
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px; border-left: 4px solid #ef4444;">
+              <strong style="color: #1f2937;">💵 Transparent Pricing</strong>
+              <p style="margin: 8px 0 0 0; color: #6b7280;">₹999/month starting price—no hidden costs, no sales calls needed. PetPooja requires contacting sales.</p>
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+              <strong style="color: #1f2937;">🎁 1 Month Free Trial</strong>
+              <p style="margin: 8px 0 0 0; color: #6b7280;">Longest free trial in the market—test everything risk-free. Toast doesn't offer trials.</p>
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px; border-left: 4px solid #ec4899;">
+              <strong style="color: #1f2937;">⚡ 40% Faster Service</strong>
+              <p style="margin: 8px 0 0 0; color: #6b7280;">Express billing and AI features reduce order processing time, allowing you to serve more customers during happy hours.</p>
+            </div>
+          </div>
+        </div>
+
+        <h2>📈 Analytics & Reports for Maximum Profits</h2>
+        <p>Understanding your bar's performance helps you make data-driven decisions to increase profits.</p>
+
+        <div style="display: grid; gap: 16px; margin: 30px 0;">
+          <div style="padding: 20px; background: white; border-radius: 12px; border-left: 4px solid #3b82f6; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h4 style="color: #1f2937; margin-bottom: 12px;">📊 Happy Hour Sales Reports</h4>
+            <ul style="margin: 0; padding-left: 20px; color: #6b7280;">
+              <li>Track sold drinks and inventory during happy hours</li>
+              <li>Analyze order-wise sales to maximize profits</li>
+              <li>Identify best-selling drinks during promotions</li>
+              <li>Optimize happy hour timing and pricing</li>
+            </ul>
+          </div>
+          
+          <div style="padding: 20px; background: white; border-radius: 12px; border-left: 4px solid #10b981; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h4 style="color: #1f2937; margin-bottom: 12px;">🍺 Alcohol Inventory Reports</h4>
+            <ul style="margin: 0; padding-left: 20px; color: #6b7280;">
+              <li>Item-wise consumption tracking</li>
+              <li>Pilferage and expense analysis</li>
+              <li>Stock level monitoring and alerts</li>
+              <li>Supplier performance metrics</li>
+            </ul>
+          </div>
+
+          <div style="padding: 20px; background: white; border-radius: 12px; border-left: 4px solid #f59e0b; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h4 style="color: #1f2937; margin-bottom: 12px;">👥 Waiter Performance Analytics</h4>
+            <ul style="margin: 0; padding-left: 20px; color: #6b7280;">
+              <li>Individual sales and performance metrics</li>
+              <li>Table turnover rates per waiter</li>
+              <li>Customer satisfaction scores</li>
+              <li>Reward top performers automatically</li>
+            </ul>
+          </div>
+        </div>
+
+        <h2>🚀 Getting Started with DineOpen for Your Bar</h2>
+        <p>Setting up your bar with DineOpen is quick and easy:</p>
+        
+        <ol>
+          <li><strong>Sign up for free trial:</strong> Get 1 month free—no credit card required</li>
+          <li><strong>Set up your menu:</strong> Add drinks, food items, and happy hour specials</li>
+          <li><strong>Configure terminals:</strong> Set up multiple billing stations for bar and food</li>
+          <li><strong>Set up inventory:</strong> Add alcohol inventory with tracking enabled</li>
+          <li><strong>Train your staff:</strong> Our intuitive interface requires minimal training</li>
+          <li><strong>Go live:</strong> Start taking orders and watch your efficiency improve</li>
+        </ol>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 32px; border-radius: 16px; color: white;">
+            <h3 style="color: white; margin-bottom: 12px; font-size: 28px;">Ready to Maximize Your Bar Profits?</h3>
+            <p style="font-size: 18px; margin-bottom: 24px; opacity: 0.95;">Join bar owners using DineOpen to streamline operations and increase revenue</p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+              <a href="/#pricing" style="display: inline-block; padding: 16px 32px; background: white; color: #ef4444; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px;">Start 1 Month Free Trial →</a>
+              <a href="/#contact" style="display: inline-block; padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px; border: 2px solid white;">Book Demo</a>
+            </div>
+          </div>
+        </div>
+
+        <h2>💡 Conclusion</h2>
+        <p>Choosing the right POS system for your bar or brewery is crucial for profitability. While PetPooja offers traditional solutions and Square/Toast/Clover provide modern interfaces, DineOpen combines the best of both worlds with AI technology, zero transaction fees, and specialized bar features.</p>
+
+        <p>For bar owners looking to maximize profits in 2026, DineOpen offers:</p>
+        <ul>
+          <li>✅ Advanced multi-terminal billing (smooth operations during rush)</li>
+          <li>✅ AI-powered alcohol inventory management with pilferage tracking</li>
+          <li>✅ Flexible bill splitting for any scenario</li>
+          <li>✅ Comprehensive happy hour management and analytics</li>
+          <li>✅ Waiter performance tracking and rewards</li>
+          <li>✅ AI voice ordering (unique in the market)</li>
+          <li>✅ Zero transaction fees (save ₹15-21 lakhs annually)</li>
+          <li>✅ Transparent pricing (₹999/month starting)</li>
+          <li>✅ 1 month free trial (longest in the market)</li>
+        </ul>
+
+        <p>Start your free trial today and see why bar owners are choosing DineOpen to brew higher profits while streamlining operations.</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Successful Bar Operations" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Successful bar operations with efficient POS technology</p>
+        </div>
+
+        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;"><em>Last updated: February 1, 2025</em></p>
+      `,
+    author: 'DineOpen Team',
+    authorRole: 'Bar & Brewery Solutions Specialist',
+    publishDate: 'February 1, 2025',
+    readTime: '12 min read',
+    category: 'Comparison',
+    categoryColor: '#ef4444',
+    tags: ['Bar POS', 'Brewery POS', 'POS Comparison', 'PetPooja', 'Square', 'Toast', 'Clover', 'Bar Management', 'Alcohol Inventory', 'Bar Technology']
   }
 };
 
