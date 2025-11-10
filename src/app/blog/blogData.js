@@ -714,7 +714,293 @@ export const blogPostContent = {
     id: 'how-to-reduce-restaurant-operating-costs',
     title: 'How to Reduce Restaurant Operating Costs: 10 Proven Strategies',
     excerpt: 'Discover practical strategies to cut restaurant operating costs without compromising quality. Learn how smart technology and efficient processes can save thousands annually.',
-    content: `<p>Content coming soon. This blog post will cover practical strategies to reduce restaurant operating costs.</p>`,
+    content: `
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Restaurant Cost Management" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Efficient restaurant operations reduce costs while maintaining quality</p>
+        </div>
+
+        <p>Restaurant operating costs can make or break your business. With food costs, labor, rent, utilities, and technology expenses constantly rising, finding ways to reduce costs without compromising quality is essential for profitability and sustainability.</p>
+
+        <p>This comprehensive guide presents 10 proven strategies that successful restaurants use to cut operating costs by thousands of dollars annually while maintaining—or even improving—service quality and customer satisfaction.</p>
+
+        <h2>💰 Understanding Restaurant Operating Costs</h2>
+        <p>Before diving into cost reduction strategies, it's important to understand where your money goes. Typical restaurant operating costs include:</p>
+
+        <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin: 30px 0;">
+          <h3 style="color: #1f2937; margin-bottom: 20px;">Major Cost Categories</h3>
+          <div style="display: grid; gap: 12px;">
+            <div style="padding: 16px; background: white; border-radius: 8px; border-left: 4px solid #ef4444;">
+              <strong>Food Costs (28-35%):</strong> Ingredients, raw materials, and food waste
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px; border-left: 4px solid #f59e0b;">
+              <strong>Labor Costs (25-35%):</strong> Wages, benefits, training, and overtime
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px; border-left: 4px solid #3b82f6;">
+              <strong>Rent & Utilities (8-12%):</strong> Rent, electricity, water, gas, internet
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px; border-left: 4px solid #10b981;">
+              <strong>Technology & Software (2-5%):</strong> POS systems, payment processing, software subscriptions
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+              <strong>Other Expenses (10-15%):</strong> Marketing, insurance, maintenance, supplies
+            </div>
+          </div>
+        </div>
+
+        <h2>🎯 10 Proven Strategies to Reduce Operating Costs</h2>
+
+        <h3>1. Optimize Inventory Management</h3>
+        <p>Food waste and over-ordering are among the biggest cost drains. Smart inventory management can reduce food costs by 15-25%.</p>
+
+        <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; margin: 20px 0; border-radius: 8px;">
+          <h4 style="color: #1f2937; margin-bottom: 12px;">Action Steps:</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li>Implement real-time inventory tracking with expiry date monitoring</li>
+            <li>Use AI-powered reorder suggestions based on sales patterns</li>
+            <li>Conduct regular inventory audits to identify waste patterns</li>
+            <li>Implement FIFO (First In, First Out) for perishable items</li>
+            <li>Negotiate better prices with suppliers through bulk ordering</li>
+            <li>Track waste by category to identify problem areas</li>
+          </ul>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 12px; padding: 28px; margin: 30px 0; color: white;">
+          <h3 style="color: white; margin-bottom: 16px; font-size: 22px;">💡 DineOpen Advantage: Smart Inventory</h3>
+          <p style="margin: 0; opacity: 0.95; line-height: 1.8;">DineOpen's AI-powered inventory management tracks stock levels in real-time, provides intelligent reorder suggestions, monitors expiry dates, and identifies waste patterns. Restaurants using DineOpen report 20-30% reduction in food waste and 15% lower food costs.</p>
+        </div>
+
+        <h3>2. Reduce Food Waste</h3>
+        <p>Food waste costs restaurants billions annually. The average restaurant wastes 4-10% of purchased food before it reaches customers.</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Food Waste Reduction" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Reducing food waste saves money and helps the environment</p>
+        </div>
+
+        <div style="background: #eff6ff; border-radius: 12px; padding: 24px; margin: 30px 0;">
+          <h4 style="color: #1f2937; margin-bottom: 16px;">Waste Reduction Strategies:</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li><strong>Portion Control:</strong> Standardize portion sizes to reduce over-serving</li>
+            <li><strong>Menu Engineering:</strong> Remove low-selling items that lead to waste</li>
+            <li><strong>Creative Use of Leftovers:</strong> Turn excess ingredients into specials or staff meals</li>
+            <li><strong>Proper Storage:</strong> Store items correctly to maximize shelf life</li>
+            <li><strong>Waste Tracking:</strong> Track what's wasted and why to identify patterns</li>
+            <li><strong>Supplier Relationships:</strong> Work with suppliers to reduce packaging and order more frequently in smaller quantities</li>
+          </ul>
+        </div>
+
+        <h3>3. Optimize Labor Costs</h3>
+        <p>Labor is typically the second-largest expense. Smart scheduling and efficiency improvements can reduce labor costs by 10-20% without cutting service quality.</p>
+
+        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 20px 0; border-radius: 8px;">
+          <h4 style="color: #1f2937; margin-bottom: 12px;">Labor Optimization Tactics:</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li>Use data analytics to predict busy periods and schedule accordingly</li>
+            <li>Cross-train staff to handle multiple roles during slow periods</li>
+            <li>Implement efficient POS systems that reduce order processing time</li>
+            <li>Reduce overtime through better scheduling</li>
+            <li>Use technology to automate repetitive tasks</li>
+            <li>Improve staff retention to reduce training costs</li>
+          </ul>
+        </div>
+
+        <h3>4. Negotiate Better Supplier Contracts</h3>
+        <p>Regular supplier negotiations can reduce food costs by 5-15%. Don't accept the first price—build relationships and negotiate.</p>
+
+        <ul>
+          <li><strong>Volume Discounts:</strong> Commit to larger orders for better prices</li>
+          <li><strong>Long-term Contracts:</strong> Lock in prices with longer commitments</li>
+          <li><strong>Multiple Suppliers:</strong> Compare prices and use competition to your advantage</li>
+          <li><strong>Local Suppliers:</strong> Often offer better prices and fresher products</li>
+          <li><strong>Payment Terms:</strong> Negotiate favorable payment terms to improve cash flow</li>
+        </ul>
+
+        <h3>5. Reduce Energy Consumption</h3>
+        <p>Utility costs can be reduced by 20-30% with simple efficiency improvements.</p>
+
+        <div style="background: #f0f9ff; border-radius: 12px; padding: 24px; margin: 30px 0;">
+          <h4 style="color: #1f2937; margin-bottom: 20px;">Energy-Saving Tips:</h4>
+          <div style="display: grid; gap: 12px;">
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong>LED Lighting:</strong> Replace all bulbs with energy-efficient LEDs (saves 75% on lighting costs)
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong>Energy-Efficient Equipment:</strong> Upgrade to Energy Star-rated appliances
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong>Smart Thermostats:</strong> Automatically adjust temperature based on occupancy
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong>Equipment Maintenance:</strong> Regular maintenance keeps equipment running efficiently
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong>Turn Off Unused Equipment:</strong> Train staff to turn off equipment when not in use
+            </div>
+          </div>
+        </div>
+
+        <h3>6. Implement Technology Solutions</h3>
+        <p>Modern POS and restaurant management systems can reduce costs across multiple areas while improving efficiency.</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Restaurant Technology" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Modern technology streamlines operations and reduces costs</p>
+        </div>
+
+        <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 24px; margin: 30px 0; border-radius: 8px;">
+          <h4 style="color: #1f2937; margin-bottom: 16px;">Cost-Saving Technology Features:</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li><strong>AI-Powered Ordering:</strong> Reduces order processing time by 40%, allowing fewer staff during peak hours</li>
+            <li><strong>Inventory Management:</strong> Reduces food waste and prevents over-ordering</li>
+            <li><strong>Automated Reporting:</strong> Saves hours of manual work on reports and analysis</li>
+            <li><strong>Zero Transaction Fees:</strong> Save ₹5-6 lakhs annually compared to systems with fees</li>
+            <li><strong>Real-time Analytics:</strong> Make data-driven decisions to optimize operations</li>
+            <li><strong>Staff Scheduling:</strong> Optimize schedules based on predicted demand</li>
+          </ul>
+        </div>
+
+        <h3>7. Optimize Menu Pricing</h3>
+        <p>Strategic menu pricing can increase profitability without raising prices across the board.</p>
+
+        <ul>
+          <li><strong>Cost Analysis:</strong> Calculate actual food cost percentage for each item</li>
+          <li><strong>High-Margin Items:</strong> Promote profitable items more prominently</li>
+          <li><strong>Bundle Deals:</strong> Create combos that increase average order value</li>
+          <li><strong>Dynamic Pricing:</strong> Adjust prices during peak/off-peak hours if appropriate</li>
+          <li><strong>Remove Low-Performers:</strong> Eliminate items with low sales and high waste</li>
+        </ul>
+
+        <h3>8. Reduce Paper and Supply Costs</h3>
+        <p>Going digital can significantly reduce paper, printing, and supply costs.</p>
+
+        <div style="background: #f0fdf4; border-radius: 12px; padding: 24px; margin: 30px 0;">
+          <h4 style="color: #1f2937; margin-bottom: 20px;">Digital Solutions:</h4>
+          <div style="display: grid; gap: 12px;">
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong>QR Code Menus:</strong> Eliminate printing costs and menu updates are instant
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong>Digital Receipts:</strong> Email or SMS receipts instead of printing
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong>Online Ordering:</strong> Reduce phone order errors and staff time
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong>Digital KOT:</strong> Kitchen display systems eliminate paper tickets
+            </div>
+          </div>
+        </div>
+
+        <h3>9. Improve Staff Efficiency</h3>
+        <p>Well-trained, efficient staff can serve more customers with fewer people, reducing labor costs.</p>
+
+        <ul>
+          <li><strong>Comprehensive Training:</strong> Well-trained staff work faster and make fewer mistakes</li>
+          <li><strong>Clear Processes:</strong> Standardized procedures reduce confusion and errors</li>
+          <li><strong>Technology Training:</strong> Ensure staff are proficient with POS and other systems</li>
+          <li><strong>Performance Metrics:</strong> Track and reward efficiency improvements</li>
+          <li><strong>Reduce Turnover:</strong> Retaining staff reduces training costs and improves efficiency</li>
+        </ul>
+
+        <h3>10. Regular Cost Audits and Analysis</h3>
+        <p>Regularly reviewing and analyzing costs helps identify new savings opportunities.</p>
+
+        <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin: 30px 0;">
+          <h4 style="color: #1f2937; margin-bottom: 20px;">Monthly Cost Review Checklist:</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li>Review food cost percentages by category</li>
+            <li>Analyze labor costs vs. sales</li>
+            <li>Compare utility costs month-over-month</li>
+            <li>Review supplier invoices for price changes</li>
+            <li>Identify waste patterns and trends</li>
+            <li>Compare actual costs to budget</li>
+            <li>Review technology and software subscriptions</li>
+          </ul>
+        </div>
+
+        <h2>📊 Expected Cost Savings</h2>
+        <p>Implementing these strategies can result in significant annual savings:</p>
+
+        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 12px; padding: 32px; margin: 30px 0; color: white;">
+          <h3 style="color: white; margin-bottom: 24px; font-size: 28px;">Potential Annual Savings</h3>
+          <div style="display: grid; gap: 16px;">
+            <div style="padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px; backdrop-filter: blur(10px);">
+              <strong style="font-size: 18px;">Food Costs:</strong> 15-25% reduction = ₹3-5 lakhs saved
+            </div>
+            <div style="padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px; backdrop-filter: blur(10px);">
+              <strong style="font-size: 18px;">Labor Costs:</strong> 10-20% reduction = ₹2-4 lakhs saved
+            </div>
+            <div style="padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px; backdrop-filter: blur(10px);">
+              <strong style="font-size: 18px;">Energy Costs:</strong> 20-30% reduction = ₹50,000-1 lakh saved
+            </div>
+            <div style="padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px; backdrop-filter: blur(10px);">
+              <strong style="font-size: 18px;">Transaction Fees:</strong> Zero fees with DineOpen = ₹5-6 lakhs saved
+            </div>
+            <div style="padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px; backdrop-filter: blur(10px);">
+              <strong style="font-size: 18px;">Total Potential Savings:</strong> ₹10-16 lakhs annually
+            </div>
+          </div>
+        </div>
+
+        <h2>🚀 Getting Started: 30-Day Cost Reduction Plan</h2>
+
+        <div style="background: #eff6ff; border-radius: 12px; padding: 24px; margin: 30px 0;">
+          <h3 style="color: #1f2937; margin-bottom: 20px;">Week-by-Week Implementation</h3>
+          <div style="display: grid; gap: 16px;">
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong style="color: #3b82f6;">Week 1: Assessment</strong>
+              <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                <li>Audit current costs across all categories</li>
+                <li>Identify top 3 cost reduction opportunities</li>
+                <li>Set cost reduction goals</li>
+              </ul>
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong style="color: #10b981;">Week 2: Quick Wins</strong>
+              <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                <li>Implement QR code menus (eliminate printing)</li>
+                <li>Start waste tracking</li>
+                <li>Review and optimize staff schedules</li>
+              </ul>
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong style="color: #f59e0b;">Week 3: Technology & Inventory</strong>
+              <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                <li>Implement smart inventory management system</li>
+                <li>Set up automated reorder alerts</li>
+                <li>Begin supplier negotiations</li>
+              </ul>
+            </div>
+            <div style="padding: 16px; background: white; border-radius: 8px;">
+              <strong style="color: #ef4444;">Week 4: Optimization</strong>
+              <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                <li>Review results and adjust strategies</li>
+                <li>Implement menu engineering changes</li>
+                <li>Plan long-term cost reduction initiatives</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <h2>💡 Conclusion</h2>
+        <p>Reducing restaurant operating costs doesn't mean cutting corners or compromising quality. By implementing smart strategies focused on efficiency, waste reduction, and technology, restaurants can save ₹10-16 lakhs annually while improving service quality.</p>
+
+        <p>The key is to start with quick wins, then gradually implement more comprehensive solutions. Modern technology like DineOpen makes cost reduction easier by automating inventory management, reducing waste, optimizing labor, and eliminating transaction fees.</p>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 32px; border-radius: 16px; color: white;">
+            <h3 style="color: white; margin-bottom: 12px; font-size: 28px;">Ready to Reduce Your Operating Costs?</h3>
+            <p style="font-size: 18px; margin-bottom: 24px; opacity: 0.95;">Join restaurants using DineOpen to cut costs while improving operations</p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+              <a href="/#pricing" style="display: inline-block; padding: 16px 32px; background: white; color: #10b981; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px;">Start 1 Month Free Trial →</a>
+              <a href="/#contact" style="display: inline-block; padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px; border: 2px solid white;">Book Demo</a>
+            </div>
+          </div>
+        </div>
+
+        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;"><em>Last updated: January 22, 2025</em></p>
+      `,
     author: 'DineOpen Team',
     authorRole: 'Operations Specialist',
     publishDate: 'January 22, 2025',
@@ -727,7 +1013,88 @@ export const blogPostContent = {
     id: 'ultimate-guide-restaurant-inventory-management',
     title: 'The Ultimate Guide to Restaurant Inventory Management',
     excerpt: 'Learn best practices for managing restaurant inventory, reducing waste, and optimizing stock levels.',
-    content: `<p>Content coming soon. This comprehensive guide will cover restaurant inventory management best practices.</p>`,
+    content: `
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Restaurant Inventory Management" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Efficient inventory management is crucial for restaurant success</p>
+        </div>
+
+        <p>Effective restaurant inventory management is the foundation of profitability. Poor inventory control leads to food waste, stockouts, over-ordering, and ultimately, lost revenue. This comprehensive guide covers everything you need to know about managing restaurant inventory effectively.</p>
+
+        <h2>📦 Why Inventory Management Matters</h2>
+        <p>Inventory typically represents 28-35% of a restaurant's total costs. Effective management can:</p>
+        <ul>
+          <li>Reduce food waste by 20-30%</li>
+          <li>Prevent stockouts that lose sales</li>
+          <li>Optimize cash flow by reducing over-ordering</li>
+          <li>Improve food quality through better rotation</li>
+          <li>Save 15-25% on food costs annually</li>
+        </ul>
+
+        <h2>🎯 Core Inventory Management Principles</h2>
+
+        <h3>1. FIFO (First In, First Out)</h3>
+        <p>Always use older stock before newer stock to prevent spoilage and waste.</p>
+
+        <h3>2. Regular Audits</h3>
+        <p>Conduct weekly or bi-weekly physical inventory counts to identify discrepancies and track usage patterns.</p>
+
+        <h3>3. Real-Time Tracking</h3>
+        <p>Use technology to track inventory levels in real-time, updating as items are used or received.</p>
+
+        <h3>4. Expiry Date Monitoring</h3>
+        <p>Track expiry dates for all perishable items and use items before they expire.</p>
+
+        <h2>🔧 Essential Inventory Management Practices</h2>
+
+        <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; margin: 20px 0; border-radius: 8px;">
+          <h4 style="color: #1f2937; margin-bottom: 12px;">Best Practices:</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li>Set par levels (minimum stock levels) for each item</li>
+            <li>Use standardized units of measurement</li>
+            <li>Track inventory by category (produce, meat, dairy, etc.)</li>
+            <li>Implement automated reorder alerts</li>
+            <li>Conduct regular supplier performance reviews</li>
+            <li>Use AI-powered demand forecasting</li>
+          </ul>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 12px; padding: 28px; margin: 30px 0; color: white;">
+          <h3 style="color: white; margin-bottom: 16px; font-size: 22px;">💡 DineOpen Advantage: Smart Inventory</h3>
+          <p style="margin: 0; opacity: 0.95; line-height: 1.8;">DineOpen's AI-powered inventory management provides real-time tracking, automated reorder suggestions, expiry date monitoring, and waste pattern analysis. Restaurants using DineOpen report 20-30% reduction in food waste and 15% lower food costs.</p>
+        </div>
+
+        <h2>📊 Inventory Tracking Methods</h2>
+
+        <h3>Manual Tracking</h3>
+        <p>Traditional pen-and-paper or spreadsheet methods. Time-consuming but low-cost.</p>
+
+        <h3>Digital Systems</h3>
+        <p>Modern POS and inventory management software automate tracking and provide real-time insights.</p>
+
+        <h2>🚀 Getting Started with Smart Inventory Management</h2>
+        <ol>
+          <li>Conduct a complete inventory audit</li>
+          <li>Set par levels for all items</li>
+          <li>Implement a tracking system (digital recommended)</li>
+          <li>Train staff on proper procedures</li>
+          <li>Establish regular audit schedules</li>
+          <li>Review and optimize continuously</li>
+        </ol>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 32px; border-radius: 16px; color: white;">
+            <h3 style="color: white; margin-bottom: 12px; font-size: 28px;">Ready to Optimize Your Inventory?</h3>
+            <p style="font-size: 18px; margin-bottom: 24px; opacity: 0.95;">Join restaurants using DineOpen for smart inventory management</p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+              <a href="/#pricing" style="display: inline-block; padding: 16px 32px; background: white; color: #10b981; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px;">Start 1 Month Free Trial →</a>
+              <a href="/#contact" style="display: inline-block; padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px; border: 2px solid white;">Book Demo</a>
+            </div>
+          </div>
+        </div>
+
+        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;"><em>Last updated: December 5, 2024</em></p>
+      `,
     author: 'DineOpen Team',
     authorRole: 'Operations Specialist',
     publishDate: 'December 5, 2024',
