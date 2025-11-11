@@ -7,3 +7,5 @@ export const homepageMetadata = {
   keywords: 'restaurant POS India, restaurant management software, restaurant inventory management, QR code menu, table management system, kitchen order tickets, restaurant analytics, multi-restaurant management, AI restaurant software, food service management India, restaurant software Mumbai, Delhi restaurant POS, Bangalore restaurant management',
 };
 
+
+
