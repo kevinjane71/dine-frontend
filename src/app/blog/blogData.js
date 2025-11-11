@@ -123,6 +123,22 @@ export const blogPosts = [
     categoryColor: '#ef4444',
   },
   {
+    slug: 'ice-cream-parlour-pos-software-dineopen',
+    title: 'Ice Cream Parlour POS Software: Boost Sales with DineOpen',
+    excerpt: 'Discover how DineOpen helps ice cream parlors manage variations, track inventory, monitor expiry dates, and serve customers faster. The perfect POS to increase sales and reap delicious profits.',
+    date: '2025-02-02',
+    category: 'Restaurant',
+    categoryColor: '#ef4444',
+  },
+  {
+    slug: 'thank-you-restaurant-heroes-2025',
+    title: 'Thank You, Restaurant Heroes: Celebrating the Heart of Hospitality',
+    excerpt: 'A heartfelt tribute to restaurant owners, staff, kitchen teams, and chefs who work tirelessly to bring food to our plates. Celebrating their sacrifices, dedication, and the magic they create every day.',
+    date: '2025-02-03',
+    category: 'Inspiration',
+    categoryColor: '#ef4444',
+  },
+  {
     slug: 'how-to-create-online-menu-restaurant',
     title: 'How to Create an Online Menu for Your Restaurant: Complete Guide 2025',
     excerpt: 'Learn how to create a stunning online menu for your restaurant. Discover best practices, design tips, and how digital menus can increase sales and improve customer experience.',
@@ -4727,6 +4743,317 @@ export const blogPostContent = {
     authorRole: 'Community Advocate',
     publishDate: 'February 11, 2025',
     readTime: '10 min read',
+    category: 'Inspiration',
+    categoryColor: '#ef4444',
+    tags: ['Restaurant Heroes', 'Restaurant Staff', 'Restaurant Owners', 'Chefs', 'Hospitality', 'Community', 'Appreciation']
+  },
+  'ice-cream-parlour-pos-software-dineopen': {
+    id: 'ice-cream-parlour-pos-software-dineopen',
+    title: 'Ice Cream Parlour POS Software: Boost Sales with DineOpen',
+    excerpt: 'Discover how DineOpen helps ice cream parlors manage variations, track inventory, monitor expiry dates, and serve customers faster. The perfect POS to increase sales and reap delicious profits.',
+    content: `
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Ice Cream Shop" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">DineOpen helps your staff spend more time serving delicious treats and less time billing</p>
+        </div>
+
+        <p style="font-size: 20px; font-weight: 600; color: #1f2937; text-align: center; margin: 30px 0;">Our billing software will give you a sugar rush! 🍦</p>
+
+        <p>A quick & easy-to-use billing software that ensures your staff spends more time scooping ice-creams or serving cakes & less time billing. DineOpen manages all your ice cream & dessert shop's operations while you treat your customers with sweet surprises.</p>
+
+        <h2>🎯 The Perfect POS to Increase Sales & Reap Delicious Profits!</h2>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin: 40px 0;">
+          <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 28px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <div style="font-size: 48px; margin-bottom: 16px;">🍨</div>
+            <h3 style="color: #1f2937; margin-bottom: 12px; font-size: 22px;">Variations & Add-Ons</h3>
+            <p style="color: #374151; line-height: 1.7; margin: 0;">Provide customers with all kinds of delicious variations and sweet add-ons without multiple orders overlapping during busy hours!</p>
+            <ul style="margin: 16px 0 0 0; padding-left: 20px; color: #374151;">
+              <li>Keep track of order-wise variations and add-ons</li>
+              <li>Regulate add-on stock availability automatically</li>
+              <li>Quick selection during rush hours</li>
+            </ul>
+          </div>
+
+          <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 28px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <div style="font-size: 48px; margin-bottom: 16px;">📅</div>
+            <h3 style="color: #1f2937; margin-bottom: 12px; font-size: 22px;">Item Expiry Monitoring</h3>
+            <p style="color: #374151; line-height: 1.7; margin: 0;">Monitor raw material expiry dates with AI-powered alerts that notify you about expired inventory beforehand—ensure you only serve the freshest items!</p>
+            <ul style="margin: 16px 0 0 0; padding-left: 20px; color: #374151;">
+              <li>One-time data entry for stock expiry dates</li>
+              <li>Automatic alerts before items expire</li>
+              <li>Regulate stock levels based on POS reports</li>
+            </ul>
+          </div>
+
+          <div style="background: linear-gradient(135deg, #fce7f3, #fbcfe8); padding: 28px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+            <h3 style="color: #1f2937; margin-bottom: 12px; font-size: 22px;">Stock Management & Low Stock Alerts</h3>
+            <p style="color: #374151; line-height: 1.7; margin: 0;">Never send a dessert lover away because of low stocks! Easily regulate your online dessert menu with simple ON/OFF toggle options.</p>
+            <ul style="margin: 16px 0 0 0; padding-left: 20px; color: #374151;">
+              <li>Intelligent stock alerts on billing screen</li>
+              <li>Simple ON/OFF toggle for menu items</li>
+              <li>Real-time inventory updates</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <img src="https://images.unsplash.com/photo-1567206563064-6f60f40a2b57?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Ice Cream with Toppings" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Serve customers faster with DineOpen's intuitive interface</p>
+        </div>
+
+        <h2>📊 POS Reports to Help Take Your Business to the Next Level</h2>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 30px 0;">
+          <div style="background: white; padding: 24px; border-radius: 12px; border: 2px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <div style="font-size: 36px; margin-bottom: 12px;">🌐</div>
+            <h4 style="color: #1f2937; margin-bottom: 8px; font-size: 18px;">Website Ordering</h4>
+            <p style="color: #6b7280; font-size: 14px; margin: 0; line-height: 1.6;">Get your business online and sell more while managing it from anywhere. Accept orders through your website directly from your POS billing screen.</p>
+          </div>
+
+          <div style="background: white; padding: 24px; border-radius: 12px; border: 2px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <div style="font-size: 36px; margin-bottom: 12px;">📈</div>
+            <h4 style="color: #1f2937; margin-bottom: 8px; font-size: 18px;">Inventory Reports</h4>
+            <p style="color: #6b7280; font-size: 14px; margin: 0; line-height: 1.6;">Get downloadable inventory reports on your dashboard in minutes! Detailed reports of stock repurchases, category-wise sales, and most/least selling items.</p>
+          </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 16px; padding: 40px; margin: 40px 0; color: white; text-align: center;">
+          <h3 style="color: white; margin-bottom: 16px; font-size: 28px;">⚡ Serve Customers 40% Faster</h3>
+          <p style="font-size: 18px; margin-bottom: 24px; opacity: 0.95; line-height: 1.7;">DineOpen's AI-powered voice ordering and express tablet billing reduce order processing time by 40%. Your staff can serve more customers during peak hours, increasing revenue without adding more staff.</p>
+          <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 24px;">
+            <a href="/#pricing" style="display: inline-block; padding: 16px 32px; background: white; color: #ef4444; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px;">Start 1 Month Free Trial →</a>
+            <a href="/#contact" style="display: inline-block; padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px; border: 2px solid white;">Book Demo</a>
+          </div>
+        </div>
+
+        <h2>🎁 Solutions to Level-Up Your Daily Operations</h2>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;">
+          <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; border-left: 4px solid #10b981;">
+            <h4 style="color: #1f2937; margin-bottom: 8px;">💬 SMS Marketing</h4>
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">Send personalized SMS to customers with latest offers, menu updates, and special wishes—right from your DineOpen dashboard.</p>
+          </div>
+
+          <div style="background: #eff6ff; padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6;">
+            <h4 style="color: #1f2937; margin-bottom: 8px;">🎯 Loyalty Program</h4>
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">Allocate loyalty points to customers based on purchases. Customers can redeem points at your outlet for repeat visits.</p>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Happy Ice Cream Customers" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Happy customers enjoying their ice cream experience</p>
+        </div>
+
+        <div style="background: #f9fafb; border-radius: 12px; padding: 32px; margin: 40px 0; text-align: center;">
+          <p style="font-size: 18px; color: #374151; font-style: italic; margin: 0; line-height: 1.8;">"My staff loves the easy-to-use interface. They smoothly manage all operations on a single screen, increasing our efficiency significantly."</p>
+          <p style="font-size: 16px; color: #6b7280; margin-top: 16px; font-weight: 600;">— Ice Cream Parlor Owner</p>
+        </div>
+
+        <h2>🚀 Getting Started is Easy!</h2>
+        <p>Transform your ice cream parlor operations in just 3 simple steps:</p>
+
+        <div style="display: grid; gap: 16px; margin: 30px 0;">
+          <div style="display: flex; gap: 20px; align-items: start; padding: 24px; background: white; border-radius: 12px; border: 2px solid #e5e7eb;">
+            <div style="font-size: 32px; font-weight: bold; color: #ef4444; min-width: 40px;">1</div>
+            <div>
+              <h4 style="color: #1f2937; margin-bottom: 8px;">Sign Up for Free Trial</h4>
+              <p style="color: #6b7280; margin: 0;">Get 1 month free—no credit card required. Start using DineOpen immediately.</p>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 20px; align-items: start; padding: 24px; background: white; border-radius: 12px; border: 2px solid #e5e7eb;">
+            <div style="font-size: 32px; font-weight: bold; color: #ef4444; min-width: 40px;">2</div>
+            <div>
+              <h4 style="color: #1f2937; margin-bottom: 8px;">Set Up Your Menu</h4>
+              <p style="color: #6b7280; margin: 0;">Add all your ice cream flavors, sizes, toppings, and variations. Our AI can even extract items from photos!</p>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 20px; align-items: start; padding: 24px; background: white; border-radius: 12px; border: 2px solid #e5e7eb;">
+            <div style="font-size: 32px; font-weight: bold; color: #ef4444; min-width: 40px;">3</div>
+            <div>
+              <h4 style="color: #1f2937; margin-bottom: 8px;">Start Serving Faster</h4>
+              <p style="color: #6b7280; margin: 0;">Train your staff (takes just 15 minutes!) and start serving customers 40% faster with DineOpen.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 32px; border-radius: 16px; color: white;">
+            <h3 style="color: white; margin-bottom: 12px; font-size: 28px;">Ready to Boost Your Ice Cream Sales?</h3>
+            <p style="font-size: 18px; margin-bottom: 24px; opacity: 0.95;">Join ice cream parlor owners using DineOpen to increase sales and streamline operations</p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+              <a href="/#pricing" style="display: inline-block; padding: 16px 32px; background: white; color: #10b981; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px;">Start 1 Month Free Trial →</a>
+              <a href="/#contact" style="display: inline-block; padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 18px; border: 2px solid white;">Book Demo</a>
+            </div>
+          </div>
+        </div>
+
+        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;"><em>Last updated: February 2, 2025</em></p>
+      `,
+    author: 'DineOpen Team',
+    authorRole: 'Ice Cream Solutions Specialist',
+    publishDate: 'February 2, 2025',
+    readTime: '4 min read',
+    category: 'Restaurant',
+    categoryColor: '#ef4444',
+    tags: ['Ice Cream POS', 'Dessert Shop POS', 'Ice Cream Parlor', 'POS Software', 'Restaurant Technology', 'Inventory Management']
+  },
+  'thank-you-restaurant-heroes-2025': {
+    id: 'thank-you-restaurant-heroes-2025',
+    title: 'Thank You, Restaurant Heroes: Celebrating the Heart of Hospitality',
+    excerpt: 'A heartfelt tribute to restaurant owners, staff, kitchen teams, and chefs who work tirelessly to bring food to our plates. Celebrating their sacrifices, dedication, and the magic they create every day.',
+    content: `
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Restaurant Team" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">The incredible people who make dining experiences possible</p>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 16px; padding: 40px; margin: 40px 0; color: white; text-align: center;">
+          <h1 style="color: white; margin-bottom: 16px; font-size: 36px; font-weight: 700;">🙏 Thank You, Restaurant Heroes</h1>
+          <p style="font-size: 22px; margin: 0; opacity: 0.95; line-height: 1.6;">To every owner, every staff member, every chef, and every kitchen hero who works tirelessly to bring food to our plates. Your dedication doesn't go unnoticed.</p>
+        </div>
+
+        <p style="font-size: 18px; color: #374151; line-height: 1.8; text-align: center; margin: 30px 0;">Behind every delicious meal, every warm smile, and every memorable dining experience, there are incredible people working hard. This is for you.</p>
+
+        <h2>👨‍🍳 To the Chefs: The Artists in the Kitchen</h2>
+        <p>You wake up before dawn, work through lunch rushes, dinner services, and late-night cleanups. You create magic with ingredients, turning simple food into experiences that people remember for years.</p>
+
+        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 28px; border-radius: 16px; margin: 30px 0; border-left: 6px solid #f59e0b;">
+          <p style="font-size: 18px; color: #1f2937; margin: 0; line-height: 1.8; font-style: italic;">"A chef is like a sorceress who dispenses happiness." — Elsa Schiaparelli</p>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Chef Cooking" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Chefs creating culinary masterpieces with passion and dedication</p>
+        </div>
+
+        <p>You stand for hours in hot kitchens, perfecting every dish. You handle pressure, manage inventory, train staff, and innovate constantly. Your creativity and skill turn raw ingredients into art. <strong>Thank you for your passion.</strong></p>
+
+        <h2>👥 To the Kitchen Staff: The Unsung Heroes</h2>
+        <p>While chefs get the spotlight, you're the backbone. Prep cooks, dishwashers, line cooks—you work in the heat, handle the rush, and keep everything running smoothly.</p>
+
+        <div style="display: grid; gap: 16px; margin: 30px 0;">
+          <div style="background: #f0fdf4; padding: 24px; border-radius: 12px; border-left: 4px solid #10b981;">
+            <p style="color: #374151; margin: 0; line-height: 1.8;"><strong style="color: #1f2937;">Your sacrifices:</strong> Long hours, physical exhaustion, working holidays, missing family dinners so others can enjoy theirs.</p>
+          </div>
+          <div style="background: #eff6ff; padding: 24px; border-radius: 12px; border-left: 4px solid #3b82f6;">
+            <p style="color: #374151; margin: 0; line-height: 1.8;"><strong style="color: #1f2937;">Your dedication:</strong> Showing up every day, maintaining quality standards, supporting your team, never giving up.</p>
+          </div>
+        </div>
+
+        <p><strong>Thank you for your resilience.</strong> Without you, nothing would be possible.</p>
+
+        <h2>💼 To the Restaurant Owners: The Dreamers & Doers</h2>
+        <p>You took a risk. You invested your savings, your time, your heart. You work 80-hour weeks, handle every crisis, and carry the weight of payroll, rent, and making sure everyone gets paid.</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Restaurant Owner" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Restaurant owners building their dreams one plate at a time</p>
+        </div>
+
+        <p>You face uncertainty every day. You deal with suppliers, customers, staff, regulations, and competition. Yet you keep going, creating jobs, serving communities, and bringing people together around food.</p>
+
+        <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 28px; border-radius: 16px; margin: 30px 0;">
+          <p style="font-size: 18px; color: #1f2937; margin: 0; line-height: 1.8;"><strong>Thank you for your courage.</strong> For believing in your vision. For creating spaces where memories are made.</p>
+        </div>
+
+        <h2>🤝 To the Front-of-House Staff: The Face of Hospitality</h2>
+        <p>Servers, hosts, bartenders—you're the first and last impression. You handle difficult customers with grace, remember regulars' preferences, and make everyone feel welcome.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;">
+          <div style="background: white; padding: 24px; border-radius: 12px; border: 2px solid #e5e7eb; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 12px;">😊</div>
+            <h4 style="color: #1f2937; margin-bottom: 8px;">Always Smiling</h4>
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">Even on tough days, you bring warmth and hospitality</p>
+          </div>
+          <div style="background: white; padding: 24px; border-radius: 12px; border: 2px solid #e5e7eb; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 12px;">⚡</div>
+            <h4 style="color: #1f2937; margin-bottom: 8px;">Always Moving</h4>
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">Walking miles each shift to serve customers perfectly</p>
+          </div>
+          <div style="background: white; padding: 24px; border-radius: 12px; border: 2px solid #e5e7eb; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 12px;">💝</div>
+            <h4 style="color: #1f2937; margin-bottom: 8px;">Always Caring</h4>
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">Making every guest feel special and valued</p>
+          </div>
+        </div>
+
+        <p><strong>Thank you for your service.</strong> You turn meals into experiences.</p>
+
+        <h2>🌟 The Sacrifices You Make</h2>
+        <p>We see you. We see the sacrifices:</p>
+
+        <div style="background: #f9fafb; border-radius: 12px; padding: 32px; margin: 30px 0;">
+          <ul style="margin: 0; padding-left: 20px; color: #374151; line-height: 2;">
+            <li>Working holidays when others celebrate</li>
+            <li>Missing family dinners to serve others</li>
+            <li>Standing for hours, carrying heavy trays</li>
+            <li>Dealing with difficult customers with patience</li>
+            <li>Working late nights and early mornings</li>
+            <li>Managing stress and pressure daily</li>
+            <li>Giving your all, even when exhausted</li>
+          </ul>
+        </div>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Restaurant Team Working" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">A team working together to create memorable experiences</p>
+        </div>
+
+        <h2>💝 Why You Matter</h2>
+        <p>You don't just serve food. You:</p>
+
+        <div style="display: grid; gap: 16px; margin: 30px 0;">
+          <div style="background: linear-gradient(135deg, #fce7f3, #fbcfe8); padding: 24px; border-radius: 12px;">
+            <h4 style="color: #1f2937; margin-bottom: 12px;">🎉 Create Celebrations</h4>
+            <p style="color: #374151; margin: 0; line-height: 1.7;">Birthdays, anniversaries, proposals—you're part of life's most important moments.</p>
+          </div>
+          <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 24px; border-radius: 12px;">
+            <h4 style="color: #1f2937; margin-bottom: 12px;">🤝 Bring People Together</h4>
+            <p style="color: #374151; margin: 0; line-height: 1.7;">Families, friends, colleagues—you create spaces where connections happen.</p>
+          </div>
+          <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 24px; border-radius: 12px;">
+            <h4 style="color: #1f2937; margin-bottom: 12px;">💼 Support Communities</h4>
+            <p style="color: #374151; margin: 0; line-height: 1.7;">You provide jobs, source locally, and become pillars of neighborhoods.</p>
+          </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 16px; padding: 40px; margin: 40px 0; color: white; text-align: center;">
+          <h3 style="color: white; margin-bottom: 16px; font-size: 28px;">🎯 You Are Essential</h3>
+          <p style="font-size: 18px; margin: 0; opacity: 0.95; line-height: 1.8;">Restaurants are more than businesses. They're community hubs, cultural centers, and places where memories are made. And you make it all possible.</p>
+        </div>
+
+        <h2>🙏 A Message from DineOpen</h2>
+        <p>At DineOpen, we build technology to make your lives easier. But we never forget that behind every order, every transaction, and every success story, there are real people working hard.</p>
+
+        <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 28px; margin: 30px 0; border-radius: 8px;">
+          <p style="color: #374151; margin: 0; line-height: 1.8; font-size: 16px;">We're honored to serve you. Our mission is to give you tools that reduce stress, save time, and help you focus on what you do best: creating amazing experiences for your customers.</p>
+        </div>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 40px; border-radius: 16px; color: white;">
+            <h3 style="color: white; margin-bottom: 20px; font-size: 32px;">🌟 To All Restaurant Heroes</h3>
+            <p style="font-size: 20px; margin-bottom: 24px; opacity: 0.95; line-height: 1.8;">Your dedication doesn't go unnoticed.<br/>Your hard work doesn't go unappreciated.<br/>You make a difference every single day.</p>
+            <p style="font-size: 18px; margin: 0; opacity: 0.9;">You deserve every paise, every thank you, and every moment of recognition.</p>
+            <p style="font-size: 22px; margin-top: 24px; font-weight: 700;">Keep being the heroes you are. 🙏</p>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Restaurant Team Celebration" style="width: 100%; max-width: 800px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.style.display='none';" />
+          <p style="font-size: 14px; color: #6b7280; margin-top: 8px; font-style: italic;">Celebrating the incredible people who make dining possible</p>
+        </div>
+
+        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;"><em>Last updated: February 3, 2025</em></p>
+      `,
+    author: 'DineOpen Team',
+    authorRole: 'Community Advocate',
+    publishDate: 'February 3, 2025',
+    readTime: '5 min read',
     category: 'Inspiration',
     categoryColor: '#ef4444',
     tags: ['Restaurant Heroes', 'Restaurant Staff', 'Restaurant Owners', 'Chefs', 'Hospitality', 'Community', 'Appreciation']
