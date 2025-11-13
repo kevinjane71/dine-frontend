@@ -3,7 +3,6 @@
 import { Suspense, useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Navigation from '../../components/Navigation';
-import ChatbotInterface from '../../components/ChatbotInterface';
 
 function DashboardLayoutContent({ children }) {
   const [isNavigationHidden, setIsNavigationHidden] = useState(false);
@@ -95,13 +94,7 @@ function DashboardLayoutContent({ children }) {
           {children}
         </main>
         
-        {/* RAG Chatbot Interface - Only render on client side with valid restaurant ID */}
-        {isClient && selectedRestaurantId && (
-          <ChatbotInterface 
-            restaurantId={selectedRestaurantId}
-            userId={null} // Will be extracted from JWT token
-          />
-        )}
+        {/* Intelligent Chatbot is now integrated in dashboard page */}
       </div>
   );
 }
@@ -152,13 +145,7 @@ function DashboardLayoutFallback({ children }) {
           {children}
         </main>
         
-        {/* RAG Chatbot Interface - Only render on client side with valid restaurant ID */}
-        {isClient && selectedRestaurantId && (
-          <ChatbotInterface 
-            restaurantId={selectedRestaurantId}
-            userId={null} // Will be extracted from JWT token
-          />
-        )}
+        {/* Intelligent Chatbot is now integrated in dashboard page */}
       </div>
   );
 }

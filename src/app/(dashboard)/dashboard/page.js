@@ -53,7 +53,7 @@ import apiClient from '../../../lib/api';
 import { performLogout } from '../../../lib/logout';
 import { t } from '../../../lib/i18n';
 import { useLoading } from '../../../contexts/LoadingContext';
-import ChatbotInterface from '../../../components/ChatbotInterface';
+import IntelligentChatbot from '../../../components/IntelligentChatbot';
 import RAGInitializer from '../../../components/RAGInitializer';
 
 function RestaurantPOSContent() {
@@ -4130,6 +4130,28 @@ function RestaurantPOSContent() {
           onInitialized={() => {
             console.log('RAG knowledge initialized successfully');
           }}
+        />
+      )}
+
+      {/* Intelligent Chatbot */}
+      {selectedRestaurant?.id && user && (
+        <IntelligentChatbot
+          restaurantId={selectedRestaurant.id}
+          userId={user.id || user.userId || user.uid || null}
+          onAddToCart={addToCart}
+          onPlaceOrder={placeOrder}
+          onClearCart={clearCart}
+          onSearchOrder={async (orderId) => {
+            if (orderId && selectedRestaurant?.id) {
+              setOrderLookup(orderId.toString());
+              await triggerOrderLookup(orderId.toString());
+            }
+          }}
+          onSearchMenu={(searchTerm) => {
+            setSearchTerm(searchTerm);
+          }}
+          cart={cart}
+          menuItems={menuItems}
         />
       )}
     </div>

@@ -656,6 +656,16 @@ class ApiClient {
     return this.request('/api/user/page-access');
   }
 
+  // Intelligent Chatbot
+  async intelligentChatbotQuery(query, restaurantId, userId, context = {}) {
+    return this.post('/api/chatbot/intelligent-query', {
+      query,
+      restaurantId,
+      userId,
+      context
+    });
+  }
+
   // User Profile
   async getUserProfile() {
     return this.request('/api/user/profile');
