@@ -9,7 +9,7 @@ export default function SEOStructuredData() {
     "name": "DineOpen",
     "url": baseUrl,
     "logo": `${baseUrl}/favicon.png`,
-    "description": "AI-powered restaurant management system with POS, inventory management, order tracking, and real-time analytics",
+    "description": "AI-powered restaurant management system with voice & chat AI agent, POS system, inventory management, supply chain management, table management, and hotel PMS",
     "foundingDate": "2024",
     "contactPoint": {
       "@type": "ContactPoint",
@@ -48,17 +48,21 @@ export default function SEOStructuredData() {
       "ratingValue": "4.8",
       "reviewCount": "127"
     },
-    "description": "Complete AI-powered restaurant management solution with multi-restaurant support, POS system, inventory management, order tracking, QR menus, and real-time analytics",
+    "description": "AI-powered restaurant management system with voice & chat AI agent for order taking, complete POS system, inventory management, supply chain management, table management, and hotel PMS. Start 1 month free trial.",
     "featureList": [
-      "Menu Management",
+      "AI Agent (Voice & Chat)",
+      "Voice Order Taking",
+      "Smart Table Management",
+      "Restaurant Management System",
       "POS System",
-      "Kitchen Order Tickets (KOT)",
       "Inventory Management",
+      "Supply Chain Management",
       "Table Management",
+      "Hotel Management (PMS)",
+      "Kitchen Order Tickets (KOT)",
       "Staff Management",
       "Real-time Analytics",
       "QR Code Menus",
-      "AI-powered Voice Ordering",
       "Multi-restaurant Support"
     ]
   };
@@ -123,7 +127,23 @@ export default function SEOStructuredData() {
         "name": "What is DineOpen?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "DineOpen is an AI-powered restaurant management system that includes POS, inventory management, order tracking, kitchen order tickets, table management, staff management, and real-time analytics. It's designed to help restaurants streamline operations and increase efficiency."
+          "text": "DineOpen is an AI-powered restaurant management system with voice & chat AI agent for order taking, complete POS system, inventory management, supply chain management, table management, and hotel PMS. It's designed to help restaurants streamline operations and increase efficiency with AI technology."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is AI Agent for Restaurant?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DineOpen's AI Agent is an intelligent voice and chat assistant that takes orders via voice commands, answers customer questions, manages tables, and handles restaurant operations through natural conversation. It supports voice order taking, smart table management, and instant answers to restaurant queries."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does voice order taking work in DineOpen?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DineOpen's AI Agent uses advanced speech recognition and AI to understand voice commands for order taking. Simply speak your order, and the AI agent processes it, matches items to your menu, and adds them to the cart automatically. It supports Indian accents and works in real-time."
         }
       },
       {
@@ -225,6 +245,102 @@ export default function SEOStructuredData() {
     ]
   };
 
+  // WebSite Schema with SearchAction (for better SEO)
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "DineOpen",
+    "url": baseUrl,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${baseUrl}/blog?search={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    }
+  };
+
+  // Product Schema for AI Agent
+  const aiAgentProductSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "AI Agent for Restaurant",
+    "description": "Intelligent voice and chat assistant for restaurants that takes orders via voice commands, answers questions, manages tables, and handles operations through natural conversation.",
+    "brand": {
+      "@type": "Brand",
+      "name": "DineOpen"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "999",
+      "priceCurrency": "INR",
+      "availability": "https://schema.org/InStock",
+      "url": `${baseUrl}/products/ai-agent`
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "127"
+    }
+  };
+
+  // Service Schema for Restaurant Management
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "serviceType": "Restaurant Management Software",
+    "provider": {
+      "@type": "Organization",
+      "name": "DineOpen"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "India"
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "DineOpen Products",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "AI Agent for Restaurant"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Restaurant Management System"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Inventory Management"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Supply Chain Management"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Hotel Management (PMS)"
+          }
+        }
+      ]
+    }
+  };
+
   return (
     <>
       <script
@@ -246,6 +362,18 @@ export default function SEOStructuredData() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aiAgentProductSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
       />
     </>
   );

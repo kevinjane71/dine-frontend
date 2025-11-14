@@ -19,7 +19,13 @@ import {
   FaPlay,
   FaShieldAlt,
   FaHeadset,
-  FaRocket
+  FaRocket,
+  FaChevronDown,
+  FaRobot,
+  FaStore,
+  FaBoxes,
+  FaWarehouse,
+  FaBuilding
 } from 'react-icons/fa';
 
 export default function LandingPage() {
@@ -35,6 +41,7 @@ export default function LandingPage() {
   const [demoSuccess, setDemoSuccess] = useState(false);
   const [demoError, setDemoError] = useState('');
   const [currency, setCurrency] = useState('INR'); // 'INR' or 'USD'
+  const [showProductsDropdown, setShowProductsDropdown] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -63,34 +70,46 @@ export default function LandingPage() {
 
   const features = [
     {
-      icon: <FaUtensils size={24} />,
-      title: "Menu Management",
-      description: "Create and manage your restaurant menu with photos, prices, and categories. Update items instantly."
+      icon: <FaRobot size={28} />,
+      title: "AI Agent (Voice & Chat)",
+      description: "Intelligent assistant that takes orders via voice, answers questions, manages tables, and handles operations through natural conversation.",
+      gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+      color: '#8b5cf6'
     },
     {
-      icon: <FaChartBar size={24} />,
-      title: "Kitchen Orders",
-      description: "Send orders directly to kitchen. Track cooking progress and order status in real-time."
+      icon: <FaStore size={28} />,
+      title: "Restaurant Management",
+      description: "Complete POS system with menu management, order tracking, billing, and real-time kitchen integration.",
+      gradient: 'linear-gradient(135deg, #ef4444, #dc2626)',
+      color: '#ef4444'
     },
     {
-      icon: <FaTable size={24} />,
-      title: "Order Management",
-      description: "Handle customer orders, track table status, and manage your restaurant operations smoothly."
+      icon: <FaBoxes size={28} />,
+      title: "Inventory Management",
+      description: "Track stock levels, manage suppliers, handle purchase orders, and get AI-powered reorder suggestions.",
+      gradient: 'linear-gradient(135deg, #10b981, #059669)',
+      color: '#10b981'
     },
     {
-      icon: <FaUsers size={24} />,
-      title: "Staff Management",
-      description: "Manage your team, assign roles, and track staff performance easily."
+      icon: <FaWarehouse size={28} />,
+      title: "Supply Chain Management",
+      description: "End-to-end supply chain with GRN, invoices, returns, stock transfers, and supplier performance tracking.",
+      gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+      color: '#3b82f6'
     },
     {
-      icon: <FaMobile size={24} />,
-      title: "Mobile Friendly",
-      description: "Works on any device - phones, tablets, computers. Access your restaurant data anywhere."
+      icon: <FaTable size={28} />,
+      title: "Table Management",
+      description: "Smart table booking, floor management, real-time status tracking, and seamless order-to-table flow.",
+      gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
+      color: '#f59e0b'
     },
     {
-      icon: <FaCloud size={24} />,
-      title: "Cloud Storage",
-      description: "All your data is safely stored in the cloud. No need to worry about losing information."
+      icon: <FaBuilding size={28} />,
+      title: "Hotel Management (PMS)",
+      description: "Complete Property Management System for hotels with room booking, guest management, and housekeeping.",
+      gradient: 'linear-gradient(135deg, #ec4899, #db2777)',
+      color: '#ec4899'
     }
   ];
 
@@ -287,6 +306,177 @@ export default function LandingPage() {
           {!isMobile ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                {/* Products Dropdown */}
+                <div 
+                  style={{ position: 'relative' }}
+                  onMouseEnter={() => setShowProductsDropdown(true)}
+                  onMouseLeave={() => setShowProductsDropdown(false)}
+                >
+                  <a 
+                    href="#" 
+                    style={{
+                      color: '#374151',
+                      textDecoration: 'none',
+                      fontWeight: '600',
+                      fontSize: '15px',
+                      transition: 'all 0.3s ease',
+                      position: 'relative',
+                      padding: '6px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      cursor: 'pointer'
+                    }} 
+                    onMouseEnter={(e) => {
+                      e.target.style.color = '#ef4444';
+                      e.target.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.color = '#374151';
+                      e.target.style.transform = 'translateY(0)';
+                    }}
+                  >
+                    Products
+                    <FaChevronDown size={12} />
+                  </a>
+                  
+                  {showProductsDropdown && (
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        marginTop: '8px',
+                        backgroundColor: 'white',
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                        padding: '12px 0',
+                        minWidth: '280px',
+                        zIndex: 100,
+                        border: '1px solid rgba(239, 68, 68, 0.1)'
+                      }}
+                      onMouseEnter={() => setShowProductsDropdown(true)}
+                      onMouseLeave={() => setShowProductsDropdown(false)}
+                    >
+                      <a 
+                        href="/products/ai-agent" 
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '12px 20px',
+                          color: '#374151',
+                          textDecoration: 'none',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#fef2f2';
+                          e.currentTarget.style.color = '#ef4444';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#374151';
+                        }}
+                      >
+                        <FaRobot size={18} color="#ef4444" />
+                        <span style={{ fontWeight: '500', fontSize: '14px' }}>AI Agent for Restaurant</span>
+                      </a>
+                      <a 
+                        href="/products/restaurant-management" 
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '12px 20px',
+                          color: '#374151',
+                          textDecoration: 'none',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#fef2f2';
+                          e.currentTarget.style.color = '#ef4444';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#374151';
+                        }}
+                      >
+                        <FaStore size={18} color="#ef4444" />
+                        <span style={{ fontWeight: '500', fontSize: '14px' }}>Restaurant Management System</span>
+                      </a>
+                      <a 
+                        href="/products/inventory-management" 
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '12px 20px',
+                          color: '#374151',
+                          textDecoration: 'none',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#fef2f2';
+                          e.currentTarget.style.color = '#ef4444';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#374151';
+                        }}
+                      >
+                        <FaBoxes size={18} color="#ef4444" />
+                        <span style={{ fontWeight: '500', fontSize: '14px' }}>Inventory Management</span>
+                      </a>
+                      <a 
+                        href="/products/supply-management" 
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '12px 20px',
+                          color: '#374151',
+                          textDecoration: 'none',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#fef2f2';
+                          e.currentTarget.style.color = '#ef4444';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#374151';
+                        }}
+                      >
+                        <FaWarehouse size={18} color="#ef4444" />
+                        <span style={{ fontWeight: '500', fontSize: '14px' }}>Supply Management</span>
+                      </a>
+                      <a 
+                        href="/products/hotel-management" 
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '12px 20px',
+                          color: '#374151',
+                          textDecoration: 'none',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#fef2f2';
+                          e.currentTarget.style.color = '#ef4444';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#374151';
+                        }}
+                      >
+                        <FaBuilding size={18} color="#ef4444" />
+                        <span style={{ fontWeight: '500', fontSize: '14px' }}>Hotel Management</span>
+                      </a>
+                    </div>
+                  )}
+                </div>
+                
                 <a href="#features" style={{
                   color: '#374151',
                   textDecoration: 'none',
@@ -306,7 +496,7 @@ export default function LandingPage() {
                 }}>
                   Features
                 </a>
-                <a href="#blog" style={{
+                <a href="/blog" style={{
                   color: '#374151',
                   textDecoration: 'none',
                   fontWeight: '600',
@@ -486,6 +676,93 @@ export default function LandingPage() {
             animation: 'slideDown 0.3s ease-out'
           }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ borderBottom: '1px solid rgba(239, 68, 68, 0.1)', paddingBottom: '12px' }}>
+                <div style={{ 
+                  color: '#374151',
+                  fontWeight: '600',
+                  fontSize: '16px',
+                  marginBottom: '12px'
+                }}>
+                  Products
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingLeft: '12px' }}>
+                  <a href="/products/ai-agent" style={{
+                    color: '#6b7280',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    transition: 'color 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }} 
+                  onClick={() => setShowMobileMenu(false)}
+                  onMouseEnter={(e) => e.target.style.color = '#ef4444'}
+                  onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
+                    <FaRobot size={16} />
+                    AI Agent for Restaurant
+                  </a>
+                  <a href="/products/restaurant-management" style={{
+                    color: '#6b7280',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    transition: 'color 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }} 
+                  onClick={() => setShowMobileMenu(false)}
+                  onMouseEnter={(e) => e.target.style.color = '#ef4444'}
+                  onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
+                    <FaStore size={16} />
+                    Restaurant Management
+                  </a>
+                  <a href="/products/inventory-management" style={{
+                    color: '#6b7280',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    transition: 'color 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }} 
+                  onClick={() => setShowMobileMenu(false)}
+                  onMouseEnter={(e) => e.target.style.color = '#ef4444'}
+                  onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
+                    <FaBoxes size={16} />
+                    Inventory Management
+                  </a>
+                  <a href="/products/supply-management" style={{
+                    color: '#6b7280',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    transition: 'color 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }} 
+                  onClick={() => setShowMobileMenu(false)}
+                  onMouseEnter={(e) => e.target.style.color = '#ef4444'}
+                  onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
+                    <FaWarehouse size={16} />
+                    Supply Management
+                  </a>
+                  <a href="/products/hotel-management" style={{
+                    color: '#6b7280',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    transition: 'color 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }} 
+                  onClick={() => setShowMobileMenu(false)}
+                  onMouseEnter={(e) => e.target.style.color = '#ef4444'}
+                  onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
+                    <FaBuilding size={16} />
+                    Hotel Management
+                  </a>
+                </div>
+              </div>
               <a href="#features" style={{
                 color: '#374151',
                 textDecoration: 'none',
@@ -500,7 +777,7 @@ export default function LandingPage() {
               onMouseLeave={(e) => e.target.style.color = '#374151'}>
                 Features
               </a>
-              <a href="#blog" style={{
+              <a href="/blog" style={{
                 color: '#374151',
                 textDecoration: 'none',
                 fontWeight: '600',
@@ -688,54 +965,123 @@ export default function LandingPage() {
             maxWidth: isMobile ? '100%' : '500px'
           }}>
                     
+            {/* AI Badge */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 20px',
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              borderRadius: '50px',
+              marginBottom: '24px',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <FaRobot size={18} color="white" />
+              <span style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: 'white',
+                letterSpacing: '0.5px'
+              }}>
+                AI-Powered Restaurant Assistant
+              </span>
+            </div>
+                    
             {/* Main Heading */}
             <h1 style={{
-              fontSize: isMobile ? '28px' : '48px',
+              fontSize: isMobile ? '32px' : '56px',
               fontWeight: '900',
               color: 'white',
-              marginBottom: isMobile ? '20px' : '24px',
-              textShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
-              lineHeight: '1.2'
+              marginBottom: isMobile ? '20px' : '28px',
+              textShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+              lineHeight: '1.1'
             }}>
-              Complete Restaurant
+              AI Agent for
               <br />
               <span style={{
-                background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                background: 'linear-gradient(135deg, #fef3c7, #fde68a, #fbbf24)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
                 display: 'block',
                 marginTop: '8px'
               }}>
-                Management System
+                Your Restaurant
               </span>
             </h1>
             
             {/* Subtitle */}
             <p style={{
-              fontSize: isMobile ? '18px' : '24px',
-              color: 'rgba(255, 255, 255, 0.9)',
-              marginBottom: isMobile ? '16px' : '20px',
-              fontWeight: '600',
+              fontSize: isMobile ? '18px' : '22px',
+              color: 'rgba(255, 255, 255, 0.95)',
+              marginBottom: isMobile ? '16px' : '24px',
+              fontWeight: '500',
               textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-              lineHeight: '1.4'
+              lineHeight: '1.5',
+              maxWidth: '600px',
+              margin: '0 auto 24px auto'
             }}>
-              Menu Management • Kitchen Orders • Order Tracking
+              Voice & Chat AI Assistant that takes orders, manages tables, 
+              answers questions, and handles your restaurant operations - 
+              all through natural conversation.
             </p>
             
-            {/* Description */}
-            <p style={{
-              fontSize: isMobile ? '16px' : '18px',
-              color: 'rgba(255, 255, 255, 0.8)',
+            {/* Key Benefits */}
+            <div style={{
+              display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: '16px',
+              justifyContent: 'center',
               marginBottom: '40px',
-              lineHeight: '1.6',
-              maxWidth: '700px',
-              margin: '0 auto 30px auto'
+              flexWrap: 'wrap'
             }}>
-              Everything you need to run your restaurant efficiently. 
-              Manage your menu, track kitchen orders, handle customer orders, 
-              and get real-time insights - all in one simple platform.
-            </p>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 18px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}>
+                <FaCheckCircle size={16} color="white" />
+                <span style={{ fontSize: '14px', color: 'white', fontWeight: '500' }}>
+                  Voice Order Taking
+                </span>
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 18px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}>
+                <FaCheckCircle size={16} color="white" />
+                <span style={{ fontSize: '14px', color: 'white', fontWeight: '500' }}>
+                  Smart Table Management
+                </span>
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 18px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}>
+                <FaCheckCircle size={16} color="white" />
+                <span style={{ fontSize: '14px', color: 'white', fontWeight: '500' }}>
+                  Instant Answers
+                </span>
+              </div>
+            </div>
             
             {/* CTA Buttons */}
             <div style={{ 
@@ -950,84 +1296,133 @@ export default function LandingPage() {
 
       {/* Features Section */}
       <section id="features" style={{
-        padding: isMobile ? '60px 20px' : '100px 20px',
-        backgroundColor: 'white'
+        padding: isMobile ? '80px 20px' : '120px 20px',
+        backgroundColor: '#fafafa',
+        position: 'relative'
       }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{
-              fontSize: isMobile ? '28px' : '36px',
-                          fontWeight: 'bold',
-                          color: '#1f2937',
-              marginBottom: '16px'
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? '50px' : '80px' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 20px',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              borderRadius: '50px',
+              marginBottom: '20px'
             }}>
-              What DineOpen Offers
+              <FaRocket size={16} color="#ef4444" />
+              <span style={{ fontSize: '14px', fontWeight: '600', color: '#ef4444' }}>
+                Complete Solution
+              </span>
+            </div>
+            <h2 style={{
+              fontSize: isMobile ? '32px' : '48px',
+              fontWeight: '900',
+                          color: '#1f2937',
+              marginBottom: '20px',
+              lineHeight: '1.2'
+            }}>
+              Everything You Need to
+              <br />
+              <span style={{
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                Run Your Restaurant
+              </span>
                 </h2>
             <p style={{
-              fontSize: '18px',
+              fontSize: isMobile ? '16px' : '20px',
               color: '#6b7280',
-              maxWidth: '600px',
-              margin: '0 auto'
+              maxWidth: '700px',
+              margin: '0 auto',
+              lineHeight: '1.6'
             }}>
-              Simple tools to manage your restaurant better. Everything you need in one place.
+              From AI-powered order taking to complete inventory management, 
+              DineOpen provides all the tools you need in one unified platform.
             </p>
               </div>
               
             <div style={{
               display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-            gap: isMobile ? '20px' : '32px',
-            maxWidth: isMobile ? '400px' : 'none',
-            margin: isMobile ? '0 auto' : '0'
+            gap: isMobile ? '24px' : '32px'
           }}>
             {features.map((feature, index) => (
               <div
                 key={index}
                     style={{
-                  padding: isMobile ? '24px 20px' : '32px 24px',
-                  backgroundColor: '#f8fafc',
-                  borderRadius: isMobile ? '12px' : '16px',
-                  textAlign: 'center',
-                      transition: 'all 0.3s ease',
-                  border: '1px solid #e5e7eb'
+                  padding: isMobile ? '32px 24px' : '40px 32px',
+                  backgroundColor: 'white',
+                  borderRadius: '20px',
+                  textAlign: 'left',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  border: '1px solid #e5e7eb',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
                 }}
                     onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-4px)';
-                  e.target.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)';
-                  e.target.style.borderColor = '#ef4444';
+                  e.currentTarget.style.transform = 'translateY(-8px)';
+                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.12)';
+                  e.currentTarget.style.borderColor = feature.color;
                     }}
                     onMouseLeave={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                  e.target.style.borderColor = '#e5e7eb';
-                    }}
-                  >
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+                  e.currentTarget.style.borderColor = '#e5e7eb';
+                }}
+              >
+                {/* Gradient Background Effect */}
                         <div style={{
-                  width: isMobile ? '50px' : '60px',
-                  height: isMobile ? '50px' : '60px',
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  borderRadius: isMobile ? '12px' : '16px',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  background: feature.gradient,
+                  opacity: 0,
+                  transition: 'opacity 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '0';
+                }}
+                />
+                
+                <div style={{
+                  width: isMobile ? '56px' : '64px',
+                  height: isMobile ? '56px' : '64px',
+                  background: feature.gradient,
+                  borderRadius: '16px',
                           display: 'flex',
                           alignItems: 'center',
                             justifyContent: 'center',
-                  margin: '0 auto 20px',
-                  color: 'white'
+                  marginBottom: '24px',
+                  color: 'white',
+                  boxShadow: `0 8px 24px ${feature.color}40`
                         }}>
                   {feature.icon}
                         </div>
                 <h3 style={{
-                  fontSize: isMobile ? '18px' : '20px',
-                        fontWeight: 'bold',
+                  fontSize: isMobile ? '20px' : '24px',
+                  fontWeight: '700',
                   color: '#1f2937',
-                  marginBottom: isMobile ? '8px' : '12px',
+                  marginBottom: '12px',
                   lineHeight: '1.3'
                 }}>
                   {feature.title}
                 </h3>
                 <p style={{
                   color: '#6b7280',
-                  lineHeight: '1.6',
-                  fontSize: isMobile ? '14px' : '16px'
+                  lineHeight: '1.7',
+                  fontSize: isMobile ? '15px' : '16px',
+                  margin: 0
                 }}>
                   {feature.description}
                 </p>
@@ -1035,498 +1430,6 @@ export default function LandingPage() {
                 ))}
                 </div>
             </div>
-      </section>
-
-      {/* Blog Section */}
-      <section id="blog" style={{
-        padding: isMobile ? '60px 20px' : '100px 20px',
-        backgroundColor: '#f9fafb'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{
-              fontSize: isMobile ? '28px' : '36px',
-                            fontWeight: 'bold',
-                        color: '#1f2937',
-              marginBottom: '16px'
-            }}>
-              Latest Insights & Updates
-            </h2>
-            <p style={{
-              fontSize: '18px',
-              color: '#6b7280',
-              maxWidth: '600px',
-              margin: '0 auto'
-            }}>
-              Stay updated with restaurant industry trends, product updates, and success stories.
-            </p>
-      </div>
-
-                    <div style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(350px, 1fr))',
-            gap: isMobile ? '20px' : '32px',
-            marginBottom: '40px',
-            maxWidth: isMobile ? '400px' : 'none',
-            margin: isMobile ? '0 auto 40px auto' : '0 0 40px 0'
-          }}>
-            {/* Featured Blog Post */}
-            <div 
-              onClick={() => router.push('/blog/why-dineopen-future-restaurant-management')}
-            style={{
-                backgroundColor: 'white',
-                borderRadius: isMobile ? '12px' : '16px',
-                overflow: 'hidden',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                cursor: 'pointer',
-                border: '2px solid transparent'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.12)';
-                e.currentTarget.style.borderColor = '#ef4444';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
-                e.currentTarget.style.borderColor = 'transparent';
-              }}>
-          <div style={{
-                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                padding: isMobile ? '20px' : '24px',
-                color: 'white'
-              }}>
-                      <div style={{
-            display: 'flex',
-                          alignItems: 'center',
-                  gap: '8px',
-                  marginBottom: '12px'
-                }}>
-                  <FaRocket size={16} />
-                        <span style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
-                        }}>
-                    Featured
-                        </span>
-                  </div>
-                <h3 style={{
-                  fontSize: isMobile ? '18px' : '24px',
-                  fontWeight: 'bold',
-                  marginBottom: '8px',
-                  lineHeight: '1.3'
-                }}>
-                  Why DineOpen is the Future of Restaurant Management
-                </h3>
-                <p style={{
-                  fontSize: isMobile ? '14px' : '16px',
-                  opacity: '0.9',
-                  lineHeight: '1.5',
-                  marginBottom: '16px'
-                }}>
-                  Discover how our AI-powered POS system is revolutionizing restaurant operations and why it&apos;s outperforming traditional competitors.
-                </p>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-                  gap: '12px',
-                  fontSize: '14px',
-                  opacity: '0.8'
-                }}>
-                  <span>December 15, 2024</span>
-                  <span>•</span>
-                  <span>8 min read</span>
-                </div>
-            </div>
-
-              <div style={{ padding: isMobile ? '20px' : '24px' }}>
-                <div style={{ 
-                      display: 'flex',
-                      alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '20px'
-                }}>
-                    <div style={{
-                    width: '40px',
-                    height: '40px',
-                    background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
-                      borderRadius: '50%', 
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center' 
-                    }}>
-                    <FaUtensils color="#6b7280" size={16} />
-                    </div>
-                  <div>
-                    <div style={{ fontWeight: '600', color: '#1f2937' }}>DineOpen Team</div>
-                    <div style={{ fontSize: '14px', color: '#6b7280' }}>Product Team</div>
-                    </div>
-            </div>
-
-                <div style={{ marginBottom: '20px' }}>
-                  <h4 style={{
-                    fontSize: '18px',
-                      fontWeight: '600',
-                    color: '#1f2937',
-                    marginBottom: '12px'
-                  }}>
-                    🚀 The Restaurant Industry is Evolving
-                  </h4>
-                  <p style={{
-                    fontSize: '15px',
-                    color: '#4b5563',
-                    lineHeight: '1.6',
-                    marginBottom: '16px'
-                  }}>
-                    Traditional POS systems are becoming obsolete. Restaurants need intelligent, cloud-based solutions that adapt to modern business needs. DineOpen delivers exactly that.
-                  </p>
-          </div>
-
-                <div style={{ marginBottom: '20px' }}>
-                  <h4 style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: '#1f2937',
-                    marginBottom: '12px'
-                  }}>
-                    💡 Key Advantages Over Competitors
-                        </h4>
-                  <div style={{ marginBottom: '16px' }}>
-          <div style={{
-            display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '8px'
-                    }}>
-                      <FaCheckCircle color="#10b981" size={16} />
-                      <span style={{ fontSize: '15px', color: '#4b5563' }}>
-                        <strong>AI-Powered Menu Management:</strong> Automatically extract menu items from photos/PDFs
-                      </span>
-                    </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '8px'
-                    }}>
-                      <FaCheckCircle color="#10b981" size={16} />
-                      <span style={{ fontSize: '15px', color: '#4b5563' }}>
-                        <strong>Multi-Staff Support:</strong> Unlimited staff members with individual tracking
-                      </span>
-            </div>
-                <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '8px'
-                    }}>
-                      <FaCheckCircle color="#10b981" size={16} />
-                      <span style={{ fontSize: '15px', color: '#4b5563' }}>
-                        <strong>Real-Time Kitchen Integration:</strong> Instant order updates to KOT system
-                        </span>
-                </div>
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '8px'
-                    }}>
-                      <FaCheckCircle color="#10b981" size={16} />
-                      <span style={{ fontSize: '15px', color: '#4b5563' }}>
-                        <strong>Comprehensive Inventory:</strong> End-to-end stock management with supplier tracking
-                      </span>
-                      </div>
-                    </div>
-                  </div>
-
-                <div style={{ marginBottom: '20px' }}>
-                  <h4 style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: '#1f2937',
-                    marginBottom: '12px'
-                  }}>
-                    💰 Competitive Pricing Advantage
-                  </h4>
-                <div style={{ 
-                    backgroundColor: '#f0fdf4',
-                    border: '1px solid #bbf7d0',
-                      borderRadius: '12px',
-                    padding: '16px',
-                    marginBottom: '16px'
-                }}>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '8px'
-                        }}>
-                      <FaChartBar color="#10b981" size={16} />
-                      <span style={{ fontWeight: '600', color: '#1f2937' }}>Cost Comparison</span>
-                        </div>
-                    <div style={{ fontSize: '14px', color: '#4b5563', lineHeight: '1.5' }}>
-                      <div>• <strong>Square:</strong> $60-120/month + 2.6% transaction fees</div>
-                      <div>• <strong>Toast:</strong> $165-300/month + hardware costs</div>
-                      <div>• <strong>DineOpen:</strong> $29-79/month, no transaction fees, includes AI features</div>
-                  </div>
-                  </div>
-                </div>
-
-                <div style={{ marginBottom: '20px' }}>
-                  <h4 style={{
-                    fontSize: '18px',
-                      fontWeight: '600',
-                    color: '#1f2937',
-                    marginBottom: '12px'
-                  }}>
-                    🎯 Why Restaurants Choose DineOpen
-                        </h4>
-                  <p style={{
-                    fontSize: '15px',
-                    color: '#4b5563',
-                    lineHeight: '1.6',
-                    marginBottom: '16px'
-                  }}>
-                    Our customers report 40% faster order processing, 60% reduction in menu management time, and 25% increase in staff efficiency. The AI-powered features that competitors charge extra for are included in our base plans.
-                        </p>
-                      </div>
-
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                  gap: '8px',
-                  color: '#ef4444',
-                      fontWeight: '600',
-                  fontSize: '15px'
-                    }}>
-                  <span>Read Full Article</span>
-                  <FaArrowRight size={14} />
-                    </div>
-                </div>
-      </div>
-
-            {/* Additional Blog Posts */}
-          <div 
-              onClick={() => router.push('/blog/restaurant-analytics-data-driven-success')}
-                        style={{
-            backgroundColor: 'white',
-                borderRadius: isMobile ? '12px' : '16px',
-                overflow: 'hidden',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.12)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
-              }}>
-            <div style={{
-                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-              padding: isMobile ? '16px' : '20px',
-                color: 'white'
-              }}>
-                <div style={{
-              display: 'flex',
-              alignItems: 'center',
-                  gap: '8px',
-                  marginBottom: '12px'
-                }}>
-                  <FaChartBar size={16} />
-                  <span style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}>
-                    Analytics
-                  </span>
-                </div>
-                <h3 style={{
-                  fontSize: isMobile ? '16px' : '20px',
-                  fontWeight: 'bold',
-                  marginBottom: '8px',
-                  lineHeight: '1.3'
-                }}>
-                  Restaurant Analytics: Data-Driven Success
-                </h3>
-                <p style={{
-                  fontSize: isMobile ? '12px' : '14px',
-                  opacity: '0.9',
-                  lineHeight: '1.5'
-                }}>
-                  Learn how to leverage restaurant analytics to boost revenue and optimize operations.
-                </p>
-                    </div>
-                    
-              <div style={{ padding: '20px' }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '16px'
-                      }}>
-                    <div style={{
-                            width: '32px',
-                            height: '32px',
-                    background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
-                          borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                    justifyContent: 'center'
-                        }}>
-                    <FaChartBar color="#6b7280" size={14} />
-                    </div>
-                  <div>
-                    <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>Analytics Team</div>
-                    <div style={{ fontSize: '12px', color: '#6b7280' }}>December 10, 2024</div>
-                    </div>
-            </div>
-                    <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  color: '#3b82f6',
-                      fontWeight: '600',
-                  fontSize: '14px'
-                    }}>
-                  <span>Read More</span>
-                  <FaArrowRight size={12} />
-          </div>
-                </div>
-      </div>
-
-          <div 
-              onClick={() => router.push('/blog/bellas-kitchen-revenue-increase')}
-            style={{
-            backgroundColor: 'white',
-                borderRadius: isMobile ? '12px' : '16px',
-                overflow: 'hidden',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                            cursor: 'pointer'
-                          }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.12)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
-              }}>
-            <div style={{
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              padding: '20px',
-                color: 'white'
-              }}>
-                <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                  gap: '8px',
-                  marginBottom: '12px'
-                }}>
-                  <FaUsers size={16} />
-                  <span style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}>
-                    Success Story
-                        </span>
-                </div>
-                <h3 style={{
-                  fontSize: '20px',
-                  fontWeight: 'bold',
-                  marginBottom: '8px',
-                  lineHeight: '1.3'
-                }}>
-                  How Bella&apos;s Kitchen Increased Revenue by 35%
-                </h3>
-                <p style={{
-                  fontSize: '14px',
-                  opacity: '0.9',
-                  lineHeight: '1.5'
-                }}>
-                  Real customer success story: How DineOpen transformed a local restaurant&apos;s operations.
-                </p>
-                    </div>
-                    
-              <div style={{ padding: '20px' }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '16px'
-                      }}>
-                    <div style={{
-                            width: '32px',
-                            height: '32px',
-                    background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
-                    borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <FaUsers color="#6b7280" size={14} />
-                      </div>
-                  <div>
-                    <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>Customer Success</div>
-                    <div style={{ fontSize: '12px', color: '#6b7280' }}>December 5, 2024</div>
-                      </div>
-                    </div>
-                <div style={{ 
-                          display: 'flex',
-                          alignItems: 'center',
-                  gap: '8px',
-                  color: '#10b981',
-                  fontWeight: '600',
-                          fontSize: '14px'
-                        }}>
-                  <span>Read More</span>
-                  <FaArrowRight size={12} />
-                </div>
-              </div>
-                  </div>
-                </div>
-
-          <div style={{ textAlign: 'center' }}>
-            <button 
-            onClick={() => router.push('/blog')}
-            style={{
-              padding: '12px 24px',
-                  backgroundColor: 'transparent',
-              color: '#ef4444',
-              border: '2px solid #ef4444',
-              borderRadius: '8px',
-              fontWeight: '600',
-                    fontSize: '16px',
-                  cursor: 'pointer',
-              transition: 'all 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-              gap: '8px',
-              margin: '0 auto'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#ef4444';
-              e.target.style.color = 'white';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-              e.target.style.color = '#ef4444';
-            }}>
-              <span>View All Articles</span>
-              <FaArrowRight size={14} />
-                </button>
-              </div>
-          </div>
       </section>
 
       {/* Pricing Section */}
@@ -1538,132 +1441,155 @@ export default function LandingPage() {
           <div style={{ textAlign: 'center', marginBottom: isMobile ? '40px' : '60px' }}>
             <h2 style={{
               fontSize: isMobile ? '24px' : '36px',
-              fontWeight: 'bold',
-              color: '#1f2937',
-              marginBottom: '16px',
-              lineHeight: '1.2'
+                            fontWeight: 'bold',
+                        color: '#1f2937',
+              marginBottom: '16px'
             }}>
-              Choose Your Perfect Plan
+              Simple, Transparent Pricing
             </h2>
             <p style={{
               fontSize: isMobile ? '16px' : '18px',
               color: '#6b7280',
               maxWidth: '600px',
               margin: '0 auto',
-              lineHeight: '1.5',
-              marginBottom: '20px'
-            }}>
+                  lineHeight: '1.5',
+                  marginBottom: '20px'
+                }}>
               Start free and scale as you grow. All plans include 14-day free trial.
             </p>
             
             {/* Currency Toggle */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
+          <div style={{
+            display: 'flex',
               justifyContent: 'center',
-              gap: '12px',
-              marginBottom: '20px'
+                        alignItems: 'center',
+                  gap: '12px',
+              marginBottom: '40px'
             }}>
               <button
                 onClick={() => setCurrency('INR')}
-                style={{
+            style={{
                   padding: '8px 20px',
-                  borderRadius: '8px',
-                  border: currency === 'INR' ? '2px solid #ef4444' : '2px solid #e5e7eb',
-                  backgroundColor: currency === 'INR' ? '#ef4444' : 'white',
+                  backgroundColor: currency === 'INR' ? '#ef4444' : 'transparent',
                   color: currency === 'INR' ? 'white' : '#6b7280',
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                ₹ INR
-              </button>
-              <button
-                onClick={() => setCurrency('USD')}
-                style={{
-                  padding: '8px 20px',
+                  border: `2px solid ${currency === 'INR' ? '#ef4444' : '#e5e7eb'}`,
                   borderRadius: '8px',
-                  border: currency === 'USD' ? '2px solid #ef4444' : '2px solid #e5e7eb',
-                  backgroundColor: currency === 'USD' ? '#ef4444' : 'white',
-                  color: currency === 'USD' ? 'white' : '#6b7280',
-                  fontWeight: '600',
+                    fontWeight: '600',
                   fontSize: '14px',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.3s ease'
                 }}
               >
-                $ USD
+                INR (₹)
               </button>
-            </div>
+            <button 
+                onClick={() => setCurrency('USD')}
+            style={{
+                  padding: '8px 20px',
+                  backgroundColor: currency === 'USD' ? '#ef4444' : 'transparent',
+                  color: currency === 'USD' ? 'white' : '#6b7280',
+                  border: `2px solid ${currency === 'USD' ? '#ef4444' : '#e5e7eb'}`,
+              borderRadius: '8px',
+              fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                USD ($)
+                </button>
+              </div>
             </div>
             
           <div style={{
             display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-            gap: isMobile ? '16px' : '24px',
-            alignItems: 'stretch',
-            maxWidth: isMobile ? '400px' : 'none',
-            margin: isMobile ? '0 auto' : '0'
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: isMobile ? '24px' : '32px',
+            maxWidth: '1200px',
+            margin: '0 auto'
           }}>
-            {plans.map((plan, index) => (
+            {plans.map((plan, index) => {
+              const price = currency === 'INR' ? plan.priceINR : plan.priceUSD;
+              const period = currency === 'INR' ? 'month' : plan.period;
+              
+              return (
               <div
                 key={index}
                   style={{
-                  backgroundColor: 'white',
-                  borderRadius: isMobile ? '16px' : '20px',
-                  padding: isMobile ? '24px 20px' : '32px 24px',
                   position: 'relative',
+                    padding: isMobile ? '32px 24px' : '40px 32px',
+            backgroundColor: 'white',
+                    borderRadius: '20px',
                   border: plan.popular ? '2px solid #ef4444' : '1px solid #e5e7eb',
-                  boxShadow: plan.popular ? '0 8px 32px rgba(239, 68, 68, 0.15)' : '0 4px 16px rgba(0,0,0,0.05)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  minHeight: isMobile ? 'auto' : '500px'
+                    boxShadow: plan.popular ? '0 8px 32px rgba(239, 68, 68, 0.15)' : '0 2px 8px rgba(0,0,0,0.05)',
+                    transition: 'all 0.3s ease',
+                    transform: 'translateY(0)'
+              }}
+              onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-8px)';
+                    e.currentTarget.style.boxShadow = plan.popular 
+                      ? '0 12px 40px rgba(239, 68, 68, 0.2)' 
+                      : '0 8px 24px rgba(0,0,0,0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = plan.popular 
+                      ? '0 8px 32px rgba(239, 68, 68, 0.15)' 
+                      : '0 2px 8px rgba(0,0,0,0.05)';
                 }}
               >
                 {plan.popular && (
                   <div style={{
                     position: 'absolute',
-                    top: '-12px',
+                      top: '-16px',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                      backgroundColor: '#ef4444',
                     color: 'white',
-                    padding: '6px 20px',
+                      padding: '8px 20px',
                     borderRadius: '20px',
-                    fontSize: '12px',
+                      fontSize: '11px',
                     fontWeight: 'bold',
-                    textTransform: 'uppercase'
+                    textTransform: 'uppercase',
+                      zIndex: 10,
+                      whiteSpace: 'nowrap',
+                      boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
                   }}>
                     Most Popular
               </div>
                 )}
 
-                <div style={{ textAlign: 'center', marginBottom: isMobile ? '20px' : '24px' }}>
+                  <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                   <h3 style={{
-                    fontSize: isMobile ? '20px' : '24px',
+                      fontSize: '24px',
                     fontWeight: 'bold',
                     color: '#1f2937',
-                    marginBottom: '8px',
-                    lineHeight: '1.2'
+                      marginBottom: '12px'
                   }}>
                     {plan.name}
                   </h3>
                   <div style={{ marginBottom: '8px' }}>
                     <span style={{
-                      fontSize: isMobile ? '28px' : '36px',
-                      fontWeight: 'bold',
-                      color: '#1f2937'
-                    }}>
-                      {currency === 'USD' 
-                        ? `$${plan.priceUSD.toLocaleString()}` 
-                        : `₹${plan.priceINR.toLocaleString()}`
-                      }
+                        fontSize: '48px',
+                        fontWeight: '900',
+                        color: '#1f2937',
+                        lineHeight: '1'
+                      }}>
+                        {currency === 'INR' ? '₹' : '$'}{price.toLocaleString()}
                   </span>
-                    <span style={{ color: '#6b7280', fontSize: isMobile ? '14px' : '16px' }}>/{plan.period}</span>
+                      <span style={{
+                        fontSize: '18px',
+                        color: '#6b7280',
+                        marginLeft: '4px'
+                      }}>
+                        /{period}
+                      </span>
                 </div>
-                  <p style={{ color: '#6b7280', fontSize: isMobile ? '13px' : '14px', lineHeight: '1.4' }}>
+                <p style={{
+                      fontSize: '14px',
+                      color: '#6b7280',
+                      marginTop: '8px'
+                    }}>
                     {plan.description}
                 </p>
             </div>
@@ -1671,129 +1597,165 @@ export default function LandingPage() {
                 <ul style={{
                   listStyle: 'none',
                   padding: 0,
-                  margin: `0 0 ${isMobile ? '24px' : '32px'} 0`,
-                  flex: 1
-                }}>
-                  {plan.features.map((feature, featureIndex) => {
-                    const isAIFeature = feature.includes('AI Agent');
-                    return (
-                      <li
-                        key={featureIndex}
-                        style={{
-                          padding: isAIFeature ? (isMobile ? '10px 12px' : '12px 14px') : (isMobile ? '6px 0' : '8px 0'),
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: isMobile ? '8px' : '12px',
-                          fontSize: isMobile ? '13px' : '14px',
+                    margin: '0 0 32px 0'
+                  }}>
+                    {plan.features.map((feature, featureIndex) => {
+                      const isAIFeature = feature.includes('AI Agent');
+                      return (
+                        <li key={featureIndex} style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                  gap: '12px',
+                          padding: isAIFeature ? '12px 14px' : '8px 0',
+                          fontSize: '14px',
                           color: isAIFeature ? '#000000' : '#374151',
                           fontWeight: isAIFeature ? 'bold' : 'normal',
-                          lineHeight: '1.4',
                           backgroundColor: isAIFeature ? '#f3f4f6' : 'transparent',
                           borderRadius: isAIFeature ? '8px' : '0',
                           marginBottom: isAIFeature ? '8px' : '0'
-                        }}
-                      >
-                        <FaCheckCircle size={isMobile ? 14 : 16} color={isAIFeature ? "#000000" : "#10b981"} style={{ marginTop: '2px', flexShrink: 0 }} />
-                        <span>{feature}</span>
-                      </li>
-                    );
-                  })}
+                        }}>
+                          <FaCheckCircle size={16} color={isAIFeature ? "#000000" : "#10b981"} style={{ marginTop: '2px', flexShrink: 0 }} />
+                      <span>{feature}</span>
+                    </li>
+                      );
+                    })}
                 </ul>
 
               <button
-                  onClick={handleGetStarted}
+                    onClick={() => handleGetStarted()}
                 style={{
                     width: '100%',
-                    padding: isMobile ? '12px 20px' : '14px 24px',
+                      padding: '16px 24px',
                     background: plan.popular 
                       ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
                       : 'transparent',
                     color: plan.popular ? 'white' : '#ef4444',
-                    border: plan.popular ? 'none' : '2px solid #ef4444',
-                    borderRadius: isMobile ? '10px' : '12px',
-                    fontWeight: 'bold',
-                    fontSize: isMobile ? '14px' : '16px',
+                      border: `2px solid ${plan.popular ? 'transparent' : '#ef4444'}`,
+                      borderRadius: '12px',
+                      fontWeight: '700',
+                      fontSize: '16px',
                   cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                      transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => {
-                    if (plan.popular) {
-                      e.target.style.transform = 'translateY(-1px)';
-                      e.target.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.3)';
-                    } else {
+                      if (!plan.popular) {
                       e.target.style.backgroundColor = '#ef4444';
                       e.target.style.color = 'white';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (plan.popular) {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = 'none';
-                    } else {
+                      if (!plan.popular) {
                       e.target.style.backgroundColor = 'transparent';
                       e.target.style.color = '#ef4444';
                     }
                   }}
                 >
-                  {plan.buttonText}
+                    {plan.buttonText || 'Get Started'}
               </button>
                 </div>
-            ))}
+              );
+            })}
               </div>
             </div>
       </section>
 
       {/* CTA Section */}
       <section style={{
-        padding: isMobile ? '60px 20px' : '100px 20px',
-        backgroundColor: '#1f2937',
-                  color: 'white', 
-        textAlign: 'center'
+        padding: isMobile ? '80px 20px' : '120px 20px',
+        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <h2 style={{
-            fontSize: isMobile ? '28px' : '36px',
-            fontWeight: 'bold',
-                  marginBottom: '16px'
+            fontSize: isMobile ? '32px' : '48px',
+            fontWeight: '900',
+            color: 'white',
+            marginBottom: '24px',
+            lineHeight: '1.2'
                 }}>
             Ready to Transform Your Restaurant?
           </h2>
           <p style={{
-            fontSize: '18px',
-            color: '#d1d5db',
-            marginBottom: '40px'
+            fontSize: isMobile ? '18px' : '22px',
+            color: 'rgba(255, 255, 255, 0.9)',
+            marginBottom: '40px',
+            lineHeight: '1.6'
           }}>
-            Join thousands of restaurants already using DineOpen to streamline their operations
+            Join thousands of restaurants using DineOpen to streamline operations, 
+            increase efficiency, and boost revenue.
           </p>
+                      <div style={{
+                        display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: '16px',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
               <button
             onClick={handleGetStarted}
                 style={{
-              padding: '16px 32px',
-              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  color: 'white',
+                padding: '18px 36px',
+                background: 'white',
+                color: '#ef4444',
                   border: 'none',
-              borderRadius: '12px',
-              fontWeight: 'bold',
-              fontSize: '18px',
+                borderRadius: '16px',
+                fontWeight: '700',
+                fontSize: '16px',
                   cursor: 'pointer',
-              display: 'inline-flex',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
+                          display: 'flex',
                   alignItems: 'center',
               gap: '8px',
-                    transition: 'all 0.3s ease',
-              boxShadow: '0 4px 16px rgba(239, 68, 68, 0.3)'
+                width: isMobile ? '100%' : 'auto',
+                whiteSpace: 'nowrap'
             }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.4)';
+                e.target.style.transform = 'translateY(-4px)';
+                e.target.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.3)';
             }}
             onMouseLeave={(e) => {
               e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.3)';
+                e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
+              }}
+            >
+              <FaRocket size={20} />
+              <span>Start 1 Month Free Trial</span>
+            </button>
+            <button 
+              onClick={() => setShowDemoModal(true)}
+            style={{
+                padding: '18px 36px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '16px',
+              fontWeight: '600',
+                    fontSize: '16px',
+                  cursor: 'pointer',
+              transition: 'all 0.3s ease',
+                backdropFilter: 'blur(10px)',
+                    display: 'flex',
+                    alignItems: 'center',
+              gap: '8px',
+                width: isMobile ? '100%' : 'auto',
+                whiteSpace: 'nowrap'
             }}
-          >
-            Get Started Today
-            <FaArrowRight size={16} />
+            onMouseEnter={(e) => {
+                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+              }}
+            >
+              <FaClock size={16} />
+              <span>Book Demo</span>
               </button>
+              </div>
             </div>
       </section>
 
@@ -2327,3 +2289,4 @@ export default function LandingPage() {
     </div>
   );
 }
+
