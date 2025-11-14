@@ -24,10 +24,40 @@ export default function BillingPage() {
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [currency, setCurrency] = useState('INR');
   const [notification, setNotification] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Plan data with currency support
   const planData = {
     INR: [
+      {
+        id: 'free-trial',
+        name: 'Free Trial',
+        price: 0,
+        period: 'month',
+        description: 'Perfect for trying out DineOpen',
+        popular: false,
+        features: [
+          'AI Agent (Voice/Chat): 50 credits/month',
+          'Up to 200 menu items',
+          '1 restaurant location', 
+          'Basic POS system',
+          'Table management (up to 100 tables)',
+          'Kitchen order tracking',
+          'Mobile app access',
+          'Email support'
+        ]
+      },
       {
         id: 'starter',
         name: 'Starter',
@@ -36,6 +66,7 @@ export default function BillingPage() {
         description: 'Perfect for small cafes and food stalls',
         popular: false,
         features: [
+          'AI Agent (Voice/Chat): 500 credits/month',
           'Up to 500 menu items',
           '1 restaurant location', 
           'Basic POS system',
@@ -53,6 +84,7 @@ export default function BillingPage() {
         description: 'Ideal for growing restaurants',
         popular: true,
         features: [
+          'AI Agent (Voice/Chat): 1,000 credits/month',
           'Unlimited menu items',
           'Up to 3 restaurant locations',
           'Advanced POS with payments',
@@ -72,6 +104,7 @@ export default function BillingPage() {
         description: 'For restaurant chains and large operations',
         popular: false,
         features: [
+          'AI Agent (Voice/Chat): 2,000 credits/month',
           'Everything in Professional',
           'Unlimited locations',
           'Multi-restaurant dashboard',
@@ -86,6 +119,24 @@ export default function BillingPage() {
     ],
     USD: [
       {
+        id: 'free-trial',
+        name: 'Free Trial',
+        price: 0,
+        period: 'month',
+        description: 'Perfect for trying out DineOpen',
+        popular: false,
+        features: [
+          'AI Agent (Voice/Chat): 50 credits/month',
+          'Up to 200 menu items',
+          '1 restaurant location',
+          'Basic POS system',
+          'Table management (up to 100 tables)',
+          'Kitchen order tracking',
+          'Mobile app access',
+          'Email support'
+        ]
+      },
+      {
         id: 'starter',
         name: 'Starter',
         price: 12,
@@ -93,6 +144,7 @@ export default function BillingPage() {
         description: 'Perfect for small cafes and food stalls',
         popular: false,
         features: [
+          'AI Agent (Voice/Chat): 500 credits/month',
           'Up to 500 menu items',
           '1 restaurant location',
           'Basic POS system',
@@ -110,6 +162,7 @@ export default function BillingPage() {
         description: 'Ideal for growing restaurants',
         popular: true,
         features: [
+          'AI Agent (Voice/Chat): 1,000 credits/month',
           'Unlimited menu items',
           'Up to 3 restaurant locations',
           'Advanced POS with payments',
@@ -129,6 +182,7 @@ export default function BillingPage() {
         description: 'For restaurant chains and large operations',
         popular: false,
         features: [
+          'AI Agent (Voice/Chat): 2,000 credits/month',
           'Everything in Professional',
           'Unlimited locations',
           'Multi-restaurant dashboard',
@@ -197,7 +251,7 @@ export default function BillingPage() {
                     email: parsedUser.email || parsedUser.phoneNumber || '',
                     phone: parsedUser.phoneNumber || parsedUser.phone || '',
                     role: parsedUser.role,
-                    planId: 'starter',
+                    planId: 'free-trial',
                     restaurantInfo: {
                       name: parsedUser.restaurantName || 'My Restaurant',
                       id: parsedUser.restaurantId || null
@@ -297,18 +351,6 @@ export default function BillingPage() {
 
 
   const handlePayment = async (plan) => {
-    if (!window.Razorpay) {
-      // Load Razorpay script if not already loaded
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.async = true;
-      document.body.appendChild(script);
-      
-      await new Promise((resolve) => {
-        script.onload = resolve;
-      });
-    }
-
     try {
       setPaymentProcessing(true);
       
@@ -321,6 +363,57 @@ export default function BillingPage() {
       console.log('Selected plan:', plan);
       
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
+      
+      // If free-trial plan, just update subscription without payment
+      if (plan.id === 'free-trial' || plan.price === 0) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/payments/update-subscription`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.uid || user.id,
+              email: user.email || user.phoneNumber || user.phone || '',
+              planId: 'free-trial'
+            })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            showNotification('success', 'Free Trial plan activated successfully!');
+            setCurrentSubscription({
+              plan: 'Free Trial',
+              status: 'active',
+              nextBillingDate: null,
+              lastPaymentDate: new Date().toISOString(),
+              amount: 0,
+              currency: currency
+            });
+            setTimeout(() => window.location.reload(), 2000);
+          } else {
+            showNotification('error', 'Failed to activate Free Trial plan');
+          }
+        } catch (error) {
+          console.error('Free trial activation error:', error);
+          showNotification('error', 'Failed to activate Free Trial plan');
+        } finally {
+          setPaymentProcessing(false);
+        }
+        return;
+      }
+
+      // For paid plans, proceed with Razorpay payment
+      if (!window.Razorpay) {
+        // Load Razorpay script if not already loaded
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        document.body.appendChild(script);
+        
+        await new Promise((resolve) => {
+          script.onload = resolve;
+        });
+      }
       
       // Prepare payment data with validation
       const userEmail = user.email || user.phoneNumber || user.phone || `user-${user.uid || user.id}@example.com`;
@@ -655,8 +748,9 @@ export default function BillingPage() {
         <div style={{
           backgroundColor: 'white',
           borderRadius: '16px',
-          padding: '32px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          padding: '48px 32px 32px 32px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          overflow: 'visible'
         }}>
           <h2 style={{ 
             fontSize: '24px', 
@@ -669,9 +763,15 @@ export default function BillingPage() {
           </h2>
 
           <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
-            gap: '24px' 
+            display: isMobile ? 'flex' : 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: '24px',
+            flexWrap: isMobile ? 'nowrap' : 'nowrap',
+            overflowX: isMobile ? 'visible' : 'auto',
+            overflowY: 'visible',
+            justifyContent: isMobile ? 'stretch' : 'space-between',
+            alignItems: isMobile ? 'stretch' : 'stretch',
+            position: 'relative'
           }}>
             {currentPlans.map((plan) => {
               const isCurrentPlan = currentSubscription?.plan === plan.name;
@@ -681,28 +781,37 @@ export default function BillingPage() {
                   key={plan.id}
                   style={{
                     position: 'relative',
-                    padding: '32px 24px',
+                    padding: isMobile ? '32px 20px 24px 20px' : '40px 24px 32px 24px',
+                    marginTop: (plan.popular || isCurrentPlan) ? '20px' : '0',
                     border: plan.popular ? '2px solid #ef4444' : '1px solid #e5e7eb',
                     borderRadius: '16px',
                     backgroundColor: isCurrentPlan ? '#fef7f0' : 'white',
                     boxShadow: plan.popular ? '0 8px 32px rgba(239, 68, 68, 0.15)' : '0 2px 8px rgba(0,0,0,0.05)',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    minWidth: isMobile ? '100%' : '250px',
+                    maxWidth: isMobile ? '100%' : 'none',
+                    flex: isMobile ? 'none' : '1 1 0',
+                    width: isMobile ? '100%' : 'auto',
+                    overflow: 'visible'
                   }}
                 >
                   {/* Popular Badge */}
                   {plan.popular && (
                     <div style={{
                       position: 'absolute',
-                      top: '-12px',
+                      top: '-16px',
                       left: '50%',
                       transform: 'translateX(-50%)',
                       backgroundColor: '#ef4444',
                       color: 'white',
-                      padding: '6px 20px',
+                      padding: '8px 20px',
                       borderRadius: '20px',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: 'bold',
-                      textTransform: 'uppercase'
+                      textTransform: 'uppercase',
+                      zIndex: 10,
+                      whiteSpace: 'nowrap',
+                      boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
                     }}>
                       Most Popular
                     </div>
@@ -712,14 +821,17 @@ export default function BillingPage() {
                   {isCurrentPlan && (
                     <div style={{
                       position: 'absolute',
-                      top: '-12px',
+                      top: '-16px',
                       right: '16px',
                       backgroundColor: '#10b981',
                       color: 'white',
-                      padding: '6px 16px',
+                      padding: '8px 16px',
                       borderRadius: '20px',
-                      fontSize: '12px',
-                      fontWeight: 'bold'
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      zIndex: 10,
+                      whiteSpace: 'nowrap',
+                      boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
                     }}>
                       Current Plan
                     </div>
@@ -736,16 +848,28 @@ export default function BillingPage() {
                       {plan.name}
                     </h3>
                     <div style={{ marginBottom: '8px' }}>
-                      <span style={{ 
-                        fontSize: '36px', 
-                        fontWeight: 'bold', 
-                        color: '#1f2937' 
-                      }}>
-                        {formatCurrency(plan.price)}
-                      </span>
-                      <span style={{ color: '#6b7280', fontSize: '16px' }}>
-                        /{plan.period}
-                      </span>
+                      {plan.price === 0 ? (
+                        <span style={{ 
+                          fontSize: '36px', 
+                          fontWeight: 'bold', 
+                          color: '#10b981' 
+                        }}>
+                          Free
+                        </span>
+                      ) : (
+                        <>
+                          <span style={{ 
+                            fontSize: '36px', 
+                            fontWeight: 'bold', 
+                            color: '#1f2937' 
+                          }}>
+                            {formatCurrency(plan.price)}
+                          </span>
+                          <span style={{ color: '#6b7280', fontSize: '16px' }}>
+                            /{plan.period}
+                          </span>
+                        </>
+                      )}
                     </div>
                     <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
                       {plan.description}
@@ -758,19 +882,26 @@ export default function BillingPage() {
                     padding: 0,
                     margin: '0 0 24px 0'
                   }}>
-                    {plan.features.map((feature, index) => (
-                      <li key={index} style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        padding: '8px 0',
-                        fontSize: '14px',
-                        color: '#374151'
-                      }}>
-                        <FaCheck size={12} color="#10b981" />
-                        {feature}
-                      </li>
-                    ))}
+                    {plan.features.map((feature, index) => {
+                      const isAIFeature = feature.includes('AI Agent');
+                      return (
+                        <li key={index} style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: isAIFeature ? '12px 14px' : '8px 0',
+                          fontSize: '14px',
+                          color: isAIFeature ? '#000000' : '#374151',
+                          fontWeight: isAIFeature ? 'bold' : 'normal',
+                          backgroundColor: isAIFeature ? '#f3f4f6' : 'transparent',
+                          borderRadius: isAIFeature ? '8px' : '0',
+                          marginBottom: isAIFeature ? '8px' : '0'
+                        }}>
+                          <FaCheck size={12} color={isAIFeature ? "#000000" : "#10b981"} />
+                          {feature}
+                        </li>
+                      );
+                    })}
                   </ul>
 
                   {/* Action Button */}
@@ -807,6 +938,10 @@ export default function BillingPage() {
                       <>
                         <FaCheckCircle size={16} />
                         Current Plan
+                      </>
+                    ) : plan.price === 0 ? (
+                      <>
+                        Get Started Free
                       </>
                     ) : (
                       <>

@@ -102,6 +102,7 @@ export default function LandingPage() {
       period: "per month",
       description: "Perfect for small cafes and food stalls",
       features: [
+        "AI Agent (Voice/Chat): 500 credits/month",
         "Up to 500 menu items",
         "1 restaurant location",
         "Basic POS system",
@@ -120,6 +121,7 @@ export default function LandingPage() {
       period: "per month",
       description: "Ideal for growing restaurants",
       features: [
+        "AI Agent (Voice/Chat): 1,000 credits/month",
         "Unlimited menu items",
         "Up to 3 restaurant locations",
         "Advanced POS with payments",
@@ -140,6 +142,7 @@ export default function LandingPage() {
       period: "per month",
       description: "For restaurant chains and large operations",
       features: [
+        "AI Agent (Voice/Chat): 2,000 credits/month",
         "Everything in Professional",
         "Unlimited locations",
         "Multi-restaurant dashboard",
@@ -1671,23 +1674,30 @@ export default function LandingPage() {
                   margin: `0 0 ${isMobile ? '24px' : '32px'} 0`,
                   flex: 1
                 }}>
-                  {plan.features.map((feature, featureIndex) => (
-                    <li
-                      key={featureIndex}
-                      style={{
-                        padding: isMobile ? '6px 0' : '8px 0',
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: isMobile ? '8px' : '12px',
-                        fontSize: isMobile ? '13px' : '14px',
-                        color: '#374151',
-                        lineHeight: '1.4'
-                      }}
-                    >
-                      <FaCheckCircle size={isMobile ? 14 : 16} color="#10b981" style={{ marginTop: '2px', flexShrink: 0 }} />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
+                  {plan.features.map((feature, featureIndex) => {
+                    const isAIFeature = feature.includes('AI Agent');
+                    return (
+                      <li
+                        key={featureIndex}
+                        style={{
+                          padding: isAIFeature ? (isMobile ? '10px 12px' : '12px 14px') : (isMobile ? '6px 0' : '8px 0'),
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: isMobile ? '8px' : '12px',
+                          fontSize: isMobile ? '13px' : '14px',
+                          color: isAIFeature ? '#000000' : '#374151',
+                          fontWeight: isAIFeature ? 'bold' : 'normal',
+                          lineHeight: '1.4',
+                          backgroundColor: isAIFeature ? '#f3f4f6' : 'transparent',
+                          borderRadius: isAIFeature ? '8px' : '0',
+                          marginBottom: isAIFeature ? '8px' : '0'
+                        }}
+                      >
+                        <FaCheckCircle size={isMobile ? 14 : 16} color={isAIFeature ? "#000000" : "#10b981"} style={{ marginTop: '2px', flexShrink: 0 }} />
+                        <span>{feature}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
 
               <button
