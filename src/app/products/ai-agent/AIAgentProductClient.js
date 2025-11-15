@@ -296,6 +296,7 @@ export default function AIAgentProductClient() {
                     onMouseEnter={(e) => {
                       e.target.style.color = '#ef4444';
                       e.target.style.transform = 'translateY(-1px)';
+                      setShowProductsDropdown(true);
                     }}
                     onMouseLeave={(e) => {
                       e.target.style.color = '#374151';
@@ -307,23 +308,36 @@ export default function AIAgentProductClient() {
                   </a>
                   
                   {showProductsDropdown && (
-                    <div 
-                      style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        marginTop: '8px',
-                        backgroundColor: 'white',
-                        borderRadius: '12px',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                        padding: '12px 0',
-                        minWidth: '280px',
-                        zIndex: 100,
-                        border: '1px solid rgba(239, 68, 68, 0.1)'
-                      }}
-                      onMouseEnter={() => setShowProductsDropdown(true)}
-                      onMouseLeave={() => setShowProductsDropdown(false)}
-                    >
+                    <>
+                      {/* Invisible bridge to prevent gap */}
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          right: 0,
+                          height: '8px',
+                          zIndex: 101
+                        }}
+                        onMouseEnter={() => setShowProductsDropdown(true)}
+                      />
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          marginTop: '8px',
+                          backgroundColor: 'white',
+                          borderRadius: '12px',
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                          padding: '12px 0',
+                          minWidth: '280px',
+                          zIndex: 100,
+                          border: '1px solid rgba(239, 68, 68, 0.1)'
+                        }}
+                        onMouseEnter={() => setShowProductsDropdown(true)}
+                        onMouseLeave={() => setShowProductsDropdown(false)}
+                      >
                       <Link 
                         href="/products/ai-agent" 
                         style={{
@@ -439,7 +453,8 @@ export default function AIAgentProductClient() {
                         <FaBuilding size={18} color="#ef4444" />
                         <span style={{ fontWeight: '500', fontSize: '14px' }}>Hotel Management</span>
                       </Link>
-                    </div>
+                      </div>
+                    </>
                   )}
                 </div>
                 
