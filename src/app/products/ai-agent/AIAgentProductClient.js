@@ -896,7 +896,7 @@ export default function AIAgentProductClient() {
               lineHeight: '1.6'
             }}>
               Transform your restaurant operations with intelligent AI assistance. 
-              Here's what restaurant owners can do with our AI Agent.
+              Here&apos;s what restaurant owners can do with our AI Agent.
             </p>
           </div>
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import apiClient from '../lib/api';
 import SEOStructuredData from '../components/SEOStructuredData';
 import { 
@@ -511,7 +512,7 @@ export default function LandingPage() {
                 }}>
                   Features
                 </a>
-                <a href="/blog" style={{
+                <Link href="/blog" style={{
                   color: '#374151',
                   textDecoration: 'none',
                   fontWeight: '600',
@@ -529,7 +530,7 @@ export default function LandingPage() {
                   e.target.style.transform = 'translateY(0)';
                 }}>
                   Blog
-                </a>
+                </Link>
                 <a href="#pricing" style={{
                   color: '#374151',
                   textDecoration: 'none',
@@ -792,7 +793,7 @@ export default function LandingPage() {
               onMouseLeave={(e) => e.target.style.color = '#374151'}>
                 Features
               </a>
-              <a href="/blog" style={{
+              <Link href="/blog" style={{
                 color: '#374151',
                 textDecoration: 'none',
                 fontWeight: '600',
@@ -805,7 +806,7 @@ export default function LandingPage() {
               onMouseEnter={(e) => e.target.style.color = '#ef4444'}
               onMouseLeave={(e) => e.target.style.color = '#374151'}>
                 Blog
-              </a>
+              </Link>
               <a href="#pricing" style={{
                 color: '#374151',
                 textDecoration: 'none',
