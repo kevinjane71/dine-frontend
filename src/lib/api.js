@@ -752,6 +752,94 @@ class ApiClient {
     });
   }
 
+  // Shift Scheduling APIs
+  async getShifts(restaurantId, startDate, endDate) {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    return this.request(`/api/shift-scheduling/shifts/${restaurantId}${params.toString() ? '?' + params.toString() : ''}`);
+  }
+
+  async createShift(restaurantId, shiftData) {
+    return this.request(`/api/shift-scheduling/shifts/${restaurantId}`, {
+      method: 'POST',
+      body: shiftData,
+    });
+  }
+
+  async deleteShift(shiftId) {
+    return this.request(`/api/shift-scheduling/shifts/${shiftId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async bulkCreateShifts(restaurantId, shifts) {
+    return this.request(`/api/shift-scheduling/shifts/${restaurantId}/bulk`, {
+      method: 'POST',
+      body: { shifts },
+    });
+  }
+
+  async autoGenerateShifts(restaurantId, startDate, endDate, preferences, shiftTypes) {
+    return this.request(`/api/shift-scheduling/shifts/${restaurantId}/auto-generate`, {
+      method: 'POST',
+      body: { startDate, endDate, preferences, shiftTypes },
+    });
+  }
+
+  async getStaffAvailability(staffId) {
+    return this.request(`/api/shift-scheduling/availability/${staffId}`);
+  }
+
+  async updateStaffAvailability(staffId, preferences) {
+    return this.request(`/api/shift-scheduling/availability/${staffId}`, {
+      method: 'POST',
+      body: { preferences },
+    });
+  }
+
+  async getShiftSettings(restaurantId) {
+    return this.request(`/api/shift-scheduling/settings/${restaurantId}`);
+  }
+
+  async updateShiftSettings(restaurantId, settings) {
+    return this.request(`/api/shift-scheduling/settings/${restaurantId}`, {
+      method: 'POST',
+      body: settings,
+    });
+  }
+
+  // Google Reviews APIs
+  async getGoogleReviewSettings(restaurantId) {
+    return this.request(`/api/google-reviews/settings/${restaurantId}`);
+  }
+
+  async updateGoogleReviewSettings(restaurantId, settings) {
+    return this.request(`/api/google-reviews/settings/${restaurantId}`, {
+      method: 'POST',
+      body: settings,
+    });
+  }
+
+  async generateQRCode(restaurantId, url) {
+    return this.request(`/api/google-reviews/generate-qr/${restaurantId}`, {
+      method: 'POST',
+      body: { url },
+    });
+  }
+
+  async generateReviewContent(restaurantId, customerName, rating) {
+    return this.request(`/api/google-reviews/generate-content/${restaurantId}`, {
+      method: 'POST',
+      body: { customerName, rating },
+    });
+  }
+
+  async getReviewLink(restaurantId, placeId) {
+    const params = placeId ? `?placeId=${placeId}` : '';
+    return this.request(`/api/google-reviews/review-link/${restaurantId}${params}`);
+  }
+
   async deleteOrder(orderId) {
     return this.request(`/api/orders/${orderId}`, {
       method: 'DELETE',

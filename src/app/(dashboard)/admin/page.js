@@ -32,8 +32,12 @@ import {
   FaTimes,
   FaPercentage,
   FaSave,
-  FaSpinner
+  FaSpinner,
+  FaClock,
+  FaGoogle
 } from 'react-icons/fa';
+import ShiftScheduling from '../../../components/ShiftScheduling';
+import GoogleReviews from '../../../components/GoogleReviews';
 
 // Tax Management Component
 const TaxManagement = ({ restaurants, selectedRestaurant, setSelectedRestaurant }) => {
@@ -1193,6 +1197,50 @@ const Admin = () => {
                   <FaPercentage size={10} />
                   Tax
                 </button>
+                <button
+                  onClick={() => setActiveTab('shifts')}
+                  style={{
+                    flex: 1,
+                    backgroundColor: activeTab === 'shifts' ? '#ec4899' : 'transparent',
+                    color: activeTab === 'shifts' ? 'white' : '#6b7280',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    border: activeTab === 'shifts' ? 'none' : '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <FaClock size={10} />
+                  Shifts
+                </button>
+                <button
+                  onClick={() => setActiveTab('google-reviews')}
+                  style={{
+                    flex: 1,
+                    backgroundColor: activeTab === 'google-reviews' ? '#ec4899' : 'transparent',
+                    color: activeTab === 'google-reviews' ? 'white' : '#6b7280',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    border: activeTab === 'google-reviews' ? 'none' : '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <FaGoogle size={10} />
+                  Reviews
+                </button>
               </div>
             </div>
           ) : (
@@ -1322,6 +1370,46 @@ const Admin = () => {
               >
                 <FaPercentage size={14} />
                 Tax Management
+              </button>
+              <button
+                onClick={() => setActiveTab('shifts')}
+                style={{
+                  backgroundColor: activeTab === 'shifts' ? '#ec4899' : 'transparent',
+                  color: activeTab === 'shifts' ? 'white' : '#6b7280',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  border: activeTab === 'shifts' ? 'none' : '2px solid #e5e7eb',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <FaClock size={14} />
+                Shift Scheduling
+              </button>
+              <button
+                onClick={() => setActiveTab('google-reviews')}
+                style={{
+                  backgroundColor: activeTab === 'google-reviews' ? '#ec4899' : 'transparent',
+                  color: activeTab === 'google-reviews' ? 'white' : '#6b7280',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  border: activeTab === 'google-reviews' ? 'none' : '2px solid #e5e7eb',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <FaGoogle size={14} />
+                Google Reviews
               </button>
             </div>
             </div>
@@ -3236,6 +3324,68 @@ const Admin = () => {
             selectedRestaurant={selectedRestaurant}
             setSelectedRestaurant={setSelectedRestaurant}
           />
+        </div>
+      )}
+
+      {/* Shift Scheduling Section */}
+      {activeTab === 'shifts' && (
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          padding: '24px',
+          border: '1px solid #fce7f3',
+          minHeight: '600px'
+        }}>
+          {!selectedRestaurant ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              color: '#6b7280'
+            }}>
+              <FaClock size={48} style={{ marginBottom: '16px', color: '#d1d5db' }} />
+              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                Select a Restaurant
+              </h3>
+              <p>Please select a restaurant from the dropdown above to manage shift schedules.</p>
+            </div>
+          ) : (
+            <ShiftScheduling 
+              restaurantId={selectedRestaurant.id}
+              staff={staff.filter(s => s.status === 'active')}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Google Reviews Section */}
+      {activeTab === 'google-reviews' && (
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          padding: '24px',
+          border: '1px solid #fce7f3',
+          minHeight: '600px'
+        }}>
+          {!selectedRestaurant ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              color: '#6b7280'
+            }}>
+              <FaGoogle size={48} style={{ marginBottom: '16px', color: '#d1d5db' }} />
+              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                Select a Restaurant
+              </h3>
+              <p>Please select a restaurant from the dropdown above to manage Google Reviews.</p>
+            </div>
+          ) : (
+            <GoogleReviews 
+              restaurantId={selectedRestaurant.id}
+              restaurant={selectedRestaurant}
+            />
+          )}
         </div>
       )}
       
