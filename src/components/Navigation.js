@@ -137,6 +137,27 @@ function NavigationContent({ isHidden = false }) {
             setIsNavigationReady(true);
           }
           
+          // Skip restaurants API call if we're on dashboard page (dashboard will load it)
+          const isDashboardPage = pathname === '/dashboard';
+          if (isDashboardPage) {
+            console.log('⏭️ Navigation: Skipping restaurants API call (dashboard will load it)');
+            // Try to use restaurant data from localStorage if available
+            const savedRestaurant = localStorage.getItem('selectedRestaurant');
+            if (savedRestaurant) {
+              try {
+                const restaurant = JSON.parse(savedRestaurant);
+                if (parsedUser.restaurantId && restaurant.id === parsedUser.restaurantId) {
+                  setSelectedRestaurant(restaurant);
+                } else if (parsedUser.role === 'owner' || parsedUser.role === 'customer') {
+                  setSelectedRestaurant(restaurant);
+                }
+              } catch (error) {
+                console.error('Error parsing saved restaurant:', error);
+              }
+            }
+            return; // Skip API call on dashboard page
+          }
+          
           // Set restaurant data for staff and owners
           if (parsedUser.restaurantId) {
             // First try to use restaurant data from login response
@@ -199,7 +220,7 @@ function NavigationContent({ isHidden = false }) {
       }
     };
     loadData();
-  }, []);
+  }, [pathname]);
 
   // Smooth navigation handler
   const handleNavigation = (href, e) => {

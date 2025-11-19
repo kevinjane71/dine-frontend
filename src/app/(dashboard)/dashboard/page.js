@@ -137,13 +137,12 @@ function RestaurantPOSContent() {
     if (!rid) return;
     try {
       setTablesRefreshing(true);
-      const [floorsRes, tablesRes] = await Promise.all([
-        apiClient.getFloors(rid).catch(() => ({ floors: [] })),
-        apiClient.getTables(rid).catch(() => ({ tables: [] }))
-      ]);
+      // Only fetch floors - tables are nested inside floors
+      const floorsRes = await apiClient.getFloors(rid).catch(() => ({ floors: [] }));
+      const floorsData = floorsRes?.floors || floorsRes || [];
       setTablesData({
-        floors: floorsRes?.floors || floorsRes || [],
-        tables: tablesRes?.tables || tablesRes || []
+        floors: floorsData,
+        tables: [] // Tables are already nested in floors, no need for separate API call
       });
     } finally {
       setTablesRefreshing(false);
