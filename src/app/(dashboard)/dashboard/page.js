@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Onboarding from '../../../components/Onboarding';
 import EmptyMenuPrompt from '../../../components/EmptyMenuPrompt';
@@ -68,6 +68,9 @@ function RestaurantPOSContent() {
   const [viewMode, setViewMode] = useState('orders'); // 'orders' | 'tables'
   const [tablesData, setTablesData] = useState({ floors: [], tables: [] });
   const [tablesRefreshing, setTablesRefreshing] = useState(false);
+  
+  // Ref to track if initial data has been loaded (prevents duplicate calls)
+  const initialDataLoadedRef = useRef(false);
   
   // Customization modal state
   const [customizationModalOpen, setCustomizationModalOpen] = useState(false);
@@ -429,7 +432,7 @@ function RestaurantPOSContent() {
     }
   }, [selectedRestaurant?.id, loadTaxSettings]);
 
-  const loadInitialData = useCallback(async () => {
+  const loadInitialData = useCallback(async (skipRestaurantLoad = false) => {
     try {
       setLoading(true);
       setError('');
@@ -439,11 +442,20 @@ function RestaurantPOSContent() {
       const user = userData ? JSON.parse(userData) : null;
       console.log('👤 Current user:', user?.name, user?.role, 'Restaurant ID:', user?.restaurantId);
       
-      // Load restaurants
-      console.log('🏢 Loading restaurants...');
-      const restaurantsResponse = await apiClient.getRestaurants();
-      console.log('🏢 Restaurants loaded:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
-      setRestaurants(restaurantsResponse.restaurants || []);
+      // Load restaurants only if not already loaded and not skipping
+      let restaurantsResponse = null;
+      if (!skipRestaurantLoad && restaurants.length === 0) {
+        console.log('🏢 Loading restaurants...');
+        restaurantsResponse = await apiClient.getRestaurants();
+        console.log('🏢 Restaurants loaded:', restaurantsResponse.restaurants?.length || 0, 'restaurants');
+        setRestaurants(restaurantsResponse.restaurants || []);
+      } else if (skipRestaurantLoad) {
+        console.log('⏭️ Skipping restaurant load (already loaded or skip flag set)');
+        restaurantsResponse = { restaurants: restaurants };
+      } else {
+        console.log('✅ Using existing restaurants data');
+        restaurantsResponse = { restaurants: restaurants };
+      }
       
       let restaurant = null;
       
@@ -544,12 +556,20 @@ function RestaurantPOSContent() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [restaurants]);
 
-  // Load initial data
+  // Load initial data - only once on mount
   useEffect(() => {
+    // Prevent duplicate calls
+    if (initialDataLoadedRef.current) {
+      console.log('⏭️ Initial data already loaded, skipping...');
+      return;
+    }
+    
+    console.log('🚀 Loading initial data (first time)');
+    initialDataLoadedRef.current = true;
     loadInitialData();
-  }, [loadInitialData]);
+  }, []); // Empty dependency array - only run on mount
 
   // Listen for restaurant changes from navigation
   useEffect(() => {
@@ -557,7 +577,8 @@ function RestaurantPOSContent() {
       console.log('🏪 Dashboard page: Restaurant changed, reloading data', event.detail);
       setRestaurantChangeLoading(true); // Show loading overlay
       try {
-        await loadInitialData(); // Reload all data with new restaurant
+        // Skip restaurant load since we already have the list, just reload menu/floors
+        await loadInitialData(true); // Pass skipRestaurantLoad flag
       } catch (error) {
         console.error('Error reloading data after restaurant change:', error);
       } finally {
@@ -570,7 +591,7 @@ function RestaurantPOSContent() {
     return () => {
       window.removeEventListener('restaurantChanged', handleRestaurantChange);
     };
-  }, [loadInitialData]);
+  }, [loadInitialData, restaurants]);
  
   // REMOVED - createSampleRestaurant function no longer needed
   
