@@ -16,7 +16,7 @@ import { FiTrendingUp } from "react-icons/fi";
 import apiClient from '../../../lib/api';
 
 const Analytics = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('7d');
+  const [selectedPeriod, setSelectedPeriod] = useState('today'); // 'today' | '24h' | '7d' | '30d' | 'all'
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,7 +46,13 @@ const Analytics = () => {
       setError(null);
       
       console.log(`📊 Loading analytics for restaurant ${restaurantId}, period: ${period}`);
-      const response = await apiClient.getAnalytics(restaurantId, period);
+      // Map frontend period to API period
+      const apiPeriod = period === '24h' ? '24h' : 
+                       period === '7d' ? '7d' : 
+                       period === '30d' ? '30d' : 
+                       period === 'all' ? 'all' : 
+                       'today';
+      const response = await apiClient.getAnalytics(restaurantId, apiPeriod);
       
       if (response.success) {
         setAnalytics(response.analytics);
@@ -311,6 +317,33 @@ const Analytics = () => {
         <div className="mb-4 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1 md:mb-2">Analytics Dashboard</h1>
           <p className="text-sm md:text-base text-gray-600">Real-time insights into your restaurant performance</p>
+        </div>
+
+        {/* Date Filter Tabs */}
+        <div className="mb-4 md:mb-6">
+          <div className="bg-white rounded-lg md:rounded-xl shadow-sm p-2 md:p-3 border border-gray-200">
+            <div className="flex flex-wrap gap-2 md:gap-3">
+              {[
+                { key: 'today', label: 'Today' },
+                { key: '24h', label: 'Last 24 Hours' },
+                { key: '7d', label: 'Last 7 Days' },
+                { key: '30d', label: 'Last 30 Days' },
+                { key: 'all', label: 'All' }
+              ].map((period) => (
+                <button
+                  key={period.key}
+                  onClick={() => setSelectedPeriod(period.key)}
+                  className={`px-3 md:px-4 py-2 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold transition-all duration-200 ${
+                    selectedPeriod === period.key
+                      ? 'bg-red-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {period.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid - 2x2 on mobile, 4x1 on desktop */}

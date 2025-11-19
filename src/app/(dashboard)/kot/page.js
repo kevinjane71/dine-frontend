@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   FaPrint, 
@@ -36,6 +36,7 @@ const KitchenOrderTicket = () => {
   const router = useRouter();
   const [kotOrders, setKotOrders] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [dateFilter, setDateFilter] = useState('today'); // 'today' | 'last24hours' | 'all'
   const [selectedKot, setSelectedKot] = useState(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -594,9 +595,100 @@ const KitchenOrderTicket = () => {
     }
   };
 
-  const filteredOrders = kotOrders.filter(order => {
-    return selectedStatus === 'all' || order.status === selectedStatus;
-  });
+  // Helper function to get order date category
+  const getOrderDateCategory = (orderDate) => {
+    if (!orderDate) return 'unknown';
+    
+    const order = new Date(orderDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const orderDateOnly = new Date(order);
+    orderDateOnly.setHours(0, 0, 0, 0);
+    
+    if (orderDateOnly.getTime() === today.getTime()) {
+      return 'today';
+    } else if (orderDateOnly.getTime() === yesterday.getTime()) {
+      return 'yesterday';
+    } else {
+      return 'older';
+    }
+  };
+
+  // Helper function to format date label
+  const getDateLabel = (orderDate) => {
+    if (!orderDate) return '';
+    
+    const category = getOrderDateCategory(orderDate);
+    if (category === 'today') return '';
+    
+    const order = new Date(orderDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const orderDateOnly = new Date(order);
+    orderDateOnly.setHours(0, 0, 0, 0);
+    
+    if (orderDateOnly.getTime() === yesterday.getTime()) {
+      return 'Yesterday';
+    } else {
+      // Format older dates
+      const daysDiff = Math.floor((today - orderDateOnly) / (1000 * 60 * 60 * 24));
+      if (daysDiff === 2) return '2 Days Ago';
+      if (daysDiff === 3) return '3 Days Ago';
+      if (daysDiff <= 7) return `${daysDiff} Days Ago`;
+      return order.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+  };
+
+  // Filter and sort orders
+  const filteredOrders = kotOrders
+    .filter(order => {
+      const orderDate = order.kotTime || order.createdAt || order.timestamp;
+      if (!orderDate) return false;
+      
+      const orderTime = new Date(orderDate).getTime();
+      const now = new Date().getTime();
+      
+      // First filter by date
+      if (dateFilter === 'today') {
+        // Only today's orders
+        const category = getOrderDateCategory(orderDate);
+        if (category !== 'today') return false;
+      } else if (dateFilter === 'last24hours') {
+        // Orders from last 24 hours
+        const hoursDiff = (now - orderTime) / (1000 * 60 * 60);
+        if (hoursDiff > 24) return false;
+      }
+      // 'all' shows everything, no date filtering
+      
+      // Then filter by status
+      return selectedStatus === 'all' || order.status === selectedStatus;
+    })
+    .sort((a, b) => {
+      // Sort: yesterday's orders first, then today's, then older
+      const aCategory = getOrderDateCategory(a.kotTime || a.createdAt || a.timestamp);
+      const bCategory = getOrderDateCategory(b.kotTime || b.createdAt || b.timestamp);
+      
+      const categoryOrder = { 'yesterday': 0, 'today': 1, 'older': 2, 'unknown': 3 };
+      const aOrder = categoryOrder[aCategory] || 3;
+      const bOrder = categoryOrder[bCategory] || 3;
+      
+      if (aOrder !== bOrder) {
+        return aOrder - bOrder;
+      }
+      
+      // Within same category, sort by time (newest first)
+      const aTime = new Date(a.kotTime || a.createdAt || a.timestamp).getTime();
+      const bTime = new Date(b.kotTime || b.createdAt || b.timestamp).getTime();
+      return bTime - aTime;
+    });
 
   const formatTime = (timeString) => {
     try {
@@ -907,6 +999,71 @@ const KitchenOrderTicket = () => {
                 </div>
               </div>
               
+              {/* Mobile Date Filter */}
+              {showMobileFilters && (
+                <div style={{
+                  marginTop: '12px',
+                  padding: '12px',
+                  backgroundColor: '#fff7ed',
+                  borderRadius: '8px',
+                  border: '1px solid #fed7aa'
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#92400e', marginBottom: '8px' }}>
+                    Date Filter
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => setDateFilter('today')}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        backgroundColor: dateFilter === 'today' ? '#f97316' : 'white',
+                        color: dateFilter === 'today' ? 'white' : '#92400e',
+                        border: dateFilter === 'today' ? 'none' : '1px solid #fed7aa'
+                      }}
+                    >
+                      Today
+                    </button>
+                    <button
+                      onClick={() => setDateFilter('last24hours')}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        backgroundColor: dateFilter === 'last24hours' ? '#f97316' : 'white',
+                        color: dateFilter === 'last24hours' ? 'white' : '#92400e',
+                        border: dateFilter === 'last24hours' ? 'none' : '1px solid #fed7aa'
+                      }}
+                    >
+                      Last 24 Hours
+                    </button>
+                    <button
+                      onClick={() => setDateFilter('all')}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        backgroundColor: dateFilter === 'all' ? '#f97316' : 'white',
+                        color: dateFilter === 'all' ? 'white' : '#92400e',
+                        border: dateFilter === 'all' ? 'none' : '1px solid #fed7aa'
+                      }}
+                    >
+                      All Orders
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               {/* Mobile Status Quick View */}
               <div style={{ 
                 display: 'flex', 
@@ -1055,6 +1212,65 @@ const KitchenOrderTicket = () => {
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                {/* Desktop Date Filter */}
+                <div style={{
+                  display: 'flex',
+                  gap: '8px',
+                  backgroundColor: '#fff7ed',
+                  padding: '4px',
+                  borderRadius: '12px',
+                  border: '1px solid #fed7aa'
+                }}>
+                  <button
+                    onClick={() => setDateFilter('today')}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      backgroundColor: dateFilter === 'today' ? '#f97316' : 'transparent',
+                      color: dateFilter === 'today' ? 'white' : '#92400e',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => setDateFilter('last24hours')}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      backgroundColor: dateFilter === 'last24hours' ? '#f97316' : 'transparent',
+                      color: dateFilter === 'last24hours' ? 'white' : '#92400e',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Last 24 Hours
+                  </button>
+                  <button
+                    onClick={() => setDateFilter('all')}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      backgroundColor: dateFilter === 'all' ? '#f97316' : 'transparent',
+                      color: dateFilter === 'all' ? 'white' : '#92400e',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    All Orders
+                  </button>
+                </div>
+                
                 <button
                   onClick={() => {
                     console.log('🔄 Manual refresh clicked (desktop)');
@@ -1110,7 +1326,7 @@ const KitchenOrderTicket = () => {
                 : 'repeat(auto-fill, minmax(340px, 1fr))',
               gap: isClient && isMobile ? '12px' : '16px'
             }}>
-              {filteredOrders.map((kot) => {
+              {filteredOrders.map((kot, index) => {
                 const timeElapsed = getTimeElapsed(kot.kotTime);
                 const isOverdue = timeElapsed > kot.estimatedTime;
                 const statusInfo = getStatusInfo(kot.status);
@@ -1119,16 +1335,22 @@ const KitchenOrderTicket = () => {
                 const StatusIcon = statusInfo.icon;
                 const TypeIcon = typeInfo.icon;
                 
+                // Get date category and label
+                const dateCategory = getOrderDateCategory(kot.kotTime || kot.createdAt || kot.timestamp);
+                const dateLabel = getDateLabel(kot.kotTime || kot.createdAt || kot.timestamp);
+                const isPastOrder = dateCategory === 'yesterday' || dateCategory === 'older';
+                
                 return (
                   <div
                     key={kot.id}
                     style={{
-                      backgroundColor: 'white',
+                      backgroundColor: isPastOrder ? '#fff7ed' : 'white',
                       borderRadius: '20px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                      border: `2px solid ${kot.priority === 'urgent' ? '#ef4444' : '#fed7aa'}`,
+                      boxShadow: isPastOrder ? '0 4px 12px rgba(249, 115, 22, 0.15)' : '0 4px 12px rgba(0,0,0,0.08)',
+                      border: `2px solid ${isPastOrder ? '#f97316' : (kot.priority === 'urgent' ? '#ef4444' : '#fed7aa')}`,
                       overflow: 'hidden',
                       transition: 'all 0.3s ease',
+                      position: 'relative',
                       ...(isOverdue && kot.status !== 'served' ? {
                         backgroundColor: '#fef2f2',
                         borderColor: '#ef4444',
@@ -1146,11 +1368,27 @@ const KitchenOrderTicket = () => {
                         : '0 4px 12px rgba(0,0,0,0.08)';
                     }}
                   >
+                    {/* Date Label for Past Orders */}
+                    {dateLabel && (
+                      <div style={{
+                        padding: '6px 12px',
+                        backgroundColor: '#f97316',
+                        color: 'white',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>
+                        📅 {dateLabel}
+                      </div>
+                    )}
+                    
                     {/* Compact Header */}
                     <div style={{ 
                       padding: '8px 12px', 
-                      backgroundColor: '#fef7f0', 
-                      borderBottom: '1px solid #fed7aa',
+                      backgroundColor: isPastOrder ? '#fff7ed' : '#fef7f0', 
+                      borderBottom: `1px solid ${isPastOrder ? '#f97316' : '#fed7aa'}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
