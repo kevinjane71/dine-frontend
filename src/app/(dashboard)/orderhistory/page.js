@@ -39,6 +39,7 @@ const OrderHistory = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [user, setUser] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [taxSettings, setTaxSettings] = useState(null);
   
   // Custom dropdown states
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
@@ -292,6 +293,24 @@ const OrderHistory = () => {
     setRestaurantId(savedRestaurantId);
     setRestaurant(savedRestaurant);
   }, [router]);
+
+  // Load tax settings
+  useEffect(() => {
+    const loadTaxSettings = async () => {
+      if (!restaurantId) return;
+      
+      try {
+        const taxSettingsResponse = await apiClient.getTaxSettings(restaurantId);
+        if (taxSettingsResponse.success) {
+          setTaxSettings(taxSettingsResponse.taxSettings);
+        }
+      } catch (error) {
+        console.error('Error loading tax settings:', error);
+      }
+    };
+
+    loadTaxSettings();
+  }, [restaurantId]);
 
   useEffect(() => {
     if (restaurantId) {
@@ -773,20 +792,45 @@ const OrderHistory = () => {
                       <div className="text-right">
                         <div className={isMobile ? "text-sm font-semibold text-gray-900" : "text-base sm:text-lg font-semibold text-gray-900"}>
                           ₹{(() => {
-                            // Calculate total from items if totalAmount is missing or zero
-                            if (order.totalAmount && order.totalAmount > 0) {
-                              return order.totalAmount.toFixed(2);
-                            }
-                            
-                            // Fallback: calculate from items
+                            // Calculate subtotal from items
+                            let subtotal = 0;
                             if (order.items && Array.isArray(order.items)) {
-                              const calculatedTotal = order.items.reduce((sum, item) => {
+                              subtotal = order.items.reduce((sum, item) => {
                                 return sum + (item.total || (item.price * item.quantity) || 0);
                               }, 0);
-                              return calculatedTotal.toFixed(2);
+                            } else if (order.totalAmount && order.totalAmount > 0) {
+                              subtotal = order.totalAmount;
                             }
-                            
-                            return '0.00';
+
+                            // If order already has finalAmount (with tax), use it
+                            if (order.finalAmount && order.finalAmount > 0) {
+                              return order.finalAmount.toFixed(2);
+                            }
+
+                            // If order has taxAmount, add it to subtotal
+                            if (order.taxAmount && order.taxAmount > 0) {
+                              return (subtotal + order.taxAmount).toFixed(2);
+                            }
+
+                            // Calculate tax if tax settings are available
+                            if (taxSettings?.enabled && subtotal > 0) {
+                              let totalTax = 0;
+                              
+                              if (taxSettings.taxes && taxSettings.taxes.length > 0) {
+                                taxSettings.taxes.forEach(tax => {
+                                  if (tax.enabled) {
+                                    totalTax += subtotal * (tax.rate / 100);
+                                  }
+                                });
+                              } else if (taxSettings.defaultTaxRate) {
+                                totalTax = subtotal * (taxSettings.defaultTaxRate / 100);
+                              }
+                              
+                              return (subtotal + totalTax).toFixed(2);
+                            }
+
+                            // Fallback: return subtotal if no tax
+                            return subtotal.toFixed(2);
                           })()}
                         </div>
                         <div className={isMobile ? "text-[10px] text-gray-500" : "text-xs sm:text-sm text-gray-500"}>
