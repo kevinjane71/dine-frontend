@@ -1416,6 +1416,106 @@ class ApiClient {
     return this.request(`/api/smart-suggestions/${restaurantId}?type=${type}`);
   }
 
+  // ==================== AUTOMATION & LOYALTY APIs ====================
+
+  // Automations
+  async getAutomations(restaurantId) {
+    return this.request(`/api/automation/${restaurantId}/automations`);
+  }
+
+  async createAutomation(restaurantId, automationData) {
+    return this.request(`/api/automation/${restaurantId}/automations`, {
+      method: 'POST',
+      body: automationData,
+    });
+  }
+
+  async updateAutomation(restaurantId, automationId, updateData) {
+    return this.request(`/api/automation/${restaurantId}/automations/${automationId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
+  async deleteAutomation(restaurantId, automationId) {
+    return this.request(`/api/automation/${restaurantId}/automations/${automationId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Templates
+  async getAutomationTemplates(restaurantId) {
+    return this.request(`/api/automation/${restaurantId}/templates`);
+  }
+
+  async createTemplate(restaurantId, templateData) {
+    return this.request(`/api/automation/${restaurantId}/templates`, {
+      method: 'POST',
+      body: templateData,
+    });
+  }
+
+  async updateTemplate(restaurantId, templateId, updateData) {
+    return this.request(`/api/automation/${restaurantId}/templates/${templateId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
+  async deleteTemplate(restaurantId, templateId) {
+    return this.request(`/api/automation/${restaurantId}/templates/${templateId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Analytics
+  async getAutomationAnalytics(restaurantId, period = '30d') {
+    return this.request(`/api/automation/${restaurantId}/analytics?period=${period}`);
+  }
+
+  // Coupons
+  async getCoupons(restaurantId) {
+    return this.request(`/api/automation/${restaurantId}/coupons`);
+  }
+
+  async createCoupon(restaurantId, couponData) {
+    return this.request(`/api/automation/${restaurantId}/coupons`, {
+      method: 'POST',
+      body: couponData,
+    });
+  }
+
+  async updateCoupon(restaurantId, couponId, updateData) {
+    return this.request(`/api/automation/${restaurantId}/coupons/${couponId}`, {
+      method: 'PATCH',
+      body: updateData,
+    });
+  }
+
+  async deleteCoupon(restaurantId, couponId) {
+    return this.request(`/api/automation/${restaurantId}/coupons/${couponId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // WhatsApp Settings
+  async getWhatsAppSettings(restaurantId) {
+    return this.request(`/api/automation/${restaurantId}/whatsapp`);
+  }
+
+  async connectWhatsApp(restaurantId, settings) {
+    return this.request(`/api/automation/${restaurantId}/whatsapp/connect`, {
+      method: 'POST',
+      body: settings, // Should include: { mode: 'restaurant' | 'dineopen', accessToken, phoneNumberId, businessAccountId, webhookVerifyToken }
+    });
+  }
+
+  async disconnectWhatsApp(restaurantId) {
+    return this.request(`/api/automation/${restaurantId}/whatsapp/disconnect`, {
+      method: 'POST',
+    });
+  }
+
   // Demo request endpoint - public, no auth required
   async submitDemoRequest(contactType, phone, email, comment) {
     // Create a request without auth token

@@ -27,7 +27,8 @@ import {
   FaSun,
   FaEllipsisV,
   FaCheck,
-  FaBuilding
+  FaBuilding,
+  FaRobot
 } from 'react-icons/fa';
 import { HiSwitchHorizontal } from 'react-icons/hi';
 import { BiRestaurant } from 'react-icons/bi';
@@ -267,6 +268,7 @@ function NavigationContent({ isHidden = false }) {
     { id: 'billing', name: t('nav.billing'), icon: FaCreditCard, href: '/billing', color: '#06b6d4', gradient: 'from-cyan-500 to-cyan-600', roles: ['owner'] },
     { id: 'admin', name: t('nav.admin'), icon: FaUsers, href: '/admin', color: '#ec4899', gradient: 'from-pink-500 to-pink-600', roles: ['owner'] },
     { id: 'kot', name: t('nav.kot'), icon: FaPrint, href: '/kot', color: '#f97316', gradient: 'from-orange-500 to-orange-600', roles: ['owner', 'manager', 'waiter'] },
+    { id: 'automation', name: 'Automation', icon: FaRobot, href: '/automation', color: '#10b981', gradient: 'from-emerald-500 to-emerald-600', roles: ['owner', 'manager'] },
   ];
 
   // Filter navigation items based on user role and page access
