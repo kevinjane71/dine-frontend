@@ -71,28 +71,69 @@ const Automation = () => {
     try {
       setLoading(true);
       
-      // Load all automation data in parallel
-      const [automationsRes, templatesRes, analyticsRes, customersRes, couponsRes, whatsappRes] = await Promise.all([
-        apiClient.getAutomations(rid).catch(() => ({ automations: [] })),
-        apiClient.getAutomationTemplates(rid).catch(() => ({ templates: [] })),
-        apiClient.getAutomationAnalytics(rid).catch(() => ({ analytics: null })),
-        apiClient.getCustomers(rid).catch(() => ({ customers: [] })),
-        apiClient.getCoupons(rid).catch(() => ({ coupons: [] })),
-        apiClient.getWhatsAppSettings(rid).catch(() => ({ connected: false, webhookUrl: null }))
+      // Load all automation data in parallel with better error handling
+      const [automationsRes, templatesRes, analyticsRes, customersRes, couponsRes, whatsappRes] = await Promise.allSettled([
+        apiClient.getAutomations(rid).catch((err) => {
+          console.warn('Failed to load automations:', err);
+          return { automations: [] };
+        }),
+        apiClient.getAutomationTemplates(rid).catch((err) => {
+          console.warn('Failed to load templates:', err);
+          return { templates: [] };
+        }),
+        apiClient.getAutomationAnalytics(rid).catch((err) => {
+          console.warn('Failed to load analytics:', err);
+          return { analytics: null };
+        }),
+        apiClient.getCustomers(rid).catch((err) => {
+          console.warn('Failed to load customers:', err);
+          return { customers: [] };
+        }),
+        apiClient.getCoupons(rid).catch((err) => {
+          console.warn('Failed to load coupons:', err);
+          return { coupons: [] };
+        }),
+        apiClient.getWhatsAppSettings(rid).catch((err) => {
+          console.warn('Failed to load WhatsApp settings:', err);
+          return { connected: false, webhookUrl: null };
+        })
       ]);
 
-      setAutomations(automationsRes.automations || []);
-      setTemplates(templatesRes.templates || []);
-      setAnalytics(analyticsRes.analytics);
-      setCustomers(customersRes.customers || []);
-      setCoupons(couponsRes.coupons || []);
-      setWhatsappConnected(whatsappRes.connected || false);
+      // Extract values from Promise.allSettled results
+      const getValue = (result) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        }
+        return null;
+      };
+
+      const automationsData = getValue(automationsRes) || { automations: [] };
+      const templatesData = getValue(templatesRes) || { templates: [] };
+      const analyticsData = getValue(analyticsRes) || { analytics: null };
+      const customersData = getValue(customersRes) || { customers: [] };
+      const couponsData = getValue(couponsRes) || { coupons: [] };
+      const whatsappData = getValue(whatsappRes) || { connected: false, webhookUrl: null };
+
+      setAutomations(automationsData.automations || []);
+      setTemplates(templatesData.templates || []);
+      setAnalytics(analyticsData.analytics);
+      setCustomers(customersData.customers || []);
+      setCoupons(couponsData.coupons || []);
+      setWhatsappConnected(whatsappData.connected || false);
       setWhatsappSettings({
-        ...whatsappRes.settings,
-        webhookUrl: whatsappRes.webhookUrl || null
+        ...whatsappData.settings,
+        webhookUrl: whatsappData.webhookUrl || null
       });
     } catch (error) {
       console.error('Error loading automation data:', error);
+      // Set defaults on error
+      setAutomations([]);
+      setTemplates([]);
+      setAnalytics(null);
+      setCustomers([]);
+      setCoupons([]);
+      setWhatsappConnected(false);
+      setWhatsappSettings({ webhookUrl: null });
     } finally {
       setLoading(false);
     }
@@ -561,6 +602,13 @@ const SettingsTab = ({ whatsappConnected, whatsappSettings, restaurantId }) => {
     businessAccountId: '',
     webhookVerifyToken: ''
   });
+  const [testPhoneNumber, setTestPhoneNumber] = useState('');
+  const [testMessage, setTestMessage] = useState('Hello! This is a test message from DineOpen automation system.');
+  const [testTemplateName, setTestTemplateName] = useState('');
+  const [testTemplateLanguage, setTestTemplateLanguage] = useState('en_US');
+  const [useTemplate, setUseTemplate] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState(null);
 
   const handleConnect = async () => {
     try {
@@ -580,7 +628,15 @@ const SettingsTab = ({ whatsappConnected, whatsappSettings, restaurantId }) => {
       setShowConnectModal(false);
       window.location.reload();
     } catch (error) {
-      alert('Failed to connect: ' + error.message);
+      let errorMessage = error.message || 'Failed to connect';
+      
+      // Provide more helpful error message for 404
+      if (errorMessage.includes('not found')) {
+        errorMessage = 'Backend endpoint not found. Please restart your backend server and try again.';
+      }
+      
+      alert('Failed to connect: ' + errorMessage);
+      console.error('WhatsApp connection error:', error);
     }
   };
 
@@ -705,6 +761,189 @@ const SettingsTab = ({ whatsappConnected, whatsappSettings, restaurantId }) => {
               <p className="mt-2">Note: Messages will appear from DineOpen&apos;s number, not your restaurant&apos;s number.</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Test Message Section */}
+      {whatsappConnected && (
+        <div className="border rounded-lg p-6 bg-gray-50">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <FaBell className="text-green-600" />
+            Test WhatsApp Message
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Send a test message to verify your WhatsApp integration is working correctly.
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number *
+              </label>
+              <input
+                type="tel"
+                value={testPhoneNumber}
+                onChange={(e) => setTestPhoneNumber(e.target.value)}
+                placeholder="917042330092 (without + or spaces)"
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Enter phone number with country code (e.g., 917042330092 for India)
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="useTemplate"
+                checked={useTemplate}
+                onChange={(e) => setUseTemplate(e.target.checked)}
+                className="rounded"
+              />
+              <label htmlFor="useTemplate" className="text-sm text-gray-700">
+                Use Template Message (instead of plain text)
+              </label>
+            </div>
+
+            {useTemplate ? (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Template Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={testTemplateName}
+                    onChange={(e) => setTestTemplateName(e.target.value)}
+                    placeholder="jaspers_market_plain_text_v1"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Template Language
+                  </label>
+                  <select
+                    value={testTemplateLanguage}
+                    onChange={(e) => setTestTemplateLanguage(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  >
+                    <option value="en_US">English (US)</option>
+                    <option value="en_GB">English (UK)</option>
+                    <option value="hi">Hindi</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Template Parameter (Message Text)
+                  </label>
+                  <textarea
+                    value={testMessage}
+                    onChange={(e) => setTestMessage(e.target.value)}
+                    placeholder="Enter message text that will be used as template parameter"
+                    rows={3}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+              </>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Message *
+                </label>
+                <textarea
+                  value={testMessage}
+                  onChange={(e) => setTestMessage(e.target.value)}
+                  placeholder="Enter your test message here..."
+                  rows={4}
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+            )}
+
+            {testResult && (
+              <div className={`p-3 rounded-lg ${
+                testResult.success 
+                  ? 'bg-green-50 border border-green-200 text-green-800' 
+                  : 'bg-red-50 border border-red-200 text-red-800'
+              }`}>
+                <div className="flex items-center gap-2">
+                  {testResult.success ? (
+                    <FaCheckCircle className="text-green-600" />
+                  ) : (
+                    <FaExclamationTriangle className="text-red-600" />
+                  )}
+                  <span className="font-medium">
+                    {testResult.success ? 'Success!' : 'Error'}
+                  </span>
+                </div>
+                <p className="text-sm mt-1">
+                  {testResult.message || testResult.error}
+                </p>
+                {testResult.messageId && (
+                  <p className="text-xs mt-1 opacity-75">
+                    Message ID: {testResult.messageId}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={async () => {
+                if (!testPhoneNumber) {
+                  alert('Please enter a phone number');
+                  return;
+                }
+                if (!useTemplate && !testMessage) {
+                  alert('Please enter a message');
+                  return;
+                }
+                if (useTemplate && !testTemplateName) {
+                  alert('Please enter a template name');
+                  return;
+                }
+
+                setTesting(true);
+                setTestResult(null);
+
+                try {
+                  const result = await apiClient.testWhatsAppMessage(restaurantId, {
+                    phoneNumber: testPhoneNumber,
+                    message: useTemplate ? null : testMessage,
+                    templateName: useTemplate ? testTemplateName : null,
+                    templateLanguage: useTemplate ? testTemplateLanguage : null
+                  });
+
+                  setTestResult({
+                    success: true,
+                    message: result.message || 'Test message sent successfully!',
+                    messageId: result.messageId
+                  });
+                } catch (error) {
+                  setTestResult({
+                    success: false,
+                    error: error.message || 'Failed to send test message'
+                  });
+                } finally {
+                  setTesting(false);
+                }
+              }}
+              disabled={testing || !whatsappConnected}
+              className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {testing ? (
+                <>
+                  <FaSpinner className="animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <FaBell />
+                  Send Test Message
+                </>
+              )}
+            </button>
+          </div>
         </div>
       )}
 

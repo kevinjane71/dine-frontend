@@ -42,15 +42,36 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+      
+      // Handle non-JSON responses
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          // If JSON parsing fails, create error object
+          data = { error: 'Invalid JSON response' };
+        }
+      } else {
+        const text = await response.text();
+        data = { error: text || 'API request failed' };
+      }
 
       if (!response.ok) {
-        throw new Error(data.message || data.error || 'API request failed');
+        // Provide more specific error message for 404
+        if (response.status === 404) {
+          throw new Error(data.message || data.error || `Endpoint ${endpoint} not found`);
+        }
+        throw new Error(data.message || data.error || `API request failed (${response.status})`);
       }
 
       return data;
     } catch (error) {
-      console.error('API Error:', error);
+      // Only log if it's not a handled error to reduce console noise
+      if (error.message && !error.message.includes('not found') && !error.message.includes('failed')) {
+        console.error('API Error:', error);
+      }
       throw error;
     }
   }
@@ -1513,6 +1534,13 @@ class ApiClient {
   async disconnectWhatsApp(restaurantId) {
     return this.request(`/api/automation/${restaurantId}/whatsapp/disconnect`, {
       method: 'POST',
+    });
+  }
+
+  async testWhatsAppMessage(restaurantId, { phoneNumber, message, templateName, templateLanguage }) {
+    return this.request(`/api/automation/${restaurantId}/whatsapp/test`, {
+      method: 'POST',
+      body: { phoneNumber, message, templateName, templateLanguage },
     });
   }
 
