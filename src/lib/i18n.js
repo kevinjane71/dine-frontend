@@ -371,6 +371,83 @@ const translations = {
         successTableAdded: 'Table added successfully!',
         errorLoading: 'Failed to load tables'
       }
+    },
+
+    // Customers
+    customers: {
+      title: 'Customer Management',
+      titleShort: 'Customers',
+      subtitle: 'Manage your restaurant customers and view their order history',
+      addCustomer: 'Add Customer',
+      addNewCustomer: 'Add New Customer',
+      add: 'Add',
+      addFirst: 'Add First Customer',
+      editCustomer: 'Edit Customer',
+      searchPlaceholder: 'Search customers by name, phone, email, or city...',
+      searchPlaceholderShort: 'Search customers...',
+      loading: 'Loading customers...',
+      noRestaurant: 'No Restaurant Selected',
+      noRestaurantMessage: 'Please select a restaurant from the top navigation dropdown to manage customers.',
+      goToAdmin: 'Go to Admin',
+      noCustomers: 'No customers yet',
+      noCustomersFound: 'No customers found',
+      trySearch: 'Try adjusting your search terms',
+      startAdding: 'Start by adding your first customer',
+      form: {
+        name: 'Name',
+        phone: 'Phone Number',
+        email: 'Email',
+        city: 'City',
+        dateOfBirth: 'Date of Birth',
+        namePlaceholder: 'Customer name',
+        phonePlaceholder: '+91-9876543210',
+        emailPlaceholder: 'customer@example.com',
+        cityPlaceholder: 'Mumbai, Delhi, Bangalore',
+        note: 'Note: Either Name or Phone Number is required. Email, City, and Date of Birth are optional.',
+        cancel: 'Cancel',
+        saving: 'Saving...',
+        update: 'Update',
+        add: 'Add',
+        customer: 'Customer'
+      },
+      validation: {
+        nameOrPhoneRequired: 'Please provide either Name or Phone Number (at least one is required)',
+        invalidPhone: 'Please enter a valid phone number',
+        invalidEmail: 'Please enter a valid email address'
+      },
+      stats: {
+        orders: 'Orders',
+        spent: 'Spent',
+        lastOrder: 'Last Order'
+      },
+      actions: {
+        history: 'History',
+        edit: 'Edit',
+        delete: 'Delete',
+        viewHistory: 'View History'
+      },
+      orderHistory: {
+        title: 'Order History',
+        noHistory: 'No Order History',
+        noHistoryMessage: 'This customer hasn\'t placed any orders yet.',
+        table: 'Table',
+        orderNumber: 'Order Number'
+      },
+      sort: {
+        lastOrder: 'Last Order',
+        name: 'Name',
+        orders: 'Orders',
+        spent: 'Spent'
+      },
+      messages: {
+        deleteConfirm: 'Are you sure you want to delete {{name}}?',
+        deleteConfirmGeneric: 'Are you sure you want to delete this customer?',
+        noRestaurantSelected: 'No restaurant selected. Please select a restaurant from the top navigation first.',
+        failedToLoad: 'Failed to load customers',
+        failedToSave: 'Failed to save customer',
+        failedToDelete: 'Failed to delete customer'
+      },
+      unnamed: 'Unnamed Customer'
     }
   },
   
@@ -745,6 +822,83 @@ const translations = {
         successTableAdded: 'टेबल सफलतापूर्वक जोड़ा गया!',
         errorLoading: 'टेबल लोड करने में विफल'
       }
+    },
+
+    // Customers
+    customers: {
+      title: 'ग्राहक प्रबंधन',
+      titleShort: 'ग्राहक',
+      subtitle: 'अपने रेस्टोरेंट ग्राहकों को प्रबंधित करें और उनका ऑर्डर इतिहास देखें',
+      addCustomer: 'ग्राहक जोड़ें',
+      addNewCustomer: 'नया ग्राहक जोड़ें',
+      add: 'जोड़ें',
+      addFirst: 'पहला ग्राहक जोड़ें',
+      editCustomer: 'ग्राहक संपादित करें',
+      searchPlaceholder: 'नाम, फोन, ईमेल या शहर से ग्राहक खोजें...',
+      searchPlaceholderShort: 'ग्राहक खोजें...',
+      loading: 'ग्राहक लोड हो रहे हैं...',
+      noRestaurant: 'कोई रेस्टोरेंट चयनित नहीं',
+      noRestaurantMessage: 'ग्राहकों को प्रबंधित करने के लिए कृपया शीर्ष नेविगेशन ड्रॉपडाउन से एक रेस्टोरेंट चुनें।',
+      goToAdmin: 'एडमिन पर जाएं',
+      noCustomers: 'अभी तक कोई ग्राहक नहीं',
+      noCustomersFound: 'कोई ग्राहक नहीं मिला',
+      trySearch: 'अपने खोज शब्दों को समायोजित करने का प्रयास करें',
+      startAdding: 'अपना पहला ग्राहक जोड़कर शुरू करें',
+      form: {
+        name: 'नाम',
+        phone: 'फोन नंबर',
+        email: 'ईमेल',
+        city: 'शहर',
+        dateOfBirth: 'जन्म तिथि',
+        namePlaceholder: 'ग्राहक का नाम',
+        phonePlaceholder: '+91-9876543210',
+        emailPlaceholder: 'customer@example.com',
+        cityPlaceholder: 'मुंबई, दिल्ली, बैंगलोर',
+        note: 'नोट: नाम या फोन नंबर में से कम से कम एक आवश्यक है। ईमेल, शहर और जन्म तिथि वैकल्पिक हैं।',
+        cancel: 'रद्द करें',
+        saving: 'सहेजा जा रहा है...',
+        update: 'अपडेट',
+        add: 'जोड़ें',
+        customer: 'ग्राहक'
+      },
+      validation: {
+        nameOrPhoneRequired: 'कृपया नाम या फोन नंबर प्रदान करें (कम से कम एक आवश्यक है)',
+        invalidPhone: 'कृपया एक वैध फोन नंबर दर्ज करें',
+        invalidEmail: 'कृपया एक वैध ईमेल पता दर्ज करें'
+      },
+      stats: {
+        orders: 'ऑर्डर',
+        spent: 'खर्च',
+        lastOrder: 'अंतिम ऑर्डर'
+      },
+      actions: {
+        history: 'इतिहास',
+        edit: 'संपादित करें',
+        delete: 'हटाएं',
+        viewHistory: 'इतिहास देखें'
+      },
+      orderHistory: {
+        title: 'ऑर्डर इतिहास',
+        noHistory: 'कोई ऑर्डर इतिहास नहीं',
+        noHistoryMessage: 'इस ग्राहक ने अभी तक कोई ऑर्डर नहीं दिया है।',
+        table: 'टेबल',
+        orderNumber: 'ऑर्डर नंबर'
+      },
+      sort: {
+        lastOrder: 'अंतिम ऑर्डर',
+        name: 'नाम',
+        orders: 'ऑर्डर',
+        spent: 'खर्च'
+      },
+      messages: {
+        deleteConfirm: 'क्या आप वाकई {{name}} को हटाना चाहते हैं?',
+        deleteConfirmGeneric: 'क्या आप वाकई इस ग्राहक को हटाना चाहते हैं?',
+        noRestaurantSelected: 'कोई रेस्टोरेंट चयनित नहीं। कृपया पहले शीर्ष नेविगेशन से एक रेस्टोरेंट चुनें।',
+        failedToLoad: 'ग्राहक लोड करने में विफल',
+        failedToSave: 'ग्राहक सहेजने में विफल',
+        failedToDelete: 'ग्राहक हटाने में विफल'
+      },
+      unnamed: 'अनाम ग्राहक'
     }
   }
 };
@@ -824,6 +978,8 @@ export default {
   setLanguage,
   getAvailableLanguages
 };
+
+
 
 
 

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Head from 'next/head';
 import apiClient from '../../../lib/api';
+import { t, getCurrentLanguage } from '../../../lib/i18n';
 import { 
   FaUsers, 
   FaPlus, 
@@ -70,7 +71,7 @@ const CustomerForm = React.memo(({
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
-              {isEdit ? 'Edit Customer' : 'Add New Customer'}
+              {isEdit ? t('customers.editCustomer') : t('customers.addNewCustomer')}
             </h2>
             <button
               onClick={onClose}
@@ -118,14 +119,14 @@ const CustomerForm = React.memo(({
             fontSize: '12px',
             color: '#0369a1'
           }}>
-            <strong>Note:</strong> Either Name or Phone Number is required. Email, City, and Date of Birth are optional.
+            <strong>{t('common.notes')}:</strong> {t('customers.form.note')}
           </div>
 
           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', marginBottom: '16px' }}>
             {/* Name */}
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                Name <span style={{ color: '#dc2626' }}>*</span>
+                {t('customers.form.name')} <span style={{ color: '#dc2626' }}>*</span>
               </label>
               <input
                 type="text"
@@ -140,14 +141,14 @@ const CustomerForm = React.memo(({
                   outline: 'none',
                   backgroundColor: '#f9fafb'
                 }}
-                placeholder="Customer name"
+                placeholder={t('customers.form.namePlaceholder')}
               />
             </div>
 
             {/* Phone */}
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                Phone Number <span style={{ color: '#dc2626' }}>*</span>
+                {t('customers.form.phone')} <span style={{ color: '#dc2626' }}>*</span>
               </label>
               <input
                 type="tel"
@@ -162,7 +163,7 @@ const CustomerForm = React.memo(({
                   outline: 'none',
                   backgroundColor: '#f9fafb'
                 }}
-                placeholder="+91-9876543210"
+                placeholder={t('customers.form.phonePlaceholder')}
               />
               {formErrors.phone && (
                 <p style={{ color: '#dc2626', fontSize: '12px', margin: '4px 0 0 0' }}>
@@ -176,7 +177,7 @@ const CustomerForm = React.memo(({
             {/* Email */}
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                Email
+                {t('customers.form.email')}
               </label>
               <input
                 type="email"
@@ -191,7 +192,7 @@ const CustomerForm = React.memo(({
                   outline: 'none',
                   backgroundColor: '#f9fafb'
                 }}
-                placeholder="customer@example.com"
+                placeholder={t('customers.form.emailPlaceholder')}
               />
               {formErrors.email && (
                 <p style={{ color: '#dc2626', fontSize: '12px', margin: '4px 0 0 0' }}>
@@ -203,7 +204,7 @@ const CustomerForm = React.memo(({
             {/* City */}
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                City
+                {t('customers.form.city')}
               </label>
               <input
                 type="text"
@@ -218,7 +219,7 @@ const CustomerForm = React.memo(({
                   outline: 'none',
                   backgroundColor: '#f9fafb'
                 }}
-                placeholder="Mumbai, Delhi, Bangalore"
+                placeholder={t('customers.form.cityPlaceholder')}
               />
             </div>
           </div>
@@ -226,7 +227,7 @@ const CustomerForm = React.memo(({
           {/* Date of Birth */}
           <div style={{ marginBottom: '24px' }}>
             <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-              Date of Birth
+              {t('customers.form.dateOfBirth')}
             </label>
             <input
               type="date"
@@ -260,7 +261,7 @@ const CustomerForm = React.memo(({
                 cursor: 'pointer'
               }}
             >
-              Cancel
+              {t('customers.form.cancel')}
             </button>
             <button
               type="submit"
@@ -281,7 +282,7 @@ const CustomerForm = React.memo(({
               }}
             >
               {saving ? <FaSpinner className="animate-spin" /> : <FaSave />}
-              {saving ? 'Saving...' : (isEdit ? 'Update' : 'Add')} Customer
+              {saving ? t('customers.form.saving') : (isEdit ? t('customers.form.update') : t('customers.form.add'))} {t('customers.form.customer')}
             </button>
           </div>
         </form>
@@ -305,6 +306,7 @@ const Customers = () => {
   const [sortBy, setSortBy] = useState('lastOrderDate');
   const [sortOrder, setSortOrder] = useState('desc');
   const [isMobile, setIsMobile] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('en');
   
   // Customer form state
   const [customerForm, setCustomerForm] = useState({
@@ -316,6 +318,14 @@ const Customers = () => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [saving, setSaving] = useState(false);
+
+  // Language detection
+  useEffect(() => {
+    setCurrentLanguage(getCurrentLanguage());
+    const handleLanguageChange = (e) => setCurrentLanguage(e.detail.language);
+    window.addEventListener('languageChanged', handleLanguageChange);
+    return () => window.removeEventListener('languageChanged', handleLanguageChange);
+  }, []);
 
   // Mobile detection
   useEffect(() => {
@@ -368,7 +378,7 @@ const Customers = () => {
       setCustomers(response.customers || []);
     } catch (error) {
       console.error('Error loading customers:', error);
-      setError('Failed to load customers');
+      setError(t('customers.messages.failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -382,17 +392,17 @@ const Customers = () => {
     
     // Either name OR phone must be provided (mandatory)
     if (!customerForm.name && !customerForm.phone) {
-      errors.general = 'Please provide either Name or Phone Number (at least one is required)';
+      errors.general = t('customers.validation.nameOrPhoneRequired');
     }
     
     // If phone is provided, validate format
     if (customerForm.phone && !/^[\+]?[0-9\s\-\(\)]{10,}$/.test(customerForm.phone)) {
-      errors.phone = 'Please enter a valid phone number';
+      errors.phone = t('customers.validation.invalidPhone');
     }
     
     // If email is provided, validate format (optional field)
     if (customerForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerForm.email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = t('customers.validation.invalidEmail');
     }
     
     console.log('Validation errors:', errors);
@@ -431,7 +441,7 @@ const Customers = () => {
       
       if (!restaurantId) {
         console.log('No restaurant ID found, setting error');
-        setError('No restaurant selected. Please select a restaurant from the top navigation first.');
+        setError(t('customers.messages.noRestaurantSelected'));
         return;
       }
       
@@ -481,7 +491,7 @@ const Customers = () => {
     } catch (error) {
       console.error('Error saving customer:', error);
       console.error('Error details:', error.message, error.stack);
-      setError(error.message || 'Failed to save customer');
+      setError(error.message || t('customers.messages.failedToSave'));
     } finally {
       console.log('Setting saving to false');
       setSaving(false);
@@ -490,7 +500,9 @@ const Customers = () => {
 
   // Handle delete customer
   const handleDelete = async (customer) => {
-    if (!confirm(`Are you sure you want to delete ${customer.name || customer.phone || 'this customer'}?`)) {
+    const customerName = customer.name || customer.phone || t('customers.unnamed');
+    const confirmMessage = t('customers.messages.deleteConfirm', { name: customerName });
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -501,7 +513,7 @@ const Customers = () => {
       await loadCustomers();
     } catch (error) {
       console.error('Error deleting customer:', error);
-      setError('Failed to delete customer');
+      setError(t('customers.messages.failedToDelete'));
     }
   };
 
@@ -597,7 +609,7 @@ const Customers = () => {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
-              Order History - {selectedCustomer?.name || selectedCustomer?.phone || 'Customer'}
+              {t('customers.orderHistory.title')} - {selectedCustomer?.name || selectedCustomer?.phone || t('customers.form.customer')}
             </h2>
             <button
               onClick={() => {
@@ -649,7 +661,7 @@ const Customers = () => {
                       </p>
                       {order.tableNumber && (
                         <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#6b7280' }}>
-                          Table: {order.tableNumber}
+                          {t('customers.orderHistory.table')}: {order.tableNumber}
                         </p>
                       )}
                     </div>
@@ -661,10 +673,10 @@ const Customers = () => {
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
               <FaHistory size={48} style={{ color: '#d1d5db', marginBottom: '16px' }} />
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#6b7280' }}>
-                No Order History
+                {t('customers.orderHistory.noHistory')}
               </h3>
               <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#9ca3af' }}>
-                This customer hasn&apos;t placed any orders yet.
+                {t('customers.orderHistory.noHistoryMessage')}
               </p>
             </div>
           )}
@@ -684,7 +696,7 @@ const Customers = () => {
       }}>
         <div style={{ textAlign: 'center' }}>
           <FaSpinner className="animate-spin" size={32} style={{ color: '#ef4444', marginBottom: '16px' }} />
-          <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading customers...</p>
+          <p style={{ color: '#6b7280', fontSize: '16px' }}>{t('customers.loading')}</p>
         </div>
       </div>
     );
@@ -720,10 +732,10 @@ const Customers = () => {
             <FaExclamationTriangle size={32} style={{ color: '#dc2626' }} />
           </div>
           <h2 style={{ margin: '0 0 16px 0', fontSize: '24px', fontWeight: '600', color: '#1f2937' }}>
-            No Restaurant Selected
+            {t('customers.noRestaurant')}
           </h2>
           <p style={{ margin: '0 0 24px 0', fontSize: '16px', color: '#6b7280', maxWidth: '400px' }}>
-            Please select a restaurant from the top navigation dropdown to manage customers.
+            {t('customers.noRestaurantMessage')}
           </p>
           <button
             onClick={() => router.push('/admin')}
@@ -741,7 +753,7 @@ const Customers = () => {
             onMouseEnter={(e) => e.target.style.backgroundColor = '#dc2626'}
             onMouseLeave={(e) => e.target.style.backgroundColor = '#ef4444'}
           >
-            Go to Admin
+            {t('customers.goToAdmin')}
           </button>
         </div>
       </div>
@@ -795,11 +807,11 @@ const Customers = () => {
                   }}>
                     <FaUsers size={isMobile ? 16 : 20} />
                   </div>
-                  {isMobile ? 'Customers' : 'Customer Management'}
+                  {isMobile ? t('customers.titleShort') : t('customers.title')}
                 </h1>
                 {!isMobile && (
                   <p style={{ margin: '8px 0 0 0', color: '#6b7280', fontSize: '16px' }}>
-                    Manage your restaurant customers and view their order history
+                    {t('customers.subtitle')}
                   </p>
                 )}
               </div>
@@ -822,7 +834,7 @@ const Customers = () => {
                 }}
               >
                 <FaPlus size={isMobile ? 12 : 14} />
-                {isMobile ? 'Add' : 'Add Customer'}
+                {isMobile ? t('customers.add') : t('customers.addCustomer')}
               </button>
             </div>
           </div>
@@ -849,7 +861,7 @@ const Customers = () => {
                   }} />
                   <input
                     type="text"
-                    placeholder={isMobile ? "Search customers..." : "Search customers by name, phone, email, or city..."}
+                    placeholder={isMobile ? t('customers.searchPlaceholderShort') : t('customers.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{
@@ -880,10 +892,10 @@ const Customers = () => {
                     minWidth: isMobile ? '80px' : '120px'
                   }}
                 >
-                  <option value="lastOrderDate">Last Order</option>
-                  <option value="name">Name</option>
-                  <option value="totalOrders">Orders</option>
-                  <option value="totalSpent">Spent</option>
+                  <option value="lastOrderDate">{t('customers.sort.lastOrder')}</option>
+                  <option value="name">{t('customers.sort.name')}</option>
+                  <option value="totalOrders">{t('customers.sort.orders')}</option>
+                  <option value="totalSpent">{t('customers.sort.spent')}</option>
                 </select>
                 
                 <button
@@ -943,7 +955,7 @@ const Customers = () => {
                         </div>
                         <div>
                           <h3 style={{ margin: 0, fontSize: isMobile ? '14px' : '16px', fontWeight: '600', color: '#1f2937' }}>
-                            {customer.name || 'Unnamed Customer'}
+                            {customer.name || t('customers.unnamed')}
                           </h3>
                           <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', flexWrap: 'wrap' }}>
                             {customer.phone && (
@@ -975,20 +987,20 @@ const Customers = () => {
                         <p style={{ margin: 0, fontSize: isMobile ? '12px' : '14px', fontWeight: '600', color: '#1f2937' }}>
                           {customer.totalOrders || 0}
                         </p>
-                        <p style={{ margin: 0, fontSize: isMobile ? '10px' : '12px', color: '#6b7280' }}>Orders</p>
+                        <p style={{ margin: 0, fontSize: isMobile ? '10px' : '12px', color: '#6b7280' }}>{t('customers.stats.orders')}</p>
                       </div>
                       <div style={{ textAlign: 'center' }}>
                         <p style={{ margin: 0, fontSize: isMobile ? '12px' : '14px', fontWeight: '600', color: '#ef4444' }}>
                           ₹{customer.totalSpent || 0}
                         </p>
-                        <p style={{ margin: 0, fontSize: isMobile ? '10px' : '12px', color: '#6b7280' }}>Spent</p>
+                        <p style={{ margin: 0, fontSize: isMobile ? '10px' : '12px', color: '#6b7280' }}>{t('customers.stats.spent')}</p>
                       </div>
                       {customer.lastOrderDate && !isMobile && (
                         <div style={{ textAlign: 'center' }}>
                           <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>
                             {new Date(customer.lastOrderDate).toLocaleDateString()}
                           </p>
-                          <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>Last Order</p>
+                          <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>{t('customers.stats.lastOrder')}</p>
                         </div>
                       )}
                     </div>
@@ -1011,7 +1023,7 @@ const Customers = () => {
                         }}
                       >
                         <FaHistory size={isMobile ? 10 : 12} />
-                        {!isMobile && 'History'}
+                        {!isMobile && t('customers.actions.history')}
                       </button>
                       <button
                         onClick={() => handleEdit(customer)}
@@ -1029,7 +1041,7 @@ const Customers = () => {
                         }}
                       >
                         <FaEdit size={isMobile ? 10 : 12} />
-                        {!isMobile && 'Edit'}
+                        {!isMobile && t('customers.actions.edit')}
                       </button>
                       <button
                         onClick={() => handleDelete(customer)}
@@ -1047,7 +1059,7 @@ const Customers = () => {
                         }}
                       >
                         <FaTrash size={isMobile ? 10 : 12} />
-                        {!isMobile && 'Delete'}
+                        {!isMobile && t('customers.actions.delete')}
                       </button>
                     </div>
                   </div>
@@ -1057,10 +1069,10 @@ const Customers = () => {
               <div style={{ textAlign: 'center', padding: isMobile ? '40px 16px' : '60px 20px' }}>
                 <FaUsers size={isMobile ? 48 : 64} style={{ color: '#d1d5db', marginBottom: '16px' }} />
                 <h3 style={{ margin: 0, fontSize: isMobile ? '16px' : '20px', fontWeight: '600', color: '#6b7280', marginBottom: '8px' }}>
-                  {searchTerm ? 'No customers found' : 'No customers yet'}
+                  {searchTerm ? t('customers.noCustomersFound') : t('customers.noCustomers')}
                 </h3>
                 <p style={{ margin: 0, fontSize: isMobile ? '12px' : '14px', color: '#9ca3af', marginBottom: isMobile ? '16px' : '24px' }}>
-                  {searchTerm ? 'Try adjusting your search terms' : 'Start by adding your first customer'}
+                  {searchTerm ? t('customers.trySearch') : t('customers.startAdding')}
                 </p>
                 {!searchTerm && (
                   <button
@@ -1081,7 +1093,7 @@ const Customers = () => {
                     }}
                   >
                     <FaPlus size={isMobile ? 12 : 14} />
-                    Add First Customer
+                    {t('customers.addFirst')}
                   </button>
                 )}
               </div>
