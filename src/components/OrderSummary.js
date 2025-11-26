@@ -18,7 +18,9 @@ import {
   FaTrash,
   FaPrint,
   FaMicrophone,
-  FaMicrophoneSlash
+  FaMicrophoneSlash,
+  FaChair,
+  FaExchangeAlt
 } from 'react-icons/fa';
 
 const OrderSummary = ({ 
@@ -611,6 +613,70 @@ const OrderSummary = ({
           </div>
         </div>
       </div>
+
+      {/* Active Table Indicator - Compact & Professional */}
+      {tableNumber && (
+        <div style={{
+          padding: '8px 12px',
+          background: '#fef2f2',
+          borderBottom: '1px solid #fecaca',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexShrink: 0
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '6px',
+              background: '#ef4444',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
+            }}>
+              <FaChair size={14} />
+            </div>
+            <div>
+              <div style={{ fontSize: '9px', color: '#f87171', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>SERVING</div>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: '#dc2626', lineHeight: '1' }}>Table {tableNumber}</div>
+            </div>
+          </div>
+          
+          <button 
+            onClick={() => {
+               if (typeof onTableNumberChange === 'function') {
+                 onTableNumberChange('');
+               }
+            }}
+            style={{
+              padding: '4px 8px',
+              background: 'white',
+              border: '1px solid #fecaca',
+              borderRadius: '6px',
+              fontSize: '10px',
+              fontWeight: 600,
+              color: '#ef4444',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = '#fee2e2';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'white';
+            }}
+          >
+            <FaExchangeAlt size={10} />
+            Change
+          </button>
+        </div>
+      )}
 
       {/* Cart Items */}
       <div style={{ 

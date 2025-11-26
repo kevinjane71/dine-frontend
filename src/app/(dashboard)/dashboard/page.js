@@ -3293,10 +3293,10 @@ function RestaurantPOSContent() {
             <div style={{
               display: 'grid',
               gridTemplateColumns: useModernCards 
-                ? (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))')
-                : (isMobile ? 'repeat(auto-fill, minmax(150px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))'),
+                ? (isMobile ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(150px, 1fr))')
+                : (isMobile ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(150px, 1fr))'),
               gap: useModernCards 
-                ? (isMobile ? '12px' : '16px')
+                ? (isMobile ? '10px' : '12px')
                 : (isMobile ? '8px' : '10px'),
               justifyContent: 'center',
               padding: useModernCards ? '0 8px' : '0 6px'

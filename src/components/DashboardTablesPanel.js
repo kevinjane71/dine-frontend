@@ -1,20 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { FaEye, FaReceipt, FaTimes, FaMinus, FaChevronUp, FaWindowMaximize } from 'react-icons/fa';
+import { FaEye, FaReceipt, FaTimes, FaMinus, FaChevronUp, FaWindowMaximize, FaChair, FaClock, FaUserFriends, FaUtensils } from 'react-icons/fa';
 import apiClient from '../lib/api';
 import OrderSummary from './OrderSummary';
-
-const statusStyles = {
-  available: { bg: '#ecfdf5', text: '#065f46', border: '#a7f3d0' },
-  serving: { bg: '#eff6ff', text: '#1e40af', border: '#bfdbfe' },
-  // occupied: switch to yellow theme
-  occupied: { bg: '#fef9c3', text: '#92400e', border: '#fde68a' },
-  // reserved: switch to blue theme
-  reserved: { bg: '#eff6ff', text: '#1e40af', border: '#bfdbfe' },
-  'out-of-service': { bg: '#f3f4f6', text: '#374151', border: '#e5e7eb' },
-  maintenance: { bg: '#f3f4f6', text: '#374151', border: '#e5e7eb' }
-};
 
 export default function DashboardTablesPanel({
   floors = [],
@@ -64,6 +53,7 @@ export default function DashboardTablesPanel({
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loadingOrder, setLoadingOrder] = useState(false);
   const [orderError, setOrderError] = useState(null);
+
   // Prefer floor.tables if present; fall back to flat tables prop
   const grouped = useMemo(() => {
     let allGroups = [];
@@ -86,7 +76,6 @@ export default function DashboardTablesPanel({
 
   const handleViewOrderClick = async (orderId, table) => {
     if (sliderOpen && selectedOrder?.id === orderId && !sliderMinimized) {
-      // If clicking the same order and slider is open (not minimized), close the slider
       handleSliderClose();
       setCurrentOrder(null);
       setCart([]);
@@ -98,7 +87,6 @@ export default function DashboardTablesPanel({
     setLoadingOrder(true);
     setOrderError(null);
     setSliderOpen(true);
-    // If slider was minimized, restore it
     if (sliderMinimized) {
       setSliderMinimized(false);
     }
@@ -113,7 +101,6 @@ export default function DashboardTablesPanel({
         const order = response.orders[0];
         setSelectedOrder(order);
         
-        // Convert order items to cart format
         const cartItems = (order.items || []).map(item => ({
           id: item.menuItemId || item.id,
           name: item.name,
@@ -128,23 +115,12 @@ export default function DashboardTablesPanel({
         setCart(cartItems);
         setCurrentOrder(order);
         
-        // Set order details
-        if (order.tableNumber) {
-          onTableNumberChange(order.tableNumber);
-        }
-        if (order.orderType) {
-          setOrderType(order.orderType);
-        }
-        if (order.paymentMethod) {
-          setPaymentMethod(order.paymentMethod);
-        }
+        if (order.tableNumber) onTableNumberChange(order.tableNumber);
+        if (order.orderType) setOrderType(order.orderType);
+        if (order.paymentMethod) setPaymentMethod(order.paymentMethod);
         if (order.customerInfo) {
-          if (order.customerInfo.name) {
-            onCustomerNameChange(order.customerInfo.name);
-          }
-          if (order.customerInfo.phone) {
-            onCustomerMobileChange(order.customerInfo.phone);
-          }
+          if (order.customerInfo.name) onCustomerNameChange(order.customerInfo.name);
+          if (order.customerInfo.phone) onCustomerMobileChange(order.customerInfo.phone);
         }
       } else {
         setOrderError('Order not found');
@@ -162,10 +138,8 @@ export default function DashboardTablesPanel({
     setSliderMinimized(false);
     setSelectedOrder(null);
     setOrderError(null);
-    // Don't clear cart or currentOrder here - let user decide
   };
 
-  // Expose close function to parent via callback
   const handleSliderClose = () => {
     closeSlider();
     if (onSliderClose) {
@@ -181,250 +155,347 @@ export default function DashboardTablesPanel({
     setSliderMinimized(false);
   };
 
+  // Helper to get status configuration
+  const getStatusConfig = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'occupied':
+        return {
+          color: '#f59e0b', // Amber-500
+          bg: '#fffbeb', // Amber-50
+          border: '#fcd34d', // Amber-300
+          label: 'Occupied',
+          icon: FaUserFriends
+        };
+      case 'reserved':
+        return {
+          color: '#3b82f6', // Blue-500
+          bg: '#eff6ff', // Blue-50
+          border: '#3b82f6', // Blue-500 (Darker border)
+          label: 'Reserved',
+          icon: FaClock
+        };
+      case 'serving':
+        return {
+          color: '#8b5cf6', // Violet-500
+          bg: '#f5f3ff', // Violet-50
+          border: '#8b5cf6', // Violet-500 (Darker border)
+          label: 'Serving',
+          icon: FaUtensils
+        };
+      case 'available':
+      default:
+        return {
+          color: '#10b981', // Emerald-500
+          bg: '#f0fdf4', // Emerald-50 (Light Green)
+          border: '#10b981', // Emerald-500 (Darker border)
+          label: 'Available',
+          icon: FaChair
+        };
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '0 24px', maxWidth: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '0 24px 40px', maxWidth: '100%', boxSizing: 'border-box' }}>
       <style jsx>{`
-        @keyframes tableSpin {
-          to { transform: rotate(360deg); }
-        }
         @keyframes slideInRight {
-          from {
-            transform: translateX(100%);
-          }
-          to {
-            transform: translateX(0);
-          }
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
         }
         @keyframes slideUpBottom {
-          from {
-            transform: translateY(100%);
-          }
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        @keyframes dash {
           to {
-            transform: translateY(0);
+            stroke-dashoffset: 0;
           }
         }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+        .table-card {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .table-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+        }
+        .btn-action {
+          transition: all 0.2s;
+        }
+        .btn-action:active {
+          transform: scale(0.98);
         }
       `}</style>
+
       {grouped.map((group, idx) => (
-        <div key={idx} style={{ background: '#fff', border: grouped.length > 1 ? '1px solid #e5e7eb' : 'none', borderRadius: '12px' }}>
-          {grouped.length > 1 && (
+        <div key={idx} style={{ background: 'transparent' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '16px',
+            borderBottom: '1px solid #e5e7eb',
+            paddingBottom: '8px'
+          }}>
             <div style={{
-              padding: '10px 12px',
-              borderBottom: '1px solid #f3f4f6',
+              fontSize: '16px', 
+              fontWeight: 700, 
+              color: '#1f2937',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between'
+              gap: '10px'
             }}>
-              <div style={{ fontWeight: 700, color: '#1f2937' }}>{group.info?.name || `Floor ${idx + 1}`}</div>
-              {isRefreshing && (
-                <div style={{ fontSize: '11px', color: '#6b7280' }}>Refreshing…</div>
-              )}
+              <span style={{ 
+                width: '4px', 
+                height: '20px', 
+                background: '#3b82f6', // Blue accent
+                borderRadius: '2px',
+                display: 'inline-block' 
+              }}></span>
+              {group.info?.name || `Floor ${idx + 1}`}
+              <span style={{ 
+                fontSize: '11px', 
+                fontWeight: 600, 
+                color: '#6b7280',
+                marginLeft: '8px',
+                background: '#f3f4f6',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                border: '1px solid #e5e7eb'
+              }}>
+                {group.tables?.length || 0} Tables
+              </span>
+            </div>
+            {isRefreshing && (
+              <div style={{ fontSize: '11px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div className="animate-spin w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full"></div>
+                Refreshing...
             </div>
           )}
+          </div>
+
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-            gap: '24px',
-            padding: '20px'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+            gap: '20px',
           }}>
             {(group.tables || []).map((t, tIdx) => {
-              const st = statusStyles[t.status] || statusStyles.available;
-              const isOccupied = (t.status === 'occupied');
-              const isReserved = (t.status === 'reserved');
-              const isBooked = isOccupied || isReserved;
-              const occupiedBorderColor = '#f59e0b';
+              const status = t.status || 'available';
+              const config = getStatusConfig(status);
+              const StatusIcon = config.icon;
+              const isOccupied = status === 'occupied';
+              const isAvailable = status === 'available';
+              const isReserved = status === 'reserved';
+
               return (
-                <div key={t.id || tIdx}
+                <div 
+                  key={t.id || tIdx}
+                  className="table-card"
                   style={{
-                    position: 'relative',
-                    background: st.bg,
-                    border: `${isOccupied ? '1px solid transparent' : '1px solid ' + st.border}`,
+                    background: config.bg, // Light background color based on status
                     borderRadius: '12px',
-                    padding: '12px',
+                    // No border for occupied (only animated dotted border), full 1px border with darker color for others
+                    border: isOccupied ? 'none' : `1px solid ${config.border}`,
+                    padding: '0',
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '8px',
-                    height: '130px',
-                    minHeight: '130px',
-                    maxHeight: '130px',
-                    width: '100%',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                    transition: 'all 0.2s ease',
-                    overflow: 'visible',
-                    boxSizing: 'border-box'
-                  }}>
+                    minHeight: '120px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+                  }}
+                >
+                  {/* Animated Dotted Border for Occupied */}
                   {isOccupied && (
                     <svg
-                      viewBox="0 0 300 200"
-                      preserveAspectRatio="none"
                       style={{
                         position: 'absolute',
-                        inset: '-6px',
-                        width: 'calc(100% + 12px)',
-                        height: 'calc(100% + 12px)',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
                         pointerEvents: 'none',
-                        overflow: 'visible',
                         zIndex: 1
                       }}
                     >
                       <rect
                         x="1.5"
                         y="1.5"
-                        width="297"
-                        height="197"
-                        rx="12"
-                        ry="12"
+                        width="calc(100% - 3px)"
+                        height="calc(100% - 3px)"
+                        rx="10.5"
+                        ry="10.5"
                         fill="none"
-                        stroke={occupiedBorderColor}
-                        strokeWidth="2.5"
-                        strokeDasharray="5,5"
+                        stroke={config.color}
+                        strokeWidth="2"
+                        strokeDasharray="6,6"
                         strokeDashoffset="100"
                       >
-                        <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2s" repeatCount="indefinite" />
+                         <animate attributeName="stroke-dashoffset" from="100" to="0" dur="3s" repeatCount="indefinite" />
                       </rect>
                     </svg>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', flexShrink: 0 }}>
-                    <div style={{ fontWeight: 800, color: '#111827', fontSize: '16px', flex: 1 }}>{t.name || t.number}</div>
-                    <div style={{ fontSize: '9px', color: st.text, fontWeight: 700, background: st.bg, borderRadius: '999px', padding: '3px 8px', border: `1px solid ${st.border}`, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                      {t.status || 'available'}
+
+                  <div style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    {/* Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div>
+                        <div style={{ fontSize: '16px', fontWeight: 800, color: '#111827', lineHeight: 1.1 }}>
+                          {t.name || t.number}
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <FaChair size={9} />
+                          {t.capacity || '-'} Seats
                     </div>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: 500, flexShrink: 0 }}>Seats: {t.capacity || '-'}</div>
-                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: 'auto', flexShrink: 0, minHeight: '28px' }}>
-                    {isOccupied && t.currentOrderId && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewOrderClick(t.currentOrderId, t);
-                        }}
-                        style={{
+                      {/* Small Status Dot for Available, Badge for others */}
+                      {isAvailable ? (
+                         <div style={{ 
+                           width: '8px', 
+                           height: '8px', 
+                           borderRadius: '50%', 
+                           background: '#10b981',
+                           boxShadow: '0 0 0 2px #d1fae5'
+                         }} title="Available" />
+                      ) : (
+                        <div style={{
+                          background: config.bg,
+                          color: config.color,
+                          padding: '3px 8px',
+                          borderRadius: '12px',
+                          fontSize: '9px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          border: `1px solid ${config.border}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          {config.label}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content - Just Center Icon now, removed order details */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <div style={{ 
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: sliderOpen && selectedOrder?.id === t.currentOrderId ? '#d97706' : '#f59e0b',
+                          height: '100%', 
+                          opacity: 0.1 
+                        }}>
+                          <StatusIcon size={32} color={config.color} />
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div style={{ marginTop: '8px' }}>
+                      {isAvailable ? (
+                        <button
+                          className="btn-action"
+                          onClick={() => {
+                            if (sliderOpen) handleSliderClose();
+                            if (onTakeOrder) onTakeOrder(t.name || t.number);
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            background: '#059669', // Emerald 600 - Solid
                           color: 'white',
                           border: 'none',
                           borderRadius: '6px',
-                          width: '24px',
-                          height: '24px',
+                            fontSize: '11px', // Smaller font
+                            fontWeight: 600,
                           cursor: 'pointer',
-                          flexShrink: 0,
-                          transition: 'all 0.2s ease',
-                          boxShadow: '0 2px 4px rgba(245, 158, 11, 0.3)',
-                          zIndex: 10
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px', // Smaller gap
+                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
                         }}
                         onMouseEnter={(e) => {
-                          e.target.style.background = '#d97706';
-                          e.target.style.transform = 'scale(1.1)';
+                            e.target.style.background = '#047857'; // Emerald 700
                         }}
                         onMouseLeave={(e) => {
-                          e.target.style.background = sliderOpen && selectedOrder?.id === t.currentOrderId ? '#d97706' : '#f59e0b';
-                          e.target.style.transform = 'scale(1)';
+                            e.target.style.background = '#059669';
                         }}
-                        title={sliderOpen && selectedOrder?.id === t.currentOrderId ? "Close Order" : "View Order"}
                       >
                         <FaReceipt size={10} />
+                          Take Order
                       </button>
-                    )}
-                    {isReserved && t.currentOrderId && (
+                      ) : (
+                        <div style={{ display: 'flex', gap: '8px' }}>
                       <button
+                            className="btn-action"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (onViewOrder) {
-                            onViewOrder(t.currentOrderId, t);
-                          }
+                              if (t.currentOrderId) handleViewOrderClick(t.currentOrderId, t);
                         }}
                         style={{
+                              flex: 1,
+                              padding: '6px 8px', // Smaller padding
+                              background: '#ffffff',
+                              color: '#4b5563',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '6px',
+                              fontSize: '10px', // Smaller font
+                              fontWeight: 600,
+                              cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: '#3b82f6',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '8px',
-                          width: '28px',
-                          height: '28px',
-                          cursor: 'pointer',
-                          flexShrink: 0,
-                          transition: 'all 0.2s ease',
-                          boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.background = '#2563eb';
-                          e.target.style.transform = 'scale(1.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.background = '#3b82f6';
-                          e.target.style.transform = 'scale(1)';
-                        }}
-                        title="View Order"
-                      >
-                        <FaEye size={12} />
+                              gap: '4px'
+                            }}
+                            onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
+                            onMouseLeave={(e) => e.target.style.background = '#ffffff'}
+                          >
+                            <FaEye size={10} />
+                            View
                       </button>
-                    )}
-                    {(t.status === 'available' || t.status === 'serving') ? (
                       <button
+                            className="btn-action"
                         onClick={() => {
-                          // Close slider if open when taking new order
-                          if (sliderOpen) {
-                            handleSliderClose();
-                          }
-                          if (onTakeOrder) {
-                            onTakeOrder(t.name || t.number);
-                          }
+                              if (sliderOpen) handleSliderClose();
+                              if (onTakeOrder) onTakeOrder(t.name || t.number);
                         }}
                         style={{
                           flex: 1,
-                          background: t.status === 'available' ? '#22c55e' : '#3b82f6',
-                          color: 'white',
-                          border: 'none',
+                              padding: '6px 8px', // Smaller padding
+                              background: '#eff6ff', // Very light blue
+                              color: '#2563eb', // Blue 600
+                              border: '1px solid #bfdbfe',
                           borderRadius: '6px',
-                          fontSize: '9px',
+                              fontSize: '10px', // Smaller font
                           fontWeight: 600,
-                          padding: '4px 8px',
                           cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          boxShadow: '0 2px 4px rgba(34, 197, 94, 0.2)',
-                          height: '24px',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.transform = 'translateY(-1px)';
-                          e.target.style.boxShadow = '0 4px 8px rgba(34, 197, 94, 0.3)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.transform = 'translateY(0)';
-                          e.target.style.boxShadow = '0 2px 4px rgba(34, 197, 94, 0.2)';
-                        }}
-                      >
-                        {t.status === 'available' ? 'TAKE ORDER' : 'ADD ITEMS'}
+                              justifyContent: 'center',
+                              gap: '4px'
+                            }}
+                            onMouseEnter={(e) => e.target.style.background = '#dbeafe'}
+                            onMouseLeave={(e) => e.target.style.background = '#eff6ff'}
+                          >
+                            <FaUtensils size={10} />
+                            Add
                       </button>
-                    ) : isBooked && !t.currentOrderId ? (
-                      <div style={{ flex: 1, height: '28px', borderRadius: '8px', visibility: 'hidden' }} />
-                    ) : null}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
             })}
             {(!group.tables || group.tables.length === 0) && (
-              <div style={{ fontSize: '12px', color: '#9ca3af' }}>No tables on this floor.</div>
+              <div style={{ fontSize: '14px', color: '#9ca3af', fontStyle: 'italic' }}>No tables on this floor.</div>
             )}
           </div>
         </div>
       ))}
       {grouped.length === 0 && (
-        <div style={{ textAlign: 'center', color: '#9ca3af', padding: '12px' }}>No floors/tables found.</div>
+        <div style={{ textAlign: 'center', color: '#9ca3af', padding: '40px', background: '#f9fafb', borderRadius: '12px' }}>
+          <FaChair size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
+          <div>No floors or tables found.</div>
+        </div>
       )}
 
       {/* Order Summary Slider */}
@@ -451,12 +522,12 @@ export default function DashboardTablesPanel({
         >
             {/* Header */}
             <div style={{
-              padding: sliderMinimized ? '8px 12px' : '8px 12px',
+              padding: sliderMinimized ? '8px 12px' : '16px 24px',
               borderBottom: sliderMinimized ? 'none' : '1px solid #e5e7eb',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              background: '#f9fafb',
+              background: '#ffffff',
               flexShrink: 0,
               height: sliderMinimized ? '100%' : 'auto',
               minHeight: sliderMinimized ? '60px' : 'auto'
@@ -469,50 +540,36 @@ export default function DashboardTablesPanel({
             }}
             >
               <div style={{ flex: 1 }}>
-                <h3 style={{ margin: 0, fontSize: sliderMinimized ? '12px' : '14px', fontWeight: 600, color: '#111827', lineHeight: '1.2' }}>
+                <h3 style={{ margin: 0, fontSize: sliderMinimized ? '14px' : '18px', fontWeight: 700, color: '#111827', lineHeight: '1.2' }}>
                   {sliderMinimized ? 'Order Details' : 'Order Details'}
                 </h3>
                 {selectedOrder && !sliderMinimized && (
-                  <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: '#6b7280', lineHeight: '1.2' }}>
-                    Order #{selectedOrder.orderNumber || selectedOrder.id}
-                  </p>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                    <span style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>
+                      #{selectedOrder.orderNumber || selectedOrder.id}
+                    </span>
+                    <span style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>
+                      {selectedOrder.tableNumber ? `Table ${selectedOrder.tableNumber}` : 'No Table'}
+                    </span>
+                  </div>
                 )}
                 {selectedOrder && sliderMinimized && (
-                  <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: '#6b7280', lineHeight: '1.2' }}>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#6b7280', lineHeight: '1.2' }}>
                     #{selectedOrder.orderNumber || selectedOrder.id} • {cart?.length || 0} items • ₹{getTotalAmount ? getTotalAmount().toFixed(2) : '0.00'}
                   </p>
                 )}
               </div>
-              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {sliderMinimized ? (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       restoreSlider();
                     }}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: '4px',
-                      borderRadius: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#6b7280',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = '#f3f4f6';
-                      e.target.style.color = '#111827';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'transparent';
-                      e.target.style.color = '#6b7280';
-                    }}
+                    className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"
                     title="Maximize"
                   >
-                    <FaWindowMaximize size={12} />
+                    <FaWindowMaximize size={14} />
                   </button>
                 ) : (
                   <button
@@ -520,29 +577,10 @@ export default function DashboardTablesPanel({
                       e.stopPropagation();
                       minimizeSlider();
                     }}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: '4px',
-                      borderRadius: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#6b7280',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = '#f3f4f6';
-                      e.target.style.color = '#111827';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'transparent';
-                      e.target.style.color = '#6b7280';
-                    }}
+                    className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"
                     title="Minimize"
                   >
-                    <FaMinus size={12} />
+                    <FaMinus size={14} />
                   </button>
                 )}
                 <button
@@ -550,29 +588,10 @@ export default function DashboardTablesPanel({
                     e.stopPropagation();
                     handleSliderClose();
                   }}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '4px',
-                    borderRadius: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#6b7280',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = '#f3f4f6';
-                    e.target.style.color = '#111827';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'transparent';
-                    e.target.style.color = '#6b7280';
-                  }}
+                  className="p-2 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-full transition-colors"
                   title="Close"
                 >
-                  <FaTimes size={14} />
+                  <FaTimes size={16} />
                 </button>
               </div>
             </div>
@@ -583,17 +602,20 @@ export default function DashboardTablesPanel({
                 flex: 1,
                 overflow: 'hidden',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                background: '#f9fafb'
               }}
               onClick={(e) => e.stopPropagation()}
               >
                 {loadingOrder ? (
-                  <div style={{ textAlign: 'center', padding: '40px 20px', color: '#6b7280' }}>
-                    <div style={{ fontSize: '14px' }}>Loading order details...</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#6b7280', gap: '12px' }}>
+                    <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full"></div>
+                    <div style={{ fontSize: '14px', fontWeight: 500 }}>Loading order details...</div>
                   </div>
                 ) : orderError ? (
-                  <div style={{ textAlign: 'center', padding: '40px 20px', color: '#ef4444' }}>
-                    <div style={{ fontSize: '14px' }}>{orderError}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#ef4444', gap: '12px' }}>
+                    <FaTimes size={32} style={{ opacity: 0.5 }} />
+                    <div style={{ fontSize: '14px', fontWeight: 500 }}>{orderError}</div>
                   </div>
                 ) : selectedOrder ? (
                   <OrderSummary
@@ -641,5 +663,3 @@ export default function DashboardTablesPanel({
     </div>
   );
 }
-
-
