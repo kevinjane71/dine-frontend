@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useLoading } from '../../../contexts/LoadingContext';
 import apiClient from '../../../lib/api';
 import { useNotification } from '../../../components/Notification.js';
+import { t, getCurrentLanguage } from '../../../lib/i18n';
 import { 
   FaPlus, 
   FaTrash,
@@ -31,6 +32,14 @@ const TableManagement = () => {
   const router = useRouter();
   const { isLoading } = useLoading();
   const { showSuccess, showError, showWarning, NotificationContainer } = useNotification();
+  const [currentLanguage, setCurrentLanguage] = useState('en');
+
+  useEffect(() => {
+    setCurrentLanguage(getCurrentLanguage());
+    const handleLanguageChange = (e) => setCurrentLanguage(e.detail.language);
+    window.addEventListener('languageChanged', handleLanguageChange);
+    return () => window.removeEventListener('languageChanged', handleLanguageChange);
+  }, []);
 
   // Add CSS animations
   useEffect(() => {
@@ -427,7 +436,7 @@ const TableManagement = () => {
       available: { 
         bg: '#f0fdf4', 
         text: '#166534', 
-        label: 'Available',
+        label: t('tables.statusLabels.available'),
         icon: FaCheck,
         border: '#22c55e',
         pulse: false,
@@ -437,7 +446,7 @@ const TableManagement = () => {
       occupied: { 
         bg: '#fefce8', 
         text: '#ca8a04', 
-        label: 'Occupied',
+        label: t('tables.statusLabels.occupied'),
         icon: FaUsers,
         border: '#f59e0b',
         pulse: false,
@@ -448,7 +457,7 @@ const TableManagement = () => {
       serving: { 
         bg: '#fefce8', 
         text: '#ca8a04', 
-        label: 'Serving',
+        label: t('tables.statusLabels.serving'),
         icon: FaUtensils,
         border: '#f59e0b',
         pulse: false,
@@ -459,7 +468,7 @@ const TableManagement = () => {
       reserved: { 
         bg: '#eff6ff', 
         text: '#2563eb', 
-        label: 'Reserved',
+        label: t('tables.statusLabels.reserved'),
         icon: FaClock,
         border: '#3b82f6',
         pulse: false,
@@ -469,7 +478,7 @@ const TableManagement = () => {
       cleaning: { 
         bg: '#f8fafc', 
         text: '#475569', 
-        label: 'Cleaning',
+        label: t('tables.statusLabels.cleaning'),
         icon: FaUtensils,
         border: '#64748b',
         pulse: false,
@@ -479,7 +488,7 @@ const TableManagement = () => {
       'out-of-service': { 
         bg: '#fef2f2', 
         text: '#dc2626', 
-        label: 'Out of Service',
+        label: t('tables.statusLabels.outOfService'),
         icon: FaBan,
         border: '#ef4444',
         pulse: false,
@@ -636,6 +645,12 @@ const TableManagement = () => {
           return table;
         })
       })));
+
+      // Also update tableStatusesForDate to reflect changes immediately in UI if overriding
+      setTableStatusesForDate(prev => ({
+        ...prev,
+        [tableId]: newStatus
+      }));
       
       setActiveDropdown(null);
     } catch (err) {
@@ -711,14 +726,9 @@ const TableManagement = () => {
     
     switch (action) {
       case 'take-order':
-        // Redirect to order page with table info
+        // Redirect to dashboard with table info
         const floor = floors.find(f => (f.tables || []).some(t => t.id === table.id));
-        const params = new URLSearchParams({
-          table: table.name,
-          capacity: table.capacity.toString(),
-          floor: floor?.name || 'Main Floor'
-        });
-        router.push(`/?${params.toString()}`);
+        router.push(`/dashboard?tableId=${table.id}&tableNo=${encodeURIComponent(table.name)}&floorId=${floor?.id}`);
         break;
         
       case 'book-table':
@@ -994,7 +1004,7 @@ const TableManagement = () => {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
-                Table Management
+                {t('tables.title')}
               </h1>
               <p style={{
                 fontSize: isMobile ? '12px' : '14px',
@@ -1216,7 +1226,7 @@ const TableManagement = () => {
             whiteSpace: 'nowrap',
             marginRight: '8px'
           }}>
-            Floors:
+            {t('tables.floors')}:
                 </div>
                 {floors.map((floor) => (
                   <button
@@ -1288,7 +1298,7 @@ const TableManagement = () => {
             }}
           >
             <FaPlus size={isMobile ? 10 : 12} />
-                  Add Floor
+                  {t('tables.addFloor')}
                 </button>
               </div>
             </div>
@@ -1619,7 +1629,7 @@ const TableManagement = () => {
                                   onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                                 >
                               <FaUtensils size={isMobile ? 16 : 14} />
-                                  Take Order
+                                  {t('tables.takeOrder')}
                                 </button>
                                 <button
                                   onClick={() => handleTableAction('book-table', table)}
@@ -1642,7 +1652,7 @@ const TableManagement = () => {
                                   onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                                 >
                               <FaCalendarAlt size={isMobile ? 16 : 14} />
-                                  Book Table
+                                  {t('tables.bookTable')}
                                 </button>
                               </>
                             )}
@@ -1670,7 +1680,7 @@ const TableManagement = () => {
                                 onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                               >
                                 <FaEye size={isMobile ? 16 : 14} />
-                                View Order
+                                {t('tables.viewOrder')}
                               </button>
                             )}
                             
@@ -1695,7 +1705,7 @@ const TableManagement = () => {
                               onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                             >
                           <FaTools size={isMobile ? 16 : 14} />
-                              Out of Service
+                              {t('tables.outOfService')}
                             </button>
                             
                             <button
@@ -1719,7 +1729,7 @@ const TableManagement = () => {
                               onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                             >
                           <FaUtensils size={isMobile ? 16 : 14} />
-                              Cleaning
+                              {t('tables.cleaning')}
                             </button>
                             
                             {tableStatus !== 'available' && (
@@ -1743,9 +1753,9 @@ const TableManagement = () => {
                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#f0fdf4'}
                                 onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                               >
-                            <FaCheck size={isMobile ? 16 : 14} />
-                                Make Available
-                              </button>
+                          <FaCheck size={isMobile ? 16 : 14} />
+                              {t('tables.makeAvailable')}
+                            </button>
                             )}
                             
                         <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid #e2e8f0' }} />
@@ -1771,7 +1781,7 @@ const TableManagement = () => {
                               onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                             >
                           <FaTrash size={isMobile ? 16 : 14} />
-                              Delete Table
+                              {t('tables.deleteTable')}
                             </button>
                           </div>
                         )}
@@ -1870,7 +1880,7 @@ const TableManagement = () => {
                   border: '1px solid #e5e7eb'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#374151', margin: 0 }}>Add New Floor</h3>
+                    <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#374151', margin: 0 }}>{t('tables.modals.addFloorTitle')}</h3>
                     <button
                       onClick={() => setShowNewFloorForm(false)}
                       style={{
@@ -2092,7 +2102,7 @@ const TableManagement = () => {
             overflowY: isMobile ? 'auto' : 'visible'
           }}>
             <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Add New Floor</h2>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{t('tables.modals.addFloorTitle')}</h2>
             </div>
             
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -2204,7 +2214,7 @@ const TableManagement = () => {
             overflowY: isMobile ? 'auto' : 'visible'
           }}>
             <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Edit Floor</h2>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{t('tables.modals.editFloorTitle')}</h2>
             </div>
             
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -2320,7 +2330,7 @@ const TableManagement = () => {
             overflowY: isMobile ? 'auto' : 'visible'
           }}>
             <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Add New Table</h2>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{t('tables.modals.addTableTitle')}</h2>
             </div>
             
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -2499,7 +2509,7 @@ const TableManagement = () => {
                 margin: '0 0 8px 0',
                 textAlign: 'center'
               }}>
-                Select your booking details
+                {t('tables.selectBookingDetails')}
               </h2>
               {selectedTable && (
                 <p style={{ 
@@ -2508,7 +2518,7 @@ const TableManagement = () => {
                   margin: '0 0 24px 0',
                   textAlign: 'center'
                 }}>
-                  Booking for Table {selectedTable.name} ({selectedTable.capacity} seats)
+                  {t('tables.modals.bookTableTitle')} {selectedTable.name} ({selectedTable.capacity} seats)
                 </p>
               )}
             </div>
@@ -2524,7 +2534,7 @@ const TableManagement = () => {
                     color: '#1f2937', 
                     margin: '0 0 16px 0' 
                   }}>
-                    Availability for {new Date(bookingData.bookingDate).toLocaleDateString()}
+                    {t('tables.modals.availabilityFor')} {new Date(bookingData.bookingDate).toLocaleDateString()}
                   </h3>
                   
                   {loadingAvailability ? (
@@ -2534,7 +2544,7 @@ const TableManagement = () => {
                       padding: '20px',
                       color: '#6b7280'
                     }}>
-                      Loading availability...
+                      {t('tables.loadingAvailability')}
                     </div>
                   ) : (
                     <div style={{
@@ -2566,7 +2576,7 @@ const TableManagement = () => {
                           color: '#6b7280',
                           fontWeight: '600'
                         }}>
-                          Available Tables
+                          {t('tables.availableTables')}
                         </div>
                       </div>
                       
@@ -2590,7 +2600,7 @@ const TableManagement = () => {
                           color: '#6b7280',
                           fontWeight: '600'
                         }}>
-                          Reserved Tables
+                          {t('tables.reservedTables')}
                         </div>
                       </div>
                       
@@ -2614,7 +2624,7 @@ const TableManagement = () => {
                           color: '#6b7280',
                           fontWeight: '600'
                         }}>
-                          Total Tables
+                          {t('tables.totalTables')}
                         </div>
                       </div>
                     </div>

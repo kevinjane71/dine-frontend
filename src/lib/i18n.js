@@ -260,6 +260,117 @@ const translations = {
       staffDeleted: 'Staff deleted successfully!',
       confirmDeleteStaff: 'Are you sure you want to delete this staff member?',
       noStaff: 'No staff members found'
+    },
+
+    // Order History
+    orderHistory: {
+      title: 'Order History',
+      searchPlaceholder: 'Search order #, table, customer...',
+      noOrders: 'No orders found',
+      adjustFilters: 'Adjust filters or check back later.',
+      view: 'View',
+      edit: 'Edit',
+      cancel: 'Cancel',
+      status: {
+        all: 'All Status',
+        pending: 'Pending',
+        confirmed: 'Confirmed',
+        completed: 'Completed',
+        cancelled: 'Cancelled'
+      },
+      type: {
+        all: 'All Types',
+        dineIn: 'Dine In',
+        takeaway: 'Takeaway',
+        delivery: 'Delivery'
+      },
+      today: 'Today',
+      mine: 'Mine',
+      items: 'Items',
+      customer: 'Customer',
+      table: 'Table',
+      total: 'Total',
+      subtotal: 'Subtotal',
+      tax: 'Tax',
+      estimatedTax: 'Estimated Tax',
+      orderNote: 'Order Note',
+      variant: 'Variant',
+      close: 'Close',
+      editOrder: 'Edit Order',
+      showing: 'Showing',
+      of: 'of',
+      orders: 'orders',
+      page: 'Page'
+    },
+
+    // Tables
+    tables: {
+      title: 'Table Management',
+      floors: 'Floors',
+      addFloor: 'Add Floor',
+      addTable: 'Add Table',
+      searchTables: 'Search tables...',
+      capacity: 'Capacity',
+      type: 'Type',
+      status: 'Status',
+      actions: 'Actions',
+      editFloor: 'Edit Floor',
+      deleteFloor: 'Delete Floor',
+      editTable: 'Edit Table',
+      deleteTable: 'Delete Table',
+      takeOrder: 'Take Order',
+      bookTable: 'Book Table',
+      viewOrder: 'View Order',
+      outOfService: 'Out of Service',
+      cleaning: 'Cleaning',
+      makeAvailable: 'Make Available',
+      tableTypes: {
+        small: 'Small (2)',
+        regular: 'Regular (4)',
+        large: 'Large (6+)',
+        vip: 'VIP',
+        private: 'Private'
+      },
+      statusLabels: {
+        available: 'Available',
+        occupied: 'Occupied',
+        serving: 'Serving',
+        reserved: 'Reserved',
+        cleaning: 'Cleaning',
+        outOfService: 'Out of Service'
+      },
+      modals: {
+        addFloorTitle: 'Add New Floor',
+        editFloorTitle: 'Edit Floor',
+        addTableTitle: 'Add New Table',
+        bookTableTitle: 'Book Table',
+        floorName: 'Floor Name',
+        description: 'Description',
+        tableName: 'Table Name',
+        selectFloor: 'Select Floor',
+        customerName: 'Customer Name',
+        partySize: 'Party Size',
+        date: 'Date',
+        time: 'Time',
+        notes: 'Notes',
+        cancel: 'Cancel',
+        save: 'Save',
+        add: 'Add',
+        book: 'Book'
+      },
+      availabilityFor: 'Availability for',
+      loadingAvailability: 'Loading availability...',
+      availableTables: 'Available Tables',
+      totalTables: 'Total Tables',
+      reservedTables: 'Reserved Tables',
+      selectBookingDetails: 'Select your booking details',
+      messages: {
+        confirmDeleteFloor: 'Are you sure you want to delete this floor? All tables in it will be deleted.',
+        confirmDeleteTable: 'Are you sure you want to delete this table?',
+        successFloorAdded: 'Floor added successfully!',
+        successTableAdded: 'Table added successfully!',
+        errorLoading: 'Failed to load tables'
+      }
     }
   },
   
@@ -523,6 +634,117 @@ const translations = {
       staffDeleted: 'स्टाफ सफलतापूर्वक हटाया गया!',
       confirmDeleteStaff: 'क्या आप वाकई इस स्टाफ सदस्य को हटाना चाहते हैं?',
       noStaff: 'कोई स्टाफ सदस्य नहीं मिला'
+    },
+
+    // Order History
+    orderHistory: {
+      title: 'ऑर्डर इतिहास',
+      searchPlaceholder: 'ऑर्डर #, टेबल, ग्राहक खोजें...',
+      noOrders: 'कोई ऑर्डर नहीं मिला',
+      adjustFilters: 'फ़िल्टर समायोजित करें या बाद में देखें।',
+      view: 'देखें',
+      edit: 'संपादित करें',
+      cancel: 'रद्द करें',
+      status: {
+        all: 'सभी स्थिति',
+        pending: 'लंबित',
+        confirmed: 'पुष्टि की गई',
+        completed: 'पूर्ण',
+        cancelled: 'रद्द'
+      },
+      type: {
+        all: 'सभी प्रकार',
+        dineIn: 'डाइन इन',
+        takeaway: 'टेकअवे',
+        delivery: 'डिलीवरी'
+      },
+      today: 'आज',
+      mine: 'मेरे',
+      items: 'आइटम',
+      customer: 'ग्राहक',
+      table: 'टेबल',
+      total: 'कुल',
+      subtotal: 'उप-योग',
+      tax: 'कर',
+      estimatedTax: 'अनुमानित कर',
+      orderNote: 'ऑर्डर नोट',
+      variant: 'वेरिएंट',
+      close: 'बंद करें',
+      editOrder: 'ऑर्डर संपादित करें',
+      showing: 'दिखा रहा है',
+      of: 'का',
+      orders: 'ऑर्डर',
+      page: 'पृष्ठ'
+    },
+
+    // Tables
+    tables: {
+      title: 'टेबल प्रबंधन',
+      floors: 'फ्लोर',
+      addFloor: 'फ्लोर जोड़ें',
+      addTable: 'टेबल जोड़ें',
+      searchTables: 'टेबल खोजें...',
+      capacity: 'क्षमता',
+      type: 'प्रकार',
+      status: 'स्थिति',
+      actions: 'क्रियाएं',
+      editFloor: 'फ्लोर संपादित करें',
+      deleteFloor: 'फ्लोर हटाएं',
+      editTable: 'टेबल संपादित करें',
+      deleteTable: 'टेबल हटाएं',
+      takeOrder: 'ऑर्डर लें',
+      bookTable: 'टेबल बुक करें',
+      viewOrder: 'ऑर्डर देखें',
+      outOfService: 'सेवा से बाहर',
+      cleaning: 'सफाई',
+      makeAvailable: 'उपलब्ध करें',
+      tableTypes: {
+        small: 'छोटा (2)',
+        regular: 'नियमित (4)',
+        large: 'बड़ा (6+)',
+        vip: 'VIP',
+        private: 'निजी'
+      },
+      statusLabels: {
+        available: 'उपलब्ध',
+        occupied: 'व्यस्त',
+        serving: 'सेवारत',
+        reserved: 'आरक्षित',
+        cleaning: 'सफाई',
+        outOfService: 'सेवा से बाहर'
+      },
+      modals: {
+        addFloorTitle: 'नया फ्लोर जोड़ें',
+        editFloorTitle: 'फ्लोर संपादित करें',
+        addTableTitle: 'नया टेबल जोड़ें',
+        bookTableTitle: 'टेबल बुक करें',
+        floorName: 'फ्लोर का नाम',
+        description: 'विवरण',
+        tableName: 'टेबल का नाम',
+        selectFloor: 'फ्लोर चुनें',
+        customerName: 'ग्राहक का नाम',
+        partySize: 'लोगों की संख्या',
+        date: 'तारीख',
+        time: 'समय',
+        notes: 'नोट्स',
+        cancel: 'रद्द करें',
+        save: 'सहेजें',
+        add: 'जोड़ें',
+        book: 'बुक करें'
+      },
+      availabilityFor: 'के लिए उपलब्धता',
+      loadingAvailability: 'उपलब्धता लोड हो रही है...',
+      availableTables: 'उपलब्ध टेबल',
+      totalTables: 'कुल टेबल',
+      reservedTables: 'आरक्षित टेबल',
+      selectBookingDetails: 'अपनी बुकिंग विवरण चुनें',
+      messages: {
+        confirmDeleteFloor: 'क्या आप वाकई इस फ्लोर को हटाना चाहते हैं? इसमें मौजूद सभी टेबल हटा दिए जाएंगे।',
+        confirmDeleteTable: 'क्या आप वाकई इस टेबल को हटाना चाहते हैं?',
+        successFloorAdded: 'फ्लोर सफलतापूर्वक जोड़ा गया!',
+        successTableAdded: 'टेबल सफलतापूर्वक जोड़ा गया!',
+        errorLoading: 'टेबल लोड करने में विफल'
+      }
     }
   }
 };
@@ -602,6 +824,7 @@ export default {
   setLanguage,
   getAvailableLanguages
 };
+
 
 
 

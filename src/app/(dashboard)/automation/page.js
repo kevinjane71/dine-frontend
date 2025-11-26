@@ -602,9 +602,9 @@ const SettingsTab = ({ whatsappConnected, whatsappSettings, restaurantId }) => {
               className="mt-1"
             />
             <div className="flex-1">
-              <div className="font-medium text-gray-900">Use Restaurant's WhatsApp Number</div>
+              <div className="font-medium text-gray-900">Use Restaurant&apos;s WhatsApp Number</div>
               <p className="text-sm text-gray-600 mt-1">
-                Connect your own WhatsApp Business number. Messages will appear from your restaurant's number.
+                Connect your own WhatsApp Business number. Messages will appear from your restaurant&apos;s number.
                 Recommended for better brand recognition.
               </p>
             </div>
@@ -622,8 +622,8 @@ const SettingsTab = ({ whatsappConnected, whatsappSettings, restaurantId }) => {
             <div className="flex-1">
               <div className="font-medium text-gray-900">Use DineOpen WhatsApp Number</div>
               <p className="text-sm text-gray-600 mt-1">
-                Use DineOpen's shared WhatsApp number. Quick setup, no configuration needed.
-                Messages will appear from DineOpen's number.
+                Use DineOpen&apos;s shared WhatsApp number. Quick setup, no configuration needed.
+                Messages will appear from DineOpen&apos;s number.
               </p>
             </div>
           </label>
@@ -681,7 +681,7 @@ const SettingsTab = ({ whatsappConnected, whatsappSettings, restaurantId }) => {
           <h3 className="font-semibold text-blue-900 mb-2">Setup Instructions</h3>
           {connectionMode === 'restaurant' ? (
             <div className="text-sm text-blue-800 space-y-2">
-              <p>To connect your restaurant's WhatsApp number:</p>
+              <p>To connect your restaurant&apos;s WhatsApp number:</p>
               <ol className="list-decimal list-inside space-y-1 ml-2">
                 <li>Create a Meta Business Account</li>
                 <li>Set up WhatsApp Business API</li>
@@ -701,8 +701,8 @@ const SettingsTab = ({ whatsappConnected, whatsappSettings, restaurantId }) => {
             </div>
           ) : (
             <div className="text-sm text-blue-800">
-              <p>DineOpen's WhatsApp number is ready to use. Just click "Connect" to enable it.</p>
-              <p className="mt-2">Note: Messages will appear from DineOpen's number, not your restaurant's number.</p>
+              <p>DineOpen&apos;s WhatsApp number is ready to use. Just click &quot;Connect&quot; to enable it.</p>
+              <p className="mt-2">Note: Messages will appear from DineOpen&apos;s number, not your restaurant&apos;s number.</p>
             </div>
           )}
         </div>
@@ -792,7 +792,7 @@ const SettingsTab = ({ whatsappConnected, whatsappSettings, restaurantId }) => {
 
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <p className="text-sm text-yellow-800">
-                    <strong>Important:</strong> Make sure you've completed the WhatsApp setup in Meta Business Suite first.
+                    <strong>Important:</strong> Make sure you&apos;ve completed the WhatsApp setup in Meta Business Suite first.
                     <a href="/WHATSAPP_SETUP_GUIDE.md" target="_blank" className="text-yellow-600 underline ml-1">
                       View setup guide →
                     </a>
@@ -803,8 +803,8 @@ const SettingsTab = ({ whatsappConnected, whatsappSettings, restaurantId }) => {
               <div className="space-y-4">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800">
-                    By using DineOpen's WhatsApp number, messages will be sent from DineOpen's shared number.
-                    This is a quick setup option that doesn't require Meta Business Account configuration.
+                    By using DineOpen&apos;s WhatsApp number, messages will be sent from DineOpen&apos;s shared number.
+                    This is a quick setup option that doesn&apos;t require Meta Business Account configuration.
                   </p>
                 </div>
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
