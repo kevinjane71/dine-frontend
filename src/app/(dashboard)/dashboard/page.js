@@ -800,6 +800,9 @@ function RestaurantPOSContent() {
     if (orderId && selectedRestaurant?.id) {
       console.log('🔄 Dashboard: Order ID from URL:', orderId, 'Mode:', mode);
       
+      // Switch to orders view (menu view) when loading an order
+      setViewMode('orders');
+      
       // Set the order lookup value in search box
       setOrderLookup(orderId);
       
@@ -1155,6 +1158,12 @@ function RestaurantPOSContent() {
           setTableNumber(order.tableNumber || '');
           setOrderType(order.orderType || 'dine-in');
           setPaymentMethod(order.paymentMethod || 'cash');
+          
+          // Set customer info if available
+          if (order.customerInfo) {
+            setCustomerName(order.customerInfo.name || '');
+            setCustomerMobile(order.customerInfo.phone || '');
+          }
           
         // Show appropriate notification based on mode
         if (mode === 'view') {

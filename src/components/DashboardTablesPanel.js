@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { FaEye, FaReceipt, FaTimes, FaMinus, FaChevronUp, FaWindowMaximize, FaChair, FaClock, FaUserFriends, FaUtensils } from 'react-icons/fa';
 import apiClient from '../lib/api';
 import OrderSummary from './OrderSummary';
@@ -48,6 +49,7 @@ export default function DashboardTablesPanel({
   taxSettings,
   menuItems
 }) {
+  const router = useRouter();
   const [sliderOpen, setSliderOpen] = useState(false);
   const [sliderMinimized, setSliderMinimized] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -451,11 +453,18 @@ export default function DashboardTablesPanel({
                             <FaEye size={10} />
                             View
                       </button>
-                      <button
+                          <button
                             className="btn-action"
-                        onClick={() => {
+                        onClick={(e) => {
+                              e.stopPropagation();
                               if (sliderOpen) handleSliderClose();
-                              if (onTakeOrder) onTakeOrder(t.name || t.number);
+                              // Navigate to dashboard with orderId and mode=edit to load order in edit mode
+                              if (t.currentOrderId) {
+                                router.push(`/dashboard?orderId=${t.currentOrderId}&mode=edit`);
+                              } else if (onTakeOrder) {
+                                // Fallback if no order ID - just take new order
+                                onTakeOrder(t.name || t.number);
+                              }
                         }}
                         style={{
                           flex: 1,
