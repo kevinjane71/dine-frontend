@@ -43,10 +43,12 @@ const MenuItemCard = ({
     }
   };
   
+  // Hooks must be called at the top level, before any conditional returns
+  const isOutOfStock = item.isAvailable === false;
+  const [showOutOfStockLabel, setShowOutOfStockLabel] = useState(false);
+  
   if (!useModernDesign) {
     // Original Compact Design (Exact old style)
-    const isOutOfStock = item.isAvailable === false;
-    const [showOutOfStockLabel, setShowOutOfStockLabel] = useState(false);
     
     return (
       <div
@@ -322,9 +324,6 @@ const MenuItemCard = ({
 
   // Full Image Overlay Design when image exists
   if (hasImage) {
-    const isOutOfStock = item.isAvailable === false;
-    const [showOutOfStockLabel, setShowOutOfStockLabel] = useState(false);
-    
     return (
       <div
         className="menu-item-card"
@@ -672,9 +671,6 @@ const MenuItemCard = ({
   }
 
   // Fallback design for items without images
-  const isOutOfStock = item.isAvailable === false;
-  const [showOutOfStockLabel, setShowOutOfStockLabel] = useState(false);
-  
   return (
     <div
       className="menu-item-card"
