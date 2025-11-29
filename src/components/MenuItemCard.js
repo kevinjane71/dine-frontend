@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { FaPlus, FaMinus, FaLeaf, FaDrumstickBite, FaStar, FaFire, FaClock, FaHeart } from 'react-icons/fa';
 import { getDisplayImage } from '../utils/placeholderImages';
 
@@ -44,6 +45,9 @@ const MenuItemCard = ({
   
   if (!useModernDesign) {
     // Original Compact Design (Exact old style)
+    const isOutOfStock = item.isAvailable === false;
+    const [showOutOfStockLabel, setShowOutOfStockLabel] = useState(false);
+    
     return (
       <div
         className="menu-item-card"
@@ -61,10 +65,41 @@ const MenuItemCard = ({
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
         position: 'relative',
         overflow: 'hidden',
-        transition: 'none'
+        transition: 'none',
+        filter: isOutOfStock ? 'blur(1.1px)' : 'none',
+        opacity: isOutOfStock ? 0.95 : 1
       }}
         onClick={handleCardClick}
+        onMouseEnter={() => {
+          if (isOutOfStock) {
+            setShowOutOfStockLabel(true);
+          }
+        }}
+        onMouseLeave={() => {
+          setShowOutOfStockLabel(false);
+        }}
       >
+        {/* Out of Stock Label - On Hover */}
+        {isOutOfStock && showOutOfStockLabel && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'rgba(220, 38, 38, 0.95)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '700',
+            zIndex: 20,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap'
+          }}>
+            Out of Stock
+          </div>
+        )}
         {/* Short Code - Top Left Corner */}
         {item.shortCode && (
           <div style={{
@@ -287,6 +322,9 @@ const MenuItemCard = ({
 
   // Full Image Overlay Design when image exists
   if (hasImage) {
+    const isOutOfStock = item.isAvailable === false;
+    const [showOutOfStockLabel, setShowOutOfStockLabel] = useState(false);
+    
     return (
       <div
         className="menu-item-card"
@@ -303,18 +341,46 @@ const MenuItemCard = ({
           position: 'relative',
           overflow: 'hidden',
           transition: 'all 0.3s ease',
-          border: 'none'
+          border: 'none',
+          filter: isOutOfStock ? 'blur(1.1px)' : 'none',
+          opacity: isOutOfStock ? 0.95 : 1
         }}
         onClick={handleCardClick}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'translateY(-4px)';
           e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.25)';
+          if (isOutOfStock) {
+            setShowOutOfStockLabel(true);
+          }
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'translateY(0)';
           e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+          setShowOutOfStockLabel(false);
         }}
       >
+        {/* Out of Stock Label - On Hover */}
+        {isOutOfStock && showOutOfStockLabel && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'rgba(220, 38, 38, 0.95)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '700',
+            zIndex: 20,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap'
+          }}>
+            Out of Stock
+          </div>
+        )}
+        
         {/* Full Background Image */}
         <div style={{
           position: 'absolute',
@@ -606,6 +672,9 @@ const MenuItemCard = ({
   }
 
   // Fallback design for items without images
+  const isOutOfStock = item.isAvailable === false;
+  const [showOutOfStockLabel, setShowOutOfStockLabel] = useState(false);
+  
   return (
     <div
       className="menu-item-card"
@@ -624,10 +693,41 @@ const MenuItemCard = ({
         overflow: 'hidden',
         background: '#ffffff',
         borderTop: `3px solid ${isVeg ? '#22c55e' : '#ef4444'}`,
-        transition: 'all 0.2s ease'
+        transition: 'all 0.2s ease',
+        filter: isOutOfStock ? 'blur(1.1px)' : 'none',
+        opacity: isOutOfStock ? 0.95 : 1
       }}
       onClick={handleCardClick}
+      onMouseEnter={() => {
+        if (isOutOfStock) {
+          setShowOutOfStockLabel(true);
+        }
+      }}
+      onMouseLeave={() => {
+        setShowOutOfStockLabel(false);
+      }}
     >
+      {/* Out of Stock Label - On Hover */}
+      {isOutOfStock && showOutOfStockLabel && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'rgba(220, 38, 38, 0.95)',
+          color: 'white',
+          padding: '8px 16px',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: '700',
+          zIndex: 20,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          pointerEvents: 'none',
+          whiteSpace: 'nowrap'
+        }}>
+          Out of Stock
+        </div>
+      )}
       {/* Content Section */}
       <div style={{
         padding: '0',
