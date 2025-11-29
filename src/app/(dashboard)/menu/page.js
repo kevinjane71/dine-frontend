@@ -1455,7 +1455,9 @@ const MenuManagement = () => {
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [hasInitialData, setHasInitialData] = useState(false); // Track if we have any data (cached or fresh)
   const [operationLoading, setOperationLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showItemModal, setShowItemModal] = useState(false);
@@ -1518,7 +1520,11 @@ const MenuManagement = () => {
         const cachedData = getCachedMenuData(restaurantId);
         if (cachedData) {
           console.log('⚡ Loading cached menu data instantly...');
-          if (cachedData.menuItems) setMenuItems(cachedData.menuItems);
+          if (cachedData.menuItems) {
+            setMenuItems(cachedData.menuItems);
+          }
+          // Always set hasInitialData to true if we have cached data (even if empty, we know the state)
+          setHasInitialData(true);
           if (cachedData.categories) setCategories(cachedData.categories);
           setLoading(false);
           
@@ -1526,10 +1532,12 @@ const MenuManagement = () => {
           setBackgroundLoading(true);
           window.dispatchEvent(new CustomEvent('menuBackgroundLoading', { detail: { loading: true } }));
         } else {
-          setLoading(true);
+          // No cache, but don't show loading - just fetch silently
+          setLoading(false);
         }
       } else {
-        setLoading(true);
+        // Force refresh - don't show loading
+        setLoading(false);
       }
       
       setError('');
@@ -1542,6 +1550,8 @@ const MenuManagement = () => {
       
       const freshMenuItems = menuResponse.menuItems || [];
       setMenuItems(freshMenuItems);
+      // Always set hasInitialData to true once we've loaded data (even if empty, we know the state)
+      setHasInitialData(true);
 
       // Use categories from backend, fallback to generic categories if none exist
       const backendCategories = categoriesResponse.categories || [];
@@ -1586,6 +1596,10 @@ const MenuManagement = () => {
     } catch (error) {
       console.error('Error loading menu data:', error);
       setError('Failed to load menu items');
+      // Only set hasInitialData to false if we truly have no data
+      if (menuItems.length === 0) {
+        setHasInitialData(false);
+      }
     } finally {
       console.log('Setting loading to false');
       setLoading(false);
@@ -1628,9 +1642,20 @@ const MenuManagement = () => {
 
         if (restaurantId && !hasLoadedData.current) {
           console.log('Restaurant ID found:', restaurantId);
+          // Try to load cached data immediately
+          const cachedData = getCachedMenuData(restaurantId);
+          if (cachedData) {
+            console.log('⚡ Loading cached menu data on mount...');
+            if (cachedData.menuItems) {
+              setMenuItems(cachedData.menuItems);
+              setHasInitialData(true);
+            }
+            if (cachedData.categories) setCategories(cachedData.categories);
+            setLoading(false);
+          }
           await loadMenuData(restaurantId, true); // Use cache
         } else if (!restaurantId) {
-          console.log('No restaurant found - showing empty state');
+          console.log('No restaurant found');
           setError('No restaurant found. Please set up a restaurant first.');
           setLoading(false);
         }
@@ -2224,18 +2249,8 @@ const MenuManagement = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-lg text-gray-600 font-medium">Loading menu management...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Don't show loading spinner - just show data if available
+  // Only show empty state if we have no data AND we're not loading
 
   return (
     <div 
@@ -2709,7 +2724,10 @@ const MenuManagement = () => {
                   })}
             </div>
           )
-        ) : (
+        ) : (menuItems.length > 0 && filteredItems.length === 0) ? (
+          // No items match the filter, but we have menu items - don't show empty state
+          null
+        ) : (!loading && menuItems.length === 0) ? (
           <div style={{
             textAlign: 'center',
             padding: '80px 20px',
@@ -2757,7 +2775,7 @@ const MenuManagement = () => {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
               }}>
-                {searchTerm ? t('menu.noDishesFound') : t('menu.menuReady')}
+                {searchTerm || selectedCategory !== 'all' ? t('menu.noDishesFound') : t('menu.menuReady')}
             </h3>
               
               <p style={{
@@ -2766,7 +2784,7 @@ const MenuManagement = () => {
                 marginBottom: '8px',
                 fontWeight: '500'
               }}>
-                {searchTerm ? t('menu.tryDifferentSearch') : t('menu.createMenu')}
+                {(searchTerm || selectedCategory !== 'all') ? t('menu.tryDifferentSearch') : t('menu.createMenu')}
               </p>
               
               <p style={{
@@ -2777,7 +2795,7 @@ const MenuManagement = () => {
                 fontSize: '16px',
                 lineHeight: '1.6'
               }}>
-                {searchTerm 
+                {(searchTerm || selectedCategory !== 'all')
                   ? t('menu.trySearchingElse') 
                   : t('menu.setupRestaurantFirst')
                 }
@@ -2789,7 +2807,7 @@ const MenuManagement = () => {
                 justifyContent: 'center',
                 flexWrap: 'wrap'
               }}>
-                {searchTerm ? (
+                {(searchTerm || selectedCategory !== 'all') ? (
             <button
                     onClick={() => setSearchTerm('')}
                     style={{
@@ -2849,7 +2867,7 @@ const MenuManagement = () => {
               </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
 

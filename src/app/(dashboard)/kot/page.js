@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   FaPrint, 
@@ -157,10 +157,10 @@ const KitchenOrderTicket = () => {
       const freshOrders = kotData.orders || [];
       setKotOrders(freshOrders);
 
-      // Cache the data
+      // Cache the data - get current restaurant from state at the time of caching
       const dataToCache = {
         orders: freshOrders,
-        currentRestaurant: currentRestaurant
+        currentRestaurant: currentRestaurant || null
       };
       setCachedKotData(restaurantId, dataToCache);
       console.log('✅ KOT data cached');
@@ -175,7 +175,7 @@ const KitchenOrderTicket = () => {
       setBackgroundLoading(false);
       window.dispatchEvent(new CustomEvent('kotBackgroundLoading', { detail: { loading: false } }));
     }
-  }, [currentRestaurant]);
+  }, []); // Remove currentRestaurant from dependencies to prevent infinite re-renders
 
   // Mobile detection with client-side hydration safety
   useEffect(() => {
@@ -188,20 +188,40 @@ const KitchenOrderTicket = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Track if initial data has been loaded to prevent multiple calls
+  const initialDataLoadedRef = useRef(false);
+  const pollingIntervalRef = useRef(null);
+  const loadKotDataRef = useRef(loadKotData);
+
+  // Keep loadKotData ref updated
+  useEffect(() => {
+    loadKotDataRef.current = loadKotData;
+  }, [loadKotData]);
+
   // Initial load and auto-refresh setup with page visibility detection
   useEffect(() => {
+    // Prevent multiple initial loads
+    if (initialDataLoadedRef.current) {
+      console.log('⏭️ Initial KOT data already loaded, skipping...');
+      return;
+    }
+    
     console.log('🚀 KOT page useEffect - setting up polling');
+    initialDataLoadedRef.current = true;
     loadKotData(true, true); // Use cache for instant load
-
-    let interval = null;
     
     // Function to start polling
     const startPolling = () => {
       console.log('🔄 Starting KOT polling...');
-      if (interval) clearInterval(interval);
+      // Clear any existing interval
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
       setIsPollingActive(true);
-      interval = setInterval(() => {
-        console.log('⏰ Polling interval triggered');
+      
+      pollingIntervalRef.current = setInterval(() => {
+        console.log('⏰ Polling interval triggered at', new Date().toLocaleTimeString());
         console.log('📊 Page visibility check:', {
           documentHidden: document.hidden,
           documentHasFocus: document.hasFocus(),
@@ -212,20 +232,21 @@ const KitchenOrderTicket = () => {
         if (!document.hidden) {
           console.log('🔄 Polling KOT data...');
           setPollCount(prev => prev + 1);
-          loadKotData(false); // Refresh without showing loader
+          // Use ref to access latest loadKotData function
+          loadKotDataRef.current(false, false); // Refresh without showing loader, don't use cache for polling
         } else {
           console.log('⏸️ Page hidden, skipping poll');
         }
-      }, 10000); // 10 seconds as requested
-      console.log('✅ Polling started with interval:', interval);
+      }, 10000); // 10 seconds
+      console.log('✅ Polling started with interval ID:', pollingIntervalRef.current);
     };
 
     // Function to stop polling
     const stopPolling = () => {
       console.log('⏹️ Stopping KOT polling...');
-      if (interval) {
-        clearInterval(interval);
-        interval = null;
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
       }
       setIsPollingActive(false);
     };
@@ -253,13 +274,15 @@ const KitchenOrderTicket = () => {
       stopPolling();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [loadKotData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   // Listen for restaurant changes from navigation
   useEffect(() => {
     const handleRestaurantChange = (event) => {
       console.log('KOT: Restaurant changed, reloading data', event.detail);
-      loadKotData();
+      initialDataLoadedRef.current = false; // Reset to allow reload
+      loadKotData(true, true); // Reload with cache
     };
 
     // Listen for custom restaurant change events
@@ -268,7 +291,8 @@ const KitchenOrderTicket = () => {
     return () => {
       window.removeEventListener('restaurantChanged', handleRestaurantChange);
     };
-  }, [loadKotData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only set up listener once
 
   // Cleanup on route changes to prevent memory leaks
   useEffect(() => {
