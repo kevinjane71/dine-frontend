@@ -282,7 +282,7 @@ function NavigationContent({ isHidden = false }) {
   // Smooth navigation handler
   const handleNavigation = (href, e) => {
     e.preventDefault();
-    startLoading('Loading page...', 'content'); // Content-only loading
+    startLoading('Loadin...', 'content'); // Content-only loading
     
     // Small delay to show loading state
     setTimeout(() => {

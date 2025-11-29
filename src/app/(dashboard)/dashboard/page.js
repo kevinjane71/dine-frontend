@@ -270,12 +270,19 @@ function RestaurantPOSContent() {
   // Generate dynamic categories based on actual menu items
   const getDynamicCategories = () => {
     if (!menuItems || menuItems.length === 0) {
-      return [{ id: 'all-items', name: 'All Items', emoji: '🍽️', count: 0 }];
+      return [
+        { id: 'all-items', name: 'All Items', emoji: '🍽️', count: 0 },
+        { id: 'favorites', name: 'Favorites', emoji: '❤️', count: 0 }
+      ];
     }
     
     // Get unique categories from menu items
     const categoryMap = new Map();
     categoryMap.set('all-items', { id: 'all-items', name: 'All Items', emoji: '🍽️', count: menuItems.length });
+    
+    // Count favorites
+    const favoritesCount = menuItems.filter(item => item.isFavorite === true).length;
+    categoryMap.set('favorites', { id: 'favorites', name: 'Favorites', emoji: '❤️', count: favoritesCount });
     
     menuItems.forEach(item => {
       if (item.category) {
@@ -295,7 +302,15 @@ function RestaurantPOSContent() {
       }
     });
     
-    return Array.from(categoryMap.values());
+    // Return favorites first, then all-items, then other categories
+    const categories = Array.from(categoryMap.values());
+    const favorites = categories.find(c => c.id === 'favorites');
+    const allItems = categories.find(c => c.id === 'all-items');
+    const otherCategories = categories.filter(c => c.id !== 'favorites' && c.id !== 'all-items');
+    
+    return favorites && favorites.count > 0 
+      ? [favorites, allItems, ...otherCategories]
+      : [allItems, ...otherCategories];
   };
   
   // Get appropriate emoji for category
@@ -915,7 +930,11 @@ function RestaurantPOSContent() {
   }, [searchParams, selectedRestaurant?.id]);
 
   const filteredItems = (menuItems || []).filter(item => {
-    const matchesCategory = selectedCategory === 'all-items' || item.category?.toLowerCase() === selectedCategory;
+    const matchesCategory = selectedCategory === 'all-items' 
+      ? true
+      : selectedCategory === 'favorites'
+      ? item.isFavorite === true
+      : item.category?.toLowerCase() === selectedCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -973,6 +992,34 @@ function RestaurantPOSContent() {
           : cartItem
       ).filter(cartItem => cartItem.quantity > 0);
     });
+  };
+
+  const handleToggleFavorite = async (item) => {
+    if (!selectedRestaurant?.id) {
+      return;
+    }
+
+    try {
+      const isCurrentlyFavorite = item.isFavorite === true;
+      
+      if (isCurrentlyFavorite) {
+        await apiClient.unmarkMenuItemAsFavorite(selectedRestaurant.id, item.id);
+      } else {
+        await apiClient.markMenuItemAsFavorite(selectedRestaurant.id, item.id);
+      }
+
+      // Update the menu item in state
+      setMenuItems(prevItems => prevItems.map(menuItem => 
+        menuItem.id === item.id 
+          ? { ...menuItem, isFavorite: !isCurrentlyFavorite }
+          : menuItem
+      ));
+
+      // Reload menu to sync with backend
+      await loadMenu(selectedRestaurant.id);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
   };
 
   // Handler to open customization modal
@@ -2829,6 +2876,8 @@ function RestaurantPOSContent() {
             {categories.map((category, index) => {
               const categoryItems = category.id === 'all-items' 
                 ? (menuItems || [])
+                : category.id === 'favorites'
+                ? (menuItems || []).filter(item => item.isFavorite === true)
                 : (menuItems || []).filter(item => item.category?.toLowerCase() === category.id);
               const isSelected = selectedCategory === category.id;
               
@@ -3419,6 +3468,7 @@ function RestaurantPOSContent() {
                     item={item}
                     quantityInCart={quantityInCart}
                     onAddToCart={addToCart}
+                    onToggleFavorite={handleToggleFavorite}
                     onRemoveFromCart={removeFromCart}
                     onItemClick={handleItemCustomization}
                     isMobile={isMobile}
@@ -3589,6 +3639,7 @@ function RestaurantPOSContent() {
                     onPlaceOrder={placeOrder}
                     onRemoveFromCart={removeFromCart}
                     onAddToCart={addToCart}
+                    onToggleFavorite={handleToggleFavorite}
                 onUpdateCartItemQuantity={updateCartItemQuantity}
                     onTableNumberChange={setTableNumber}
                     onCustomerNameChange={setCustomerName}

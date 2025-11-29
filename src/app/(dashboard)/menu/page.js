@@ -13,8 +13,9 @@ import { getDisplayImage } from '../../../utils/placeholderImages';
 import { getCachedMenuData, setCachedMenuData } from '../../../utils/dashboardCache';
 import { 
   FaPlus, 
-  FaEdit, 
-  FaTrash, 
+  FaEdit,
+  FaTrash,
+  FaHeart,
   FaSearch, 
   FaSave, 
   FaImage,
@@ -28,7 +29,6 @@ import {
   FaExclamationTriangle,
   FaStar,
   FaClock,
-  FaHeart,
   FaTh,
   FaList,
   FaEye,
@@ -483,7 +483,7 @@ const CustomDropdown = ({ value, onChange, options, placeholder, style = {} }) =
 };
 
 // Ultra Compact Menu Item Card Component
-const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability, getCategoryEmoji, onItemClick }) => {
+const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability, onToggleFavorite, getCategoryEmoji, onItemClick }) => {
   
   return (
     <div 
@@ -724,6 +724,54 @@ const MenuItemCard = ({ item, categories, onEdit, onDelete, onToggleAvailability
             display: 'flex',
             gap: '8px'
           }}>
+          {onToggleFavorite && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onToggleFavorite(item);
+              }}
+              style={{
+                padding: '8px',
+                background: item.isFavorite 
+                  ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
+                  : '#ffffff',
+                color: item.isFavorite ? 'white' : '#000000',
+                border: item.isFavorite ? 'none' : '2px dashed #000000',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: item.isFavorite 
+                  ? '0 2px 4px rgba(239, 68, 68, 0.2)' 
+                  : '0 1px 2px rgba(0, 0, 0, 0.1)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
+                e.target.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                e.target.style.color = 'white';
+                e.target.style.border = 'none';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = item.isFavorite 
+                  ? '0 2px 4px rgba(239, 68, 68, 0.2)' 
+                  : '0 1px 2px rgba(0, 0, 0, 0.1)';
+                e.target.style.background = item.isFavorite 
+                  ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
+                  : '#ffffff';
+                e.target.style.color = item.isFavorite ? 'white' : '#000000';
+                e.target.style.border = item.isFavorite ? 'none' : '2px dashed #000000';
+              }}
+              title={item.isFavorite ? "Remove from favorites" : "Add to favorites"}
+            >
+              <FaStar size={12} />
+            </button>
+          )}
           <button
               type="button"
               onClick={(e) => {
@@ -857,7 +905,7 @@ const getCategoryColor = (category, opacity = 1) => {
 };
 
 // List View Item Component
-const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability, getCategoryEmoji }) => {
+const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability, onToggleFavorite, getCategoryEmoji }) => {
   
   return (
     <div style={{
@@ -976,6 +1024,31 @@ const ListViewItem = ({ item, categories, onEdit, onDelete, onToggleAvailability
         gap: '6px',
         justifyContent: 'flex-end'
       }}>
+        {onToggleFavorite && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onToggleFavorite(item);
+            }}
+            style={{
+              padding: '6px',
+              backgroundColor: item.isFavorite ? '#ef4444' : '#6b7280',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            title={item.isFavorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            <FaHeart size={12} fill={item.isFavorite ? 'white' : 'none'} />
+          </button>
+        )}
         <button
           type="button"
           onClick={(e) => {
@@ -1881,6 +1954,36 @@ const MenuManagement = () => {
     }
   };
 
+  const handleToggleFavorite = async (item) => {
+    if (!currentRestaurant?.id) {
+      setError('No restaurant selected');
+      return;
+    }
+
+    try {
+      const isCurrentlyFavorite = item.isFavorite === true;
+      
+      if (isCurrentlyFavorite) {
+        await apiClient.unmarkMenuItemAsFavorite(currentRestaurant.id, item.id);
+      } else {
+        await apiClient.markMenuItemAsFavorite(currentRestaurant.id, item.id);
+      }
+
+      // Update the menu item in state
+      setMenuItems(prevItems => prevItems.map(menuItem => 
+        menuItem.id === item.id 
+          ? { ...menuItem, isFavorite: !isCurrentlyFavorite }
+          : menuItem
+      ));
+
+      // Reload menu data to sync with backend
+      await loadMenuData(currentRestaurant.id, false); // Don't use cache for immediate update
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      setError('Failed to update favorite status');
+    }
+  };
+
   const handleToggleAvailability = async (itemId, currentStatus) => {
     try {
       setOperationLoading(true);
@@ -2675,6 +2778,7 @@ const MenuManagement = () => {
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                   onToggleAvailability={handleToggleAvailability}
+                  onToggleFavorite={handleToggleFavorite}
                   getCategoryEmoji={getCategoryEmoji}
                   onItemClick={handleItemClick}
                 />
@@ -2716,6 +2820,7 @@ const MenuManagement = () => {
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onToggleAvailability={handleToggleAvailability}
+                        onToggleFavorite={handleToggleFavorite}
                         getCategoryEmoji={getCategoryEmoji}
                       />
                     ))}

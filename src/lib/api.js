@@ -392,6 +392,14 @@ class ApiClient {
     });
   }
 
+  async markMenuItemAsFavorite(restaurantId, itemId) {
+    return this.post(`/api/menus/${restaurantId}/item/${itemId}/favorite`);
+  }
+
+  async unmarkMenuItemAsFavorite(restaurantId, itemId) {
+    return this.delete(`/api/menus/${restaurantId}/item/${itemId}/favorite`);
+  }
+
   // Bulk menu upload endpoints
   async bulkUploadMenu(restaurantId, formData) {
     const url = `${this.baseURL}/api/menus/bulk-upload/${restaurantId}`;

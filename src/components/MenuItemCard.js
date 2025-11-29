@@ -1,6 +1,6 @@
 'use client';
 
-import { FaPlus, FaMinus, FaLeaf, FaDrumstickBite, FaStar, FaFire, FaClock } from 'react-icons/fa';
+import { FaPlus, FaMinus, FaLeaf, FaDrumstickBite, FaStar, FaFire, FaClock, FaHeart } from 'react-icons/fa';
 import { getDisplayImage } from '../utils/placeholderImages';
 
 const MenuItemCard = ({ 
@@ -9,6 +9,7 @@ const MenuItemCard = ({
   onAddToCart, 
   onRemoveFromCart, 
   onItemClick, // New prop for opening customization modal
+  onToggleFavorite, // New prop for toggling favorite
   isMobile = false,
   useModernDesign = true
 }) => {
@@ -82,6 +83,47 @@ const MenuItemCard = ({
           }}>
             {item.shortCode}
           </div>
+        )}
+
+        {/* Favorite Button - Top Right Corner (Old Design) */}
+        {onToggleFavorite && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite(item);
+            }}
+            style={{
+              position: 'absolute',
+              top: '2px',
+              right: '2px',
+              backgroundColor: item.isFavorite ? '#ef4444' : 'rgba(243, 244, 246, 0.9)',
+              color: item.isFavorite ? 'white' : '#6b7280',
+              border: 'none',
+              padding: '4px',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: item.isFavorite ? '0 2px 6px rgba(239, 68, 68, 0.4)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
+              transition: 'all 0.2s ease',
+              width: '20px',
+              height: '20px',
+              zIndex: 5
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.backgroundColor = item.isFavorite ? '#dc2626' : '#ef4444';
+              e.currentTarget.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.backgroundColor = item.isFavorite ? '#ef4444' : 'rgba(243, 244, 246, 0.9)';
+              e.currentTarget.style.color = item.isFavorite ? 'white' : '#6b7280';
+            }}
+          >
+            <FaHeart size={8} fill={item.isFavorite ? 'white' : 'none'} />
+          </button>
         )}
 
         {/* Main Content Area */}
@@ -377,6 +419,42 @@ const MenuItemCard = ({
               HOT
             </div>
           )}
+          
+          {/* Favorite Button */}
+          {onToggleFavorite && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(item);
+              }}
+              style={{
+                backgroundColor: item.isFavorite ? 'rgba(239, 68, 68, 0.95)' : 'rgba(0, 0, 0, 0.6)',
+                backdropFilter: 'blur(4px)',
+                color: 'white',
+                border: 'none',
+                padding: '6px',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: item.isFavorite ? '0 2px 8px rgba(239, 68, 68, 0.5)' : '0 2px 6px rgba(0, 0, 0, 0.3)',
+                transition: 'all 0.2s ease',
+                width: '24px',
+                height: '24px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+                e.currentTarget.style.backgroundColor = item.isFavorite ? 'rgba(220, 38, 38, 0.95)' : 'rgba(239, 68, 68, 0.8)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.backgroundColor = item.isFavorite ? 'rgba(239, 68, 68, 0.95)' : 'rgba(0, 0, 0, 0.6)';
+              }}
+            >
+              <FaHeart size={10} fill={item.isFavorite ? 'white' : 'none'} />
+            </button>
+          )}
         </div>
 
         {/* Bottom Content - Overlaid on image */}
@@ -583,6 +661,41 @@ const MenuItemCard = ({
           }}>
             {item.shortCode}
           </div>
+        )}
+        
+        {/* Favorite Button (No Image Design) */}
+        {onToggleFavorite && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite(item);
+            }}
+            style={{
+              backgroundColor: item.isFavorite ? '#ef4444' : 'rgba(107, 114, 128, 0.8)',
+              color: 'white',
+              border: 'none',
+              padding: '4px',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: item.isFavorite ? '0 2px 6px rgba(239, 68, 68, 0.4)' : '0 1px 3px rgba(0, 0, 0, 0.2)',
+              transition: 'all 0.2s ease',
+              width: '22px',
+              height: '22px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.backgroundColor = item.isFavorite ? '#dc2626' : '#ef4444';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.backgroundColor = item.isFavorite ? '#ef4444' : 'rgba(107, 114, 128, 0.8)';
+            }}
+          >
+            <FaHeart size={9} fill={item.isFavorite ? 'white' : 'none'} />
+          </button>
         )}
         
         {/* Popular Badge */}

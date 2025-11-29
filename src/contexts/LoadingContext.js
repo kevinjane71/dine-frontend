@@ -23,7 +23,7 @@ export const LoadingProvider = ({ children }) => {
   useEffect(() => {
     const handleRouteChange = () => {
       setIsLoading(true);
-      setLoadingMessage('Loading page...');
+      setLoadingMessage('Loading...');
       
       // Simulate loading time for smooth transition
       const timer = setTimeout(() => {
