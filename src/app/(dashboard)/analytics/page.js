@@ -14,11 +14,13 @@ import {
 
 import { FiTrendingUp } from "react-icons/fi";
 import apiClient from '../../../lib/api';
+import { getCachedAnalyticsData, setCachedAnalyticsData } from '../../../utils/dashboardCache';
 
 const Analytics = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('today'); // 'today' | '24h' | '7d' | '30d' | 'all'
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [error, setError] = useState(null);
   const [restaurantId, setRestaurantId] = useState(null);
 
@@ -27,7 +29,7 @@ const Analytics = () => {
     const selectedRestaurant = localStorage.getItem('selectedRestaurantId');
     if (selectedRestaurant) {
       setRestaurantId(selectedRestaurant);
-      loadAnalytics(selectedRestaurant, selectedPeriod);
+      loadAnalytics(selectedRestaurant, selectedPeriod, true); // Use cache
     } else {
       setError('No restaurant selected');
       setLoading(false);
@@ -36,13 +38,30 @@ const Analytics = () => {
 
   useEffect(() => {
     if (restaurantId) {
-      loadAnalytics(restaurantId, selectedPeriod);
+      loadAnalytics(restaurantId, selectedPeriod, true); // Use cache
     }
   }, [selectedPeriod, restaurantId]);
 
-  const loadAnalytics = async (restaurantId, period) => {
+  const loadAnalytics = async (restaurantId, period, useCache = true) => {
     try {
-      setLoading(true);
+      // Check for cached data first
+      if (useCache) {
+        const cachedData = getCachedAnalyticsData(restaurantId, period);
+        if (cachedData) {
+          console.log('⚡ Loading cached analytics data instantly...');
+          setAnalytics(cachedData.analytics || cachedData);
+          setLoading(false);
+          
+          // Show background loading
+          setBackgroundLoading(true);
+          window.dispatchEvent(new CustomEvent('analyticsBackgroundLoading', { detail: { loading: true } }));
+        } else {
+          setLoading(true);
+        }
+      } else {
+        setLoading(true);
+      }
+      
       setError(null);
       
       console.log(`📊 Loading analytics for restaurant ${restaurantId}, period: ${period}`);
@@ -55,8 +74,13 @@ const Analytics = () => {
       const response = await apiClient.getAnalytics(restaurantId, apiPeriod);
       
       if (response.success) {
-        setAnalytics(response.analytics);
-        console.log('📊 Analytics loaded:', response.analytics);
+        const freshAnalytics = response.analytics;
+        setAnalytics(freshAnalytics);
+        console.log('📊 Analytics loaded:', freshAnalytics);
+        
+        // Cache the data
+        setCachedAnalyticsData(restaurantId, freshAnalytics, period);
+        console.log('✅ Analytics data cached');
       } else {
         setError('Failed to load analytics');
       }
@@ -65,6 +89,8 @@ const Analytics = () => {
       setError('Failed to load analytics data');
     } finally {
       setLoading(false);
+      setBackgroundLoading(false);
+      window.dispatchEvent(new CustomEvent('analyticsBackgroundLoading', { detail: { loading: false } }));
     }
   };
 
@@ -286,7 +312,7 @@ const Analytics = () => {
             <h3 className="text-red-800 font-semibold mb-2">Error Loading Analytics</h3>
             <p className="text-red-600">{error}</p>
             <button 
-              onClick={() => restaurantId && loadAnalytics(restaurantId, selectedPeriod)}
+              onClick={() => restaurantId && loadAnalytics(restaurantId, selectedPeriod, false)}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               Try Again

@@ -10,6 +10,7 @@ import QRCodeModal from '../../../components/QRCodeModal';
 import apiClient from '../../../lib/api';
 import { t } from '../../../lib/i18n';
 import { getDisplayImage } from '../../../utils/placeholderImages';
+import { getCachedMenuData, setCachedMenuData } from '../../../utils/dashboardCache';
 import { 
   FaPlus, 
   FaEdit, 
@@ -1508,10 +1509,29 @@ const MenuManagement = () => {
     setIsClient(true);
   }, []);
 
-  const loadMenuData = useCallback(async (restaurantId) => {
+  const loadMenuData = useCallback(async (restaurantId, useCache = true) => {
     try {
       console.log('Loading menu data for restaurant:', restaurantId);
-      setLoading(true);
+      
+      // Check for cached data first
+      if (useCache) {
+        const cachedData = getCachedMenuData(restaurantId);
+        if (cachedData) {
+          console.log('⚡ Loading cached menu data instantly...');
+          if (cachedData.menuItems) setMenuItems(cachedData.menuItems);
+          if (cachedData.categories) setCategories(cachedData.categories);
+          setLoading(false);
+          
+          // Show background loading
+          setBackgroundLoading(true);
+          window.dispatchEvent(new CustomEvent('menuBackgroundLoading', { detail: { loading: true } }));
+        } else {
+          setLoading(true);
+        }
+      } else {
+        setLoading(true);
+      }
+      
       setError('');
 
       // Load menu items and categories in parallel
@@ -1520,12 +1540,16 @@ const MenuManagement = () => {
         apiClient.getCategories(restaurantId)
       ]);
       
-      setMenuItems(menuResponse.menuItems || []);
+      const freshMenuItems = menuResponse.menuItems || [];
+      setMenuItems(freshMenuItems);
 
       // Use categories from backend, fallback to generic categories if none exist
       const backendCategories = categoriesResponse.categories || [];
+      let finalCategories = [];
+      
       if (backendCategories.length > 0) {
-        setCategories(backendCategories);
+        finalCategories = backendCategories;
+        setCategories(finalCategories);
       } else {
         // If no categories exist, create default categories
         const defaultCategories = [
@@ -1534,7 +1558,8 @@ const MenuManagement = () => {
           { id: 'dessert', name: 'Desserts', emoji: '🍰', description: 'Sweet treats' },
           { id: 'beverages', name: 'Beverages', emoji: '🥤', description: 'Drinks and beverages' }
         ];
-        setCategories(defaultCategories);
+        finalCategories = defaultCategories;
+        setCategories(finalCategories);
         
         // Create default categories in backend
         try {
@@ -1546,9 +1571,17 @@ const MenuManagement = () => {
         }
       }
 
-      if (backendCategories.length > 0 && !formData.category) {
-        setFormData(prev => ({ ...prev, category: backendCategories[0].id }));
+      if (finalCategories.length > 0 && !formData.category) {
+        setFormData(prev => ({ ...prev, category: finalCategories[0].id }));
       }
+
+      // Cache the data
+      const dataToCache = {
+        menuItems: freshMenuItems,
+        categories: finalCategories
+      };
+      setCachedMenuData(restaurantId, dataToCache);
+      console.log('✅ Menu data cached');
 
     } catch (error) {
       console.error('Error loading menu data:', error);
@@ -1556,6 +1589,8 @@ const MenuManagement = () => {
     } finally {
       console.log('Setting loading to false');
       setLoading(false);
+      setBackgroundLoading(false);
+      window.dispatchEvent(new CustomEvent('menuBackgroundLoading', { detail: { loading: false } }));
       hasLoadedData.current = true;
     }
   }, [formData.category]);
@@ -1593,7 +1628,7 @@ const MenuManagement = () => {
 
         if (restaurantId && !hasLoadedData.current) {
           console.log('Restaurant ID found:', restaurantId);
-          await loadMenuData(restaurantId);
+          await loadMenuData(restaurantId, true); // Use cache
         } else if (!restaurantId) {
           console.log('No restaurant found - showing empty state');
           setError('No restaurant found. Please set up a restaurant first.');
@@ -1637,7 +1672,7 @@ const MenuManagement = () => {
           }
 
           if (restaurantId) {
-            await loadMenuData(restaurantId);
+            await loadMenuData(restaurantId, true); // Use cache
           }
         } catch (error) {
           console.error('Error reloading restaurant context:', error);
@@ -2026,7 +2061,7 @@ const MenuManagement = () => {
   const handleMenuItemsAdded = async () => {
     // Reload menu data when new items are added
     if (currentRestaurant) {
-      await loadMenuData(currentRestaurant.id);
+      await loadMenuData(currentRestaurant.id, true); // Use cache
     }
   };
 

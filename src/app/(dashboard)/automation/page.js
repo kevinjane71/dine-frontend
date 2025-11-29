@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '../../../lib/api';
+import { getCachedAutomationData, setCachedAutomationData } from '../../../utils/dashboardCache';
 import {
   FaRobot,
   FaWhatsapp,
@@ -36,6 +37,7 @@ import {
 const Automation = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [restaurantId, setRestaurantId] = useState(null);
   const [restaurant, setRestaurant] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -62,14 +64,36 @@ const Automation = () => {
 
     setRestaurantId(savedRestaurantId);
     setRestaurant(savedRestaurant);
-    loadAutomationData(savedRestaurantId);
+    loadAutomationData(savedRestaurantId, true); // Use cache
   }, [router]);
 
-  const loadAutomationData = async (rid) => {
+  const loadAutomationData = async (rid, useCache = true) => {
     if (!rid) return;
     
     try {
-      setLoading(true);
+      // Check for cached data first
+      if (useCache) {
+        const cachedData = getCachedAutomationData(rid);
+        if (cachedData) {
+          console.log('⚡ Loading cached automation data instantly...');
+          if (cachedData.automations) setAutomations(cachedData.automations);
+          if (cachedData.templates) setTemplates(cachedData.templates);
+          if (cachedData.analytics) setAnalytics(cachedData.analytics);
+          if (cachedData.customers) setCustomers(cachedData.customers);
+          if (cachedData.coupons) setCoupons(cachedData.coupons);
+          if (cachedData.whatsappConnected !== undefined) setWhatsappConnected(cachedData.whatsappConnected);
+          if (cachedData.whatsappSettings) setWhatsappSettings(cachedData.whatsappSettings);
+          setLoading(false);
+          
+          // Show background loading
+          setBackgroundLoading(true);
+          window.dispatchEvent(new CustomEvent('automationBackgroundLoading', { detail: { loading: true } }));
+        } else {
+          setLoading(true);
+        }
+      } else {
+        setLoading(true);
+      }
       
       // Load all automation data in parallel with better error handling
       const [automationsRes, templatesRes, analyticsRes, customersRes, couponsRes, whatsappRes] = await Promise.allSettled([
@@ -114,16 +138,38 @@ const Automation = () => {
       const couponsData = getValue(couponsRes) || { coupons: [] };
       const whatsappData = getValue(whatsappRes) || { connected: false, webhookUrl: null };
 
-      setAutomations(automationsData.automations || []);
-      setTemplates(templatesData.templates || []);
-      setAnalytics(analyticsData.analytics);
-      setCustomers(customersData.customers || []);
-      setCoupons(couponsData.coupons || []);
-      setWhatsappConnected(whatsappData.connected || false);
-      setWhatsappSettings({
+      const freshAutomations = automationsData.automations || [];
+      const freshTemplates = templatesData.templates || [];
+      const freshAnalytics = analyticsData.analytics;
+      const freshCustomers = customersData.customers || [];
+      const freshCoupons = couponsData.coupons || [];
+      const freshWhatsappConnected = whatsappData.connected || false;
+      const freshWhatsappSettings = {
         ...whatsappData.settings,
         webhookUrl: whatsappData.webhookUrl || null
-      });
+      };
+
+      setAutomations(freshAutomations);
+      setTemplates(freshTemplates);
+      setAnalytics(freshAnalytics);
+      setCustomers(freshCustomers);
+      setCoupons(freshCoupons);
+      setWhatsappConnected(freshWhatsappConnected);
+      setWhatsappSettings(freshWhatsappSettings);
+
+      // Cache the data
+      const dataToCache = {
+        automations: freshAutomations,
+        templates: freshTemplates,
+        analytics: freshAnalytics,
+        customers: freshCustomers,
+        coupons: freshCoupons,
+        whatsappConnected: freshWhatsappConnected,
+        whatsappSettings: freshWhatsappSettings
+      };
+      setCachedAutomationData(rid, dataToCache);
+      console.log('✅ Automation data cached');
+      
     } catch (error) {
       console.error('Error loading automation data:', error);
       // Set defaults on error
@@ -136,6 +182,8 @@ const Automation = () => {
       setWhatsappSettings({ webhookUrl: null });
     } finally {
       setLoading(false);
+      setBackgroundLoading(false);
+      window.dispatchEvent(new CustomEvent('automationBackgroundLoading', { detail: { loading: false } }));
     }
   };
 

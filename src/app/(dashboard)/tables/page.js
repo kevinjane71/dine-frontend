@@ -6,6 +6,7 @@ import { useLoading } from '../../../contexts/LoadingContext';
 import apiClient from '../../../lib/api';
 import { useNotification } from '../../../components/Notification.js';
 import { t, getCurrentLanguage } from '../../../lib/i18n';
+import { getCachedTablesData, setCachedTablesData } from '../../../utils/dashboardCache';
 import { 
   FaPlus, 
   FaTrash,
@@ -96,6 +97,7 @@ const TableManagement = () => {
   const [floors, setFloors] = useState([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [error, setError] = useState('');
   
   // Mobile responsive state
@@ -316,9 +318,9 @@ const TableManagement = () => {
     };
   }, []);
 
-  // Load data on component mount
+  // Load data on component mount - use cache for instant load
   useEffect(() => {
-    loadInitialData();
+    loadInitialData(true); // Use cache
   }, []);
 
   // Refresh data when page becomes visible
@@ -360,14 +362,33 @@ const TableManagement = () => {
     };
   }, []);
 
-  const loadInitialData = useCallback(async () => {
+  const loadInitialData = useCallback(async (useCache = true) => {
     try {
-      setLoading(true);
-      setError('');
-      
-      // Get user data and restaurant context
+      // Only show full loading if no cache
       const userData = localStorage.getItem('user');
       const user = userData ? JSON.parse(userData) : null;
+      const restaurantId = user?.restaurantId || localStorage.getItem('selectedRestaurantId');
+      
+      // Check for cached data first
+      if (useCache && restaurantId) {
+        const cachedData = getCachedTablesData(restaurantId);
+        if (cachedData) {
+          console.log('⚡ Loading cached tables data instantly...');
+          if (cachedData.floors) setFloors(cachedData.floors);
+          if (cachedData.selectedRestaurant) setSelectedRestaurant(cachedData.selectedRestaurant);
+          setLoading(false);
+          
+          // Show background loading
+          setBackgroundLoading(true);
+          window.dispatchEvent(new CustomEvent('tablesBackgroundLoading', { detail: { loading: true } }));
+        } else {
+          setLoading(true);
+        }
+      } else {
+        setLoading(true);
+      }
+      
+      setError('');
       
       // Load restaurants
       const restaurantsResponse = await apiClient.getRestaurants();
@@ -385,7 +406,17 @@ const TableManagement = () => {
       
       if (restaurant) {
         setSelectedRestaurant(restaurant);
-        await loadFloorsAndTables(restaurant.id);
+        
+        // If we have cached data, fetch in background; otherwise fetch normally
+        if (useCache && getCachedTablesData(restaurant.id)) {
+          // Fetch fresh data in background
+          loadFloorsAndTables(restaurant.id, false).then(() => {
+            setBackgroundLoading(false);
+            window.dispatchEvent(new CustomEvent('tablesBackgroundLoading', { detail: { loading: false } }));
+          });
+        } else {
+          await loadFloorsAndTables(restaurant.id);
+        }
       } else {
         setError('No restaurant found');
       }
@@ -408,8 +439,11 @@ const TableManagement = () => {
       
       // Try to get floors first
       const floorsResponse = await apiClient.getFloors(restaurantId);
+      let floorsData = [];
+      
       if (floorsResponse.floors && floorsResponse.floors.length > 0) {
-        setFloors(floorsResponse.floors);
+        floorsData = floorsResponse.floors;
+        setFloors(floorsData);
       } else {
         // If no floors, get tables and create a default floor structure
         const tablesResponse = await apiClient.getTables(restaurantId);
@@ -423,8 +457,25 @@ const TableManagement = () => {
           tables: tables,
           restaurantId: restaurantId
         };
-        setFloors([defaultFloor]);
+        floorsData = [defaultFloor];
+        setFloors(floorsData);
       }
+      
+      // Cache the data (get current selectedRestaurant from state)
+      const currentRestaurant = selectedRestaurant || (() => {
+        const userData = localStorage.getItem('user');
+        const user = userData ? JSON.parse(userData) : null;
+        const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+        return { id: savedRestaurantId || restaurantId };
+      })();
+      
+      const dataToCache = {
+        floors: floorsData,
+        selectedRestaurant: currentRestaurant
+      };
+      setCachedTablesData(restaurantId, dataToCache);
+      console.log('✅ Tables data cached');
+      
     } catch (err) {
       console.error('Error loading floors and tables:', err);
       setError('Failed to load tables');

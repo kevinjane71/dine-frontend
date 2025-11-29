@@ -31,6 +31,7 @@ import {
 import { GiChefToque } from "react-icons/gi";
 import apiClient from '../../../lib/api';
 import Notification from '../../../components/Notification';
+import { getCachedKotData, setCachedKotData } from '../../../utils/dashboardCache';
 
 const KitchenOrderTicket = () => {
   const router = useRouter();
@@ -40,6 +41,7 @@ const KitchenOrderTicket = () => {
   const [selectedKot, setSelectedKot] = useState(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [currentRestaurant, setCurrentRestaurant] = useState(null);
@@ -53,18 +55,10 @@ const KitchenOrderTicket = () => {
   const [pollCount, setPollCount] = useState(0);
 
   // Load restaurant and KOT data
-  const loadKotData = useCallback(async (showSpinner = true) => {
+  const loadKotData = useCallback(async (showSpinner = true, useCache = true) => {
     try {
-      if (showSpinner) {
-        setLoading(true);
-      } else {
-        setRefreshing(true);
-      }
       setError('');
       
-      // Prevent layout shift by maintaining current state during refresh
-      const currentOrders = kotOrders;
-
       // Get current restaurant from localStorage or user data
       const userData = localStorage.getItem('user');
       if (!userData) {
@@ -116,11 +110,30 @@ const KitchenOrderTicket = () => {
         return;
       }
 
+      // Check for cached data first (only on initial load, not on refresh)
+      if (useCache && showSpinner) {
+        const cachedData = getCachedKotData(restaurantId);
+        if (cachedData) {
+          console.log('⚡ Loading cached KOT data instantly...');
+          if (cachedData.orders) setKotOrders(cachedData.orders);
+          if (cachedData.currentRestaurant) setCurrentRestaurant(cachedData.currentRestaurant);
+          setLoading(false);
+          
+          // Show background loading
+          setBackgroundLoading(true);
+          window.dispatchEvent(new CustomEvent('kotBackgroundLoading', { detail: { loading: true } }));
+        } else {
+          setLoading(true);
+        }
+      } else if (showSpinner) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
+
       // Get KOT orders for this restaurant using the specific API endpoint
       const kotApiUrl = `https://dine-backend-lake.vercel.app/api/kot/${restaurantId}`;
       console.log('🌐 Making KOT API call to:', kotApiUrl);
-      // SECURITY: Commented out to prevent exposing sensitive token data in console logs
-      // console.log('🔑 Auth token present:', !!localStorage.getItem('authToken'));
       
       const response = await fetch(kotApiUrl, {
         method: 'GET',
@@ -141,11 +154,16 @@ const KitchenOrderTicket = () => {
       const kotData = await response.json();
       console.log('📦 KOT API response data:', kotData);
       
-      if (kotData.orders) {
-        setKotOrders(kotData.orders);
-      } else {
-        setKotOrders([]);
-      }
+      const freshOrders = kotData.orders || [];
+      setKotOrders(freshOrders);
+
+      // Cache the data
+      const dataToCache = {
+        orders: freshOrders,
+        currentRestaurant: currentRestaurant
+      };
+      setCachedKotData(restaurantId, dataToCache);
+      console.log('✅ KOT data cached');
 
     } catch (error) {
       console.error('Error loading KOT data:', error);
@@ -154,8 +172,10 @@ const KitchenOrderTicket = () => {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setBackgroundLoading(false);
+      window.dispatchEvent(new CustomEvent('kotBackgroundLoading', { detail: { loading: false } }));
     }
-  }, []);
+  }, [currentRestaurant]);
 
   // Mobile detection with client-side hydration safety
   useEffect(() => {
@@ -171,7 +191,7 @@ const KitchenOrderTicket = () => {
   // Initial load and auto-refresh setup with page visibility detection
   useEffect(() => {
     console.log('🚀 KOT page useEffect - setting up polling');
-    loadKotData();
+    loadKotData(true, true); // Use cache for instant load
 
     let interval = null;
     

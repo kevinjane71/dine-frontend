@@ -54,6 +54,62 @@ function NavigationContent({ isHidden = false }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [pageAccess, setPageAccess] = useState(null);
   const [isNavigationReady, setIsNavigationReady] = useState(false);
+  const [dashboardBackgroundLoading, setDashboardBackgroundLoading] = useState(false);
+  const [tablesBackgroundLoading, setTablesBackgroundLoading] = useState(false);
+  const [orderhistoryBackgroundLoading, setOrderhistoryBackgroundLoading] = useState(false);
+  const [customersBackgroundLoading, setCustomersBackgroundLoading] = useState(false);
+  const [menuBackgroundLoading, setMenuBackgroundLoading] = useState(false);
+  const [analyticsBackgroundLoading, setAnalyticsBackgroundLoading] = useState(false);
+  const [kotBackgroundLoading, setKotBackgroundLoading] = useState(false);
+  const [automationBackgroundLoading, setAutomationBackgroundLoading] = useState(false);
+  
+  // Listen for background loading events from all pages
+  useEffect(() => {
+    const handleDashboardLoading = (event) => {
+      setDashboardBackgroundLoading(event.detail.loading);
+    };
+    const handleTablesLoading = (event) => {
+      setTablesBackgroundLoading(event.detail.loading);
+    };
+    const handleOrderhistoryLoading = (event) => {
+      setOrderhistoryBackgroundLoading(event.detail.loading);
+    };
+    const handleCustomersLoading = (event) => {
+      setCustomersBackgroundLoading(event.detail.loading);
+    };
+    const handleMenuLoading = (event) => {
+      setMenuBackgroundLoading(event.detail.loading);
+    };
+    const handleAnalyticsLoading = (event) => {
+      setAnalyticsBackgroundLoading(event.detail.loading);
+    };
+    const handleKotLoading = (event) => {
+      setKotBackgroundLoading(event.detail.loading);
+    };
+    const handleAutomationLoading = (event) => {
+      setAutomationBackgroundLoading(event.detail.loading);
+    };
+    
+    window.addEventListener('dashboardBackgroundLoading', handleDashboardLoading);
+    window.addEventListener('tablesBackgroundLoading', handleTablesLoading);
+    window.addEventListener('orderhistoryBackgroundLoading', handleOrderhistoryLoading);
+    window.addEventListener('customersBackgroundLoading', handleCustomersLoading);
+    window.addEventListener('menuBackgroundLoading', handleMenuLoading);
+    window.addEventListener('analyticsBackgroundLoading', handleAnalyticsLoading);
+    window.addEventListener('kotBackgroundLoading', handleKotLoading);
+    window.addEventListener('automationBackgroundLoading', handleAutomationLoading);
+    
+    return () => {
+      window.removeEventListener('dashboardBackgroundLoading', handleDashboardLoading);
+      window.removeEventListener('tablesBackgroundLoading', handleTablesLoading);
+      window.removeEventListener('orderhistoryBackgroundLoading', handleOrderhistoryLoading);
+      window.removeEventListener('customersBackgroundLoading', handleCustomersLoading);
+      window.removeEventListener('menuBackgroundLoading', handleMenuLoading);
+      window.removeEventListener('analyticsBackgroundLoading', handleAnalyticsLoading);
+      window.removeEventListener('kotBackgroundLoading', handleKotLoading);
+      window.removeEventListener('automationBackgroundLoading', handleAutomationLoading);
+    };
+  }, []);
   
   // Debug dropdown states
   useEffect(() => {
@@ -418,6 +474,42 @@ function NavigationContent({ isHidden = false }) {
 
   return (
     <>
+      {/* Background Loading Indicator - Shows when pages are refreshing data */}
+      {((dashboardBackgroundLoading && pathname === '/dashboard') ||
+        (tablesBackgroundLoading && pathname === '/tables') ||
+        (orderhistoryBackgroundLoading && pathname === '/orderhistory') ||
+        (customersBackgroundLoading && pathname === '/customers') ||
+        (menuBackgroundLoading && pathname === '/menu') ||
+        (analyticsBackgroundLoading && pathname === '/analytics') ||
+        (kotBackgroundLoading && pathname === '/kot') ||
+        (automationBackgroundLoading && pathname === '/automation')) && (
+        <div style={{
+          position: 'fixed',
+          top: '64px',
+          left: 0,
+          right: 0,
+          height: '3px',
+          backgroundColor: '#f3f4f6',
+          zIndex: 1001,
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            height: '100%',
+            width: '100%',
+            background: 'linear-gradient(90deg, #ef4444 0%, #dc2626 50%, #ef4444 100%)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 1.5s ease-in-out infinite',
+            boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
+          }} />
+          <style>{`
+            @keyframes shimmer {
+              0% { background-position: -200% 0; }
+              100% { background-position: 200% 0; }
+            }
+          `}</style>
+        </div>
+      )}
+      
       <nav 
         className="nav-container"
         style={{

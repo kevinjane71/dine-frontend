@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Head from 'next/head';
 import apiClient from '../../../lib/api';
 import { t, getCurrentLanguage } from '../../../lib/i18n';
+import { getCachedCustomersData, setCachedCustomersData } from '../../../utils/dashboardCache';
 import { 
   FaUsers, 
   FaPlus, 
@@ -297,6 +298,7 @@ const Customers = () => {
   const router = useRouter();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -338,9 +340,9 @@ const Customers = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Load customers
+  // Load customers - use cache for instant load
   useEffect(() => {
-    loadCustomers();
+    loadCustomers(true); // Use cache
   }, []);
 
   // Listen for restaurant changes
@@ -354,9 +356,8 @@ const Customers = () => {
     return () => window.removeEventListener('restaurantChanged', handleRestaurantChange);
   }, []);
 
-  const loadCustomers = async () => {
+  const loadCustomers = async (useCache = true) => {
     try {
-      setLoading(true);
       const user = apiClient.getUser();
       if (!user) {
         router.replace('/login');
@@ -374,13 +375,43 @@ const Customers = () => {
         return;
       }
 
+      // Check for cached data first
+      if (useCache) {
+        const cachedData = getCachedCustomersData(restaurantId);
+        if (cachedData) {
+          console.log('⚡ Loading cached customers data instantly...');
+          setCustomers(cachedData.customers || []);
+          setLoading(false);
+          
+          // Show background loading
+          setBackgroundLoading(true);
+          window.dispatchEvent(new CustomEvent('customersBackgroundLoading', { detail: { loading: true } }));
+        } else {
+          setLoading(true);
+        }
+      } else {
+        setLoading(true);
+      }
+
+      // Fetch fresh data
       const response = await apiClient.request(`/api/customers/${restaurantId}`);
-      setCustomers(response.customers || []);
+      const freshCustomers = response.customers || [];
+      setCustomers(freshCustomers);
+      
+      // Cache the data
+      const dataToCache = {
+        customers: freshCustomers
+      };
+      setCachedCustomersData(restaurantId, dataToCache);
+      console.log('✅ Customers data cached');
+      
     } catch (error) {
       console.error('Error loading customers:', error);
       setError(t('customers.messages.failedToLoad'));
     } finally {
       setLoading(false);
+      setBackgroundLoading(false);
+      window.dispatchEvent(new CustomEvent('customersBackgroundLoading', { detail: { loading: false } }));
     }
   };
 

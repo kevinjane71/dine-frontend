@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '../../../lib/api';
 import { t, getCurrentLanguage } from '../../../lib/i18n';
+import { getCachedOrderHistoryData, setCachedOrderHistoryData } from '../../../utils/dashboardCache';
 import { 
   FaSearch,
   FaChevronLeft, 
@@ -33,6 +34,7 @@ const OrderHistory = () => {
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -136,10 +138,33 @@ const OrderHistory = () => {
     return { bg: '#f3f4f6', text: '#374151', border: '#d1d5db', label: status };
   };
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (useCache = true) => {
     if (!restaurantId) return;
-    try {
+    
+    // Create cache key based on filters
+    const cacheKey = `${currentPage}_${selectedStatus}_${selectedOrderType}_${myOrdersOnly}_${todayOrdersOnly}_${searchTerm.trim()}`;
+    
+    // Check for cached data first
+    if (useCache) {
+      const cachedData = getCachedOrderHistoryData(restaurantId, cacheKey);
+      if (cachedData) {
+        console.log('⚡ Loading cached order history instantly...');
+        setOrders(cachedData.orders || []);
+        setTotalPages(cachedData.totalPages || 1);
+        setTotalOrders(cachedData.totalOrders || 0);
+        setLoading(false);
+        
+        // Show background loading
+        setBackgroundLoading(true);
+        window.dispatchEvent(new CustomEvent('orderhistoryBackgroundLoading', { detail: { loading: true } }));
+      } else {
+        setLoading(true);
+      }
+    } else {
       setLoading(true);
+    }
+    
+    try {
       setError(null);
       const filters = {
         page: currentPage,
@@ -162,12 +187,24 @@ const OrderHistory = () => {
       setOrders(filteredOrders);
       setTotalPages(response.pagination?.totalPages || 1);
       setTotalOrders(response.pagination?.totalOrders || filteredOrders.length);
+      
+      // Cache the data
+      const dataToCache = {
+        orders: filteredOrders,
+        totalPages: response.pagination?.totalPages || 1,
+        totalOrders: response.pagination?.totalOrders || filteredOrders.length
+      };
+      setCachedOrderHistoryData(restaurantId, dataToCache, cacheKey);
+      console.log('✅ Order history data cached');
+      
     } catch (error) {
       console.error('Error fetching orders:', error);
       setError(t('common.error'));
       setOrders([]);
     } finally {
       setLoading(false);
+      setBackgroundLoading(false);
+      window.dispatchEvent(new CustomEvent('orderhistoryBackgroundLoading', { detail: { loading: false } }));
     }
   }, [restaurantId, currentPage, limit, selectedStatus, selectedOrderType, myOrdersOnly, searchTerm, todayOrdersOnly, user?.id]);
 
@@ -197,7 +234,7 @@ const OrderHistory = () => {
     loadTaxSettings();
   }, [restaurantId]);
 
-  useEffect(() => { if (restaurantId) fetchOrders(); }, [fetchOrders]);
+  useEffect(() => { if (restaurantId) fetchOrders(true); }, [fetchOrders, restaurantId]);
 
   useEffect(() => { if (currentPage !== 1) setCurrentPage(1); }, [selectedStatus, selectedOrderType, myOrdersOnly, searchTerm, todayOrdersOnly]);
 

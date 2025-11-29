@@ -55,6 +55,7 @@ import { t } from '../../../lib/i18n';
 import { useLoading } from '../../../contexts/LoadingContext';
 import IntelligentChatbot from '../../../components/IntelligentChatbot';
 import RAGInitializer from '../../../components/RAGInitializer';
+import { getCachedDashboardData, setCachedDashboardData } from '../../../utils/dashboardCache';
 
 function RestaurantPOSContent() {
   const searchParams = useSearchParams();
@@ -90,6 +91,7 @@ function RestaurantPOSContent() {
   const [floors, setFloors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [restaurantChangeLoading, setRestaurantChangeLoading] = useState(false); // Loading state for restaurant changes
+  const [backgroundLoading, setBackgroundLoading] = useState(false); // Background data refresh indicator
   const [processing, setProcessing] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState('');
@@ -431,9 +433,12 @@ function RestaurantPOSContent() {
     }
   }, [selectedRestaurant?.id, loadTaxSettings]);
 
-  const loadInitialData = useCallback(async (skipRestaurantLoad = false) => {
+  const loadInitialData = useCallback(async (skipRestaurantLoad = false, useCache = true) => {
     try {
-      setLoading(true);
+      // Only show full loading on first load or when not using cache
+      if (!useCache) {
+        setLoading(true);
+      }
       setError('');
       
       // Get user data to determine restaurant context
@@ -483,13 +488,108 @@ function RestaurantPOSContent() {
       if (restaurant) {
         setSelectedRestaurant(restaurant);
         console.log('🏠 Loading data for restaurant:', restaurant.name, restaurant.id);
-        // Load menu and floors/tables for selected restaurant
-        await Promise.all([
-          loadMenu(restaurant.id),
-          loadFloors(restaurant.id),
-          prefetchTables(restaurant.id)
-        ]);
-        console.log('✅ Restaurant data loaded successfully');
+        
+        // STALE-WHILE-REVALIDATE PATTERN
+        // Step 1: Load cached data immediately if available
+        if (useCache) {
+          const cachedData = getCachedDashboardData(restaurant.id);
+          if (cachedData) {
+            console.log('⚡ Loading cached data instantly...');
+            // Restore cached state immediately
+            if (cachedData.menuItems) setMenuItems(cachedData.menuItems);
+            if (cachedData.floors) setFloors(cachedData.floors);
+            if (cachedData.tablesData) setTablesData(cachedData.tablesData);
+            // Hide loading immediately to show cached data
+            setLoading(false);
+            
+            // Show background loading indicator
+            setBackgroundLoading(true);
+            // Dispatch event for navigation to show loading
+            window.dispatchEvent(new CustomEvent('dashboardBackgroundLoading', { detail: { loading: true } }));
+          }
+        }
+        
+        // Step 2: Fetch fresh data in background
+        const fetchFreshData = async () => {
+          try {
+            console.log('🔄 Fetching fresh data in background...');
+            
+            // Fetch fresh data
+            const [menuResponse, floorsResponse] = await Promise.all([
+              apiClient.getMenu(restaurant.id).catch(() => ({ menuItems: [] })),
+              apiClient.getFloors(restaurant.id).catch(() => ({ floors: [] }))
+            ]);
+            
+            const freshMenuItems = menuResponse.menuItems || [];
+            const freshFloors = floorsResponse.floors || floorsResponse || [];
+            
+            // Update state with fresh data
+            setMenuItems(freshMenuItems);
+            setFloors(freshFloors);
+            
+            // Also prefetch tables and get fresh floors data
+            const floorsRes = await apiClient.getFloors(restaurant.id).catch(() => ({ floors: [] }));
+            const freshFloorsForTables = floorsRes?.floors || floorsRes || [];
+            await prefetchTables(restaurant.id);
+            
+            // Cache the fresh data with tablesData structure
+            const freshTablesData = {
+              floors: freshFloorsForTables,
+              tables: [] // Tables are nested in floors
+            };
+            
+            const dataToCache = {
+              menuItems: freshMenuItems,
+              floors: freshFloors,
+              tablesData: freshTablesData
+            };
+            setCachedDashboardData(restaurant.id, dataToCache);
+            
+            console.log('✅ Fresh data loaded and cached');
+          } catch (error) {
+            console.error('Error fetching fresh data:', error);
+            // Don't show error to user if we have cached data
+          } finally {
+            setBackgroundLoading(false);
+            // Dispatch event to hide loading indicator
+            window.dispatchEvent(new CustomEvent('dashboardBackgroundLoading', { detail: { loading: false } }));
+          }
+        };
+        
+        // If we have cached data, fetch in background; otherwise fetch normally
+        if (useCache && getCachedDashboardData(restaurant.id)) {
+          // Fetch fresh data in background without blocking
+          fetchFreshData();
+        } else {
+          // No cache, fetch normally
+          const [menuResponse, floorsResponse] = await Promise.all([
+            apiClient.getMenu(restaurant.id).catch(() => ({ menuItems: [] })),
+            apiClient.getFloors(restaurant.id).catch(() => ({ floors: [] }))
+          ]);
+          
+          const fetchedMenuItems = menuResponse.menuItems || [];
+          const fetchedFloors = floorsResponse.floors || floorsResponse || [];
+          
+          // Update state
+          setMenuItems(fetchedMenuItems);
+          setFloors(fetchedFloors);
+          await prefetchTables(restaurant.id);
+          
+          // Cache the data with proper tablesData structure
+          const tablesDataToCache = {
+            floors: fetchedFloors,
+            tables: [] // Tables are nested in floors
+          };
+          
+          const dataToCache = {
+            menuItems: fetchedMenuItems,
+            floors: fetchedFloors,
+            tablesData: tablesDataToCache
+          };
+          setCachedDashboardData(restaurant.id, dataToCache);
+          
+          console.log('✅ Restaurant data loaded successfully');
+        }
       } else {
         // No restaurant found - automatically create one with default name
         console.log('📋 No restaurant found for user, creating default restaurant');
@@ -555,9 +655,9 @@ function RestaurantPOSContent() {
     } finally {
       setLoading(false);
     }
-  }, [restaurants]);
+  }, [restaurants, prefetchTables]);
 
-  // Load initial data - only once on mount
+  // Load initial data - only once on mount or when navigating to dashboard
   useEffect(() => {
     // Prevent duplicate calls
     if (initialDataLoadedRef.current) {
@@ -567,7 +667,7 @@ function RestaurantPOSContent() {
     
     console.log('🚀 Loading initial data (first time)');
     initialDataLoadedRef.current = true;
-    loadInitialData();
+    loadInitialData(false, true); // Use cache for instant load
   }, []); // Empty dependency array - only run on mount
 
   // Listen for restaurant changes from navigation
