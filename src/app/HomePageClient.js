@@ -26,7 +26,14 @@ import {
   FaStore,
   FaBoxes,
   FaWarehouse,
-  FaBuilding
+  FaBuilding,
+  FaWhatsapp,
+  FaQrcode,
+  FaReceipt,
+  FaMicrophone,
+  FaStar,
+  FaCity,
+  FaCoffee
 } from 'react-icons/fa';
 
 export default function LandingPage() {
@@ -237,6 +244,34 @@ export default function LandingPage() {
 
     return (
     <div style={{ minHeight: '100vh', backgroundColor: 'white' }}>
+      <style>{`
+        @keyframes pulse {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.05);
+            opacity: 0.9;
+          }
+        }
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-20px);
+          }
+        }
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+      `}</style>
       {/* Navigation */}
       <nav style={{
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -1013,7 +1048,7 @@ export default function LandingPage() {
               textShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
               lineHeight: '1.1'
             }}>
-              AI Agent for
+              Restaurant POS + AI Agent
               <br />
               <span style={{
                 background: 'linear-gradient(135deg, #fef3c7, #fde68a, #fbbf24)',
@@ -1023,7 +1058,7 @@ export default function LandingPage() {
                 display: 'block',
                 marginTop: '8px'
               }}>
-                Your Restaurant
+                in One Platform
               </span>
             </h1>
             
@@ -1035,13 +1070,35 @@ export default function LandingPage() {
               fontWeight: '500',
               textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
               lineHeight: '1.5',
-              maxWidth: '600px',
+              maxWidth: '700px',
               margin: '0 auto 24px auto'
             }}>
-              Voice & Chat AI Assistant that takes orders, manages tables, 
-              answers questions, and handles your restaurant operations - 
-              all through natural conversation.
+              Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant — everything your restaurant needs in one system.
             </p>
+
+            {/* Pricing Teaser */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 24px',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '50px',
+              marginBottom: '32px',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+            }}>
+              <FaRocket size={18} color="white" />
+              <span style={{
+                fontSize: isMobile ? '14px' : '16px',
+                fontWeight: '700',
+                color: 'white',
+                letterSpacing: '0.5px'
+              }}>
+                Starts at ₹999/month — 1-Month Free Trial
+              </span>
+            </div>
             
             {/* Key Benefits */}
             <div style={{
@@ -1109,7 +1166,7 @@ export default function LandingPage() {
               flexWrap: 'nowrap'
             }}>
               <button
-                onClick={handleGetStarted}
+                onClick={() => setShowDemoModal(true)}
                 style={{
                   padding: '18px 36px',
                   background: 'rgba(255, 255, 255, 0.95)',
@@ -1140,19 +1197,19 @@ export default function LandingPage() {
                   e.target.style.background = 'rgba(255, 255, 255, 0.95)';
                 }}
               >
-                <FaRocket size={20} />
-                <span>Start 1 Month Free Trial</span>
+                <FaClock size={20} />
+                <span>Book Demo</span>
               </button>
-              {/* Book Demo Button */}
+              {/* Start Free Trial Button */}
               <button
-                onClick={() => setShowDemoModal(true)}
+                onClick={handleGetStarted}
                 style={{
                   padding: '18px 36px',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
                   color: 'white',
                   border: '2px solid rgba(255, 255, 255, 0.3)',
                   borderRadius: '16px',
-                  fontWeight: '600',
+                  fontWeight: '700',
                   fontSize: isMobile ? '14px' : '16px',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
@@ -1166,14 +1223,16 @@ export default function LandingPage() {
                 onMouseEnter={(e) => {
                   e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+                  e.target.style.transform = 'translateY(-2px)';
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                  e.target.style.transform = 'translateY(0)';
                 }}
               >
-                <FaClock size={16} />
-                <span>Book Demo</span>
+                <FaRocket size={16} />
+                <span>Start Free Trial</span>
               </button>
               
               {/* See Real Demo Button - Commented out */}
@@ -1309,6 +1368,68 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Quick Benefits Row */}
+      <section style={{
+        padding: isMobile ? '40px 20px' : '60px 20px',
+        backgroundColor: 'white',
+        borderBottom: '1px solid #e5e7eb'
+      }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(6, 1fr)',
+            gap: isMobile ? '20px' : '30px',
+            alignItems: 'center'
+          }}>
+            {[
+              { icon: <FaReceipt size={24} />, label: 'Fast Billing', color: '#ef4444' },
+              { icon: <FaQrcode size={24} />, label: 'QR Menu', color: '#3b82f6' },
+              { icon: <FaUtensils size={24} />, label: 'KOT System', color: '#10b981' },
+              { icon: <FaTable size={24} />, label: 'Table Management', color: '#8b5cf6' },
+              { icon: <FaBoxes size={24} />, label: 'Inventory', color: '#f59e0b' },
+              { icon: <FaMicrophone size={24} />, label: 'Voice Order AI', color: '#ec4899' }
+            ].map((benefit, index) => (
+              <div
+                key={index}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  backgroundColor: '#f8fafc',
+                  border: '1px solid #e5e7eb',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.1)';
+                  e.currentTarget.style.borderColor = benefit.color;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.borderColor = '#e5e7eb';
+                }}
+              >
+                <div style={{ color: benefit.color }}>
+                  {benefit.icon}
+                </div>
+                <span style={{
+                  fontSize: isMobile ? '12px' : '14px',
+                  fontWeight: '600',
+                  color: '#1f2937',
+                  textAlign: 'center'
+                }}>
+                  {benefit.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Features Section */}
       <section id="features" style={{
@@ -1446,33 +1567,439 @@ export default function LandingPage() {
                 ))}
                 </div>
             </div>
+            
+            {/* CTA After Features */}
+            <div style={{
+              textAlign: 'center',
+              marginTop: isMobile ? '60px' : '80px',
+              padding: isMobile ? '40px 20px' : '60px 40px',
+              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+              borderRadius: '20px',
+              boxShadow: '0 8px 30px rgba(239, 68, 68, 0.3)'
+            }}>
+              <h3 style={{
+                fontSize: isMobile ? '24px' : '32px',
+                fontWeight: '700',
+                color: 'white',
+                marginBottom: '16px'
+              }}>
+                Start Your Free Trial Today
+              </h3>
+              <p style={{
+                fontSize: isMobile ? '16px' : '18px',
+                color: 'rgba(255, 255, 255, 0.9)',
+                marginBottom: '32px'
+              }}>
+                No credit card required. Get started in minutes.
+              </p>
+              <div style={{
+                display: 'flex',
+                gap: '16px',
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+              }}>
+                <button
+                  onClick={handleGetStarted}
+                  style={{
+                    padding: '16px 32px',
+                    backgroundColor: 'white',
+                    color: '#ef4444',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontWeight: '700',
+                    fontSize: '16px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                  }}
+                >
+                  Start Free Trial
+                </button>
+                <button
+                  onClick={() => setShowDemoModal(true)}
+                  style={{
+                    padding: '16px 32px',
+                    backgroundColor: 'transparent',
+                    color: 'white',
+                    border: '2px solid white',
+                    borderRadius: '12px',
+                    fontWeight: '700',
+                    fontSize: '16px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  Book Demo
+                </button>
+              </div>
+            </div>
+      </section>
+
+      {/* Trust Signals Section */}
+      <section style={{
+        padding: isMobile ? '60px 20px' : '100px 20px',
+        backgroundColor: 'white'
+      }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? '40px' : '60px' }}>
+            <h2 style={{
+              fontSize: isMobile ? '28px' : '40px',
+              fontWeight: '700',
+              color: '#1f2937',
+              marginBottom: '16px'
+            }}>
+              Trusted by 200+ Restaurants Across India
+            </h2>
+            <p style={{
+              fontSize: isMobile ? '16px' : '18px',
+              color: '#6b7280'
+            }}>
+              Join restaurants that trust DineOpen for their daily operations
+            </p>
+          </div>
+
+          {/* Stats Row */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+            gap: isMobile ? '20px' : '40px',
+            marginBottom: isMobile ? '40px' : '60px'
+          }}>
+            {[
+              { value: '99.9%', label: 'Uptime', icon: <FaShieldAlt size={32} /> },
+              { value: '24/7', label: 'Support', icon: <FaHeadset size={32} /> },
+              { value: '20+', label: 'Cities', icon: <FaCity size={32} /> },
+              { value: '200+', label: 'Restaurants', icon: <FaStore size={32} /> }
+            ].map((stat, index) => (
+              <div
+                key={index}
+                style={{
+                  textAlign: 'center',
+                  padding: '30px 20px',
+                  backgroundColor: '#f8fafc',
+                  borderRadius: '16px',
+                  border: '1px solid #e5e7eb',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <div style={{ color: '#ef4444', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+                  {stat.icon}
+                </div>
+                <div style={{
+                  fontSize: isMobile ? '32px' : '40px',
+                  fontWeight: '700',
+                  color: '#1f2937',
+                  marginBottom: '8px'
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#6b7280',
+                  fontWeight: '600'
+                }}>
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Testimonials */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+            gap: '24px',
+            marginBottom: '60px',
+            width: '100%'
+          }}>
+            {[
+              {
+                name: 'Rajesh Kumar',
+                restaurant: 'Spice Garden Restaurant',
+                city: 'Mumbai',
+                text: 'DineOpen has transformed our operations. The voice AI assistant is incredible - it takes orders accurately even with our busy kitchen noise!',
+                rating: 5
+              },
+              {
+                name: 'Priya Sharma',
+                restaurant: 'Café Delight',
+                city: 'Delhi',
+                text: 'Best POS system we\'ve used. The table management and KOT system saves us so much time. Highly recommend!',
+                rating: 5
+              },
+              {
+                name: 'Amit Patel',
+                restaurant: 'Cloud Kitchen Hub',
+                city: 'Bangalore',
+                text: 'Inventory management and supply chain features are game-changers. We\'ve reduced waste by 30% since switching to DineOpen.',
+                rating: 5
+              }
+            ].map((testimonial, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: '30px',
+                  backgroundColor: '#f8fafc',
+                  borderRadius: '16px',
+                  border: '1px solid #e5e7eb',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  minHeight: '200px'
+                }}
+              >
+                <div style={{ 
+                  marginBottom: '16px',
+                  display: 'flex',
+                  gap: '4px',
+                  flexWrap: 'wrap'
+                }}>
+                  {Array.from({ length: testimonial.rating }).map((_, i) => (
+                    <FaStar key={i} size={16} color="#fbbf24" />
+                  ))}
+                </div>
+                <p style={{
+                  color: '#374151',
+                  lineHeight: '1.7',
+                  marginBottom: '20px',
+                  fontSize: '15px',
+                  flex: 1,
+                  margin: '0 0 20px 0'
+                }}>
+                  "{testimonial.text}"
+                </p>
+                <div style={{ marginTop: 'auto' }}>
+                  <div style={{
+                    fontWeight: '700',
+                    color: '#1f2937',
+                    marginBottom: '4px',
+                    fontSize: '16px'
+                  }}>
+                    {testimonial.name}
+                  </div>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#6b7280'
+                  }}>
+                    {testimonial.restaurant}, {testimonial.city}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div style={{ textAlign: 'center' }}>
+            <button
+              onClick={handleGetStarted}
+              style={{
+                padding: '16px 40px',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: '700',
+                fontSize: '18px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+              }}
+            >
+              Join 200+ Restaurants
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Niche Pages Section */}
+      <section style={{
+        padding: isMobile ? '60px 20px' : '100px 20px',
+        backgroundColor: '#f8fafc'
+      }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? '40px' : '60px' }}>
+            <h2 style={{
+              fontSize: isMobile ? '28px' : '36px',
+              fontWeight: '700',
+              color: '#1f2937',
+              marginBottom: '16px'
+            }}>
+              Perfect for Every Food Business
+            </h2>
+            <p style={{
+              fontSize: isMobile ? '16px' : '18px',
+              color: '#6b7280'
+            }}>
+              Tailored solutions for different types of restaurants
+            </p>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)',
+            gap: '20px'
+          }}>
+            {[
+              { title: 'POS for Restaurants', icon: <FaUtensils size={28} />, color: '#ef4444' },
+              { title: 'POS for Cafés', icon: <FaCoffee size={28} />, color: '#3b82f6' },
+              { title: 'POS for Cloud Kitchens', icon: <FaBuilding size={28} />, color: '#10b981' },
+              { title: 'POS for Bakeries', icon: <FaStore size={28} />, color: '#f59e0b' },
+              { title: 'POS for Bars & Clubs', icon: <FaUsers size={28} />, color: '#8b5cf6' }
+            ].map((niche, index) => (
+              <Link
+                key={index}
+                href={`/products/restaurant-management?niche=${niche.title.toLowerCase().replace(/\s+/g, '-')}`}
+                style={{
+                  textDecoration: 'none',
+                  display: 'block'
+                }}
+              >
+                <div
+                  style={{
+                    padding: '30px 20px',
+                    backgroundColor: 'white',
+                    borderRadius: '16px',
+                    border: '2px solid #e5e7eb',
+                    textAlign: 'center',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = `0 8px 24px ${niche.color}30`;
+                    e.currentTarget.style.borderColor = niche.color;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                  }}
+                >
+                  <div style={{ color: niche.color, marginBottom: '16px' }}>
+                    {niche.icon}
+                  </div>
+                  <h3 style={{
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    color: '#1f2937',
+                    margin: 0
+                  }}>
+                    {niche.title}
+                  </h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Pricing Section */}
       <section id="pricing" style={{
-        padding: isMobile ? '40px 16px' : '100px 20px',
+        padding: isMobile ? '60px 20px' : '120px 20px',
         background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: isMobile ? '40px' : '60px' }}>
+          <div style={{ 
+            textAlign: 'center', 
+            marginBottom: isMobile ? '50px' : '80px',
+            padding: isMobile ? '0' : '0 20px'
+          }}>
             <h2 style={{
-              fontSize: isMobile ? '24px' : '36px',
-                            fontWeight: 'bold',
-                        color: '#1f2937',
-              marginBottom: '16px'
+              fontSize: isMobile ? '28px' : '42px',
+              fontWeight: '700',
+              color: '#1f2937',
+              marginBottom: '20px',
+              lineHeight: '1.2'
             }}>
-              Simple, Transparent Pricing
+              Simple Transparent Pricing
             </h2>
+            <p style={{
+              fontSize: isMobile ? '18px' : '22px',
+              color: '#ef4444',
+              fontWeight: '700',
+              marginBottom: '12px'
+            }}>
+              Starts at ₹999/month
+            </p>
             <p style={{
               fontSize: isMobile ? '16px' : '18px',
               color: '#6b7280',
-              maxWidth: '600px',
-              margin: '0 auto',
-                  lineHeight: '1.5',
-                  marginBottom: '20px'
-                }}>
-              Start free and scale as you grow. All plans include 14-day free trial.
+              maxWidth: '700px',
+              margin: '0 auto 32px auto',
+              lineHeight: '1.6'
+            }}>
+              Start free and scale as you grow. All plans include 1-month free trial.
             </p>
+            <button
+              onClick={() => {
+                const pricingSection = document.getElementById('pricing');
+                if (pricingSection) {
+                  const plansSection = pricingSection.querySelector('[data-pricing-plans]');
+                  if (plansSection) {
+                    plansSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }
+              }}
+              style={{
+                padding: '14px 32px',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: '700',
+                fontSize: '16px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
+                e.target.style.backgroundColor = '#dc2626';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+                e.target.style.backgroundColor = '#ef4444';
+              }}
+            >
+              View Full Pricing
+            </button>
             
             {/* Currency Toggle */}
           <div style={{
@@ -1517,13 +2044,15 @@ export default function LandingPage() {
               </div>
             </div>
             
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: isMobile ? '24px' : '32px',
-            maxWidth: '1200px',
-            margin: '0 auto'
-          }}>
+          <div 
+            data-pricing-plans
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: isMobile ? '24px' : '32px',
+              maxWidth: '1200px',
+              margin: '0 auto'
+            }}>
             {plans.map((plan, index) => {
               const price = currency === 'INR' ? plan.priceINR : plan.priceUSD;
               const period = currency === 'INR' ? 'month' : plan.period;
@@ -1773,6 +2302,131 @@ export default function LandingPage() {
               </button>
               </div>
             </div>
+      </section>
+
+      {/* Strong CTA Footer Section */}
+      <section style={{
+        padding: isMobile ? '60px 20px' : '100px 20px',
+        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+        color: 'white'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{
+            fontSize: isMobile ? '32px' : '48px',
+            fontWeight: '900',
+            marginBottom: '20px',
+            color: 'white'
+          }}>
+            Start Your Free Trial — No Credit Card Needed
+          </h2>
+          <p style={{
+            fontSize: isMobile ? '18px' : '22px',
+            color: 'rgba(255, 255, 255, 0.9)',
+            marginBottom: '40px',
+            maxWidth: '700px',
+            margin: '0 auto 40px auto'
+          }}>
+            Join 200+ restaurants using DineOpen. Get started in minutes with our 1-month free trial.
+          </p>
+          <div style={{
+            display: 'flex',
+            gap: '20px',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            marginBottom: '40px'
+          }}>
+            <button
+              onClick={handleGetStarted}
+              style={{
+                padding: '20px 48px',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: '700',
+                fontSize: '18px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 8px 24px rgba(239, 68, 68, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-4px)';
+                e.target.style.boxShadow = '0 12px 32px rgba(239, 68, 68, 0.5)';
+                e.target.style.backgroundColor = '#dc2626';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.4)';
+                e.target.style.backgroundColor = '#ef4444';
+              }}
+            >
+              <FaRocket size={20} />
+              Start Free Trial
+            </button>
+            {/* WhatsApp button disabled for now */}
+            {false && (
+              <a
+                href="https://wa.me/919876543210?text=Hi, I'd like to get a demo of DineOpen"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  padding: '20px 48px',
+                  backgroundColor: '#25D366',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: '700',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 8px 24px rgba(37, 211, 102, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  textDecoration: 'none'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-4px)';
+                  e.target.style.boxShadow = '0 12px 32px rgba(37, 211, 102, 0.5)';
+                  e.target.style.backgroundColor = '#20BA5A';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 8px 24px rgba(37, 211, 102, 0.4)';
+                  e.target.style.backgroundColor = '#25D366';
+                }}
+              >
+                <FaWhatsapp size={20} />
+                Chat on WhatsApp
+              </a>
+            )}
+          </div>
+          <div style={{
+            display: 'flex',
+            gap: '40px',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            marginTop: '40px',
+            paddingTop: '40px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>1 Month</div>
+              <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Free Trial</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>₹999</div>
+              <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Starting Price</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>200+</div>
+              <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Restaurants</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Footer */}
@@ -2296,6 +2950,81 @@ export default function LandingPage() {
                 {demoSubmitting ? 'Submitting...' : 'Submit Request'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating WhatsApp CTA Button - Disabled for now */}
+      {false && (
+        <div style={{ position: 'relative' }}>
+          <a
+            href="https://wa.me/919876543210?text=Hi, I'd like to get a demo of DineOpen"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              position: 'fixed',
+              bottom: isMobile ? '20px' : '30px',
+              right: isMobile ? '20px' : '30px',
+              width: isMobile ? '56px' : '64px',
+              height: isMobile ? '56px' : '64px',
+              backgroundColor: '#25D366',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 20px rgba(37, 211, 102, 0.4)',
+              zIndex: 1000,
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              textDecoration: 'none',
+              animation: 'pulse 2s ease-in-out infinite'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.boxShadow = '0 6px 30px rgba(37, 211, 102, 0.6)';
+              const tooltip = e.currentTarget.nextElementSibling;
+              if (tooltip) tooltip.style.opacity = '1';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(37, 211, 102, 0.4)';
+              const tooltip = e.currentTarget.nextElementSibling;
+              if (tooltip) tooltip.style.opacity = '0';
+            }}
+            title="Get Demo on WhatsApp"
+          >
+            <FaWhatsapp size={isMobile ? 28 : 32} color="white" />
+          </a>
+          {/* Tooltip */}
+          <div style={{
+            position: 'fixed',
+            bottom: isMobile ? '90px' : '100px',
+            right: isMobile ? '20px' : '30px',
+            backgroundColor: '#1f2937',
+            color: 'white',
+            padding: '10px 16px',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '600',
+            whiteSpace: 'nowrap',
+            opacity: 0,
+            pointerEvents: 'none',
+            transition: 'opacity 0.3s ease',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            zIndex: 999,
+            transform: 'translateX(0)'
+          }}>
+            Get Demo on WhatsApp
+            <div style={{
+              position: 'absolute',
+              bottom: '-6px',
+              right: '20px',
+              width: 0,
+              height: 0,
+              borderLeft: '6px solid transparent',
+              borderRight: '6px solid transparent',
+              borderTop: '6px solid #1f2937'
+            }} />
           </div>
         </div>
       )}

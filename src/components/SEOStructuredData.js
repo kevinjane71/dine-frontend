@@ -290,6 +290,8 @@ export default function SEOStructuredData() {
     "@context": "https://schema.org",
     "@type": "Service",
     "serviceType": "Restaurant Management Software",
+    "name": "Restaurant Management System",
+    "description": "Complete restaurant management software with POS system, AI agent, inventory management, supply chain, table management, and hotel PMS. Starts at ₹999/month.",
     "provider": {
       "@type": "Organization",
       "name": "DineOpen"
@@ -297,6 +299,13 @@ export default function SEOStructuredData() {
     "areaServed": {
       "@type": "Country",
       "name": "India"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "999",
+      "priceCurrency": "INR",
+      "availability": "https://schema.org/InStock",
+      "url": "https://www.dineopen.com"
     },
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
@@ -314,6 +323,13 @@ export default function SEOStructuredData() {
           "itemOffered": {
             "@type": "Service",
             "name": "Restaurant Management System"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Restaurant POS System"
           }
         },
         {
@@ -339,6 +355,44 @@ export default function SEOStructuredData() {
         }
       ]
     }
+  };
+
+  // Restaurant Management Software Product Schema
+  const restaurantManagementSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Restaurant Management Software",
+    "description": "Complete restaurant management software with POS system, AI agent, fast billing, KOT system, menu management, table orders, inventory management, and supply chain management. Everything your restaurant needs in one platform.",
+    "brand": {
+      "@type": "Brand",
+      "name": "DineOpen"
+    },
+    "category": "Restaurant Management Software",
+    "offers": {
+      "@type": "Offer",
+      "price": "999",
+      "priceCurrency": "INR",
+      "priceValidUntil": "2025-12-31",
+      "availability": "https://schema.org/InStock",
+      "url": "https://www.dineopen.com"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "200"
+    },
+    "featureList": [
+      "Restaurant POS System",
+      "Fast Billing",
+      "KOT System",
+      "Menu Management",
+      "Table Management",
+      "Voice-AI Assistant",
+      "Inventory Management",
+      "Supply Chain Management",
+      "QR Code Menu",
+      "Multi-restaurant Support"
+    ]
   };
 
   return (
@@ -374,6 +428,10 @@ export default function SEOStructuredData() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantManagementSchema) }}
       />
     </>
   );

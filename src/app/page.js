@@ -2,12 +2,13 @@ import HomePageClient from './HomePageClient';
 
 // Force static generation for SEO - This ensures the page is pre-rendered at build time
 export const dynamic = 'force-static';
+export const revalidate = false; // Never revalidate - fully static
 
 // Enhanced SEO Metadata for homepage - Optimized for search engines and AI chatbots
 export const metadata = {
-  title: 'DineOpen - AI Agent for Restaurant | Voice & Chat POS System | Restaurant Management Software',
-  description: 'AI-powered restaurant management system with voice & chat AI agent for order taking, complete POS system, inventory management, supply chain management, table management, and hotel PMS. Start 1 month free trial. Best restaurant software for Indian restaurants.',
-  keywords: 'AI agent for restaurant, voice order taking, restaurant AI assistant, restaurant POS system, restaurant management software, inventory management for restaurant, supply chain management, table management system, hotel management system, restaurant software India, POS system for restaurant, QR code menu, kitchen order tracking, restaurant analytics, multi-restaurant management, food service management, restaurant automation, AI restaurant software, restaurant technology, cloud POS system',
+  title: 'DineOpen - Restaurant POS + AI Agent | Restaurant Management Software | ₹999/month',
+  description: 'Restaurant POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Complete restaurant management software with inventory, supply chain, and hotel PMS. Starts at ₹999/month with 1-month free trial. Best restaurant software for Indian restaurants.',
+  keywords: 'restaurant management software, restaurant POS system, restaurant management system, POS for restaurants, restaurant management, restaurant software India, restaurant POS software, restaurant management platform, restaurant billing software, restaurant inventory management, restaurant table management, restaurant KOT system, restaurant order management, cloud restaurant POS, restaurant automation software, AI restaurant management, voice order taking restaurant, restaurant management solution, restaurant operations software, restaurant technology platform, restaurant management tools, restaurant management app, restaurant management system India, restaurant POS India, restaurant management software free trial',
   authors: [{ name: 'DineOpen Team' }],
   creator: 'DineOpen',
   publisher: 'DineOpen',
@@ -23,8 +24,8 @@ export const metadata = {
     },
   },
   openGraph: {
-    title: 'DineOpen - AI Agent for Restaurant | Voice & Chat POS System',
-    description: 'AI-powered restaurant management with voice & chat AI agent, complete POS system, inventory management, supply chain, table management, and hotel PMS. Start free trial.',
+    title: 'DineOpen - Restaurant POS + AI Agent | Restaurant Management Software',
+    description: 'Restaurant POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Complete restaurant management software. Starts at ₹999/month with 1-month free trial.',
     url: 'https://www.dineopen.com',
     siteName: 'DineOpen',
     images: [
@@ -32,7 +33,7 @@ export const metadata = {
         url: 'https://www.dineopen.com/favicon.png',
         width: 1200,
         height: 630,
-        alt: 'DineOpen AI-Powered Restaurant Management System',
+        alt: 'DineOpen Restaurant Management System - POS + AI Agent',
       },
     ],
     locale: 'en_US',
@@ -40,8 +41,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DineOpen - AI Agent for Restaurant | Voice & Chat POS System',
-    description: 'AI-powered restaurant management with voice & chat AI agent, complete POS system, inventory management, and more. Start free trial.',
+    title: 'DineOpen - Restaurant POS + AI Agent | Restaurant Management Software',
+    description: 'Restaurant POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Starts at ₹999/month.',
     images: ['https://www.dineopen.com/favicon.png'],
     creator: '@dineopen',
   },
