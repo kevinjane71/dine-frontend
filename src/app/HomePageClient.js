@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import apiClient from '../lib/api';
 import SEOStructuredData from '../components/SEOStructuredData';
 import { 
@@ -942,11 +943,11 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section style={{
         background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)',
-        padding: isMobile ? '40px 16px' : '80px 20px',
+        padding: isMobile ? '40px 16px 60px 16px' : '80px 20px',
         textAlign: 'center',
         position: 'relative',
         overflow: 'hidden',
-        minHeight: isMobile ? '80vh' : '100vh',
+        minHeight: isMobile ? 'auto' : '100vh',
         display: 'flex', 
         alignItems: 'center',
         justifyContent: 'center'
@@ -966,37 +967,41 @@ export default function LandingPage() {
           zIndex: 0
         }} />
         
-        {/* Floating Elements */}
-        <div style={{
-          position: 'absolute',
-          top: '15%',
-          left: '10%',
-          width: '120px',
-          height: '120px',
-          background: 'rgba(255, 255, 255, 0.1)',
-          borderRadius: '50%',
-          animation: 'float 6s ease-in-out infinite'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '20%',
-          right: '15%',
-          width: '80px',
-          height: '80px',
-          background: 'rgba(255, 255, 255, 0.08)',
-          borderRadius: '50%',
-          animation: 'float 8s ease-in-out infinite reverse'
-        }} />
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '5%',
-          width: '60px',
-          height: '60px',
-          background: 'rgba(255, 255, 255, 0.06)',
-          borderRadius: '50%',
-          animation: 'float 10s ease-in-out infinite'
-        }} />
+        {/* Floating Elements - Hidden on mobile for better performance */}
+        {!isMobile && (
+          <>
+            <div style={{
+              position: 'absolute',
+              top: '15%',
+              left: '10%',
+              width: '120px',
+              height: '120px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '50%',
+              animation: 'float 6s ease-in-out infinite'
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: '20%',
+              right: '15%',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              borderRadius: '50%',
+              animation: 'float 8s ease-in-out infinite reverse'
+            }} />
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '5%',
+              width: '60px',
+              height: '60px',
+              background: 'rgba(255, 255, 255, 0.06)',
+              borderRadius: '50%',
+              animation: 'float 10s ease-in-out infinite'
+            }} />
+          </>
+        )}
         
         <div style={{ 
           maxWidth: '1400px', 
@@ -1020,17 +1025,17 @@ export default function LandingPage() {
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '8px 20px',
+              gap: isMobile ? '6px' : '8px',
+              padding: isMobile ? '6px 16px' : '8px 20px',
               backgroundColor: 'rgba(255, 255, 255, 0.15)',
               borderRadius: '50px',
-              marginBottom: '24px',
+              marginBottom: isMobile ? '16px' : '24px',
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(255, 255, 255, 0.2)'
             }}>
-              <FaRobot size={18} color="white" />
+              <FaRobot size={isMobile ? 14 : 18} color="white" />
               <span style={{
-                fontSize: '14px',
+                fontSize: isMobile ? '12px' : '14px',
                 fontWeight: '600',
                 color: 'white',
                 letterSpacing: '0.5px'
@@ -1080,21 +1085,24 @@ export default function LandingPage() {
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '12px 24px',
+              gap: isMobile ? '6px' : '8px',
+              padding: isMobile ? '10px 18px' : '12px 24px',
               backgroundColor: 'rgba(255, 255, 255, 0.2)',
               borderRadius: '50px',
-              marginBottom: '32px',
+              marginBottom: isMobile ? '24px' : '32px',
               backdropFilter: 'blur(10px)',
               border: '2px solid rgba(255, 255, 255, 0.3)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+              flexWrap: 'wrap',
+              justifyContent: 'center'
             }}>
-              <FaRocket size={18} color="white" />
+              <FaRocket size={isMobile ? 14 : 18} color="white" />
               <span style={{
-                fontSize: isMobile ? '14px' : '16px',
+                fontSize: isMobile ? '12px' : '16px',
                 fontWeight: '700',
                 color: 'white',
-                letterSpacing: '0.5px'
+                letterSpacing: '0.5px',
+                textAlign: 'center'
               }}>
                 Starts at ₹999/month — 1-Month Free Trial
               </span>
@@ -1104,53 +1112,59 @@ export default function LandingPage() {
             <div style={{
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
-              gap: '16px',
+              gap: isMobile ? '12px' : '16px',
               justifyContent: 'center',
-              marginBottom: '40px',
+              marginBottom: isMobile ? '32px' : '40px',
               flexWrap: 'wrap'
             }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '10px 18px',
+                gap: isMobile ? '6px' : '8px',
+                padding: isMobile ? '8px 14px' : '10px 18px',
                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 borderRadius: '12px',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                width: isMobile ? '100%' : 'auto',
+                justifyContent: 'center'
               }}>
-                <FaCheckCircle size={16} color="white" />
-                <span style={{ fontSize: '14px', color: 'white', fontWeight: '500' }}>
+                <FaCheckCircle size={isMobile ? 14 : 16} color="white" />
+                <span style={{ fontSize: isMobile ? '13px' : '14px', color: 'white', fontWeight: '500' }}>
                   Voice Order Taking
                 </span>
               </div>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '10px 18px',
+                gap: isMobile ? '6px' : '8px',
+                padding: isMobile ? '8px 14px' : '10px 18px',
                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 borderRadius: '12px',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                width: isMobile ? '100%' : 'auto',
+                justifyContent: 'center'
               }}>
-                <FaCheckCircle size={16} color="white" />
-                <span style={{ fontSize: '14px', color: 'white', fontWeight: '500' }}>
+                <FaCheckCircle size={isMobile ? 14 : 16} color="white" />
+                <span style={{ fontSize: isMobile ? '13px' : '14px', color: 'white', fontWeight: '500' }}>
                   Smart Table Management
                 </span>
               </div>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '10px 18px',
+                gap: isMobile ? '6px' : '8px',
+                padding: isMobile ? '8px 14px' : '10px 18px',
                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 borderRadius: '12px',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                width: isMobile ? '100%' : 'auto',
+                justifyContent: 'center'
               }}>
-                <FaCheckCircle size={16} color="white" />
-                <span style={{ fontSize: '14px', color: 'white', fontWeight: '500' }}>
+                <FaCheckCircle size={isMobile ? 14 : 16} color="white" />
+                <span style={{ fontSize: isMobile ? '13px' : '14px', color: 'white', fontWeight: '500' }}>
                   Instant Answers
                 </span>
               </div>
@@ -1294,11 +1308,13 @@ export default function LandingPage() {
 
           {/* Right Side: Product Image */}
           <div style={{
-            flex: 1.2,
+            flex: isMobile ? '1' : '1.2',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            maxWidth: isMobile ? '100%' : '100%'
+            maxWidth: '100%',
+            width: '100%',
+            marginTop: isMobile ? '40px' : '0'
           }}>
             <div style={{
               position: 'relative',
@@ -1308,27 +1324,32 @@ export default function LandingPage() {
               border: '3px solid rgba(255, 255, 255, 0.2)',
               background: 'rgba(255, 255, 255, 0.1)',
               backdropFilter: 'blur(10px)',
-              padding: '20px',
-              minHeight: '650px'
+              padding: isMobile ? '12px' : '20px',
+              minHeight: isMobile ? '300px' : '650px',
+              width: '100%'
             }}>
-              <img
+              <Image
                 src="https://storage.googleapis.com/demoimage-7189/menu-items/LUETVd1eMwu4Bm7PvP9K/item_1760637762769_df90sl6pe/1760767605179-0-Screenshot%202025-10-18%20at%2011.36.31%C3%A2%C2%80%C2%AFAM.png"
                 alt="DineOpen Restaurant Management Dashboard - Complete POS System"
+                width={800}
+                height={600}
                 style={{
                   width: '100%',
-                  height: '600px',
+                  height: isMobile ? '400px' : '600px',
                   objectFit: 'cover',
                   borderRadius: '15px',
                   maxWidth: '100%',
                   display: 'block'
                 }}
+                unoptimized
                 onError={(e) => {
                   // Fallback if image doesn't load
                   e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = `
+                  const fallback = document.createElement('div');
+                  fallback.innerHTML = `
                     <div style="
                       width: 100%; 
-                      height: 600px; 
+                      height: ${isMobile ? '400px' : '600px'}; 
                       background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
                       border-radius: 15px; 
                       display: flex; 
@@ -1345,6 +1366,7 @@ export default function LandingPage() {
                       <div style="font-size: 14px; margin-top: 16px; opacity: 0.7;">Menu • Orders • Kitchen • Billing</div>
                     </div>
                   `;
+                  e.target.parentElement?.appendChild(fallback.firstChild);
                 }}
               />
               
@@ -1370,7 +1392,7 @@ export default function LandingPage() {
 
       {/* Quick Benefits Row */}
       <section style={{
-        padding: isMobile ? '40px 20px' : '60px 20px',
+        padding: isMobile ? '40px 16px' : '60px 20px',
         backgroundColor: 'white',
         borderBottom: '1px solid #e5e7eb'
       }}>
@@ -1378,7 +1400,7 @@ export default function LandingPage() {
           <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(6, 1fr)',
-            gap: isMobile ? '20px' : '30px',
+            gap: isMobile ? '12px' : '30px',
             alignItems: 'center'
           }}>
             {[
@@ -1395,33 +1417,39 @@ export default function LandingPage() {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '12px',
-                  padding: '20px',
+                  gap: isMobile ? '8px' : '12px',
+                  padding: isMobile ? '16px 8px' : '20px',
                   borderRadius: '12px',
                   backgroundColor: '#f8fafc',
                   border: '1px solid #e5e7eb',
                   transition: 'all 0.3s ease',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  minHeight: isMobile ? '100px' : 'auto'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.1)';
-                  e.currentTarget.style.borderColor = benefit.color;
+                  if (!isMobile) {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.1)';
+                    e.currentTarget.style.borderColor = benefit.color;
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.borderColor = '#e5e7eb';
+                  if (!isMobile) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                  }
                 }}
               >
                 <div style={{ color: benefit.color }}>
-                  {benefit.icon}
+                  {React.cloneElement(benefit.icon, { size: isMobile ? 20 : 24 })}
                 </div>
                 <span style={{
-                  fontSize: isMobile ? '12px' : '14px',
+                  fontSize: isMobile ? '11px' : '14px',
                   fontWeight: '600',
                   color: '#1f2937',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  lineHeight: '1.3'
                 }}>
                   {benefit.label}
                 </span>
@@ -1433,7 +1461,7 @@ export default function LandingPage() {
 
       {/* Features Section */}
       <section id="features" style={{
-        padding: isMobile ? '80px 20px' : '120px 20px',
+        padding: isMobile ? '60px 16px' : '120px 20px',
         backgroundColor: '#fafafa',
         position: 'relative'
       }}>
@@ -1454,29 +1482,32 @@ export default function LandingPage() {
               </span>
             </div>
             <h2 style={{
-              fontSize: isMobile ? '32px' : '48px',
+              fontSize: isMobile ? '28px' : '48px',
               fontWeight: '900',
-                          color: '#1f2937',
-              marginBottom: '20px',
-              lineHeight: '1.2'
+              color: '#1f2937',
+              marginBottom: isMobile ? '16px' : '20px',
+              lineHeight: '1.2',
+              padding: isMobile ? '0 8px' : '0'
             }}>
               Everything You Need to
-              <br />
+              {!isMobile && <br />}
               <span style={{
                 background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
+                backgroundClip: 'text',
+                display: isMobile ? 'block' : 'inline'
               }}>
                 Run Your Restaurant
               </span>
-                </h2>
+            </h2>
             <p style={{
-              fontSize: isMobile ? '16px' : '20px',
+              fontSize: isMobile ? '15px' : '20px',
               color: '#6b7280',
               maxWidth: '700px',
               margin: '0 auto',
-              lineHeight: '1.6'
+              lineHeight: '1.6',
+              padding: isMobile ? '0 8px' : '0'
             }}>
               From AI-powered order taking to complete inventory management, 
               DineOpen provides all the tools you need in one unified platform.
@@ -1594,31 +1625,37 @@ export default function LandingPage() {
               </p>
               <div style={{
                 display: 'flex',
-                gap: '16px',
+                gap: isMobile ? '12px' : '16px',
                 justifyContent: 'center',
-                flexWrap: 'wrap'
+                flexWrap: 'wrap',
+                flexDirection: isMobile ? 'column' : 'row'
               }}>
                 <button
                   onClick={handleGetStarted}
                   style={{
-                    padding: '16px 32px',
+                    padding: isMobile ? '14px 28px' : '16px 32px',
                     backgroundColor: 'white',
                     color: '#ef4444',
                     border: 'none',
                     borderRadius: '12px',
                     fontWeight: '700',
-                    fontSize: '16px',
+                    fontSize: isMobile ? '15px' : '16px',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                    width: isMobile ? '100%' : 'auto'
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.3)';
+                    if (!isMobile) {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.3)';
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                    if (!isMobile) {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                    }
                   }}
                 >
                   Start Free Trial
@@ -1626,21 +1663,26 @@ export default function LandingPage() {
                 <button
                   onClick={() => setShowDemoModal(true)}
                   style={{
-                    padding: '16px 32px',
+                    padding: isMobile ? '14px 28px' : '16px 32px',
                     backgroundColor: 'transparent',
                     color: 'white',
                     border: '2px solid white',
                     borderRadius: '12px',
                     fontWeight: '700',
-                    fontSize: '16px',
+                    fontSize: isMobile ? '15px' : '16px',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    width: isMobile ? '100%' : 'auto'
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                    if (!isMobile) {
+                      e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
+                    if (!isMobile) {
+                      e.target.style.backgroundColor = 'transparent';
+                    }
                   }}
                 >
                   Book Demo
@@ -1651,22 +1693,25 @@ export default function LandingPage() {
 
       {/* Trust Signals Section */}
       <section style={{
-        padding: isMobile ? '60px 20px' : '100px 20px',
+        padding: isMobile ? '50px 16px' : '100px 20px',
         backgroundColor: 'white'
       }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: isMobile ? '40px' : '60px' }}>
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? '32px' : '60px' }}>
             <h2 style={{
-              fontSize: isMobile ? '28px' : '40px',
+              fontSize: isMobile ? '24px' : '40px',
               fontWeight: '700',
               color: '#1f2937',
-              marginBottom: '16px'
+              marginBottom: '12px',
+              lineHeight: '1.2',
+              padding: isMobile ? '0 8px' : '0'
             }}>
               Trusted by 200+ Restaurants Across India
             </h2>
             <p style={{
-              fontSize: isMobile ? '16px' : '18px',
-              color: '#6b7280'
+              fontSize: isMobile ? '14px' : '18px',
+              color: '#6b7280',
+              padding: isMobile ? '0 8px' : '0'
             }}>
               Join restaurants that trust DineOpen for their daily operations
             </p>
@@ -1676,8 +1721,8 @@ export default function LandingPage() {
           <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-            gap: isMobile ? '20px' : '40px',
-            marginBottom: isMobile ? '40px' : '60px'
+            gap: isMobile ? '12px' : '40px',
+            marginBottom: isMobile ? '32px' : '60px'
           }}>
             {[
               { value: '99.9%', label: 'Uptime', icon: <FaShieldAlt size={32} /> },
@@ -1689,34 +1734,38 @@ export default function LandingPage() {
                 key={index}
                 style={{
                   textAlign: 'center',
-                  padding: '30px 20px',
+                  padding: isMobile ? '20px 12px' : '30px 20px',
                   backgroundColor: '#f8fafc',
                   borderRadius: '16px',
                   border: '1px solid #e5e7eb',
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.1)';
+                  if (!isMobile) {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.1)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  if (!isMobile) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
                 }}
               >
-                <div style={{ color: '#ef4444', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
-                  {stat.icon}
+                <div style={{ color: '#ef4444', marginBottom: isMobile ? '8px' : '12px', display: 'flex', justifyContent: 'center' }}>
+                  {React.cloneElement(stat.icon, { size: isMobile ? 24 : 32 })}
                 </div>
                 <div style={{
-                  fontSize: isMobile ? '32px' : '40px',
+                  fontSize: isMobile ? '24px' : '40px',
                   fontWeight: '700',
                   color: '#1f2937',
-                  marginBottom: '8px'
+                  marginBottom: isMobile ? '4px' : '8px'
                 }}>
                   {stat.value}
                 </div>
                 <div style={{
-                  fontSize: '14px',
+                  fontSize: isMobile ? '12px' : '14px',
                   color: '#6b7280',
                   fontWeight: '600'
                 }}>
@@ -1730,8 +1779,8 @@ export default function LandingPage() {
           <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-            gap: '24px',
-            marginBottom: '60px',
+            gap: isMobile ? '16px' : '24px',
+            marginBottom: isMobile ? '40px' : '60px',
             width: '100%'
           }}>
             {[
@@ -1760,47 +1809,47 @@ export default function LandingPage() {
               <div
                 key={index}
                 style={{
-                  padding: '30px',
+                  padding: isMobile ? '20px' : '30px',
                   backgroundColor: '#f8fafc',
                   borderRadius: '16px',
                   border: '1px solid #e5e7eb',
                   display: 'flex',
                   flexDirection: 'column',
                   height: '100%',
-                  minHeight: '200px'
+                  minHeight: isMobile ? '180px' : '200px'
                 }}
               >
                 <div style={{ 
-                  marginBottom: '16px',
+                  marginBottom: isMobile ? '12px' : '16px',
                   display: 'flex',
                   gap: '4px',
                   flexWrap: 'wrap'
                 }}>
                   {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <FaStar key={i} size={16} color="#fbbf24" />
+                    <FaStar key={i} size={isMobile ? 14 : 16} color="#fbbf24" />
                   ))}
                 </div>
                 <p style={{
                   color: '#374151',
                   lineHeight: '1.7',
                   marginBottom: '20px',
-                  fontSize: '15px',
+                  fontSize: isMobile ? '14px' : '15px',
                   flex: 1,
                   margin: '0 0 20px 0'
                 }}>
-                  "{testimonial.text}"
+                  &ldquo;{testimonial.text}&rdquo;
                 </p>
                 <div style={{ marginTop: 'auto' }}>
                   <div style={{
                     fontWeight: '700',
                     color: '#1f2937',
                     marginBottom: '4px',
-                    fontSize: '16px'
+                    fontSize: isMobile ? '14px' : '16px'
                   }}>
                     {testimonial.name}
                   </div>
                   <div style={{
-                    fontSize: '14px',
+                    fontSize: isMobile ? '12px' : '14px',
                     color: '#6b7280'
                   }}>
                     {testimonial.restaurant}, {testimonial.city}
@@ -1843,22 +1892,25 @@ export default function LandingPage() {
 
       {/* Niche Pages Section */}
       <section style={{
-        padding: isMobile ? '60px 20px' : '100px 20px',
+        padding: isMobile ? '50px 16px' : '100px 20px',
         backgroundColor: '#f8fafc'
       }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: isMobile ? '40px' : '60px' }}>
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? '32px' : '60px' }}>
             <h2 style={{
-              fontSize: isMobile ? '28px' : '36px',
+              fontSize: isMobile ? '24px' : '36px',
               fontWeight: '700',
               color: '#1f2937',
-              marginBottom: '16px'
+              marginBottom: '12px',
+              lineHeight: '1.2',
+              padding: isMobile ? '0 8px' : '0'
             }}>
               Perfect for Every Food Business
             </h2>
             <p style={{
-              fontSize: isMobile ? '16px' : '18px',
-              color: '#6b7280'
+              fontSize: isMobile ? '14px' : '18px',
+              color: '#6b7280',
+              padding: isMobile ? '0 8px' : '0'
             }}>
               Tailored solutions for different types of restaurants
             </p>
@@ -1867,7 +1919,7 @@ export default function LandingPage() {
           <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)',
-            gap: '20px'
+            gap: isMobile ? '12px' : '20px'
           }}>
             {[
               { title: 'POS for Restaurants', icon: <FaUtensils size={28} />, color: '#ef4444' },
@@ -1886,7 +1938,7 @@ export default function LandingPage() {
               >
                 <div
                   style={{
-                    padding: '30px 20px',
+                    padding: isMobile ? '20px 12px' : '30px 20px',
                     backgroundColor: 'white',
                     borderRadius: '16px',
                     border: '2px solid #e5e7eb',
@@ -1897,27 +1949,33 @@ export default function LandingPage() {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    minHeight: isMobile ? '100px' : 'auto'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = `0 8px 24px ${niche.color}30`;
-                    e.currentTarget.style.borderColor = niche.color;
+                    if (!isMobile) {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.boxShadow = `0 8px 24px ${niche.color}30`;
+                      e.currentTarget.style.borderColor = niche.color;
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    if (!isMobile) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                    }
                   }}
                 >
-                  <div style={{ color: niche.color, marginBottom: '16px' }}>
-                    {niche.icon}
+                  <div style={{ color: niche.color, marginBottom: isMobile ? '12px' : '16px' }}>
+                    {React.cloneElement(niche.icon, { size: isMobile ? 22 : 28 })}
                   </div>
                   <h3 style={{
-                    fontSize: '16px',
+                    fontSize: isMobile ? '13px' : '16px',
                     fontWeight: '700',
                     color: '#1f2937',
-                    margin: 0
+                    margin: 0,
+                    lineHeight: '1.3'
                   }}>
                     {niche.title}
                   </h3>
@@ -1930,37 +1988,38 @@ export default function LandingPage() {
 
       {/* Pricing Section */}
       <section id="pricing" style={{
-        padding: isMobile ? '60px 20px' : '120px 20px',
+        padding: isMobile ? '50px 16px' : '120px 20px',
         background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ 
             textAlign: 'center', 
-            marginBottom: isMobile ? '50px' : '80px',
-            padding: isMobile ? '0' : '0 20px'
+            marginBottom: isMobile ? '40px' : '80px',
+            padding: isMobile ? '0 8px' : '0 20px'
           }}>
             <h2 style={{
-              fontSize: isMobile ? '28px' : '42px',
+              fontSize: isMobile ? '26px' : '42px',
               fontWeight: '700',
               color: '#1f2937',
-              marginBottom: '20px',
+              marginBottom: isMobile ? '16px' : '20px',
               lineHeight: '1.2'
             }}>
               Simple Transparent Pricing
             </h2>
             <p style={{
-              fontSize: isMobile ? '18px' : '22px',
+              fontSize: isMobile ? '16px' : '22px',
               color: '#ef4444',
               fontWeight: '700',
-              marginBottom: '12px'
+              marginBottom: isMobile ? '8px' : '12px'
             }}>
               Starts at ₹999/month
             </p>
             <p style={{
-              fontSize: isMobile ? '16px' : '18px',
+              fontSize: isMobile ? '14px' : '18px',
               color: '#6b7280',
               maxWidth: '700px',
-              margin: '0 auto 32px auto',
+              margin: '0 auto',
+              marginBottom: isMobile ? '24px' : '32px',
               lineHeight: '1.6'
             }}>
               Start free and scale as you grow. All plans include 1-month free trial.
@@ -2306,64 +2365,75 @@ export default function LandingPage() {
 
       {/* Strong CTA Footer Section */}
       <section style={{
-        padding: isMobile ? '60px 20px' : '100px 20px',
+        padding: isMobile ? '50px 16px' : '100px 20px',
         background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
         color: 'white'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{
-            fontSize: isMobile ? '32px' : '48px',
+            fontSize: isMobile ? '24px' : '48px',
             fontWeight: '900',
-            marginBottom: '20px',
-            color: 'white'
+            marginBottom: isMobile ? '16px' : '20px',
+            color: 'white',
+            lineHeight: '1.2',
+            padding: isMobile ? '0 8px' : '0'
           }}>
             Start Your Free Trial — No Credit Card Needed
           </h2>
           <p style={{
-            fontSize: isMobile ? '18px' : '22px',
+            fontSize: isMobile ? '15px' : '22px',
             color: 'rgba(255, 255, 255, 0.9)',
-            marginBottom: '40px',
+            marginBottom: isMobile ? '32px' : '40px',
             maxWidth: '700px',
-            margin: '0 auto 40px auto'
+            margin: '0 auto',
+            padding: isMobile ? '0 8px' : '0',
+            lineHeight: '1.6'
           }}>
             Join 200+ restaurants using DineOpen. Get started in minutes with our 1-month free trial.
           </p>
           <div style={{
             display: 'flex',
-            gap: '20px',
+            gap: isMobile ? '12px' : '20px',
             justifyContent: 'center',
             flexWrap: 'wrap',
-            marginBottom: '40px'
+            marginBottom: isMobile ? '32px' : '40px',
+            width: '100%'
           }}>
             <button
               onClick={handleGetStarted}
               style={{
-                padding: '20px 48px',
+                padding: isMobile ? '16px 32px' : '20px 48px',
                 backgroundColor: '#ef4444',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
                 fontWeight: '700',
-                fontSize: '18px',
+                fontSize: isMobile ? '16px' : '18px',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 boxShadow: '0 8px 24px rgba(239, 68, 68, 0.4)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px'
+                gap: '12px',
+                width: isMobile ? '100%' : 'auto',
+                justifyContent: 'center'
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-4px)';
-                e.target.style.boxShadow = '0 12px 32px rgba(239, 68, 68, 0.5)';
-                e.target.style.backgroundColor = '#dc2626';
+                if (!isMobile) {
+                  e.target.style.transform = 'translateY(-4px)';
+                  e.target.style.boxShadow = '0 12px 32px rgba(239, 68, 68, 0.5)';
+                  e.target.style.backgroundColor = '#dc2626';
+                }
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.4)';
-                e.target.style.backgroundColor = '#ef4444';
+                if (!isMobile) {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.4)';
+                  e.target.style.backgroundColor = '#ef4444';
+                }
               }}
             >
-              <FaRocket size={20} />
+              <FaRocket size={isMobile ? 18 : 20} />
               Start Free Trial
             </button>
             {/* WhatsApp button disabled for now */}
@@ -2406,24 +2476,24 @@ export default function LandingPage() {
           </div>
           <div style={{
             display: 'flex',
-            gap: '40px',
+            gap: isMobile ? '20px' : '40px',
             justifyContent: 'center',
             flexWrap: 'wrap',
-            marginTop: '40px',
-            paddingTop: '40px',
+            marginTop: isMobile ? '32px' : '40px',
+            paddingTop: isMobile ? '32px' : '40px',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)'
           }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>1 Month</div>
-              <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Free Trial</div>
+              <div style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: '700', marginBottom: '8px' }}>1 Month</div>
+              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Free Trial</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>₹999</div>
-              <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Starting Price</div>
+              <div style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: '700', marginBottom: '8px' }}>₹999</div>
+              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Starting Price</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>200+</div>
-              <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Restaurants</div>
+              <div style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: '700', marginBottom: '8px' }}>200+</div>
+              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Restaurants</div>
             </div>
           </div>
         </div>
