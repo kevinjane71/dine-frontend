@@ -272,6 +272,20 @@ export default function LandingPage() {
             transform: translateX(100%);
           }
         }
+        @media (max-width: 768px) {
+          .features-grid {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+          .feature-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+          }
+        }
       `}</style>
       {/* Navigation */}
       <nav style={{
@@ -1108,63 +1122,85 @@ export default function LandingPage() {
               </span>
             </div>
             
-            {/* Key Benefits */}
+            {/* Key Benefits - Pill Badges Style */}
             <div style={{
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
-              gap: isMobile ? '12px' : '16px',
+              gap: isMobile ? '8px' : '12px',
               justifyContent: 'center',
               marginBottom: isMobile ? '32px' : '40px',
-              flexWrap: 'wrap'
+              flexWrap: 'wrap',
+              alignItems: 'center'
             }}>
               <div style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: isMobile ? '6px' : '8px',
-                padding: isMobile ? '8px 14px' : '10px 18px',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
+                padding: isMobile ? '6px 12px' : '8px 16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                borderRadius: '50px',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                width: isMobile ? '100%' : 'auto',
-                justifyContent: 'center'
+                border: 'none',
+                width: isMobile ? 'fit-content' : 'auto',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}>
-                <FaCheckCircle size={isMobile ? 14 : 16} color="white" />
-                <span style={{ fontSize: isMobile ? '13px' : '14px', color: 'white', fontWeight: '500' }}>
+                <div style={{
+                  width: isMobile ? '6px' : '8px',
+                  height: isMobile ? '6px' : '8px',
+                  borderRadius: '50%',
+                  backgroundColor: '#fbbf24',
+                  boxShadow: '0 0 8px rgba(251, 191, 36, 0.6)'
+                }} />
+                <span style={{ fontSize: isMobile ? '12px' : '14px', color: 'white', fontWeight: '500' }}>
                   Voice Order Taking
                 </span>
               </div>
               <div style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: isMobile ? '6px' : '8px',
-                padding: isMobile ? '8px 14px' : '10px 18px',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
+                padding: isMobile ? '6px 12px' : '8px 16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                borderRadius: '50px',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                width: isMobile ? '100%' : 'auto',
-                justifyContent: 'center'
+                border: 'none',
+                width: isMobile ? 'fit-content' : 'auto',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}>
-                <FaCheckCircle size={isMobile ? 14 : 16} color="white" />
-                <span style={{ fontSize: isMobile ? '13px' : '14px', color: 'white', fontWeight: '500' }}>
+                <div style={{
+                  width: isMobile ? '6px' : '8px',
+                  height: isMobile ? '6px' : '8px',
+                  borderRadius: '50%',
+                  backgroundColor: '#34d399',
+                  boxShadow: '0 0 8px rgba(52, 211, 153, 0.6)'
+                }} />
+                <span style={{ fontSize: isMobile ? '12px' : '14px', color: 'white', fontWeight: '500' }}>
                   Smart Table Management
                 </span>
               </div>
               <div style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: isMobile ? '6px' : '8px',
-                padding: isMobile ? '8px 14px' : '10px 18px',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
+                padding: isMobile ? '6px 12px' : '8px 16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                borderRadius: '50px',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                width: isMobile ? '100%' : 'auto',
-                justifyContent: 'center'
+                border: 'none',
+                width: isMobile ? 'fit-content' : 'auto',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}>
-                <FaCheckCircle size={isMobile ? 14 : 16} color="white" />
-                <span style={{ fontSize: isMobile ? '13px' : '14px', color: 'white', fontWeight: '500' }}>
+                <div style={{
+                  width: isMobile ? '6px' : '8px',
+                  height: isMobile ? '6px' : '8px',
+                  borderRadius: '50%',
+                  backgroundColor: '#60a5fa',
+                  boxShadow: '0 0 8px rgba(96, 165, 250, 0.6)'
+                }} />
+                <span style={{ fontSize: isMobile ? '12px' : '14px', color: 'white', fontWeight: '500' }}>
                   Instant Answers
                 </span>
               </div>
@@ -1463,9 +1499,17 @@ export default function LandingPage() {
       <section id="features" style={{
         padding: isMobile ? '60px 16px' : '120px 20px',
         backgroundColor: '#fafafa',
-        position: 'relative'
+        position: 'relative',
+        width: '100%',
+        overflow: 'hidden'
       }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        <div style={{ 
+          maxWidth: '1400px', 
+          margin: '0 auto',
+          width: '100%',
+          boxSizing: 'border-box',
+          padding: isMobile ? '0' : '0 20px'
+        }}>
           <div style={{ textAlign: 'center', marginBottom: isMobile ? '50px' : '80px' }}>
             <div style={{
               display: 'inline-flex',
@@ -1514,15 +1558,22 @@ export default function LandingPage() {
             </p>
               </div>
               
-            <div style={{
-              display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-            gap: isMobile ? '24px' : '32px'
-          }}>
+            <div 
+              className="features-grid"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+                gap: isMobile ? '24px' : '32px',
+                width: '100%',
+                maxWidth: '100%',
+                boxSizing: 'border-box',
+                gridAutoRows: 'minmax(auto, 1fr)'
+              }}>
             {features.map((feature, index) => (
               <div
                 key={index}
-                    style={{
+                className="feature-card"
+                style={{
                   padding: isMobile ? '32px 24px' : '40px 32px',
                   backgroundColor: 'white',
                   borderRadius: '20px',
@@ -1531,7 +1582,13 @@ export default function LandingPage() {
                   border: '1px solid #e5e7eb',
                   position: 'relative',
                   overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  width: '100%',
+                  maxWidth: '100%',
+                  boxSizing: 'border-box',
+                  minWidth: 0,
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}
                     onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-8px)';
