@@ -6,8 +6,8 @@ export const revalidate = false; // Never revalidate - fully static
 
 // Enhanced SEO Metadata for homepage - Optimized for search engines and AI chatbots
 export const metadata = {
-  title: 'DineOpen - Restaurant POS + AI Agent | Restaurant Management Software | ₹999/month',
-  description: 'Restaurant POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Complete restaurant management software with inventory, supply chain, and hotel PMS. Starts at ₹999/month with 1-month free trial. Best restaurant software for Indian restaurants.',
+  title: 'DineOpen - Restaurant POS + AI Agent | Restaurant Management Software | Flexible Pricing',
+  description: 'Restaurant POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Complete restaurant management software with inventory, supply chain, and hotel PMS. Pay as you go (₹300 one-time) or fixed monthly (₹600/month). Best restaurant software for Indian restaurants.',
   keywords: 'restaurant management software, restaurant POS system, restaurant management system, POS for restaurants, restaurant management, restaurant software India, restaurant POS software, restaurant management platform, restaurant billing software, restaurant inventory management, restaurant table management, restaurant KOT system, restaurant order management, cloud restaurant POS, restaurant automation software, AI restaurant management, voice order taking restaurant, restaurant management solution, restaurant operations software, restaurant technology platform, restaurant management tools, restaurant management app, restaurant management system India, restaurant POS India, restaurant management software free trial',
   authors: [{ name: 'DineOpen Team' }],
   creator: 'DineOpen',
@@ -25,7 +25,7 @@ export const metadata = {
   },
   openGraph: {
     title: 'DineOpen - Restaurant POS + AI Agent | Restaurant Management Software',
-    description: 'Restaurant POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Complete restaurant management software. Starts at ₹999/month with 1-month free trial.',
+    description: 'Restaurant POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Complete restaurant management software. Pay as you go (₹300 one-time) or fixed monthly (₹600/month).',
     url: 'https://www.dineopen.com',
     siteName: 'DineOpen',
     images: [
@@ -42,7 +42,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'DineOpen - Restaurant POS + AI Agent | Restaurant Management Software',
-    description: 'Restaurant POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Starts at ₹999/month.',
+    description: 'Restaurant POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Pay as you go (₹300 one-time) or fixed monthly (₹600/month).',
     images: ['https://www.dineopen.com/favicon.png'],
     creator: '@dineopen',
   },

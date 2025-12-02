@@ -124,65 +124,52 @@ export default function LandingPage() {
 
   const plans = [
     {
-      name: "Starter",
-      priceINR: 999,
-      priceUSD: 12,
-      period: "per month",
-      description: "Perfect for small cafes and food stalls",
+      name: "Pay as You Go",
+      type: "payg",
+      registrationFeeINR: 300,
+      registrationFeeUSD: 5,
+      freeOrdersPerMonth: 1000,
+      pricePer500OrdersINR: 150,
+      pricePer500OrdersUSD: 3,
+      description: "Perfect for variable order volumes",
       features: [
-        "AI Agent (Voice/Chat): 500 credits/month",
-        "Up to 500 menu items",
-        "1 restaurant location",
-        "Basic POS system",
-        "Table management (up to 200 tables)",
-        "Kitchen order tracking",
-        "Mobile app access",
-        "Email support"
-      ],
-      popular: false,
-      buttonText: "Start 1 Month Free Trial"
-    },
-    {
-      name: "Professional",
-      priceINR: 2499,
-      priceUSD: 30,
-      period: "per month",
-      description: "Ideal for growing restaurants",
-      features: [
-        "AI Agent (Voice/Chat): 1,000 credits/month",
+        "AI Agent (Voice/Chat)",
         "Unlimited menu items",
-        "Up to 3 restaurant locations",
-        "Advanced POS with payments",
+        "Unlimited restaurant locations",
+        "Complete POS system",
         "Unlimited tables & floors",
         "Real-time kitchen display",
         "Staff management",
         "Analytics & reports",
-        "Priority support",
-        "Custom branding"
-      ],
-      popular: true,
-      buttonText: "Start 1 Month Free Trial"
-    },
-    {
-      name: "Enterprise",
-      priceINR: 4999,
-      priceUSD: 60,
-      period: "per month",
-      description: "For restaurant chains and large operations",
-      features: [
-        "AI Agent (Voice/Chat): 2,000 credits/month",
-        "Everything in Professional",
-        "Unlimited locations",
-        "Multi-restaurant dashboard",
-        "Advanced analytics",
         "Inventory management",
         "Customer loyalty programs",
-        "API access",
-        "24/7 phone support",
-        "Custom integrations"
+        "Email & chat support"
+      ],
+      popular: true,
+      buttonText: "Get Started"
+    },
+    {
+      name: "Monthly Fixed",
+      type: "fixed",
+      priceINR: 600,
+      priceUSD: 15,
+      period: "per month",
+      description: "Best for consistent order volumes",
+      features: [
+        "AI Agent (Voice/Chat)",
+        "Unlimited menu items",
+        "Unlimited restaurant locations",
+        "Complete POS system",
+        "Unlimited tables & floors",
+        "Real-time kitchen display",
+        "Staff management",
+        "Analytics & reports",
+        "Inventory management",
+        "Customer loyalty programs",
+        "Email & chat support"
       ],
       popular: false,
-      buttonText: "Contact Sales"
+      buttonText: "Get Started"
     }
   ];
 
@@ -1035,174 +1022,69 @@ export default function LandingPage() {
             maxWidth: isMobile ? '100%' : '500px'
           }}>
                     
-            {/* AI Badge */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: isMobile ? '6px' : '8px',
-              padding: isMobile ? '6px 16px' : '8px 20px',
-              backgroundColor: 'rgba(255, 255, 255, 0.15)',
-              borderRadius: '50px',
-              marginBottom: isMobile ? '16px' : '24px',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
-            }}>
-              <FaRobot size={isMobile ? 14 : 18} color="white" />
-              <span style={{
-                fontSize: isMobile ? '12px' : '14px',
-                fontWeight: '600',
-                color: 'white',
-                letterSpacing: '0.5px'
-              }}>
-                AI-Powered Restaurant Assistant
-              </span>
-            </div>
-                    
             {/* Main Heading */}
             <h1 style={{
-              fontSize: isMobile ? '32px' : '56px',
+              fontSize: isMobile ? '28px' : '48px',
               fontWeight: '900',
-              color: 'white',
               marginBottom: isMobile ? '20px' : '28px',
               textShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-              lineHeight: '1.1'
+              lineHeight: '1.2',
+              maxWidth: '900px',
+              margin: '0 auto 20px auto'
             }}>
-              Restaurant POS + AI Agent
+              <span style={{ color: 'white' }}>Stop losing money on POS</span>
               <br />
               <span style={{
                 background: 'linear-gradient(135deg, #fef3c7, #fde68a, #fbbf24)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                display: 'block',
-                marginTop: '8px'
+                backgroundClip: 'text'
               }}>
-                in One Platform
+                when AI is here to reduce your expenses.
               </span>
             </h1>
             
             {/* Subtitle */}
             <p style={{
-              fontSize: isMobile ? '18px' : '22px',
+              fontSize: isMobile ? '16px' : '20px',
               color: 'rgba(255, 255, 255, 0.95)',
-              marginBottom: isMobile ? '16px' : '24px',
-              fontWeight: '500',
+              marginBottom: isMobile ? '24px' : '32px',
+              fontWeight: '400',
               textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-              lineHeight: '1.5',
-              maxWidth: '700px',
-              margin: '0 auto 24px auto'
+              lineHeight: '1.6',
+              maxWidth: '600px',
+              margin: '0 auto 32px auto'
             }}>
-              Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant — everything your restaurant needs in one system.
+              Complete restaurant management with AI-powered voice orders, billing, and table management — all in one affordable system.
             </p>
 
             {/* Pricing Teaser */}
             <div style={{
-              display: 'inline-flex',
+              display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: isMobile ? '6px' : '8px',
-              padding: isMobile ? '10px 18px' : '12px 24px',
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '50px',
-              marginBottom: isMobile ? '24px' : '32px',
-              backdropFilter: 'blur(10px)',
-              border: '2px solid rgba(255, 255, 255, 0.3)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-              flexWrap: 'wrap',
-              justifyContent: 'center'
+              gap: '6px',
+              marginBottom: isMobile ? '32px' : '40px'
             }}>
-              <FaRocket size={isMobile ? 14 : 18} color="white" />
-              <span style={{
-                fontSize: isMobile ? '12px' : '16px',
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: isMobile ? '6px' : '8px',
+                fontSize: isMobile ? '16px' : '18px',
                 fontWeight: '700',
                 color: 'white',
-                letterSpacing: '0.5px',
                 textAlign: 'center'
               }}>
-                Starts at ₹999/month — 1-Month Free Trial
-              </span>
-            </div>
-            
-            {/* Key Benefits - Pill Badges Style */}
-            <div style={{
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              gap: isMobile ? '8px' : '12px',
-              justifyContent: 'center',
-              marginBottom: isMobile ? '32px' : '40px',
-              flexWrap: 'wrap',
-              alignItems: 'center'
-            }}>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: isMobile ? '6px' : '8px',
-                padding: isMobile ? '6px 12px' : '8px 16px',
-                backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                borderRadius: '50px',
-                backdropFilter: 'blur(10px)',
-                border: 'none',
-                width: isMobile ? 'fit-content' : 'auto',
-                justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-              }}>
-                <div style={{
-                  width: isMobile ? '6px' : '8px',
-                  height: isMobile ? '6px' : '8px',
-                  borderRadius: '50%',
-                  backgroundColor: '#fbbf24',
-                  boxShadow: '0 0 8px rgba(251, 191, 36, 0.6)'
-                }} />
-                <span style={{ fontSize: isMobile ? '12px' : '14px', color: 'white', fontWeight: '500' }}>
-                  Voice Order Taking
-                </span>
+                <FaRocket size={isMobile ? 14 : 16} color="white" />
+                <span>Pay as You Go</span>
               </div>
               <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: isMobile ? '6px' : '8px',
-                padding: isMobile ? '6px 12px' : '8px 16px',
-                backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                borderRadius: '50px',
-                backdropFilter: 'blur(10px)',
-                border: 'none',
-                width: isMobile ? 'fit-content' : 'auto',
-                justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                fontSize: isMobile ? '13px' : '15px',
+                color: 'rgba(255, 255, 255, 0.9)',
+                fontWeight: '400',
+                textAlign: 'center'
               }}>
-                <div style={{
-                  width: isMobile ? '6px' : '8px',
-                  height: isMobile ? '6px' : '8px',
-                  borderRadius: '50%',
-                  backgroundColor: '#34d399',
-                  boxShadow: '0 0 8px rgba(52, 211, 153, 0.6)'
-                }} />
-                <span style={{ fontSize: isMobile ? '12px' : '14px', color: 'white', fontWeight: '500' }}>
-                  Smart Table Management
-                </span>
-              </div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: isMobile ? '6px' : '8px',
-                padding: isMobile ? '6px 12px' : '8px 16px',
-                backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                borderRadius: '50px',
-                backdropFilter: 'blur(10px)',
-                border: 'none',
-                width: isMobile ? 'fit-content' : 'auto',
-                justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-              }}>
-                <div style={{
-                  width: isMobile ? '6px' : '8px',
-                  height: isMobile ? '6px' : '8px',
-                  borderRadius: '50%',
-                  backgroundColor: '#60a5fa',
-                  boxShadow: '0 0 8px rgba(96, 165, 250, 0.6)'
-                }} />
-                <span style={{ fontSize: isMobile ? '12px' : '14px', color: 'white', fontWeight: '500' }}>
-                  Instant Answers
-                </span>
+                ₹300 one-time registration • 1,000 orders free/month
               </div>
             </div>
             
@@ -1319,25 +1201,34 @@ export default function LandingPage() {
               </button> */}
             </div>
             
-            {/* Key Features */}
+            {/* Growth Message */}
             <div style={{ 
               marginTop: '40px',
-              padding: '20px',
+              padding: isMobile ? '20px 16px' : '24px 32px',
               background: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '12px',
+              borderRadius: '16px',
               backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              textAlign: 'center'
             }}>
               <p style={{
-                fontSize: isMobile ? '12px' : '14px',
-                color: 'rgba(255, 255, 255, 0.8)',
+                fontSize: isMobile ? '14px' : '16px',
+                color: 'rgba(255, 255, 255, 0.95)',
                 margin: 0,
-                fontWeight: '500',
-                textAlign: 'center',
-                whiteSpace: isMobile ? 'normal' : 'nowrap',
+                fontWeight: '600',
+                lineHeight: '1.6',
+                marginBottom: '8px'
+              }}>
+                💚 We want to grow you first.
+              </p>
+              <p style={{
+                fontSize: isMobile ? '12px' : '14px',
+                color: 'rgba(255, 255, 255, 0.85)',
+                margin: 0,
+                fontWeight: '400',
                 lineHeight: '1.6'
               }}>
-                🏪 Multi-Restaurant Management • 🪑 Tables Booking & Management
+                Pay as you go — we only charge after you succeed.
               </p>
             </div>
           </div>
@@ -2069,7 +1960,7 @@ export default function LandingPage() {
               fontWeight: '700',
               marginBottom: isMobile ? '8px' : '12px'
             }}>
-              Starts at ₹999/month
+              Flexible Pricing — Choose What Works for You
             </p>
             <p style={{
               fontSize: isMobile ? '14px' : '18px',
@@ -2079,7 +1970,7 @@ export default function LandingPage() {
               marginBottom: isMobile ? '24px' : '32px',
               lineHeight: '1.6'
             }}>
-              Start free and scale as you grow. All plans include 1-month free trial.
+              Pay as you go or choose a fixed monthly plan. All features included in both plans.
             </p>
             <button
               onClick={() => {
@@ -2164,15 +2055,12 @@ export default function LandingPage() {
             data-pricing-plans
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
               gap: isMobile ? '24px' : '32px',
-              maxWidth: '1200px',
+              maxWidth: '1000px',
               margin: '0 auto'
             }}>
             {plans.map((plan, index) => {
-              const price = currency === 'INR' ? plan.priceINR : plan.priceUSD;
-              const period = currency === 'INR' ? 'month' : plan.period;
-              
               return (
               <div
                 key={index}
@@ -2229,23 +2117,82 @@ export default function LandingPage() {
                   }}>
                     {plan.name}
                   </h3>
-                  <div style={{ marginBottom: '8px' }}>
-                    <span style={{
+                  {plan.type === 'payg' ? (
+                    <div style={{ marginBottom: '8px' }}>
+                      <div style={{ marginBottom: '12px' }}>
+                        <div style={{
+                          fontSize: '14px',
+                          color: '#6b7280',
+                          marginBottom: '4px'
+                        }}>
+                          One-time Registration
+                        </div>
+                        <span style={{
+                          fontSize: '32px',
+                          fontWeight: '900',
+                          color: '#1f2937',
+                          lineHeight: '1'
+                        }}>
+                          {currency === 'INR' ? '₹' : '$'}{(currency === 'INR' ? plan.registrationFeeINR : plan.registrationFeeUSD).toLocaleString()}
+                        </span>
+                      </div>
+                      <div style={{
+                        padding: '12px',
+                        backgroundColor: '#f3f4f6',
+                        borderRadius: '12px',
+                        marginTop: '12px'
+                      }}>
+                        <div style={{
+                          fontSize: '14px',
+                          color: '#10b981',
+                          fontWeight: '600',
+                          marginBottom: '4px'
+                        }}>
+                          {plan.freeOrdersPerMonth.toLocaleString()} orders free/month
+                        </div>
+                        <div style={{
+                          fontSize: '13px',
+                          color: '#6b7280',
+                          marginBottom: '8px'
+                        }}>
+                          After that:
+                        </div>
+                        <div style={{
+                          fontSize: '20px',
+                          fontWeight: '700',
+                          color: '#1f2937'
+                        }}>
+                          {currency === 'INR' ? '₹' : '$'}{(currency === 'INR' ? plan.pricePer500OrdersINR : plan.pricePer500OrdersUSD).toLocaleString()}
+                          <span style={{
+                            fontSize: '14px',
+                            fontWeight: '400',
+                            color: '#6b7280',
+                            marginLeft: '4px'
+                          }}>
+                            per 500 orders
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ marginBottom: '8px' }}>
+                      <span style={{
                         fontSize: '48px',
                         fontWeight: '900',
                         color: '#1f2937',
                         lineHeight: '1'
                       }}>
-                        {currency === 'INR' ? '₹' : '$'}{price.toLocaleString()}
-                  </span>
+                        {currency === 'INR' ? '₹' : '$'}{(currency === 'INR' ? plan.priceINR : plan.priceUSD).toLocaleString()}
+                      </span>
                       <span style={{
                         fontSize: '18px',
                         color: '#6b7280',
                         marginLeft: '4px'
                       }}>
-                        /{period}
+                        /{plan.period}
                       </span>
-                </div>
+                    </div>
+                  )}
                 <p style={{
                       fontSize: '14px',
                       color: '#6b7280',
