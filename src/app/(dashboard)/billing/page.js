@@ -59,41 +59,47 @@ export default function BillingPage() {
         ]
       },
       {
-        id: 'starter',
-        name: 'Starter',
-        price: 999,
-        period: 'month',
-        description: 'Perfect for small cafes and food stalls',
-        popular: false,
-        features: [
-          'AI Agent (Voice/Chat): 500 credits/month',
-          'Up to 500 menu items',
-          '1 restaurant location', 
-          'Basic POS system',
-          'Table management (up to 200 tables)',
-          'Kitchen order tracking',
-          'Mobile app access',
-          'Email support'
-        ]
-      },
-      {
-        id: 'professional',
-        name: 'Professional',
-        price: 2499,
-        period: 'month',
-        description: 'Ideal for growing restaurants',
+        id: 'pay-as-you-go',
+        name: 'Pay as You Go',
+        price: 300,
+        period: 'one-time',
+        description: 'Perfect for variable order volumes',
         popular: true,
         features: [
-          'AI Agent (Voice/Chat): 1,000 credits/month',
+          'AI Agent (Voice/Chat)',
           'Unlimited menu items',
-          'Up to 3 restaurant locations',
-          'Advanced POS with payments',
+          'Unlimited restaurant locations',
+          'Complete POS system',
           'Unlimited tables & floors',
           'Real-time kitchen display',
           'Staff management',
           'Analytics & reports',
-          'Priority support',
-          'Custom branding'
+          'Inventory management',
+          'Customer loyalty programs',
+          'Email & chat support',
+          '1,000 orders free/month',
+          '₹150 per 500 orders after free limit'
+        ]
+      },
+      {
+        id: 'monthly-fixed',
+        name: 'Monthly Fixed',
+        price: 600,
+        period: 'month',
+        description: 'Best for consistent order volumes',
+        popular: false,
+        features: [
+          'AI Agent (Voice/Chat)',
+          'Unlimited menu items',
+          'Unlimited restaurant locations',
+          'Complete POS system',
+          'Unlimited tables & floors',
+          'Real-time kitchen display',
+          'Staff management',
+          'Analytics & reports',
+          'Inventory management',
+          'Customer loyalty programs',
+          'Email & chat support'
         ]
       },
       {
@@ -137,41 +143,47 @@ export default function BillingPage() {
         ]
       },
       {
-        id: 'starter',
-        name: 'Starter',
-        price: 12,
-        period: 'month',
-        description: 'Perfect for small cafes and food stalls',
-        popular: false,
-        features: [
-          'AI Agent (Voice/Chat): 500 credits/month',
-          'Up to 500 menu items',
-          '1 restaurant location',
-          'Basic POS system',
-          'Table management (up to 200 tables)',
-          'Kitchen order tracking',
-          'Mobile app access',
-          'Email support'
-        ]
-      },
-      {
-        id: 'professional',
-        name: 'Professional', 
-        price: 30,
-        period: 'month',
-        description: 'Ideal for growing restaurants',
+        id: 'pay-as-you-go',
+        name: 'Pay as You Go',
+        price: 5,
+        period: 'one-time',
+        description: 'Perfect for variable order volumes',
         popular: true,
         features: [
-          'AI Agent (Voice/Chat): 1,000 credits/month',
+          'AI Agent (Voice/Chat)',
           'Unlimited menu items',
-          'Up to 3 restaurant locations',
-          'Advanced POS with payments',
+          'Unlimited restaurant locations',
+          'Complete POS system',
           'Unlimited tables & floors',
           'Real-time kitchen display',
           'Staff management',
           'Analytics & reports',
-          'Priority support',
-          'Custom branding'
+          'Inventory management',
+          'Customer loyalty programs',
+          'Email & chat support',
+          '1,000 orders free/month',
+          '$3 per 500 orders after free limit'
+        ]
+      },
+      {
+        id: 'monthly-fixed',
+        name: 'Monthly Fixed',
+        price: 15,
+        period: 'month',
+        description: 'Best for consistent order volumes',
+        popular: false,
+        features: [
+          'AI Agent (Voice/Chat)',
+          'Unlimited menu items',
+          'Unlimited restaurant locations',
+          'Complete POS system',
+          'Unlimited tables & floors',
+          'Real-time kitchen display',
+          'Staff management',
+          'Analytics & reports',
+          'Inventory management',
+          'Customer loyalty programs',
+          'Email & chat support'
         ]
       },
       {
@@ -648,10 +660,13 @@ export default function BillingPage() {
                 </span>
               </div>
               <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-                {currentSubscription?.plan || 'Starter'}
+                {currentSubscription?.plan || 'Free Trial'}
               </h3>
               <p style={{ fontSize: '14px', color: '#ef4444', margin: '4px 0 0 0' }}>
-                {formatCurrency(currentSubscription?.amount || 999)} / month
+                {currentSubscription?.amount === 0 ? 'Free' : 
+                 currentSubscription?.plan === 'Pay as You Go' ? 
+                   formatCurrency(currentSubscription?.amount || 300) + ' one-time' :
+                   formatCurrency(currentSubscription?.amount || 600) + ' / month'}
               </p>
             </div>
 
@@ -866,7 +881,7 @@ export default function BillingPage() {
                             {formatCurrency(plan.price)}
                           </span>
                           <span style={{ color: '#6b7280', fontSize: '16px' }}>
-                            /{plan.period}
+                            {plan.period === 'one-time' ? ' one-time' : ` /${plan.period}`}
                           </span>
                         </>
                       )}
