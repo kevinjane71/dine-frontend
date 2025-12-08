@@ -1,4 +1,5 @@
 import BlogCard from '../../components/BlogCard';
+import StaticBlogCard from '../../components/StaticBlogCard';
 import { blogPosts } from './blogData';
 
 // This page is statically generated at build time
@@ -72,6 +73,9 @@ export default function BlogPage() {
             gap: '32px',
             marginBottom: '48px',
           }}>
+            {/* Static HTML Blog Post - Increase Footfall 2026 */}
+            <StaticBlogCard />
+            
             {blogPosts.map((post) => (
               <BlogCard key={post.slug} post={post} />
             ))}
