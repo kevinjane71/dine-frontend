@@ -46,6 +46,53 @@ export default function BlogPage() {
       }}>
         <div style={{
           maxWidth: '1200px',
+          margin: '0 auto 32px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '12px',
+        }}>
+          <a
+            href="https://www.dineopen.com"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              textDecoration: 'none',
+              padding: '10px 14px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              boxShadow: '0 6px 18px rgba(220, 38, 38, 0.25)',
+            }}
+            title="Go to DineOpen.com"
+          >
+            <span style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '10px',
+              background: 'white',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 800,
+              color: '#ef4444',
+              letterSpacing: '-0.5px',
+              fontSize: '18px',
+            }}>
+              DO
+            </span>
+            <span style={{
+              color: 'white',
+              fontWeight: 800,
+              fontSize: '16px',
+              letterSpacing: '0.5px',
+            }}>
+              DineOpen
+            </span>
+          </a>
+        </div>
+        <div style={{
+          maxWidth: '1200px',
           margin: '0 auto',
         }}>
           <header style={{ marginBottom: '48px', textAlign: 'center' }}>
