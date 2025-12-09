@@ -241,6 +241,26 @@ export const blogPosts = [
     categoryColor: '#ef4444',
     isStatic: true,
     staticPath: '/blog/best-restaurant-software-india-2025.html'
+  },
+  {
+    slug: 'best-pos-system-pizza-restaurant',
+    title: 'Best POS System for Pizza Restaurants in India (2025)',
+    excerpt: 'Discover the top POS systems for pizza restaurants in India with fast ordering, delivery coordination, and inventory control—see why DineOpen leads.',
+    date: '2026-02-24',
+    category: 'POS',
+    categoryColor: '#ef4444',
+    isStatic: true,
+    staticPath: '/blog/best-pos-system-pizza-restaurant.html'
+  },
+  {
+    slug: 'restaurant-inventory-sheet',
+    title: 'Restaurant Inventory Sheet: Free Template & How to Use It',
+    excerpt: 'Download a ready-to-use restaurant inventory sheet and learn how to track stock, reduce waste, and reorder accurately with DineOpen.',
+    date: '2026-02-24',
+    category: 'Operations',
+    categoryColor: '#10b981',
+    isStatic: true,
+    staticPath: '/blog/restaurant-inventory-sheet.html'
   }
 ];
 
