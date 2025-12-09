@@ -40,6 +40,22 @@ const PlaceOrderContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
+  // Check for theme parameter and redirect to cube page if needed
+  useEffect(() => {
+    const theme = searchParams.get('theme');
+    const restaurant = searchParams.get('restaurant');
+    const seat = searchParams.get('seat');
+    
+    if (theme === 'cube') {
+      // Redirect to cube page with all params
+      const params = new URLSearchParams();
+      if (restaurant) params.set('restaurant', restaurant);
+      if (seat) params.set('seat', seat);
+      router.replace(`/placeorder/cube?${params.toString()}`);
+      return;
+    }
+  }, [searchParams, router]);
+  
   // State variables
   const [loading, setLoading] = useState(true);
   const [restaurant, setRestaurant] = useState(null);

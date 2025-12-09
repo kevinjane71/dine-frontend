@@ -5293,6 +5293,26 @@ export const blogPostContent = {
     category: 'Restaurant',
     categoryColor: '#ef4444',
     tags: ['Bakery POS', 'Bakery Software', 'Bakery Management', 'POS Software', 'Inventory Management', 'Purchase Orders', 'Bakery Operations']
+  },
+  {
+    slug: 'increase-footfall-2026',
+    title: '10 Proven Strategies to Increase Restaurant Footfall in 2026',
+    excerpt: 'Discover proven strategies to increase restaurant footfall in 2026. Learn about AI-powered ordering, QR menus, social media marketing, and customer engagement tactics.',
+    date: '2026-01-15',
+    category: 'Restaurant Growth',
+    categoryColor: '#ef4444',
+    isStatic: true,
+    staticPath: '/blog/increase-footfall-2026.html'
+  },
+  {
+    slug: 'menu-pricing-management',
+    title: 'Why Menu Pricing and Menu Management is Necessary',
+    excerpt: 'Learn why menu pricing and menu management are crucial for restaurant success. Discover strategies to optimize costs, increase profitability, and enhance customer satisfaction.',
+    date: '2026-02-10',
+    category: 'Restaurant Management',
+    categoryColor: '#3b82f6',
+    isStatic: true,
+    staticPath: '/blog/menu-pricing-management.html'
   }
-};
+];
 
