@@ -46,49 +46,80 @@ export default function BlogPage() {
       }}>
         <div style={{
           maxWidth: '1200px',
-          margin: '0 auto 32px',
+          margin: '0 auto 48px',
+          padding: '24px',
+          borderRadius: '20px',
+          background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 30%, #ffffff 100%)',
+          boxShadow: '0 16px 45px rgba(220, 38, 38, 0.18)',
           display: 'flex',
-          justifyContent: 'space-between',
+          gap: '20px',
           alignItems: 'center',
-          gap: '12px',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
         }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <a
+              href="https://www.dineopen.com"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                textDecoration: 'none',
+                padding: '10px 14px',
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                boxShadow: '0 8px 24px rgba(220, 38, 38, 0.28)',
+              }}
+              title="Go to DineOpen.com"
+            >
+              <span style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '12px',
+                background: 'white',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                color: '#ef4444',
+                letterSpacing: '-0.5px',
+                fontSize: '18px',
+              }}>
+                DO
+              </span>
+              <span style={{
+                color: 'white',
+                fontWeight: 800,
+                fontSize: '17px',
+                letterSpacing: '0.6px',
+              }}>
+                DineOpen
+              </span>
+            </a>
+            <div>
+              <div style={{ color: '#b91c1c', fontWeight: 800, letterSpacing: '0.6px', marginBottom: '4px' }}>
+                RESTAURANT INTELLIGENCE
+              </div>
+              <div style={{ color: '#111827', fontSize: '18px', fontWeight: 700, maxWidth: '540px' }}>
+                Fresh research, comparisons, and playbooks to run profitable restaurants in India.
+              </div>
+            </div>
+          </div>
           <a
-            href="https://www.dineopen.com"
+            href="https://www.dineopen.com#contact"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '10px',
-              textDecoration: 'none',
-              padding: '10px 14px',
+              padding: '12px 20px',
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-              boxShadow: '0 6px 18px rgba(220, 38, 38, 0.25)',
-            }}
-            title="Go to DineOpen.com"
-          >
-            <span style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '10px',
-              background: 'white',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              color: '#ef4444',
-              letterSpacing: '-0.5px',
-              fontSize: '18px',
-            }}>
-              DO
-            </span>
-            <span style={{
+              background: '#111827',
               color: 'white',
               fontWeight: 800,
-              fontSize: '16px',
-              letterSpacing: '0.5px',
-            }}>
-              DineOpen
-            </span>
+              textDecoration: 'none',
+              boxShadow: '0 10px 28px rgba(17,24,39,0.18)',
+              letterSpacing: '0.4px',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Book a Demo
           </a>
         </div>
         <div style={{
