@@ -221,6 +221,26 @@ export const blogPosts = [
     categoryColor: '#3b82f6',
     isStatic: true,
     staticPath: '/blog/menu-pricing-management.html'
+  },
+  {
+    slug: 'restaurant-efficiency-digital-tools',
+    title: 'How to Run a Restaurant Efficiently Using Digital Tools',
+    excerpt: 'Complete guide on using POS systems, billing automation, inventory management, and menu digitalization to run your restaurant efficiently.',
+    date: '2026-02-15',
+    category: 'Restaurant Management',
+    categoryColor: '#3b82f6',
+    isStatic: true,
+    staticPath: '/blog/restaurant-efficiency-digital-tools.html'
+  },
+  {
+    slug: 'best-restaurant-software-india-2025',
+    title: 'Best Restaurant Management Software in India (2025)',
+    excerpt: 'Compare the best restaurant management software in India. Features, pricing, pros & cons of top solutions including DineOpen, Posist, PetPooja, and more.',
+    date: '2026-02-20',
+    category: 'Comparison',
+    categoryColor: '#ef4444',
+    isStatic: true,
+    staticPath: '/blog/best-restaurant-software-india-2025.html'
   }
 ];
 
