@@ -96,14 +96,6 @@ export default function BlogPage() {
                 DineOpen
               </span>
             </a>
-            <div>
-              <div style={{ color: '#b91c1c', fontWeight: 800, letterSpacing: '0.6px', marginBottom: '4px' }}>
-                RESTAURANT INTELLIGENCE
-              </div>
-              <div style={{ color: '#111827', fontSize: '18px', fontWeight: 700, maxWidth: '540px' }}>
-                Fresh research, comparisons, and playbooks to run profitable restaurants in India.
-              </div>
-            </div>
           </div>
           <a
             href="https://www.dineopen.com#contact"
