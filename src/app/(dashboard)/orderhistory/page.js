@@ -27,7 +27,12 @@ import {
   FaTimesCircle,
   FaList,
   FaTh,
-  FaTimes
+  FaTimes,
+  FaRupeeSign,
+  FaChartLine,
+  FaShoppingBag,
+  FaArrowUp,
+  FaArrowDown
 } from 'react-icons/fa';
 
 const OrderHistory = () => {
@@ -265,8 +270,8 @@ const OrderHistory = () => {
       subtotal = order.items.reduce((sum, item) => sum + (item.total || (item.price * item.quantity) || 0), 0);
     } else if (order.totalAmount && order.totalAmount > 0) subtotal = order.totalAmount;
 
-    if (order.finalAmount && order.finalAmount > 0) return order.finalAmount.toFixed(2);
-    if (order.taxAmount && order.taxAmount > 0) return (subtotal + order.taxAmount).toFixed(2);
+    if (order.finalAmount && order.finalAmount > 0) return parseFloat(order.finalAmount.toFixed(2));
+    if (order.taxAmount && order.taxAmount > 0) return parseFloat((subtotal + order.taxAmount).toFixed(2));
 
     if (taxSettings?.enabled && subtotal > 0) {
       let totalTax = 0;
@@ -275,9 +280,33 @@ const OrderHistory = () => {
       } else if (taxSettings.defaultTaxRate) {
         totalTax = subtotal * (taxSettings.defaultTaxRate / 100);
       }
-      return (subtotal + totalTax).toFixed(2);
+      return parseFloat((subtotal + totalTax).toFixed(2));
     }
-    return subtotal.toFixed(2);
+    return parseFloat(subtotal.toFixed(2));
+  };
+
+  // Calculate summary statistics
+  const calculateStats = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todayOrders = orders.filter(order => {
+      const orderDate = order.createdAt?.toDate ? order.createdAt.toDate() : 
+                       (order.createdAt?._seconds ? new Date(order.createdAt._seconds * 1000) : new Date(order.createdAt));
+      return orderDate >= today && order.status !== 'cancelled';
+    });
+
+    const totalRevenue = todayOrders.reduce((sum, order) => sum + calculateOrderTotal(order), 0);
+    const orderCount = todayOrders.length;
+    const avgOrderValue = orderCount > 0 ? totalRevenue / orderCount : 0;
+    const completedCount = todayOrders.filter(o => o.status === 'completed').length;
+
+    return {
+      totalRevenue,
+      orderCount,
+      avgOrderValue,
+      completedCount
+    };
   };
 
   const OrderDetailsModal = ({ order, onClose }) => {
@@ -287,79 +316,96 @@ const OrderHistory = () => {
     const subtotal = order.items?.reduce((sum, item) => sum + (item.total || item.price * item.quantity), 0) || 0;
 
     return (
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border-2 border-gray-200">
+          <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
             <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-xl font-bold text-gray-900">
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-2xl font-bold text-gray-900">
                   #{order.dailyOrderId || order.orderNumber || order.id.slice(-4).toUpperCase()}
                 </h2>
                 <span 
-                  className="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide border"
+                  className="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide border-2 shadow-sm"
                   style={{ backgroundColor: statusStyle.bg, color: statusStyle.text, borderColor: statusStyle.border }}
                 >
                   {statusStyle.label}
                 </span>
               </div>
-              <div className="text-xs text-gray-500 flex items-center gap-1.5">
+              <div className="text-sm text-gray-500 flex items-center gap-2">
                 <FaClock className="text-gray-400" /> {formatDate(order.createdAt)}
               </div>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <FaTimes className="text-gray-400 text-lg" />
+            <button 
+              onClick={onClose} 
+              className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+            >
+              <FaTimes className="text-gray-500 text-lg" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-              <div>
-                <div className="text-xs text-gray-500 mb-1 flex items-center gap-1"><FaUser size={10}/> {t('orderHistory.customer')}</div>
-                <div className="font-medium text-sm text-gray-900">{order.customerDisplay?.name || 'Walk-in'}</div>
-                <div className="text-xs text-gray-500">{order.customerDisplay?.phone || ''}</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border-2 border-blue-200 shadow-sm">
+              <div className="bg-white/60 p-4 rounded-lg border border-blue-200">
+                <div className="text-xs text-gray-600 mb-2 flex items-center gap-2 font-medium uppercase tracking-wide">
+                  <FaUser className="text-blue-600"/> {t('orderHistory.customer')}
+                </div>
+                <div className="font-semibold text-base text-gray-900 mb-1">{order.customerDisplay?.name || 'Walk-in'}</div>
+                <div className="text-sm text-gray-600">{order.customerDisplay?.phone || 'No phone'}</div>
               </div>
-              <div>
-                <div className="text-xs text-gray-500 mb-1 flex items-center gap-1"><FaTable size={10}/> {t('orderHistory.table')}</div>
-                <div className="font-medium text-sm text-gray-900">{order.customerDisplay?.tableNumber || 'N/A'}</div>
-                <div className="text-xs text-gray-500 capitalize">{order.customerDisplay?.floorName || ''}</div>
+              <div className="bg-white/60 p-4 rounded-lg border border-blue-200">
+                <div className="text-xs text-gray-600 mb-2 flex items-center gap-2 font-medium uppercase tracking-wide">
+                  <FaTable className="text-blue-600"/> {t('orderHistory.table')}
+                </div>
+                <div className="font-semibold text-base text-gray-900 mb-1">{order.customerDisplay?.tableNumber || 'N/A'}</div>
+                <div className="text-sm text-gray-600 capitalize">{order.customerDisplay?.floorName || 'No floor'}</div>
               </div>
-              <div>
-                <div className="text-xs text-gray-500 mb-1 flex items-center gap-1"><FaUtensils size={10}/> {t('common.category')}</div>
-                <div className="font-medium text-sm text-gray-900 capitalize">{order.orderType?.replace('-', ' ') || t('orderHistory.type.dineIn')}</div>
-                <div className="text-xs text-gray-500 capitalize">{order.paymentMethod || 'Unpaid'}</div>
+              <div className="bg-white/60 p-4 rounded-lg border border-blue-200">
+                <div className="text-xs text-gray-600 mb-2 flex items-center gap-2 font-medium uppercase tracking-wide">
+                  <FaUtensils className="text-blue-600"/> {t('common.category')}
+                </div>
+                <div className="font-semibold text-base text-gray-900 mb-1 capitalize">{order.orderType?.replace('-', ' ') || t('orderHistory.type.dineIn')}</div>
+                <div className="text-sm text-gray-600 capitalize">{order.paymentMethod || 'Unpaid'}</div>
               </div>
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <FaReceipt className="text-gray-400" /> {t('orderHistory.items')}
+              <h3 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <FaReceipt className="text-red-600" /> {t('orderHistory.items')}
               </h3>
-              <div className="border border-gray-100 rounded-xl overflow-hidden">
+              <div className="border-2 border-gray-200 rounded-xl overflow-hidden shadow-sm">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-medium">
+                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 text-xs uppercase tracking-wider font-semibold border-b-2 border-gray-200">
                     <tr>
-                      <th className="px-4 py-3 text-left">{t('common.items')}</th>
-                      <th className="px-4 py-3 text-center">{t('common.quantity')}</th>
-                      <th className="px-4 py-3 text-right">{t('common.price')}</th>
-                      <th className="px-4 py-3 text-right">{t('common.total')}</th>
+                      <th className="px-5 py-4 text-left">{t('common.items')}</th>
+                      <th className="px-5 py-4 text-center">{t('common.quantity')}</th>
+                      <th className="px-5 py-4 text-right">{t('common.price')}</th>
+                      <th className="px-5 py-4 text-right">{t('common.total')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-gray-100">
                     {order.items?.map((item, i) => (
-                      <tr key={i} className="hover:bg-gray-50/50">
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-gray-900">{item.name}</div>
-                          {item.variant && <div className="text-xs text-gray-500">{t('orderHistory.variant')}: {item.variant.name}</div>}
+                      <tr key={i} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-5 py-4">
+                          <div className="font-semibold text-gray-900">{item.name}</div>
+                          {item.variant && (
+                            <div className="text-xs text-gray-500 mt-1 bg-gray-100 px-2 py-0.5 rounded inline-block">
+                              {t('orderHistory.variant')}: {item.variant.name}
+                            </div>
+                          )}
                           {item.addons?.length > 0 && (
-                            <div className="text-xs text-gray-500 mt-0.5">
+                            <div className="text-xs text-gray-500 mt-1">
                               + {item.addons.map(a => a.name).join(', ')}
                             </div>
                           )}
-                          {item.notes && <div className="text-xs text-amber-600 mt-0.5 italic">{t('common.notes')}: {item.notes}</div>}
+                          {item.notes && (
+                            <div className="text-xs text-amber-700 mt-1 italic bg-amber-50 px-2 py-0.5 rounded">
+                              {t('common.notes')}: {item.notes}
+                            </div>
+                          )}
                         </td>
-                        <td className="px-4 py-3 text-center font-medium text-gray-600">x{item.quantity}</td>
-                        <td className="px-4 py-3 text-right text-gray-600">₹{item.price}</td>
-                        <td className="px-4 py-3 text-right font-medium text-gray-900">₹{item.total || (item.price * item.quantity)}</td>
+                        <td className="px-5 py-4 text-center font-semibold text-gray-700">x{item.quantity}</td>
+                        <td className="px-5 py-4 text-right text-gray-600">₹{item.price}</td>
+                        <td className="px-5 py-4 text-right font-bold text-gray-900">₹{item.total || (item.price * item.quantity)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -368,40 +414,40 @@ const OrderHistory = () => {
             </div>
 
             {order.notes && (
-              <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-100 text-sm text-yellow-800">
-                <span className="font-semibold">{t('orderHistory.orderNote')}:</span> {order.notes}
+              <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-xl border-2 border-amber-200 text-sm text-amber-900 shadow-sm">
+                <span className="font-bold">{t('orderHistory.orderNote')}:</span> {order.notes}
               </div>
             )}
           </div>
 
-          <div className="bg-gray-50 border-t border-gray-100 p-6">
-            <div className="flex flex-col gap-2 max-w-xs ml-auto">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border-t-2 border-gray-200 p-6">
+            <div className="flex flex-col gap-3 max-w-sm ml-auto bg-white p-5 rounded-xl border-2 border-gray-200 shadow-sm">
               <div className="flex justify-between text-sm text-gray-600">
-                <span>{t('orderHistory.subtotal')}</span>
-                <span>₹{subtotal.toFixed(2)}</span>
+                <span className="font-medium">{t('orderHistory.subtotal')}</span>
+                <span className="font-semibold">₹{subtotal.toFixed(2)}</span>
               </div>
               {order.taxAmount > 0 && (
                 <div className="flex justify-between text-sm text-gray-600">
-                  <span>{t('orderHistory.tax')}</span>
-                  <span>₹{order.taxAmount.toFixed(2)}</span>
+                  <span className="font-medium">{t('orderHistory.tax')}</span>
+                  <span className="font-semibold">₹{order.taxAmount.toFixed(2)}</span>
                 </div>
               )}
               {(!order.taxAmount && taxSettings?.enabled) && (
                 <div className="flex justify-between text-sm text-gray-600">
-                  <span>{t('orderHistory.estimatedTax')}</span>
-                  <span>₹{(parseFloat(orderTotal) - subtotal).toFixed(2)}</span>
+                  <span className="font-medium">{t('orderHistory.estimatedTax')}</span>
+                  <span className="font-semibold">₹{(parseFloat(orderTotal) - subtotal).toFixed(2)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-200 mt-1">
+              <div className="flex justify-between text-xl font-bold text-gray-900 pt-3 border-t-2 border-gray-300 mt-2">
                 <span>{t('orderHistory.total')}</span>
-                <span>₹{orderTotal}</span>
+                <span className="text-red-600">₹{orderTotal}</span>
               </div>
             </div>
             
             <div className="mt-6 grid grid-cols-2 gap-3">
                <button 
                 onClick={onClose}
-                className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-5 py-3 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
               >
                 {t('orderHistory.close')}
               </button>
@@ -410,7 +456,7 @@ const OrderHistory = () => {
                     handleEditOrder(order.id);
                     onClose();
                 }}
-                className="px-4 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                className="px-5 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg"
               >
                 {t('orderHistory.editOrder')}
               </button>
@@ -425,22 +471,22 @@ const OrderHistory = () => {
     <div className="relative custom-dropdown">
       <button
         onClick={onToggle}
-        className={`w-full px-3 py-2 text-left bg-white border rounded-lg flex items-center justify-between text-xs font-medium transition-all ${isOpen ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-200 hover:border-gray-300'}`}
+        className={`w-full px-4 py-2.5 text-left bg-white border-2 rounded-lg flex items-center justify-between text-sm font-medium transition-all shadow-sm ${isOpen ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 hover:border-gray-400'}`}
       >
         <div className="flex items-center gap-2 truncate">
-          {Icon && <Icon className="text-gray-400 text-xs" />}
+          {Icon && <Icon className="text-gray-400" />}
           <span className="text-gray-700">{options.find(opt => opt.value === selectedValue)?.label || placeholder}</span>
         </div>
-        <FaChevronDown className={`text-gray-400 text-[10px] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <FaChevronDown className={`text-gray-400 text-xs transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
-        <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto">
+        <div className="absolute z-20 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-56 overflow-auto">
           <div className="py-1">
             {options.map((option) => (
               <button
                 key={option.value}
                 onClick={() => { onSelect(option.value); onToggle(); }}
-                className={`w-full px-3 py-1.5 text-left text-xs transition-colors ${selectedValue === option.value ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
+                className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${selectedValue === option.value ? 'bg-red-50 text-red-700 font-semibold border-l-4 border-red-500' : 'text-gray-700 hover:bg-gray-50'}`}
               >
                 {option.label}
               </button>
@@ -477,92 +523,229 @@ const OrderHistory = () => {
     { value: 'delivery', label: t('orderHistory.type.delivery') }
   ];
 
+  const stats = calculateStats();
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="py-3 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="bg-red-50 p-2 rounded-lg"><FaReceipt className="text-red-600 text-lg" /></div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+      {/* Header Section */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-br from-red-500 to-red-600 p-3 rounded-xl shadow-lg">
+                <FaReceipt className="text-white text-xl" />
+              </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900 leading-tight">{t('orderHistory.title')}</h1>
-                <p className="text-xs text-gray-500">{restaurant?.name} • {totalOrders} {t('orderHistory.total')}</p>
+                <h1 className="text-2xl font-bold text-gray-900">{t('orderHistory.title')}</h1>
+                <p className="text-sm text-gray-500 mt-0.5">{restaurant?.name}</p>
               </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">
+                <span className="font-medium">{totalOrders}</span>
+                <span className="text-gray-400">orders</span>
+              </div>
+              <div className="flex bg-white border border-gray-200 p-1 rounded-lg shadow-sm">
+                <button 
+                  onClick={() => setIsCompactView(true)} 
+                  className={`p-2 rounded-md transition-all ${isCompactView ? 'bg-red-50 text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`} 
+                  title="Compact View"
+                >
+                  <FaList size={16} />
+                </button>
+                <button 
+                  onClick={() => setIsCompactView(false)} 
+                  className={`p-2 rounded-md transition-all ${!isCompactView ? 'bg-red-50 text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`} 
+                  title="Detailed View"
+                >
+                  <FaTh size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Summary Stats Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pb-4">
+            <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div className="bg-green-500 p-2 rounded-lg">
+                  <FaRupeeSign className="text-white text-sm" />
                 </div>
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              <div className="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded">{t('orderHistory.page')} {currentPage}/{totalPages}</div>
-              <div className="flex bg-gray-100 p-0.5 rounded-lg">
-                <button onClick={() => setIsCompactView(true)} className={`p-1.5 rounded-md transition-all ${isCompactView ? 'bg-white text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`} title="Compact View"><FaList size={14} /></button>
-                <button onClick={() => setIsCompactView(false)} className={`p-1.5 rounded-md transition-all ${!isCompactView ? 'bg-white text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`} title="Detailed View"><FaTh size={14} /></button>
+                <FaArrowUp className="text-green-600 text-xs" />
+              </div>
+              <div className="text-2xl font-bold text-gray-900">₹{stats.totalRevenue.toFixed(0)}</div>
+              <div className="text-xs text-gray-600 mt-1">Today's Revenue</div>
+            </div>
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div className="bg-blue-500 p-2 rounded-lg">
+                  <FaShoppingBag className="text-white text-sm" />
+                </div>
+                <FaArrowUp className="text-blue-600 text-xs" />
+              </div>
+              <div className="text-2xl font-bold text-gray-900">{stats.orderCount}</div>
+              <div className="text-xs text-gray-600 mt-1">Total Orders</div>
+            </div>
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div className="bg-purple-500 p-2 rounded-lg">
+                  <FaChartLine className="text-white text-sm" />
+                </div>
+                <FaArrowUp className="text-purple-600 text-xs" />
+              </div>
+              <div className="text-2xl font-bold text-gray-900">₹{stats.avgOrderValue.toFixed(0)}</div>
+              <div className="text-xs text-gray-600 mt-1">Avg Order Value</div>
+            </div>
+            <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div className="bg-amber-500 p-2 rounded-lg">
+                  <FaCheckCircle className="text-white text-sm" />
+                </div>
+                <FaArrowUp className="text-amber-600 text-xs" />
+              </div>
+              <div className="text-2xl font-bold text-gray-900">{stats.completedCount}</div>
+              <div className="text-xs text-gray-600 mt-1">Completed</div>
+            </div>
+          </div>
+
+          {/* Filters Section */}
+          <div className="py-4 border-t border-gray-200">
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div className="sm:col-span-4 lg:col-span-5 relative">
+                <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input 
+                  type="text" 
+                  placeholder={t('orderHistory.searchPlaceholder')} 
+                  value={searchTerm} 
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+                  className="w-full pl-11 pr-4 py-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all shadow-sm" 
+                />
+              </div>
+              <div className="sm:col-span-3 lg:col-span-2">
+                <FilterDropdown 
+                  isOpen={statusDropdownOpen} 
+                  onToggle={() => setStatusDropdownOpen(!statusDropdownOpen)} 
+                  selectedValue={selectedStatus} 
+                  options={statusOptions} 
+                  onSelect={setSelectedStatus} 
+                  placeholder={t('common.status')} 
+                  icon={FaFilter} 
+                />
+              </div>
+              <div className="sm:col-span-3 lg:col-span-2">
+                <FilterDropdown 
+                  isOpen={typeDropdownOpen} 
+                  onToggle={() => setTypeDropdownOpen(!typeDropdownOpen)} 
+                  selectedValue={selectedOrderType} 
+                  options={typeOptions} 
+                  onSelect={setSelectedOrderType} 
+                  placeholder={t('common.category')} 
+                  icon={FaUtensils} 
+                />
+              </div>
+              <div className="sm:col-span-2 lg:col-span-3 flex items-center gap-2 sm:justify-end">
+                <label className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all shadow-sm ${todayOrdersOnly ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>
+                  <input 
+                    type="checkbox" 
+                    checked={todayOrdersOnly} 
+                    onChange={(e) => setTodayOrdersOnly(e.target.checked)} 
+                    className="w-4 h-4 text-red-600 rounded focus:ring-red-500 border-gray-300" 
+                  />
+                  <span className="text-sm font-medium">{t('orderHistory.today')}</span>
+                </label>
+                <label className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all shadow-sm ${myOrdersOnly ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>
+                  <input 
+                    type="checkbox" 
+                    checked={myOrdersOnly} 
+                    onChange={(e) => setMyOrdersOnly(e.target.checked)} 
+                    className="w-4 h-4 text-red-600 rounded focus:ring-red-500 border-gray-300" 
+                  />
+                  <span className="text-sm font-medium">{t('orderHistory.mine')}</span>
+                </label>
               </div>
             </div>
           </div>
-          <div className="py-3 grid grid-cols-1 sm:grid-cols-12 gap-3">
-            <div className="sm:col-span-4 lg:col-span-5 relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs" />
-              <input type="text" placeholder={t('orderHistory.searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all" />
         </div>
-            <div className="sm:col-span-3 lg:col-span-2">
-              <FilterDropdown isOpen={statusDropdownOpen} onToggle={() => setStatusDropdownOpen(!statusDropdownOpen)} selectedValue={selectedStatus} options={statusOptions} onSelect={setSelectedStatus} placeholder={t('common.status')} icon={FaFilter} />
-            </div>
-            <div className="sm:col-span-3 lg:col-span-2">
-              <FilterDropdown isOpen={typeDropdownOpen} onToggle={() => setTypeDropdownOpen(!typeDropdownOpen)} selectedValue={selectedOrderType} options={typeOptions} onSelect={setSelectedOrderType} placeholder={t('common.category')} icon={FaUtensils} />
-            </div>
-            <div className="sm:col-span-2 lg:col-span-3 flex items-center gap-3 sm:justify-end">
-              <label className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer transition-colors ${todayOrdersOnly ? 'bg-red-50 text-red-700' : 'hover:bg-gray-100 text-gray-600'}`}>
-                <input type="checkbox" checked={todayOrdersOnly} onChange={(e) => setTodayOrdersOnly(e.target.checked)} className="w-3.5 h-3.5 text-red-600 rounded focus:ring-red-500 border-gray-300" />
-                <span className="text-xs font-medium">{t('orderHistory.today')}</span>
-                </label>
-              <label className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer transition-colors ${myOrdersOnly ? 'bg-red-50 text-red-700' : 'hover:bg-gray-100 text-gray-600'}`}>
-                <input type="checkbox" checked={myOrdersOnly} onChange={(e) => setMyOrdersOnly(e.target.checked)} className="w-3.5 h-3.5 text-red-600 rounded focus:ring-red-500 border-gray-300" />
-                <span className="text-xs font-medium">{t('orderHistory.mine')}</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
+      </div>
         
-      <div className="flex-1 bg-gray-50 p-3 sm:px-6 sm:py-4 overflow-y-auto">
-        <div className="max-w-7xl mx-auto space-y-3">
+      {/* Orders List */}
+      <div className="flex-1 p-4 sm:px-6 sm:py-6 overflow-y-auto">
+        <div className="max-w-7xl mx-auto">
           {orders.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4"><FaSearch className="text-2xl text-gray-300" /></div>
-              <h3 className="text-sm font-semibold text-gray-900">{t('orderHistory.noOrders')}</h3>
-              <p className="text-xs text-gray-500 mt-1">{t('orderHistory.adjustFilters')}</p>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-16 text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FaSearch className="text-3xl text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('orderHistory.noOrders')}</h3>
+              <p className="text-sm text-gray-500">{t('orderHistory.adjustFilters')}</p>
             </div>
           ) : (
-            orders.map((order) => {
+            <div className="space-y-4">
+            {orders.map((order) => {
               const statusStyle = getStatusStyle(order.status, order.orderFlow);
               const orderTotal = calculateOrderTotal(order);
               const itemCount = Array.isArray(order.items) ? order.items.length : 0;
               
               if (isCompactView) {
                 return (
-                  <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:border-red-200 hover:shadow-md transition-all duration-200 group">
-                    <div className="p-3 flex items-center gap-3">
-                      <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: statusStyle.border }} />
+                  <div key={order.id} className="bg-white rounded-xl shadow-md border border-gray-200 hover:border-red-300 hover:shadow-lg transition-all duration-200 group overflow-hidden">
+                    <div className="p-4 flex items-center gap-4">
+                      <div className="w-1.5 h-16 rounded-full flex-shrink-0" style={{ backgroundColor: statusStyle.border }} />
                       <div className="flex-1 min-w-0 grid grid-cols-12 gap-4 items-center">
                         <div className="col-span-12 sm:col-span-3 flex sm:flex-col items-center sm:items-start justify-between sm:justify-center gap-2">
-                          <div onClick={() => copyToClipboard(order.dailyOrderId?.toString() || order.id)} className="font-bold text-gray-900 cursor-pointer hover:text-red-600 flex items-center gap-1.5 transition-colors">
+                          <div 
+                            onClick={() => copyToClipboard(order.dailyOrderId?.toString() || order.id)} 
+                            className="font-bold text-lg text-gray-900 cursor-pointer hover:text-red-600 flex items-center gap-2 transition-colors"
+                          >
                             <span>#{order.dailyOrderId || order.orderNumber || order.id.slice(-4).toUpperCase()}</span>
-                            <FaCopy className="text-gray-300 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <FaCopy className="text-gray-300 text-xs opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
-                          <div className="flex items-center gap-1 text-[10px] text-gray-500"><FaClock className="text-[9px]" />{formatDate(order.createdAt, true)}</div>
+                          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                            <FaClock className="text-[10px]" />
+                            {formatDate(order.createdAt, true)}
+                          </div>
                         </div>
-                        <div className="col-span-12 sm:col-span-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
-                          <div className="flex items-center gap-1.5" title="Customer"><FaUser className="text-gray-400 text-[10px]" /><span className="truncate max-w-[100px] font-medium">{order.customerDisplay?.name || 'Walk-in'}</span></div>
-                          <div className="flex items-center gap-1.5" title="Table"><FaTable className="text-gray-400 text-[10px]" /><span>{order.customerDisplay?.tableNumber || 'N/A'}</span></div>
-                          <div className="flex items-center gap-1.5" title="Type"><FaUtensils className="text-gray-400 text-[10px]" /><span className="capitalize">{order.orderType?.replace('-', ' ') || t('orderHistory.type.dineIn')}</span></div>
+                        <div className="col-span-12 sm:col-span-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-2" title="Customer">
+                            <FaUser className="text-gray-400" />
+                            <span className="truncate max-w-[120px] font-medium">{order.customerDisplay?.name || 'Walk-in'}</span>
+                          </div>
+                          <div className="flex items-center gap-2" title="Table">
+                            <FaTable className="text-gray-400" />
+                            <span>{order.customerDisplay?.tableNumber || 'N/A'}</span>
+                          </div>
+                          <div className="flex items-center gap-2" title="Type">
+                            <FaUtensils className="text-gray-400" />
+                            <span className="capitalize">{order.orderType?.replace('-', ' ') || t('orderHistory.type.dineIn')}</span>
+                          </div>
                         </div>
-                        <div className="col-span-6 sm:col-span-3 flex flex-col sm:items-start gap-1">
-                          <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide border" style={{ backgroundColor: statusStyle.bg, color: statusStyle.text, borderColor: statusStyle.border }}>{statusStyle.label}</span>
-                          <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{order.paymentMethod || 'Cash'}</span>
+                        <div className="col-span-6 sm:col-span-3 flex flex-col sm:items-start gap-2">
+                          <span 
+                            className="inline-flex px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide border-2 shadow-sm" 
+                            style={{ backgroundColor: statusStyle.bg, color: statusStyle.text, borderColor: statusStyle.border }}
+                          >
+                            {statusStyle.label}
+                          </span>
+                          <span className="text-xs text-gray-500 font-medium">{order.paymentMethod || 'Cash'}</span>
                         </div>
-                        <div className="col-span-6 sm:col-span-2 flex flex-col items-end gap-1.5">
-                          <span className="font-bold text-gray-900">₹{orderTotal}</span>
-                          <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => handleEditOrder(order.id)} className="p-1 text-white bg-red-500 hover:bg-red-600 rounded transition-colors" title={t('orderHistory.edit')}><FaEdit size={10} /></button>
-                            <button onClick={() => handleViewOrder(order)} className="p-1 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded transition-colors" title={t('orderHistory.view')}><FaEye size={10} /></button>
+                        <div className="col-span-6 sm:col-span-2 flex flex-col items-end gap-2">
+                          <span className="font-bold text-xl text-gray-900">₹{orderTotal}</span>
+                          <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={() => handleEditOrder(order.id)} 
+                              className="p-2 text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors shadow-sm" 
+                              title={t('orderHistory.edit')}
+                            >
+                              <FaEdit size={12} />
+                            </button>
+                            <button 
+                              onClick={() => handleViewOrder(order)} 
+                              className="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors" 
+                              title={t('orderHistory.view')}
+                            >
+                              <FaEye size={12} />
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -572,51 +755,140 @@ const OrderHistory = () => {
               }
 
               return (
-                <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:border-red-200 transition-all duration-200 group">
-                  <div className="p-4">
+                <div key={order.id} className="bg-white rounded-xl shadow-md border border-gray-200 hover:border-red-300 hover:shadow-lg transition-all duration-200 group overflow-hidden">
+                  <div className="p-5">
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0 text-red-600"><FaReceipt /></div>
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <FaReceipt className="text-red-600 text-lg" />
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-sm font-bold text-gray-900">#{order.dailyOrderId || order.orderNumber || order.id.slice(-4).toUpperCase()}</h3>
-                          <span className="font-bold text-gray-900">₹{orderTotal}</span>
-                        </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-gray-600 mb-3">
-                          <div className="flex items-center gap-1.5"><FaUser className="text-gray-400" /> {order.customerDisplay?.name || 'Walk-in'}</div>
-                          <div className="flex items-center gap-1.5"><FaTable className="text-gray-400" /> {t('orderHistory.table')} {order.customerDisplay?.tableNumber || 'N/A'}</div>
-                          <div className="flex items-center gap-1.5"><FaClock className="text-gray-400" /> {formatDate(order.createdAt, true)}</div>
-                          <div className="flex items-center gap-1.5"><span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: statusStyle.text }}></span>{statusStyle.label}</div>
-                        </div>
-                        <div className="bg-gray-50 rounded-lg p-2 text-xs text-gray-500 mb-3">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-medium">{itemCount} {t('orderHistory.items')}</span>
-                            <button onClick={() => toggleOrderExpansion(order.id)} className="text-red-600 hover:text-red-700 flex items-center gap-1">{expandedOrders.has(order.id) ? t('common.close') : t('common.view')} {expandedOrders.has(order.id) ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}</button>
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <div className="flex items-center gap-3 mb-1">
+                              <h3 className="text-lg font-bold text-gray-900">
+                                #{order.dailyOrderId || order.orderNumber || order.id.slice(-4).toUpperCase()}
+                              </h3>
+                              <span 
+                                className="inline-flex px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide border-2 shadow-sm" 
+                                style={{ backgroundColor: statusStyle.bg, color: statusStyle.text, borderColor: statusStyle.border }}
+                              >
+                                {statusStyle.label}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <FaClock className="text-[10px]" />
+                              {formatDate(order.createdAt, true)}
+                            </div>
                           </div>
-                          {(expandedOrders.has(order.id) ? order.items : order.items.slice(0, 2)).map((item, idx) => (
-                            <div key={idx} className="flex justify-between py-0.5"><span>{item.quantity}x {item.name}</span><span>₹{item.total}</span></div>
-                          ))}
-                          {!expandedOrders.has(order.id) && itemCount > 2 && <div className="text-[10px] text-gray-400 pt-0.5">+{itemCount - 2} {t('common.more')}...</div>}
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-gray-900 mb-1">₹{orderTotal}</div>
+                            <div className="text-xs text-gray-500">{order.paymentMethod || 'Cash'}</div>
+                          </div>
                         </div>
-                        <div className="flex justify-end gap-2">
-                          <button onClick={() => handleViewOrder(order)} className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5"><FaEye /> {t('orderHistory.view')}</button>
-                          {order.status !== 'completed' && order.status !== 'cancelled' && <button onClick={() => handleCancelOrder(order.id)} className="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-1.5"><FaTimesCircle /> {t('orderHistory.cancel')}</button>}
-                          <button onClick={() => handleEditOrder(order.id)} className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-1.5 shadow-sm"><FaEdit /> {t('orderHistory.edit')}</button>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                          <div className="flex items-center gap-2">
+                            <FaUser className="text-gray-400 text-sm" />
+                            <div>
+                              <div className="text-xs text-gray-500">Customer</div>
+                              <div className="text-sm font-medium text-gray-900">{order.customerDisplay?.name || 'Walk-in'}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FaTable className="text-gray-400 text-sm" />
+                            <div>
+                              <div className="text-xs text-gray-500">Table</div>
+                              <div className="text-sm font-medium text-gray-900">{order.customerDisplay?.tableNumber || 'N/A'}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FaUtensils className="text-gray-400 text-sm" />
+                            <div>
+                              <div className="text-xs text-gray-500">Type</div>
+                              <div className="text-sm font-medium text-gray-900 capitalize">{order.orderType?.replace('-', ' ') || t('orderHistory.type.dineIn')}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200 mb-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-semibold text-gray-700">{itemCount} {t('orderHistory.items')}</span>
+                            <button 
+                              onClick={() => toggleOrderExpansion(order.id)} 
+                              className="text-red-600 hover:text-red-700 flex items-center gap-1.5 text-sm font-medium transition-colors"
+                            >
+                              {expandedOrders.has(order.id) ? t('common.close') : t('common.view')} 
+                              {expandedOrders.has(order.id) ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+                            </button>
+                          </div>
+                          <div className="space-y-1.5">
+                            {(expandedOrders.has(order.id) ? order.items : order.items.slice(0, 2)).map((item, idx) => (
+                              <div key={idx} className="flex justify-between text-sm py-1">
+                                <span className="text-gray-700">{item.quantity}x {item.name}</span>
+                                <span className="font-medium text-gray-900">₹{item.total || (item.price * item.quantity)}</span>
+                              </div>
+                            ))}
+                            {!expandedOrders.has(order.id) && itemCount > 2 && (
+                              <div className="text-xs text-gray-500 pt-1">+{itemCount - 2} {t('common.more')}...</div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap justify-end gap-2">
+                          <button 
+                            onClick={() => handleViewOrder(order)} 
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all flex items-center gap-2 shadow-sm"
+                          >
+                            <FaEye /> {t('orderHistory.view')}
+                          </button>
+                          {order.status !== 'completed' && order.status !== 'cancelled' && (
+                            <button 
+                              onClick={() => handleCancelOrder(order.id)} 
+                              className="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 border-2 border-red-200 rounded-lg hover:bg-red-100 transition-all flex items-center gap-2"
+                            >
+                              <FaTimesCircle /> {t('orderHistory.cancel')}
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => handleEditOrder(order.id)} 
+                            className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg hover:from-red-700 hover:to-red-800 transition-all flex items-center gap-2 shadow-lg"
+                          >
+                            <FaEdit /> {t('orderHistory.edit')}
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               );
-            })
+            })}
+            </div>
           )}
+
         </div>
+
+        {/* Pagination */}
         {totalPages > 1 && (
-          <div className="max-w-7xl mx-auto mt-6 flex items-center justify-between text-xs text-gray-500">
-            <span>{t('orderHistory.showing')} {((currentPage - 1) * limit) + 1}-{Math.min(currentPage * limit, totalOrders)} {t('orderHistory.of')} {totalOrders} {t('orderHistory.orders')}</span>
+          <div className="max-w-7xl mx-auto mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-xl shadow-md border border-gray-200 p-4">
+            <div className="text-sm text-gray-600">
+              <span className="font-medium text-gray-900">{t('orderHistory.showing')}</span>{' '}
+              {((currentPage - 1) * limit) + 1}-{Math.min(currentPage * limit, totalOrders)} {t('orderHistory.of')} {totalOrders} {t('orderHistory.orders')}
+            </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="p-2 bg-white border rounded hover:bg-gray-50 disabled:opacity-50"><FaChevronLeft /></button>
-              <span className="font-medium text-gray-900">{t('orderHistory.page')} {currentPage}</span>
-              <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 bg-white border rounded hover:bg-gray-50 disabled:opacity-50"><FaChevronRight /></button>
+              <button 
+                onClick={() => handlePageChange(currentPage - 1)} 
+                disabled={currentPage === 1} 
+                className="p-2.5 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+              >
+                <FaChevronLeft />
+              </button>
+              <div className="px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                <span className="font-semibold text-gray-900">{t('orderHistory.page')} {currentPage} / {totalPages}</span>
+              </div>
+              <button 
+                onClick={() => handlePageChange(currentPage + 1)} 
+                disabled={currentPage === totalPages} 
+                className="p-2.5 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+              >
+                <FaChevronRight />
+              </button>
             </div>
           </div>
         )}
