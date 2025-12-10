@@ -1,0 +1,480 @@
+'use client';
+
+import { useMemo, useEffect, useState } from 'react';
+import { Flame, Leaf } from 'lucide-react';
+
+// Two categories per sheet: left/right.
+
+const woodBg =
+  'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1600&q=80';
+const leatherCover =
+  'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1200&q=80';
+
+const getPageColor = (cat) => {
+  const colors = {
+    appetizers: '#f59e0b',
+    starters: '#f59e0b',
+    mains: '#ef4444',
+    'main course': '#ef4444',
+    desserts: '#ec4899',
+    sweets: '#ec4899',
+    drinks: '#7c3aed',
+    cocktails: '#7c3aed',
+    specials: '#10b981',
+    wine: '#a855f7',
+    default: '#d97706',
+  };
+  const key = cat?.toString().toLowerCase();
+  return colors[key] || colors.default;
+};
+
+const chunkCategories = (cats = []) => {
+  const res = [];
+  for (let i = 0; i < cats.length; i += 2) {
+    res.push({ left: cats[i], right: cats[i + 1] || cats[i] });
+  }
+  return res;
+};
+
+const Page = ({ category, items, isLeft, pageNumber, onAddToCart }) => {
+  const color = getPageColor(category);
+  return (
+    <div
+      className="relative w-full h-full overflow-hidden"
+      style={{
+        backgroundColor: '#fdfbf7',
+        backgroundImage: 'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
+        padding: '28px 24px',
+        borderRight: isLeft ? '1px solid #d6d3d1' : 'none',
+        borderLeft: !isLeft ? '1px solid #d6d3d1' : 'none',
+        boxSizing: 'border-box',
+      }}
+    >
+      {/* Decorative borders */}
+      <div
+        className="pointer-events-none"
+        style={{
+          position: 'absolute',
+          inset: '12px',
+          border: '2px double rgba(120,53,15,0.25)',
+          borderRadius: '2px',
+        }}
+      />
+      <div
+        className="pointer-events-none"
+        style={{
+          position: 'absolute',
+          inset: '20px',
+          border: '1px solid rgba(120,53,15,0.2)',
+          borderRadius: '2px',
+        }}
+      />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col h-full">
+        {/* Header */}
+        <div className="text-center mb-4">
+          <div className="flex items-center justify-center gap-2 mb-2 text-[10px] uppercase tracking-[0.3em] text-amber-900/60">
+            <span className="h-px w-8 bg-amber-900/40" />
+            Est. 2024
+            <span className="h-px w-8 bg-amber-900/40" />
+          </div>
+          <h2
+            style={{
+              fontFamily: '"Playfair Display","Cormorant Garamond",serif',
+              fontSize: '26px',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: '#111827',
+              borderBottom: `2px solid ${color}40`,
+              display: 'inline-block',
+              paddingBottom: '6px',
+            }}
+          >
+            {category || 'Menu'}
+          </h2>
+        </div>
+
+        {/* Items */}
+        <div
+          className="flex-1 overflow-y-auto menu-scroll pr-1"
+          style={{ fontFamily: '"Cormorant Garamond",serif' }}
+        >
+          <div className="space-y-4">
+            {items.length === 0 ? (
+              <div className="text-center text-gray-500 italic py-8">No items in this category</div>
+            ) : (
+              items.map((item, idx) => (
+                <div key={`${item.id || idx}-${category}`} className="relative group">
+                  <div
+                    className="flex justify-between items-baseline pb-1 mb-1"
+                    style={{ borderBottom: '1px dotted rgba(17,24,39,0.2)' }}
+                  >
+                    <h3
+                      className="font-bold text-lg"
+                      style={{
+                        fontFamily: '"Playfair Display","Cormorant Garamond",serif',
+                        color: '#1f2937',
+                      }}
+                    >
+                      {item.name}
+                    </h3>
+                    <span
+                      className="font-semibold text-lg"
+                      style={{ color: '#111827', fontFamily: '"Cormorant Garamond",serif' }}
+                    >
+                      {item.price ? `₹${item.price}` : '—'}
+                    </span>
+                  </div>
+                  {item.description && (
+                    <p className="italic text-sm text-gray-600 leading-relaxed mb-1">
+                      {item.description}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex gap-3 text-[10px] uppercase tracking-wider font-semibold">
+                      {item.isVeg !== false && (
+                        <span className="flex items-center gap-1 text-emerald-700">
+                          <Leaf size={12} strokeWidth={2.5} /> Veg
+                        </span>
+                      )}
+                      {item.isSpicy && (
+                        <span className="flex items-center gap-1 text-red-700">
+                          <Flame size={12} strokeWidth={2.5} /> Spicy
+                        </span>
+                      )}
+                    </div>
+                    {onAddToCart && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddToCart(item);
+                        }}
+                        style={{
+                          background: 'linear-gradient(135deg, #d97706, #b45309)',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          fontFamily: '"Cormorant Garamond",serif',
+                          letterSpacing: '0.05em',
+                          textTransform: 'uppercase',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                          e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                          e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+                        }}
+                      >
+                        Add
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Page number */}
+        <div className="mt-4 text-center text-sm italic text-gray-400">- {pageNumber} -</div>
+      </div>
+
+      {/* Light vignette */}
+      <div
+        className="pointer-events-none"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: isLeft
+            ? 'linear-gradient(to left, rgba(0,0,0,0.06), transparent)'
+            : 'linear-gradient(to right, rgba(0,0,0,0.06), transparent)',
+          mixBlendMode: 'multiply',
+        }}
+      />
+    </div>
+  );
+};
+
+const Sheet = ({ index, currentSheet, pair, menu, onFlip, isMobile, onAddToCart, allCategories = [] }) => {
+  const isFlipped = index < currentSheet;
+  const rotation = isFlipped ? -180 : 0;
+  const zIndex = 100 - index;
+
+  // Case-insensitive category matching
+  const normalizeCategory = (cat) => (cat || '').toString().trim().toLowerCase();
+  
+  // Create a set of all known categories (excluding "Other")
+  const knownCategories = new Set(
+    allCategories
+      .filter(c => c && c.toString().trim().toLowerCase() !== 'other')
+      .map(c => normalizeCategory(c))
+  );
+  
+  // Handle "Other" category - show items that don't match any known category
+  const leftItems = normalizeCategory(pair.left) === 'other'
+    ? menu.filter((m) => {
+        const itemCat = normalizeCategory(m.category);
+        return !itemCat || !knownCategories.has(itemCat);
+      })
+    : menu.filter((m) => normalizeCategory(m.category) === normalizeCategory(pair.left));
+    
+  const rightItems = normalizeCategory(pair.right) === 'other'
+    ? menu.filter((m) => {
+        const itemCat = normalizeCategory(m.category);
+        return !itemCat || !knownCategories.has(itemCat);
+      })
+    : menu.filter((m) => normalizeCategory(m.category) === normalizeCategory(pair.right));
+
+  return (
+    <div
+      className="absolute top-0 left-0 w-full h-full"
+      style={{
+        transformStyle: 'preserve-3d',
+        transformOrigin: 'left center',
+        transform: `translateZ(${index * -1}px) rotateY(${rotation}deg)`,
+        transition: 'transform 1s cubic-bezier(0.65, 0, 0.35, 1)',
+        zIndex,
+        boxShadow: isFlipped
+          ? 'rgba(0,0,0,0.25) 0px 12px 30px'
+          : 'rgba(0,0,0,0.35) 0px 18px 40px',
+      }}
+      onClick={() => onFlip(isFlipped ? index : index + 1)}
+    >
+      {/* Right page (front) */}
+      <div
+        className={`absolute inset-0 ${isMobile ? 'w-full left-0' : 'w-1/2 left-1/2'}`}
+        style={{
+          background: '#fdfbf7',
+          transform: 'rotateY(0deg)',
+          borderLeft: '1px solid #e5e7eb',
+          overflow: 'hidden',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+        }}
+      >
+        <Page
+          category={isMobile ? pair.left : pair.right}
+          items={isMobile ? leftItems : rightItems}
+          isLeft={false}
+          pageNumber={isMobile ? index + 1 : index * 2 + 2}
+          onAddToCart={onAddToCart}
+        />
+      </div>
+
+      {/* Left page (back) - hide on mobile for single-page view */}
+      {!isMobile && (
+        <div
+          className="absolute inset-0 w-1/2 left-0"
+          style={{
+            background: '#fdfbf7',
+            transform: 'rotateY(180deg)',
+            borderRight: '1px solid #e5e7eb',
+            overflow: 'hidden',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+          }}
+        >
+          <Page category={pair.left} items={leftItems} isLeft pageNumber={index * 2 + 1} onAddToCart={onAddToCart} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const BistroBookMenu = ({ categories = [], menu = [], currentSheet = 0, onSheetChange = () => {}, onAddToCart = () => {} }) => {
+  // Ensure all menu items are included - add "Other" category for items without a category
+  const normalizedCategories = useMemo(() => {
+    const catSet = new Set(categories.map(c => (c || '').toString().trim().toLowerCase()));
+    const itemsWithoutCategory = menu.filter(m => {
+      const itemCat = (m.category || '').toString().trim().toLowerCase();
+      return !itemCat || !catSet.has(itemCat);
+    });
+    const finalCategories = [...categories];
+    if (itemsWithoutCategory.length > 0 && !finalCategories.includes('Other')) {
+      finalCategories.push('Other');
+    }
+    return finalCategories;
+  }, [categories, menu]);
+
+  const sheets = useMemo(() => chunkCategories(normalizedCategories), [normalizedCategories]);
+  const sheetCount = Math.max(1, sheets.length);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  const handleFlip = (next) => {
+    const clamped = Math.max(0, Math.min(sheetCount - 1, next));
+    onSheetChange(clamped);
+  };
+
+  return (
+    <div
+      className="relative w-full h-full"
+      style={{
+        minHeight: '100vh',
+        height: '100vh',
+        perspective: isMobile ? '2500px' : 'none',
+        overflow: 'hidden',
+        background: '#f6f4ef',
+      }}
+    >
+      {/* Title */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          textAlign: 'center',
+          color: '#b08968',
+          textShadow: '0 4px 12px rgba(0,0,0,0.25)',
+          letterSpacing: '0.25em',
+          fontSize: '22px',
+          fontFamily: '"Playfair Display","Cormorant Garamond",serif',
+          fontWeight: 800,
+          maxWidth: '90vw',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
+          zIndex: 10,
+        }}
+      >
+        Midnight Bistro
+        <div style={{ fontSize: '11px', letterSpacing: '0.35em', marginTop: '6px', color: '#c6a27d' }}>
+          Tap pages to flip
+        </div>
+      </div>
+
+      {/* Mobile 3D stack */}
+      <div
+        id="book-stage"
+        className="absolute left-1/2 -translate-x-1/2"
+        style={{
+          width: '100vw',
+          maxWidth: '100vw',
+          minWidth: '320px',
+          height: '100vh',
+          top: 0,
+          transformOrigin: 'center top',
+        }}
+      >
+        <div className="absolute inset-0 right-0 w-full h-full transform-style-3d">
+          {sheets.map((pair, idx) => (
+            <Sheet
+              key={`${pair.left}-${idx}`}
+              index={idx}
+              currentSheet={currentSheet}
+              pair={pair}
+              menu={menu}
+              onFlip={handleFlip}
+              isMobile={isMobile}
+              onAddToCart={onAddToCart}
+              allCategories={normalizedCategories}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Controls (mobile) */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '10px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: '8px',
+          alignItems: 'center',
+          zIndex: 50,
+        }}
+      >
+        <button
+          onClick={() => handleFlip(currentSheet - 1)}
+          disabled={currentSheet === 0}
+          aria-label="Previous page"
+          style={{
+            width: '32px',
+            height: '32px',
+            padding: 0,
+            borderRadius: '50%',
+            border: '1px solid rgba(0,0,0,0.12)',
+            background: currentSheet === 0 ? 'rgba(0,0,0,0.06)' : 'rgba(0,0,0,0.1)',
+            color: '#4b5563',
+            cursor: currentSheet === 0 ? 'not-allowed' : 'pointer',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '14px',
+            lineHeight: 1,
+          }}
+        >
+          ←
+        </button>
+        <div
+          style={{
+            padding: '6px 10px',
+            borderRadius: '9999px',
+            border: '1px solid rgba(0,0,0,0.12)',
+            background: 'rgba(255,255,255,0.9)',
+            color: '#374151',
+            fontWeight: 800,
+            letterSpacing: '0.08em',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+            fontSize: '11px',
+            minWidth: '80px',
+            textAlign: 'center',
+          }}
+        >
+          {currentSheet + 1} / {sheetCount}
+        </div>
+        <button
+          onClick={() => handleFlip(currentSheet + 1)}
+          disabled={currentSheet === sheetCount - 1}
+          aria-label="Next page"
+          style={{
+            width: '32px',
+            height: '32px',
+            padding: 0,
+            borderRadius: '50%',
+            border: '1px solid rgba(0,0,0,0.12)',
+            background:
+              currentSheet === sheetCount - 1 ? 'rgba(0,0,0,0.06)' : 'linear-gradient(135deg,#f59e0b,#d97706)',
+            color: currentSheet === sheetCount - 1 ? '#6b7280' : '#1f1b12',
+            cursor: currentSheet === sheetCount - 1 ? 'not-allowed' : 'pointer',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '14px',
+            lineHeight: 1,
+          }}
+        >
+          →
+        </button>
+      </div>
+
+      {/* Fonts */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Playfair+Display:wght@700;800&family=Inter:wght@500;600&display=swap');
+      `}</style>
+    </div>
+  );
+};
+
+export default BistroBookMenu;
+
