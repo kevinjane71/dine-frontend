@@ -2556,6 +2556,39 @@ const MenuManagement = () => {
               <FaQrcode size={10} />
               QR Code
             </button>
+            <button
+              onClick={() => {
+                const restaurantId = currentRestaurant?.id || localStorage.getItem('restaurantId');
+                router.push(`/menu/customize${restaurantId ? `?restaurant=${restaurantId}` : ''}`);
+              }}
+              style={{
+                padding: '8px 14px',
+                backgroundColor: '#fef3c7',
+                color: '#92400e',
+                border: '1px solid #fbbf24',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                whiteSpace: 'nowrap',
+                minWidth: 'auto'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.backgroundColor = '#fde68a';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.backgroundColor = '#fef3c7';
+              }}
+            >
+              <FaEye size={10} />
+              Customize Menu
+            </button>
           </div>
         </div>
               </div>

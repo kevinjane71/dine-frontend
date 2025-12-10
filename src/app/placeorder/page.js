@@ -46,6 +46,7 @@ const PlaceOrderContent = () => {
     const restaurant = searchParams.get('restaurant');
     const seat = searchParams.get('seat');
     
+    // If theme is explicitly set in URL, use it
     if (theme === 'cube') {
       const params = new URLSearchParams();
       if (restaurant) params.set('restaurant', restaurant);
@@ -68,6 +69,41 @@ const PlaceOrderContent = () => {
       if (seat) params.set('seat', seat);
       router.replace(`/placeorder/bistro?${params.toString()}`);
       return;
+    }
+
+    // If no theme in URL, check backend for saved theme
+    if (restaurant && !theme) {
+      const checkTheme = async () => {
+        try {
+          const themeResponse = await apiClient.getPublicMenuTheme(restaurant);
+          console.log('Theme response:', themeResponse);
+          
+          if (themeResponse?.success && themeResponse.themeId && themeResponse.themeId !== 'default') {
+            const params = new URLSearchParams();
+            params.set('restaurant', restaurant);
+            if (seat) params.set('seat', seat);
+            
+            const themeRoutes = {
+              'bistro': '/placeorder/bistro',
+              'cube': '/placeorder/cube',
+              'book': '/placeorder/book',
+            };
+            
+            const route = themeRoutes[themeResponse.themeId];
+            if (route) {
+              console.log(`Redirecting to ${route} with theme: ${themeResponse.themeId}`);
+              router.replace(`${route}?${params.toString()}`);
+              return;
+            }
+          } else {
+            console.log('No custom theme found, using default menu');
+          }
+        } catch (error) {
+          console.error('Error checking menu theme:', error);
+          // Continue with default if theme check fails
+        }
+      };
+      checkTheme();
     }
   }, [searchParams, router]);
   

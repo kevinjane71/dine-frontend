@@ -452,6 +452,22 @@ class ApiClient {
     });
   }
 
+  // Menu Theme APIs
+  async getMenuTheme(restaurantId) {
+    return this.request(`/api/menu-theme/${restaurantId}`);
+  }
+
+  async saveMenuTheme(restaurantId, themeData) {
+    return this.request(`/api/menu-theme/${restaurantId}`, {
+      method: 'POST',
+      body: themeData,
+    });
+  }
+
+  async getPublicMenuTheme(restaurantId) {
+    return this.request(`/api/public/menu-theme/${restaurantId}`);
+  }
+
   // Order endpoints
   async createOrder(orderData) {
     console.log('📤 API Client - Creating order with data:', orderData);
