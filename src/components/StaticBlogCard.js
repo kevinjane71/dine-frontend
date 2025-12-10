@@ -86,8 +86,8 @@ export default function StaticBlogCard() {
           alignItems: 'center',
           gap: '8px',
         }}>
-          <time dateTime="2026-01-15">
-            January 15, 2026
+          <time dateTime="2025-01-15">
+            January 15, 2025
           </time>
           <span>•</span>
           <span style={{ color: '#ef4444', fontWeight: '600' }}>Read More →</span>

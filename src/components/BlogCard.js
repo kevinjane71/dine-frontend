@@ -22,7 +22,7 @@ export default function BlogCard({ post }) {
         e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.05)';
       }}
     >
-      <Link href={`/blog/${post.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <Link href={post.isStatic && post.staticPath ? post.staticPath : `/blog/${post.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
         <div style={{
           fontSize: '12px',
           fontWeight: '600',
