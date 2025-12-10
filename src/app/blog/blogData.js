@@ -261,6 +261,16 @@ export const blogPosts = [
     categoryColor: '#10b981',
     isStatic: true,
     staticPath: '/blog/restaurant-inventory-sheet.html'
+  },
+  {
+    slug: 'restaurant-cost-management-profit',
+    title: 'Restaurant Cost Management: How to Control Expenses & Maximize Profit (2025)',
+    excerpt: 'Complete guide to restaurant cost management and profit optimization. Learn how to control food costs, reduce waste, and boost profitability with smart systems.',
+    date: '2026-02-25',
+    category: 'Cost Management',
+    categoryColor: '#ef4444',
+    isStatic: true,
+    staticPath: '/blog/restaurant-cost-management-profit.html'
   }
 ];
 
