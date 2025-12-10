@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useState } from 'react';
 import { Flame, Leaf } from 'lucide-react';
+import { FaPlus, FaMinus } from 'react-icons/fa';
 
 // Two categories per sheet: left/right.
 
@@ -36,8 +37,14 @@ const chunkCategories = (cats = []) => {
   return res;
 };
 
-const Page = ({ category, items, isLeft, pageNumber, onAddToCart }) => {
+const Page = ({ category, items, isLeft, pageNumber, onAddToCart, cart = [], onRemoveFromCart }) => {
   const color = getPageColor(category);
+  
+  // Helper to get item quantity from cart
+  const getItemQuantity = (itemId) => {
+    const cartItem = cart.find((c) => c.id === itemId);
+    return cartItem ? cartItem.quantity : 0;
+  };
   return (
     <div
       className="relative w-full h-full overflow-hidden"
@@ -73,22 +80,17 @@ const Page = ({ category, items, isLeft, pageNumber, onAddToCart }) => {
       {/* Content */}
       <div className="relative z-10 flex flex-col h-full">
         {/* Header */}
-        <div className="text-center mb-4">
-          <div className="flex items-center justify-center gap-2 mb-2 text-[10px] uppercase tracking-[0.3em] text-amber-900/60">
-            <span className="h-px w-8 bg-amber-900/40" />
-            Est. 2024
-            <span className="h-px w-8 bg-amber-900/40" />
-          </div>
+        <div className="text-center mb-2">
           <h2
             style={{
               fontFamily: '"Playfair Display","Cormorant Garamond",serif',
-              fontSize: '26px',
+              fontSize: '18px',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               color: '#111827',
               borderBottom: `2px solid ${color}40`,
               display: 'inline-block',
-              paddingBottom: '6px',
+              paddingBottom: '4px',
             }}
           >
             {category || 'Menu'}
@@ -144,39 +146,143 @@ const Page = ({ category, items, isLeft, pageNumber, onAddToCart }) => {
                         </span>
                       )}
                     </div>
-                    {onAddToCart && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAddToCart(item);
-                        }}
-                        style={{
-                          background: 'linear-gradient(135deg, #d97706, #b45309)',
-                          color: '#fff',
-                          border: 'none',
-                          padding: '6px 12px',
-                          borderRadius: '6px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          fontFamily: '"Cormorant Garamond",serif',
-                          letterSpacing: '0.05em',
-                          textTransform: 'uppercase',
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-                          transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                          e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'scale(1)';
-                          e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
-                        }}
-                      >
-                        Add
-                      </button>
-                    )}
+                    {onAddToCart && (() => {
+                      const quantity = getItemQuantity(item.id);
+                      const isInCart = quantity > 0;
+                      
+                      if (isInCart) {
+                        // Show quantity controls
+                        return (
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              background: '#f9fafb',
+                              padding: '4px 6px',
+                              borderRadius: '8px',
+                              border: '1px solid #e5e7eb',
+                              position: 'relative',
+                              zIndex: 1001,
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                            }}
+                            onTouchStart={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (onRemoveFromCart) {
+                                  onRemoveFromCart(item.id);
+                                }
+                              }}
+                              style={{
+                                background: '#ffffff',
+                                border: '1px solid #e5e7eb',
+                                padding: '4px 6px',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                color: '#6b7280',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                minWidth: '24px',
+                                height: '24px',
+                              }}
+                            >
+                              <FaMinus size={10} />
+                            </button>
+                            <span
+                              style={{
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                color: '#111827',
+                                minWidth: '20px',
+                                textAlign: 'center',
+                                fontFamily: '"Cormorant Garamond",serif',
+                              }}
+                            >
+                              {quantity}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onAddToCart(item);
+                              }}
+                              style={{
+                                background: 'linear-gradient(135deg, #d97706, #b45309)',
+                                border: 'none',
+                                padding: '4px 6px',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                color: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                minWidth: '24px',
+                                height: '24px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                              }}
+                            >
+                              <FaPlus size={10} />
+                            </button>
+                          </div>
+                        );
+                      } else {
+                        // Show Add button
+                        return (
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onAddToCart(item);
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                            }}
+                            onTouchStart={(e) => {
+                              e.stopPropagation();
+                            }}
+                            style={{
+                              background: 'linear-gradient(135deg, #d97706, #b45309)',
+                              color: '#fff',
+                              border: 'none',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              fontFamily: '"Cormorant Garamond",serif',
+                              letterSpacing: '0.05em',
+                              textTransform: 'uppercase',
+                              boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                              transition: 'all 0.2s',
+                              position: 'relative',
+                              zIndex: 1001,
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'scale(1.05)';
+                              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'scale(1)';
+                              e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+                            }}
+                          >
+                            Add
+                          </button>
+                        );
+                      }
+                    })()}
                   </div>
                 </div>
               ))
@@ -204,8 +310,9 @@ const Page = ({ category, items, isLeft, pageNumber, onAddToCart }) => {
   );
 };
 
-const Sheet = ({ index, currentSheet, pair, menu, onFlip, isMobile, onAddToCart, allCategories = [] }) => {
+const Sheet = ({ index, currentSheet, pair, menu, onFlip, isMobile, onAddToCart, allCategories = [], sheetCount = 1, cart = [], onRemoveFromCart }) => {
   const isFlipped = index < currentSheet;
+  const isCurrent = index === currentSheet;
   const rotation = isFlipped ? -180 : 0;
   const zIndex = 100 - index;
 
@@ -234,6 +341,48 @@ const Sheet = ({ index, currentSheet, pair, menu, onFlip, isMobile, onAddToCart,
       })
     : menu.filter((m) => normalizeCategory(m.category) === normalizeCategory(pair.right));
 
+  // Handle tap on left side - go to previous page
+  const handleLeftTap = (e) => {
+    // Don't trigger if clicking on a button or interactive element
+    const target = e.target;
+    if (
+      target.tagName === 'BUTTON' ||
+      target.closest('button') ||
+      target.closest('[role="button"]') ||
+      target.style.cursor === 'pointer' && target.tagName !== 'DIV'
+    ) {
+      return;
+    }
+    // Check if click is on the tap zone itself (not on content)
+    if (target === e.currentTarget) {
+      e.stopPropagation();
+      if (isCurrent && currentSheet > 0) {
+        onFlip(currentSheet - 1);
+      }
+    }
+  };
+
+  // Handle tap on right side - go to next page
+  const handleRightTap = (e) => {
+    // Don't trigger if clicking on a button or interactive element
+    const target = e.target;
+    if (
+      target.tagName === 'BUTTON' ||
+      target.closest('button') ||
+      target.closest('[role="button"]') ||
+      target.style.cursor === 'pointer' && target.tagName !== 'DIV'
+    ) {
+      return;
+    }
+    // Check if click is on the tap zone itself (not on content)
+    if (target === e.currentTarget) {
+      e.stopPropagation();
+      if (isCurrent && currentSheet < sheetCount - 1) {
+        onFlip(currentSheet + 1);
+      }
+    }
+  };
+
   return (
     <div
       className="absolute top-0 left-0 w-full h-full"
@@ -246,8 +395,8 @@ const Sheet = ({ index, currentSheet, pair, menu, onFlip, isMobile, onAddToCart,
         boxShadow: isFlipped
           ? 'rgba(0,0,0,0.25) 0px 12px 30px'
           : 'rgba(0,0,0,0.35) 0px 18px 40px',
+        pointerEvents: isCurrent ? 'auto' : 'none',
       }}
-      onClick={() => onFlip(isFlipped ? index : index + 1)}
     >
       {/* Right page (front) */}
       <div
@@ -267,7 +416,26 @@ const Sheet = ({ index, currentSheet, pair, menu, onFlip, isMobile, onAddToCart,
           isLeft={false}
           pageNumber={isMobile ? index + 1 : index * 2 + 2}
           onAddToCart={onAddToCart}
+          cart={cart}
+          onRemoveFromCart={onRemoveFromCart}
         />
+        {/* Right tap zone - only on current page, excludes bottom area where buttons are */}
+        {isCurrent && (
+          <div
+            onClick={handleRightTap}
+            onTouchStart={handleRightTap}
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: isMobile ? '50%' : '100%',
+              height: 'calc(100% - 120px)', // Exclude bottom area where buttons are
+              cursor: currentSheet < sheetCount - 1 ? 'pointer' : 'default',
+              zIndex: 1, // Lower z-index so buttons are above
+              pointerEvents: 'auto',
+            }}
+          />
+        )}
       </div>
 
       {/* Left page (back) - hide on mobile for single-page view */}
@@ -283,14 +451,49 @@ const Sheet = ({ index, currentSheet, pair, menu, onFlip, isMobile, onAddToCart,
             WebkitBackfaceVisibility: 'hidden',
           }}
         >
-          <Page category={pair.left} items={leftItems} isLeft pageNumber={index * 2 + 1} onAddToCart={onAddToCart} />
+          <Page category={pair.left} items={leftItems} isLeft pageNumber={index * 2 + 1} onAddToCart={onAddToCart} cart={cart} onRemoveFromCart={onRemoveFromCart} />
+          {/* Left tap zone - only on current page, excludes bottom area where buttons are */}
+          {isCurrent && (
+            <div
+              onClick={handleLeftTap}
+              onTouchStart={handleLeftTap}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: 'calc(100% - 120px)', // Exclude bottom area where buttons are
+                cursor: currentSheet > 0 ? 'pointer' : 'default',
+                zIndex: 1, // Lower z-index so buttons are above
+                pointerEvents: 'auto',
+              }}
+            />
+          )}
         </div>
+      )}
+
+      {/* Mobile: Left tap zone on visible page, excludes bottom area where buttons are */}
+      {isMobile && isCurrent && (
+        <div
+          onClick={handleLeftTap}
+          onTouchStart={handleLeftTap}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '50%',
+            height: 'calc(100% - 120px)', // Exclude bottom area where buttons are
+            cursor: currentSheet > 0 ? 'pointer' : 'default',
+            zIndex: 1, // Lower z-index so buttons are above
+            pointerEvents: 'auto',
+          }}
+        />
       )}
     </div>
   );
 };
 
-const BistroBookMenu = ({ categories = [], menu = [], currentSheet = 0, onSheetChange = () => {}, onAddToCart = () => {} }) => {
+const BistroBookMenu = ({ categories = [], menu = [], currentSheet = 0, onSheetChange = () => {}, onAddToCart = () => {}, cart = [], onRemoveFromCart = () => {} }) => {
   // Ensure all menu items are included - add "Other" category for items without a category
   const normalizedCategories = useMemo(() => {
     const catSet = new Set(categories.map(c => (c || '').toString().trim().toLowerCase()));
@@ -332,33 +535,6 @@ const BistroBookMenu = ({ categories = [], menu = [], currentSheet = 0, onSheetC
         background: '#f6f4ef',
       }}
     >
-      {/* Title */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '12px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          textAlign: 'center',
-          color: '#b08968',
-          textShadow: '0 4px 12px rgba(0,0,0,0.25)',
-          letterSpacing: '0.25em',
-          fontSize: '22px',
-          fontFamily: '"Playfair Display","Cormorant Garamond",serif',
-          fontWeight: 800,
-          maxWidth: '90vw',
-          overflow: 'hidden',
-          whiteSpace: 'nowrap',
-          textOverflow: 'ellipsis',
-          zIndex: 10,
-        }}
-      >
-        Midnight Bistro
-        <div style={{ fontSize: '11px', letterSpacing: '0.35em', marginTop: '6px', color: '#c6a27d' }}>
-          Tap pages to flip
-        </div>
-      </div>
-
       {/* Mobile 3D stack */}
       <div
         id="book-stage"
@@ -384,6 +560,9 @@ const BistroBookMenu = ({ categories = [], menu = [], currentSheet = 0, onSheetC
               isMobile={isMobile}
               onAddToCart={onAddToCart}
               allCategories={normalizedCategories}
+              sheetCount={sheetCount}
+              cart={cart}
+              onRemoveFromCart={onRemoveFromCart}
             />
           ))}
         </div>
@@ -392,8 +571,8 @@ const BistroBookMenu = ({ categories = [], menu = [], currentSheet = 0, onSheetC
       {/* Controls (mobile) */}
       <div
         style={{
-          position: 'absolute',
-          bottom: '10px',
+          position: 'fixed',
+          bottom: '20px',
           left: '50%',
           transform: 'translateX(-50%)',
           display: 'flex',
