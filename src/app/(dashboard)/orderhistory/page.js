@@ -241,7 +241,7 @@ const OrderHistory = () => {
 
   useEffect(() => { if (restaurantId) fetchOrders(true); }, [fetchOrders, restaurantId]);
 
-  useEffect(() => { if (currentPage !== 1) setCurrentPage(1); }, [selectedStatus, selectedOrderType, myOrdersOnly, searchTerm, todayOrdersOnly]);
+  useEffect(() => { if (currentPage !== 1) setCurrentPage(1); }, [selectedStatus, selectedOrderType, myOrdersOnly, searchTerm, todayOrdersOnly, currentPage]);
 
   const handleSearch = (e) => { e.preventDefault(); fetchOrders(); };
   const handlePageChange = (newPage) => { if (newPage >= 1 && newPage <= totalPages) setCurrentPage(newPage); };
@@ -574,7 +574,7 @@ const OrderHistory = () => {
                 <FaArrowUp className="text-green-600 text-xs" />
               </div>
               <div className="text-2xl font-bold text-gray-900">₹{stats.totalRevenue.toFixed(0)}</div>
-              <div className="text-xs text-gray-600 mt-1">Today's Revenue</div>
+              <div className="text-xs text-gray-600 mt-1">Today&apos;s Revenue</div>
             </div>
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 shadow-sm">
               <div className="flex items-center justify-between mb-2">
