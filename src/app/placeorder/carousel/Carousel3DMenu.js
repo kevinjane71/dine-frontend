@@ -115,29 +115,29 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
     const offset = index - activeIndex;
     const absOffset = Math.abs(offset);
     
-    // Config
-    const spacing = 220;
-    const scale = Math.max(0.75, 1 - absOffset * 0.1); 
-    const opacity = Math.max(0.4, 1 - absOffset * 0.2); 
+    // Config tuned for mobile smoothness and less GPU work
+    const spacing = 170;
+    const scale = Math.max(0.82, 1 - absOffset * 0.1); 
+    const opacity = Math.max(0.55, 1 - absOffset * 0.25); 
     const zIndex = 100 - absOffset;
-    const rotateY = offset * -15; 
+    const rotateY = offset * -10; 
     const translateX = offset * spacing;
     
     const isVisible = absOffset <= 3;
 
     return {
-      transform: `translateX(calc(-50% + ${translateX}px)) scale(${scale}) perspective(1000px) rotateY(${rotateY}deg)`,
+      transform: `translateX(${translateX}px) scale(${scale}) perspective(900px) rotateY(${rotateY}deg)`,
       zIndex,
       opacity: isVisible ? opacity : 0,
       pointerEvents: offset === 0 ? 'auto' : 'none', 
-      transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)', // Smooth transition
+      transition: 'transform 0.35s ease, opacity 0.35s ease', // faster
       position: 'absolute',
       left: '50%',
-      top: '50%', 
+      top: '50%',
       marginTop: 0,
       transformOrigin: 'center center',
       visibility: isVisible ? 'visible' : 'hidden',
-      filter: offset === 0 ? 'drop-shadow(0 20px 40px rgba(0,0,0,0.15))' : `blur(${absOffset * 1}px) grayscale(${absOffset * 0.2})`,
+      filter: offset === 0 ? 'drop-shadow(0 12px 28px rgba(0,0,0,0.12))' : 'none',
       cursor: offset === 0 ? 'default' : 'pointer'
     };
   };
@@ -168,16 +168,16 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
   };
 
   return (
-    <div className="w-full h-[100vh] relative flex flex-col font-sans overflow-hidden bg-gray-50 text-gray-800">
+    <div className="w-full h-screen relative flex flex-col font-sans overflow-hidden bg-gray-50 text-gray-800">
       
       {/* Background Ambience */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {activeItem && (
            <div 
-             className="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out transform scale-125 opacity-20"
+             className="absolute inset-0 bg-cover bg-center transition-all duration-700 ease-in-out transform scale-110 opacity-14"
              style={{ 
                backgroundImage: `url(${getDisplayImage(activeItem)})`,
-               filter: 'blur(60px)' 
+               filter: 'blur(24px)' 
              }}
            />
         )}
@@ -185,9 +185,9 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
       </div>
 
       {/* Header */}
-      <div className="relative z-20 pt-4 px-6 pb-1 flex justify-center items-center flex-shrink-0">
+      <div className="relative z-20 pt-3 px-5 pb-1 flex justify-center items-center flex-shrink-0">
         <div className="text-center">
-          <h1 className="text-xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-lg font-bold tracking-tight text-gray-900">
             {restaurant?.name || 'Menu'}
           </h1>
           <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest mt-0.5">Discover Delicious</p>
@@ -198,8 +198,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
       <div className="relative z-20 mb-1 w-full flex-shrink-0">
         <div 
             ref={categoriesRef}
-            className="flex gap-2 overflow-x-auto py-3 px-[50vw] scrollbar-hide snap-x w-full"
-            style={{ paddingLeft: '50%', paddingRight: '50%' }} 
+            className="flex gap-2 overflow-x-auto py-2 px-4 scrollbar-hide snap-x w-full"
         >
           {categories.map((cat, idx) => {
             const colorSet = CHIP_COLORS[idx % CHIP_COLORS.length];
@@ -226,7 +225,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
 
       {/* 3D Carousel Stage */}
       <div 
-        className="relative z-10 flex-1 flex items-center justify-center perspective-container overflow-hidden"
+        className="relative z-10 flex-1 min-h-0 flex items-center justify-center perspective-container overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -258,16 +257,15 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
                 onClick={() => {
                     if (index !== activeIndex) setActiveIndex(index);
                 }}
-                className="w-[280px] md:w-[320px] aspect-[3/4] bg-white rounded-[24px] overflow-hidden shadow-2xl border border-gray-100 flex flex-col"
-                // Reduced aspect ratio and added max-height logic
+                className="w-[260px] md:w-[300px] aspect-[3/4] bg-white rounded-[22px] overflow-hidden shadow-xl border border-gray-100 flex flex-col"
                 style={{
                     ...getCardStyle(index),
-                    transform: `${getCardStyle(index).transform} translateY(-50%)`, // Center vertically
-                    maxHeight: '65vh', // Ensure it fits within viewport minus headers
+                    transform: `${getCardStyle(index).transform} translate(-50%, -50%)`,
+                    maxHeight: '68vh',
                 }}
               >
                 {/* Image */}
-                <div className="h-[55%] w-full relative overflow-hidden group bg-gray-100">
+                <div className="h-[52%] w-full relative overflow-hidden group bg-gray-100">
                   <img 
                     src={getDisplayImage(item)} 
                     alt={item.name}
@@ -294,18 +292,18 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
                 </div>
 
                 {/* Content */}
-                <div className="h-[45%] bg-white p-4 flex flex-col justify-between relative z-10">
-                  <div className="transform -translate-y-8 mb-[-20px]">
-                     <div className="bg-white rounded-xl p-3 shadow-lg border border-gray-50 text-center">
-                        <h3 className="text-lg font-extrabold text-gray-900 mb-1 line-clamp-1">{item.name}</h3>
-                        <p className="text-gray-500 text-[10px] line-clamp-2 leading-relaxed">{item.description}</p>
+                <div className="h-[48%] bg-white p-3 flex flex-col justify-between relative z-10">
+                  <div className="transform -translate-y-6 mb-[-14px]">
+                     <div className="bg-white rounded-xl p-3 shadow border border-gray-100 text-center">
+                        <h3 className="text-base font-extrabold text-gray-900 mb-1 line-clamp-1">{item.name}</h3>
+                        <p className="text-gray-500 text-[11px] line-clamp-2 leading-relaxed">{item.description}</p>
                      </div>
                   </div>
 
                   <div className="flex items-end justify-between w-full pt-2">
                     <div className="flex flex-col">
                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Price</span>
-                       <span className="text-xl font-black text-gray-900 leading-none">₹{item.price}</span>
+                       <span className="text-lg font-black text-gray-900 leading-none">₹{item.price}</span>
                     </div>
                     
                     <button
@@ -313,7 +311,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
                         e.stopPropagation();
                         addToCart(item);
                       }}
-                      className="group relative overflow-hidden rounded-lg bg-red-500 pl-4 pr-5 py-2.5 transition-all hover:bg-red-600 hover:shadow-lg hover:shadow-red-200 active:scale-95 flex items-center gap-2"
+                      className="group relative overflow-hidden rounded-lg bg-red-500 px-4 py-2 transition-all hover:bg-red-600 hover:shadow-md hover:shadow-red-200 active:scale-95 flex items-center gap-2"
                     >
                       <FaPlus className="text-white text-xs" />
                       <span className="font-bold text-white text-xs">ADD</span>
