@@ -45,6 +45,12 @@ const PlaceOrderContent = () => {
     const theme = searchParams.get('theme');
     const restaurant = searchParams.get('restaurant');
     const seat = searchParams.get('seat');
+
+    let cancelled = false;
+
+    const finish = () => {
+      if (!cancelled) setCheckingTheme(false);
+    };
     
     // If theme is explicitly set in URL, use it
     if (theme === 'cube') {
@@ -79,10 +85,30 @@ const PlaceOrderContent = () => {
       return;
     }
 
-    // If no theme in URL, check backend for saved theme
-    if (restaurant && !theme) {
-      const checkTheme = async () => {
-        try {
+    const checkAndRedirect = async () => {
+      try {
+        // If theme explicitly provided in URL, redirect immediately
+        if (theme === 'cube' || theme === 'book' || theme === 'bistro' || theme === 'carousel') {
+          const params = new URLSearchParams();
+          if (restaurant) params.set('restaurant', restaurant);
+          if (seat) params.set('seat', seat);
+
+          const routes = {
+            cube: '/placeorder/cube',
+            book: '/placeorder/book',
+            bistro: '/placeorder/bistro',
+            carousel: '/placeorder/carousel'
+          };
+
+          const dest = routes[theme];
+          if (dest) {
+            router.replace(`${dest}?${params.toString()}`);
+            return;
+          }
+        }
+
+        // If no theme in URL, check backend for saved theme
+        if (restaurant && !theme) {
           const themeResponse = await apiClient.getPublicMenuTheme(restaurant);
           console.log('Theme response:', themeResponse);
           
@@ -107,13 +133,20 @@ const PlaceOrderContent = () => {
           } else {
             console.log('No custom theme found, using default menu');
           }
-        } catch (error) {
-          console.error('Error checking menu theme:', error);
-          // Continue with default if theme check fails
         }
-      };
-      checkTheme();
-    }
+      } catch (error) {
+        console.error('Error checking menu theme:', error);
+        // Continue with default if theme check fails
+      } finally {
+        finish();
+      }
+    };
+
+    checkAndRedirect();
+
+    return () => {
+      cancelled = true;
+    };
   }, [searchParams, router]);
   
   // State variables
@@ -140,6 +173,7 @@ const PlaceOrderContent = () => {
   const [verificationId, setVerificationId] = useState(null);
   const [sendingOtp, setSendingOtp] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [checkingTheme, setCheckingTheme] = useState(true);
   
   // Derived values
   const restaurantId = searchParams.get('restaurant') || 'default';
@@ -530,7 +564,7 @@ const PlaceOrderContent = () => {
     }
   };
 
-  if (loading) {
+  if (checkingTheme || loading) {
     return (
       <div style={{
         minHeight: '100vh',
