@@ -116,9 +116,9 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
     const absOffset = Math.abs(offset);
     
     // Mobile-first: keep neighbors subtle and prevent text overlap
-    const spacing = 140;
-    const scale = Math.max(0.86, 1 - absOffset * 0.08); 
-    const opacity = Math.max(0.25, 1 - absOffset * 0.5); 
+    const spacing = 180;
+    const scale = Math.max(0.78, 1 - absOffset * 0.12); 
+    const opacity = Math.max(0.18, 1 - absOffset * 0.55); 
     const zIndex = 100 - absOffset;
     const rotateY = offset * -8; 
     const translateX = offset * spacing;
@@ -235,7 +235,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
         <button 
           onClick={handlePrev}
           disabled={activeIndex === 0}
-          className={`absolute left-2 md:left-8 z-30 p-2 rounded-full bg-white/80 backdrop-blur shadow-sm text-gray-700 hover:text-red-500 hover:scale-110 disabled:opacity-0 transition-all duration-300 ${activeIndex === 0 ? 'pointer-events-none' : 'cursor-pointer'}`}
+          className={`absolute left-2 md:left-8 z-30 p-2.5 rounded-full bg-white border border-gray-200 shadow-md text-gray-700 hover:text-red-500 hover:scale-110 disabled:opacity-0 transition-all duration-300 ${activeIndex === 0 ? 'pointer-events-none' : 'cursor-pointer'}`}
         >
           <FaChevronLeft size={16} />
         </button>
@@ -243,7 +243,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
         <button 
           onClick={handleNext}
           disabled={activeIndex === activeItems.length - 1}
-          className={`absolute right-2 md:right-8 z-30 p-2 rounded-full bg-white/80 backdrop-blur shadow-sm text-gray-700 hover:text-red-500 hover:scale-110 disabled:opacity-0 transition-all duration-300 ${activeIndex === activeItems.length - 1 ? 'pointer-events-none' : 'cursor-pointer'}`}
+          className={`absolute right-2 md:right-8 z-30 p-2.5 rounded-full bg-white border border-gray-200 shadow-md text-gray-700 hover:text-red-500 hover:scale-110 disabled:opacity-0 transition-all duration-300 ${activeIndex === activeItems.length - 1 ? 'pointer-events-none' : 'cursor-pointer'}`}
         >
           <FaChevronRight size={16} />
         </button>
@@ -257,7 +257,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
                 onClick={() => {
                     if (index !== activeIndex) setActiveIndex(index);
                 }}
-                className="w-[260px] md:w-[300px] aspect-[3/4] bg-white rounded-[22px] overflow-hidden shadow-xl border border-gray-100 flex flex-col"
+                className="w-[240px] md:w-[280px] aspect-[3/4] bg-white rounded-[22px] overflow-hidden shadow-xl border border-gray-100 flex flex-col"
                 style={{
                     ...getCardStyle(index),
                     transform: `${getCardStyle(index).transform} translate(-50%, -50%)`,
