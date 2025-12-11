@@ -806,12 +806,68 @@ const Login = () => {
       height: "100vh",
       backgroundColor: "#fef7f0",
       display: "flex",
+      flexDirection: "column", // Changed to column to accommodate header
       alignItems: "center",
-      justifyContent: "center",
-      padding: "20px"
+      // justifyContent: "center", // Removed to allow custom spacing
+      padding: "0" // Reset padding to handle header
     }}
-    className="sm:p-5 p-4"
     >
+      {/* Small Header for Home Navigation */}
+      <div style={{
+        width: '100%',
+        padding: '12px 20px',
+        backgroundColor: 'white',
+        borderBottom: '1px solid #fed7aa',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 50,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+      }}>
+        <a 
+          href="/" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            textDecoration: 'none',
+            cursor: 'pointer' 
+          }}
+        >
+          <div style={{
+            width: "32px",
+            height: "32px",
+            background: "linear-gradient(135deg, #e53e3e, #dc2626)",
+            borderRadius: "8px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white"
+          }}>
+            <FaUtensils size={14} />
+          </div>
+          <span style={{ 
+            fontWeight: '800', 
+            fontSize: '18px', 
+            color: '#1f2937',
+            letterSpacing: '-0.5px' 
+          }}>
+            DineOpen
+          </span>
+        </a>
+      </div>
+
+      <div style={{
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        padding: "80px 20px 20px 20px" // Add top padding for fixed header
+      }}>
             <div style={{
               backgroundColor: "white",
               borderRadius: "8px",
@@ -904,7 +960,8 @@ const Login = () => {
               backgroundColor: loginType === 'owner' ? '#e53e3e' : 'transparent',
               color: loginType === 'owner' ? 'white' : '#64748b',
               cursor: 'pointer',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              width: '100%' // Make it take full width since staff tab is hidden
             }}
             className="sm:text-base text-sm"
           >
@@ -925,7 +982,8 @@ const Login = () => {
               backgroundColor: loginType === 'staff' ? '#e53e3e' : 'transparent',
               color: loginType === 'staff' ? 'white' : '#64748b',
               cursor: 'pointer',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              display: 'none' // Hide staff login tab
             }}
             className="sm:text-base text-sm"
           >
@@ -1619,7 +1677,7 @@ const Login = () => {
           onComplete={handleRestaurantOnboardingComplete}
           onSkip={handleRestaurantOnboardingSkip}
         />
-      )}
+      </div>
     </div>
   );  
 };

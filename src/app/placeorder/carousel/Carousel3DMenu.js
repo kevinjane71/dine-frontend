@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { FaChevronLeft, FaChevronRight, FaPlus, FaUtensils, FaLeaf, FaFire, FaCircle } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaPlus, FaUtensils, FaLeaf, FaFire } from 'react-icons/fa';
 import { getDisplayImage } from '../../../utils/placeholderImages';
 
 // Vibrant pastel colors for chips
@@ -27,17 +27,20 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
   const [activeCategory, setActiveCategory] = useState(categories[0] || 'All');
   const [activeIndex, setActiveIndex] = useState(0);
   const categoriesRef = useRef(null);
+  
+  // Touch state
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   // Filter items by category
   const activeItems = useMemo(() => {
     return menu.filter(item => item.category === activeCategory);
   }, [menu, activeCategory]);
 
-  // Reset index when category changes and scroll active category to center
+  // Reset index when category changes
   useEffect(() => {
     setActiveIndex(0);
     
-    // Smooth scroll active category to center
     if (categoriesRef.current) {
       const activeButton = categoriesRef.current.querySelector(`[data-category="${activeCategory}"]`);
       if (activeButton) {
@@ -50,7 +53,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
     }
   }, [activeCategory]);
 
-  // Handlers
+  // Navigation Handlers
   const handleNext = () => {
     if (activeIndex < activeItems.length - 1) {
       setActiveIndex(prev => prev + 1);
@@ -72,12 +75,42 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
     if (e.key === 'ArrowLeft') handlePrev();
   };
 
+  // Touch Handlers
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const isSwipe = Math.abs(distance) > 50;
+
+    if (isSwipe) {
+      if (distance > 0) {
+        // Swipe Left -> Next
+        handleNext();
+      } else {
+        // Swipe Right -> Prev
+        handlePrev();
+      }
+    }
+    
+    // Reset
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeIndex, activeItems]);
 
-  // Calculate styles for each card based on position relative to active index
+  // Card Style Calculation
   const getCardStyle = (index) => {
     const offset = index - activeIndex;
     const absOffset = Math.abs(offset);
@@ -90,7 +123,6 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
     const rotateY = offset * -15; 
     const translateX = offset * spacing;
     
-    // Visibility optimization
     const isVisible = absOffset <= 3;
 
     return {
@@ -98,12 +130,10 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
       zIndex,
       opacity: isVisible ? opacity : 0,
       pointerEvents: offset === 0 ? 'auto' : 'none', 
-      transition: 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)',
+      transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)', // Smooth transition
       position: 'absolute',
       left: '50%',
       top: '50%', 
-      // Important: translateY(-50%) centers it vertically based on its own height
-      // No need for fixed marginTop if we use standard centering technique
       marginTop: 0,
       transformOrigin: 'center center',
       visibility: isVisible ? 'visible' : 'hidden',
@@ -114,7 +144,6 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
 
   const activeItem = activeItems[activeIndex];
 
-  // Render indicators logic
   const renderIndicators = () => {
     const maxIndicators = 8;
     const start = Math.max(0, Math.min(activeIndex - Math.floor(maxIndicators / 2), activeItems.length - maxIndicators));
@@ -141,7 +170,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
   return (
     <div className="w-full h-[100vh] relative flex flex-col font-sans overflow-hidden bg-gray-50 text-gray-800">
       
-      {/* Background Ambience - Lighter Theme */}
+      {/* Background Ambience */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {activeItem && (
            <div 
@@ -155,7 +184,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-white via-white/80 to-gray-50/90" />
       </div>
 
-      {/* Header - Compact */}
+      {/* Header */}
       <div className="relative z-20 pt-4 px-6 pb-1 flex justify-center items-center flex-shrink-0">
         <div className="text-center">
           <h1 className="text-xl font-bold tracking-tight text-gray-900">
@@ -165,7 +194,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
         </div>
       </div>
 
-      {/* Category Navigation - Centered & Colorful Chips */}
+      {/* Category Navigation */}
       <div className="relative z-20 mb-1 w-full flex-shrink-0">
         <div 
             ref={categoriesRef}
@@ -195,8 +224,13 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
         </div>
       </div>
 
-      {/* 3D Carousel Stage - Fits Remaining Height */}
-      <div className="relative z-10 flex-1 flex items-center justify-center perspective-container overflow-hidden">
+      {/* 3D Carousel Stage */}
+      <div 
+        className="relative z-10 flex-1 flex items-center justify-center perspective-container overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         
         {/* Navigation Buttons */}
         <button 
@@ -215,7 +249,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
           <FaChevronRight size={16} />
         </button>
 
-        {/* Carousel Items - Centered using standard translate method */}
+        {/* Carousel Items */}
         <div className="relative w-full h-full flex items-center justify-center">
           {activeItems.length > 0 ? (
             activeItems.map((item, index) => (
@@ -224,14 +258,16 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
                 onClick={() => {
                     if (index !== activeIndex) setActiveIndex(index);
                 }}
-                className="w-[280px] md:w-[320px] max-h-[75vh] aspect-[3/4] bg-white rounded-[24px] overflow-hidden shadow-2xl border border-gray-100 flex flex-col"
+                className="w-[280px] md:w-[320px] aspect-[3/4] bg-white rounded-[24px] overflow-hidden shadow-2xl border border-gray-100 flex flex-col"
+                // Reduced aspect ratio and added max-height logic
                 style={{
                     ...getCardStyle(index),
-                    transform: `${getCardStyle(index).transform} translateY(-50%)` // Center vertically
+                    transform: `${getCardStyle(index).transform} translateY(-50%)`, // Center vertically
+                    maxHeight: '65vh', // Ensure it fits within viewport minus headers
                 }}
               >
-                {/* Image - Takes more space */}
-                <div className="h-[60%] w-full relative overflow-hidden group">
+                {/* Image */}
+                <div className="h-[55%] w-full relative overflow-hidden group bg-gray-100">
                   <img 
                     src={getDisplayImage(item)} 
                     alt={item.name}
@@ -253,12 +289,12 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
                       </div>
                     )}
                   </div>
-                  {/* Gradient Overlay for visual separation */}
+                  {/* Gradient Overlay */}
                   <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-black/20 to-transparent" />
                 </div>
 
-                {/* Content - Compact & Clean */}
-                <div className="h-[40%] bg-white p-5 flex flex-col justify-between relative z-10">
+                {/* Content */}
+                <div className="h-[45%] bg-white p-4 flex flex-col justify-between relative z-10">
                   <div className="transform -translate-y-8 mb-[-20px]">
                      <div className="bg-white rounded-xl p-3 shadow-lg border border-gray-50 text-center">
                         <h3 className="text-lg font-extrabold text-gray-900 mb-1 line-clamp-1">{item.name}</h3>
@@ -266,7 +302,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
                      </div>
                   </div>
 
-                  <div className="flex items-end justify-between w-full pt-4">
+                  <div className="flex items-end justify-between w-full pt-2">
                     <div className="flex flex-col">
                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Price</span>
                        <span className="text-xl font-black text-gray-900 leading-none">₹{item.price}</span>
@@ -292,15 +328,13 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
         </div>
       </div>
 
-      {/* Progress Indicators - Interactive Slider - Compact */}
+      {/* Progress Indicators */}
       <div className="relative z-20 pb-6 pt-2 flex flex-col items-center gap-2 flex-shrink-0">
-         {/* Simple text helper */}
          {activeItems.length > 1 && (
              <p className="text-[9px] text-gray-400 uppercase tracking-widest font-bold opacity-60">
                 {activeIndex + 1} / {activeItems.length}
              </p>
          )}
-         {/* Dots */}
          {renderIndicators()}
       </div>
       

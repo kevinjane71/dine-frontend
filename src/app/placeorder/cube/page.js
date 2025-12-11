@@ -405,12 +405,12 @@ const PlaceOrderCubeContent = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#0a0a0a',
+        backgroundColor: '#ffffff',
         flexDirection: 'column',
         gap: '20px'
       }}>
         <FaSpinner size={40} color="#ef4444" style={{ animation: 'spin 1s linear infinite' }} />
-        <p style={{ color: '#ffffff', fontSize: '16px' }}>Loading menu...</p>
+        <p style={{ color: '#1a1a1a', fontSize: '16px' }}>Loading menu...</p>
         
         <style jsx>{`
           @keyframes spin {
@@ -429,21 +429,21 @@ const PlaceOrderCubeContent = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#0a0a0a',
+        backgroundColor: '#ffffff',
         padding: '20px',
         flexDirection: 'column',
         gap: '20px'
       }}>
         <div style={{
-          backgroundColor: '#1f1f1f',
+          backgroundColor: '#f8fafc',
           padding: '40px',
           borderRadius: '16px',
           maxWidth: '500px',
           textAlign: 'center',
-          border: '1px solid #333'
+          border: '1px solid #e2e8f0'
         }}>
           <h2 style={{ color: '#ef4444', marginBottom: '16px' }}>Error</h2>
-          <p style={{ color: '#ffffff', marginBottom: '24px' }}>{error}</p>
+          <p style={{ color: '#1a1a1a', marginBottom: '24px' }}>{error}</p>
           <button
             onClick={() => router.push('/')}
             style={{
@@ -468,8 +468,8 @@ const PlaceOrderCubeContent = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#0a0a0a',
-      color: '#ffffff',
+      backgroundColor: '#ffffff',
+      color: '#1a1a1a',
       position: 'relative'
     }}>
       {/* Header */}
@@ -477,9 +477,9 @@ const PlaceOrderCubeContent = () => {
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        backgroundColor: isScrolled ? 'rgba(10, 10, 10, 0.95)' : 'rgba(10, 10, 10, 0.9)',
+        backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.9)',
         backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
         padding: isScrolled ? '12px 20px' : '16px 20px',
         transition: 'all 0.3s ease'
       }}>
@@ -495,8 +495,8 @@ const PlaceOrderCubeContent = () => {
               <button
                 onClick={() => setSelectedCategory(null)}
                 style={{
-                  background: 'rgba(239, 68, 68, 0.2)',
-                  border: '1px solid rgba(239, 68, 68, 0.5)',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
                   color: '#ef4444',
                   padding: '8px 12px',
                   borderRadius: '8px',
@@ -509,10 +509,10 @@ const PlaceOrderCubeContent = () => {
                   transition: 'all 0.2s'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.3)';
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
                 }}
               >
                 <FaChevronLeft size={12} />
@@ -522,48 +522,47 @@ const PlaceOrderCubeContent = () => {
             <div>
               <h1 style={{ 
                 fontSize: isScrolled ? '16px' : '20px', 
-                fontWeight: '700', 
+                fontWeight: '800', 
                 margin: 0,
-                background: 'linear-gradient(135deg, #ffffff, #ef4444)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
+                color: '#1a1a1a',
+                letterSpacing: '-0.025em'
               }}>
                 {restaurant?.name || 'My Restaurant'}
               </h1>
             </div>
           </div>
           
-          <button
-            onClick={() => setShowCart(true)}
-            style={{
-              position: 'relative',
-              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-              border: 'none',
-              padding: '10px 16px',
-              borderRadius: '10px',
-              color: 'white',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontWeight: '600',
-              fontSize: '14px',
-              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
-            }}
-          >
-            <FaShoppingCart size={16} />
-            Cart
-            {getCartItemCount() > 0 && (
+          {getCartItemCount() > 0 && (
+            <button
+              onClick={() => setShowCart(true)}
+              style={{
+                position: 'relative',
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                border: 'none',
+                padding: '10px 16px',
+                borderRadius: '10px',
+                color: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: '600',
+                fontSize: '14px',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                transition: 'all 0.2s',
+                animation: 'fadeInUp 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+              }}
+            >
+              <FaShoppingCart size={16} />
+              Cart
               <span style={{
                 position: 'absolute',
                 top: '-6px',
@@ -578,12 +577,12 @@ const PlaceOrderCubeContent = () => {
                 justifyContent: 'center',
                 fontSize: '11px',
                 fontWeight: '700',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}>
                 {getCartItemCount()}
               </span>
-            )}
-          </button>
+            </button>
+          )}
         </div>
       </div>
 
@@ -605,8 +604,8 @@ const PlaceOrderCubeContent = () => {
             overflow: 'hidden'
           }}>
             <Suspense fallback={
-              <div style={{ textAlign: 'center', color: '#ffffff' }}>
-                <FaSpinner size={40} style={{ animation: 'spin 1s linear infinite' }} />
+              <div style={{ textAlign: 'center', color: '#1a1a1a' }}>
+                <FaSpinner size={40} style={{ animation: 'spin 1s linear infinite', color: '#ef4444' }} />
                 <p style={{ marginTop: '16px' }}>Loading 3D Experience...</p>
               </div>
             }>
@@ -626,11 +625,9 @@ const PlaceOrderCubeContent = () => {
               fontSize: '32px',
               fontWeight: '800',
               marginBottom: '32px',
-              background: 'linear-gradient(135deg, #ffffff, #ef4444)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              textTransform: 'capitalize'
+              color: '#1a1a1a',
+              textTransform: 'capitalize',
+              letterSpacing: '-0.03em'
             }}>
               {selectedCategory}
             </h2>
@@ -656,16 +653,16 @@ const PlaceOrderCubeContent = () => {
               <div style={{
                 textAlign: 'center',
                 padding: '60px 20px',
-                color: '#ffffff'
+                color: '#64748b'
               }}>
-                <p style={{ fontSize: '18px', opacity: 0.7 }}>No items in this category</p>
+                <p style={{ fontSize: '18px', fontWeight: '500' }}>No items in this category</p>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Cart Modal - Same as original */}
+      {/* Cart Modal */}
       {showCart && (
         <div style={{
           position: 'fixed',
@@ -673,7 +670,7 @@ const PlaceOrderCubeContent = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.7)',
+          backgroundColor: 'rgba(0,0,0,0.4)',
           zIndex: 200,
           display: 'flex',
           alignItems: 'flex-end',
@@ -687,37 +684,36 @@ const PlaceOrderCubeContent = () => {
         }}
         >
           <div style={{
-            backgroundColor: '#1a1a1a',
+            backgroundColor: '#ffffff',
             width: '100%',
             maxHeight: '85vh',
-            borderTopLeftRadius: '20px',
-            borderTopRightRadius: '20px',
-            boxShadow: '0 -10px 30px rgba(0,0,0,0.5)',
+            borderTopLeftRadius: '24px',
+            borderTopRightRadius: '24px',
+            boxShadow: '0 -10px 40px rgba(0,0,0,0.1)',
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden',
-            border: '1px solid rgba(255,255,255,0.1)'
+            overflow: 'hidden'
           }}>
             {/* Cart Header */}
             <div style={{ 
-              padding: '16px 20px 12px 20px',
-              borderBottom: '1px solid rgba(255,255,255,0.1)',
-              backgroundColor: '#0f0f0f'
+              padding: '20px 24px',
+              borderBottom: '1px solid #f1f5f9',
+              backgroundColor: '#ffffff'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#ffffff', margin: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a', margin: 0, letterSpacing: '-0.025em' }}>
                   Your Order ({getCartItemCount()} items)
                 </h3>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
                     onClick={() => setShowCart(false)}
                     style={{
-                      background: 'rgba(255,255,255,0.1)',
+                      background: '#f1f5f9',
                       border: 'none',
                       padding: '8px',
                       borderRadius: '8px',
                       cursor: 'pointer',
-                      color: '#ffffff',
+                      color: '#64748b',
                       transition: 'all 0.2s ease'
                     }}
                   >
@@ -726,7 +722,7 @@ const PlaceOrderCubeContent = () => {
                   <button
                     onClick={() => setCart([])}
                     style={{
-                      background: 'rgba(239, 68, 68, 0.2)',
+                      background: '#fef2f2',
                       border: 'none',
                       padding: '8px',
                       borderRadius: '8px',
@@ -744,15 +740,15 @@ const PlaceOrderCubeContent = () => {
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 alignItems: 'center',
-                padding: '8px 12px',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(239, 68, 68, 0.3)'
+                padding: '12px 16px',
+                backgroundColor: '#fef2f2',
+                borderRadius: '12px',
+                border: '1px solid #fee2e2'
               }}>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#ffffff' }}>
+                <span style={{ fontSize: '16px', fontWeight: '700', color: '#1a1a1a' }}>
                   Total: ₹{getCartTotal().toFixed(2)}
                 </span>
-                <span style={{ fontSize: '12px', color: '#ef4444' }}>
+                <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: '600' }}>
                   {getCartItemCount()} items
                 </span>
               </div>
@@ -762,65 +758,81 @@ const PlaceOrderCubeContent = () => {
             <div style={{ 
               flex: 1, 
               overflowY: 'auto', 
-              padding: '0 20px'
+              padding: '0 24px'
             }}>
               {cart.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#ffffff' }}>
-                  <FaShoppingCart size={48} color="#ef4444" style={{ opacity: 0.5, marginBottom: '16px' }} />
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', margin: '0 0 4px 0' }}>
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#64748b' }}>
+                  <div style={{ 
+                    width: '80px', 
+                    height: '80px', 
+                    background: '#f1f5f9', 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    margin: '0 auto 20px' 
+                  }}>
+                    <FaShoppingCart size={32} color="#94a3b8" />
+                  </div>
+                  <h3 style={{ fontSize: '18px', fontWeight: '700', margin: '0 0 8px 0', color: '#1a1a1a' }}>
                     Your cart is empty
                   </h3>
-                  <p style={{ fontSize: '13px', margin: 0, opacity: 0.7 }}>
+                  <p style={{ fontSize: '14px', margin: 0, opacity: 0.8 }}>
                     Add some delicious items to get started
                   </p>
                 </div>
               ) : (
-                <div style={{ padding: '16px 0' }}>
+                <div style={{ padding: '20px 0' }}>
                   {cart.map(item => (
                     <div key={item.id} style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '12px 16px',
-                      backgroundColor: 'rgba(255,255,255,0.05)',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      marginBottom: '8px'
+                      padding: '16px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '16px',
+                      border: '1px solid #f1f5f9',
+                      marginBottom: '12px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
                     }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h4 style={{ 
-                          fontSize: '14px', 
-                          fontWeight: '600', 
-                          color: '#ffffff', 
-                          margin: '0 0 2px 0'
+                          fontSize: '16px', 
+                          fontWeight: '700', 
+                          color: '#1a1a1a', 
+                          margin: '0 0 4px 0'
                         }}>
                           {item.name}
                         </h4>
-                        <p style={{ fontSize: '12px', color: '#ef4444', margin: 0 }}>
+                        <p style={{ fontSize: '14px', color: '#ef4444', margin: 0, fontWeight: '600' }}>
                           ₹{item.price} each
                         </p>
                       </div>
                       
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <button
                           onClick={() => removeFromCart(item.id)}
                           style={{
-                            background: 'rgba(255,255,255,0.1)',
+                            background: '#f1f5f9',
                             border: 'none',
-                            padding: '6px',
+                            width: '32px',
+                            height: '32px',
                             borderRadius: '8px',
                             cursor: 'pointer',
-                            color: '#ffffff'
+                            color: '#64748b',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}
                         >
                           <FaMinus size={10} />
                         </button>
                         
                         <span style={{ 
-                          fontSize: '14px', 
+                          fontSize: '16px', 
                           fontWeight: '700', 
-                          color: '#ffffff', 
-                          minWidth: '20px', 
+                          color: '#1a1a1a', 
+                          minWidth: '24px', 
                           textAlign: 'center' 
                         }}>
                           {item.quantity}
@@ -829,12 +841,16 @@ const PlaceOrderCubeContent = () => {
                         <button
                           onClick={() => addToCart(item)}
                           style={{
-                            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                            background: '#fef2f2',
                             border: 'none',
-                            padding: '6px',
+                            width: '32px',
+                            height: '32px',
                             borderRadius: '8px',
                             cursor: 'pointer',
-                            color: 'white'
+                            color: '#ef4444',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}
                         >
                           <FaPlus size={10} />
@@ -849,32 +865,34 @@ const PlaceOrderCubeContent = () => {
             {/* Customer Info & Checkout */}
             {cart.length > 0 && (
               <div style={{
-                padding: '20px',
-                borderTop: '1px solid rgba(255,255,255,0.1)',
-                backgroundColor: '#0f0f0f'
+                padding: '24px',
+                borderTop: '1px solid #f1f5f9',
+                backgroundColor: '#ffffff'
               }}>
                 <div style={{
-                  backgroundColor: 'rgba(255,255,255,0.05)',
-                  padding: '16px',
-                  borderRadius: '12px',
-                  marginBottom: '16px',
-                  border: '1px solid rgba(255,255,255,0.1)'
+                  backgroundColor: '#f8fafc',
+                  padding: '20px',
+                  borderRadius: '16px',
+                  marginBottom: '20px',
+                  border: '1px solid #e2e8f0'
                 }}>
-                  <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#ffffff', margin: '0 0 12px 0' }}>
+                  <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#1a1a1a', margin: '0 0 16px 0' }}>
                     Contact Information
                   </h4>
                   
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div>
                       <label style={{ 
                         display: 'flex', 
                         alignItems: 'center', 
-                        fontSize: '11px', 
+                        fontSize: '12px', 
                         fontWeight: '600', 
-                        color: '#ef4444', 
-                        marginBottom: '6px' 
+                        color: '#64748b', 
+                        marginBottom: '8px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
                       }}>
-                        <FaPhone size={10} style={{ marginRight: '4px' }} />
+                        <FaPhone size={10} style={{ marginRight: '6px' }} />
                         Phone Number *
                       </label>
                       <input
@@ -884,15 +902,18 @@ const PlaceOrderCubeContent = () => {
                         placeholder="Enter phone number"
                         style={{
                           width: '100%',
-                          padding: '10px 12px',
-                          border: '2px solid rgba(255,255,255,0.1)',
-                          borderRadius: '8px',
-                          fontSize: '13px',
+                          padding: '12px 16px',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '12px',
+                          fontSize: '15px',
                           outline: 'none',
-                          backgroundColor: 'rgba(255,255,255,0.05)',
-                          color: '#ffffff',
-                          boxSizing: 'border-box'
+                          backgroundColor: '#ffffff',
+                          color: '#1a1a1a',
+                          boxSizing: 'border-box',
+                          transition: 'border-color 0.2s'
                         }}
+                        onFocus={(e) => e.target.style.borderColor = '#ef4444'}
+                        onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                       />
                     </div>
                     
@@ -900,12 +921,14 @@ const PlaceOrderCubeContent = () => {
                       <label style={{ 
                         display: 'flex', 
                         alignItems: 'center', 
-                        fontSize: '11px', 
+                        fontSize: '12px', 
                         fontWeight: '600', 
-                        color: '#ef4444', 
-                        marginBottom: '6px' 
+                        color: '#64748b', 
+                        marginBottom: '8px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
                       }}>
-                        <FaChair size={10} style={{ marginRight: '4px' }} />
+                        <FaChair size={10} style={{ marginRight: '6px' }} />
                         Table Number
                       </label>
                       <input
@@ -915,15 +938,18 @@ const PlaceOrderCubeContent = () => {
                         placeholder="Table/Seat number"
                         style={{
                           width: '100%',
-                          padding: '10px 12px',
-                          border: '2px solid rgba(255,255,255,0.1)',
-                          borderRadius: '8px',
-                          fontSize: '13px',
+                          padding: '12px 16px',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '12px',
+                          fontSize: '15px',
                           outline: 'none',
-                          backgroundColor: 'rgba(255,255,255,0.05)',
-                          color: '#ffffff',
-                          boxSizing: 'border-box'
+                          backgroundColor: '#ffffff',
+                          color: '#1a1a1a',
+                          boxSizing: 'border-box',
+                          transition: 'border-color 0.2s'
                         }}
+                        onFocus={(e) => e.target.style.borderColor = '#ef4444'}
+                        onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                       />
                     </div>
                   </div>
@@ -935,11 +961,11 @@ const PlaceOrderCubeContent = () => {
                   style={{
                     width: '100%',
                     background: placingOrder || !customerInfo.phone.trim() || sendingOtp
-                      ? 'rgba(255,255,255,0.2)' 
+                      ? '#e2e8f0' 
                       : 'linear-gradient(135deg, #ef4444, #dc2626)',
-                    color: 'white',
-                    padding: '14px 20px',
-                    borderRadius: '12px',
+                    color: placingOrder || !customerInfo.phone.trim() || sendingOtp ? '#94a3b8' : 'white',
+                    padding: '16px 24px',
+                    borderRadius: '14px',
                     fontWeight: '700',
                     border: 'none',
                     cursor: placingOrder || !customerInfo.phone.trim() ? 'not-allowed' : 'pointer',
@@ -947,17 +973,18 @@ const PlaceOrderCubeContent = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px'
+                    gap: '10px',
+                    boxShadow: placingOrder || !customerInfo.phone.trim() ? 'none' : '0 10px 20px rgba(239, 68, 68, 0.2)'
                   }}
                 >
                   {placingOrder ? (
                     <>
-                      <FaSpinner size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                      <FaSpinner size={18} style={{ animation: 'spin 1s linear infinite' }} />
                       Processing Order...
                     </>
                   ) : sendingOtp ? (
                     <>
-                      <FaSpinner size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                      <FaSpinner size={18} style={{ animation: 'spin 1s linear infinite' }} />
                       Sending OTP...
                     </>
                   ) : (
@@ -973,62 +1000,85 @@ const PlaceOrderCubeContent = () => {
         </div>
       )}
 
-      {/* OTP Modal - Same as original */}
+      {/* OTP Modal */}
       {showOtpModal && (
         <div style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.8)',
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(4px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 200,
-          padding: '16px'
+          padding: '20px'
         }}>
           <div style={{
-            backgroundColor: '#1a1a1a',
-            borderRadius: '12px',
-            padding: '20px',
+            backgroundColor: '#ffffff',
+            borderRadius: '24px',
+            padding: '32px',
             maxWidth: '350px',
             width: '100%',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-            border: '1px solid rgba(255,255,255,0.1)'
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+            border: '1px solid #f1f5f9'
           }}>
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <FaLock size={32} color="#ef4444" style={{ marginBottom: '12px' }} />
-              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 6px 0' }}>
-                Verify Your Phone
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                background: '#fef2f2',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px'
+              }}>
+                <FaLock size={24} color="#ef4444" />
+              </div>
+              <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a', margin: '0 0 8px 0' }}>
+                Verify Phone
               </h2>
-              <p style={{ fontSize: '13px', color: '#ffffff', margin: 0, opacity: 0.7 }}>
-                We&apos;ve sent a 6-digit code to {customerInfo.phone}
+              <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>
+                Enter the 6-digit code sent to<br/>
+                <span style={{ color: '#1a1a1a', fontWeight: '600' }}>{customerInfo.phone}</span>
               </p>
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: '24px' }}>
               <input
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="Enter 6-digit code"
+                placeholder="000000"
                 maxLength="6"
                 autoFocus
                 style={{
                   width: '100%',
-                  padding: '12px',
-                  border: '2px solid rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  fontSize: '16px',
+                  padding: '16px',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '16px',
+                  fontSize: '24px',
                   textAlign: 'center',
                   outline: 'none',
-                  backgroundColor: 'rgba(255,255,255,0.05)',
-                  color: '#ffffff',
+                  backgroundColor: '#f8fafc',
+                  color: '#1a1a1a',
                   boxSizing: 'border-box',
-                  letterSpacing: '2px'
+                  letterSpacing: '4px',
+                  fontWeight: '700',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#ef4444';
+                  e.target.style.backgroundColor = '#ffffff';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#e2e8f0';
+                  e.target.style.backgroundColor = '#f8fafc';
                 }}
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={() => {
                   setShowOtpModal(false);
@@ -1037,14 +1087,15 @@ const PlaceOrderCubeContent = () => {
                 }}
                 style={{
                   flex: 1,
-                  background: 'rgba(255,255,255,0.1)',
-                  color: '#ffffff',
+                  background: '#f1f5f9',
+                  color: '#64748b',
                   border: 'none',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  fontSize: '14px',
                   fontWeight: '600',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
                 }}
               >
                 Cancel
@@ -1055,28 +1106,29 @@ const PlaceOrderCubeContent = () => {
                 style={{
                   flex: 1,
                   background: (sendingOtp || otp.length !== 6)
-                    ? 'rgba(255,255,255,0.2)'
+                    ? '#e2e8f0'
                     : 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  color: 'white',
+                  color: (sendingOtp || otp.length !== 6) ? '#94a3b8' : 'white',
                   border: 'none',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  fontSize: '14px',
                   fontWeight: '600',
                   cursor: (sendingOtp || otp.length !== 6) ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px'
+                  gap: '6px',
+                  boxShadow: (sendingOtp || otp.length !== 6) ? 'none' : '0 4px 12px rgba(239, 68, 68, 0.2)'
                 }}
               >
                 {sendingOtp ? (
                   <>
-                    <FaSpinner size={12} style={{ animation: 'spin 1s linear infinite' }} />
+                    <FaSpinner size={14} style={{ animation: 'spin 1s linear infinite' }} />
                     Verifying...
                   </>
                 ) : (
-                  'Verify & Place Order'
+                  'Verify'
                 )}
               </button>
             </div>
@@ -1113,34 +1165,36 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity, index
   
   return (
     <div style={{
-      backgroundColor: 'rgba(255,255,255,0.05)',
-      borderRadius: '16px',
-      padding: '16px',
-      border: '1px solid rgba(255,255,255,0.1)',
+      backgroundColor: '#ffffff',
+      borderRadius: '24px',
+      padding: '20px',
+      border: '1px solid #f1f5f9',
       position: 'relative',
-      transition: 'all 0.3s ease',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       cursor: 'pointer',
-      animation: `fadeInUp 0.5s ease ${index * 0.05}s both`
+      animation: `fadeInUp 0.5s ease ${index * 0.05}s both`,
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.01)'
     }}
     onMouseEnter={(e) => {
       e.currentTarget.style.transform = 'translateY(-4px)';
-      e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)';
-      e.currentTarget.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.2)';
+      e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01)';
+      e.currentTarget.style.borderColor = '#e2e8f0';
     }}
     onMouseLeave={(e) => {
       e.currentTarget.style.transform = 'translateY(0)';
-      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-      e.currentTarget.style.boxShadow = 'none';
+      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.01)';
+      e.currentTarget.style.borderColor = '#f1f5f9';
     }}>
       {/* Image */}
       <div style={{
         width: '100%',
-        height: '180px',
-        borderRadius: '12px',
+        height: '200px',
+        borderRadius: '16px',
         overflow: 'hidden',
-        marginBottom: '12px',
+        marginBottom: '16px',
         position: 'relative',
-        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2))'
+        background: '#f8fafc',
+        boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)'
       }}>
         {(() => {
           if (item.images && item.images.length > 0) {
@@ -1148,7 +1202,7 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity, index
               <ImageCarousel
                 images={item.images}
                 itemName={item.name}
-                maxHeight="180px"
+                maxHeight="200px"
                 showControls={false}
                 showDots={false}
                 autoPlay={true}
@@ -1190,19 +1244,30 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity, index
         {/* Veg/Non-Veg Badge */}
         <div style={{
           position: 'absolute',
-          top: '8px',
-          right: '8px',
-          width: '24px',
-          height: '24px',
-          borderRadius: '50%',
-          backgroundColor: isVeg ? '#22c55e' : '#ef4444',
+          top: '12px',
+          right: '12px',
+          padding: '4px 8px',
+          borderRadius: '20px',
+          backgroundColor: 'white',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+          gap: '4px',
+          fontSize: '11px',
+          fontWeight: '700',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          color: isVeg ? '#16a34a' : '#dc2626'
         }}>
-          {isVeg ? <FaLeaf size={12} color="white" /> : <FaDrumstickBite size={12} color="white" />}
+          {isVeg ? (
+            <>
+              <FaLeaf size={10} />
+              <span>VEG</span>
+            </>
+          ) : (
+            <>
+              <FaDrumstickBite size={10} />
+              <span>NON-VEG</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -1210,19 +1275,20 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity, index
       <div>
         <h3 style={{
           fontSize: '18px',
-          fontWeight: '700',
-          color: '#ffffff',
+          fontWeight: '800',
+          color: '#1a1a1a',
           margin: '0 0 6px 0',
-          lineHeight: '1.3'
+          lineHeight: '1.3',
+          letterSpacing: '-0.025em'
         }}>
           {item.name}
         </h3>
         
         {item.description && (
           <p style={{
-            fontSize: '13px',
-            color: 'rgba(255,255,255,0.7)',
-            margin: '0 0 12px 0',
+            fontSize: '14px',
+            color: '#64748b',
+            margin: '0 0 16px 0',
             lineHeight: '1.5',
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -1237,12 +1303,13 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity, index
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginTop: '12px'
+          marginTop: 'auto'
         }}>
           <span style={{
             fontSize: '20px',
             fontWeight: '800',
-            color: '#ef4444'
+            color: '#1a1a1a',
+            letterSpacing: '-0.03em'
           }}>
             ₹{item.price}
           </span>
@@ -1252,10 +1319,10 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity, index
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
-              background: 'rgba(239, 68, 68, 0.2)',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              border: '1px solid rgba(239, 68, 68, 0.5)'
+              background: '#f8fafc',
+              padding: '6px 8px',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0'
             }}>
               <button
                 onClick={(e) => {
@@ -1263,22 +1330,33 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity, index
                   onRemoveFromCart(item.id);
                 }}
                 style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#ef4444',
+                  background: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  color: '#64748b',
                   cursor: 'pointer',
-                  padding: '4px',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '8px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = '#cbd5e1';
+                  e.currentTarget.style.color = '#1a1a1a';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.color = '#64748b';
                 }}
               >
-                <FaMinus size={12} />
+                <FaMinus size={10} />
               </button>
               <span style={{
-                fontSize: '14px',
+                fontSize: '16px',
                 fontWeight: '700',
-                color: '#ffffff',
+                color: '#1a1a1a',
                 minWidth: '20px',
                 textAlign: 'center'
               }}>
@@ -1290,17 +1368,27 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity, index
                   onAddToCart(item);
                 }}
                 style={{
-                  background: 'transparent',
+                  background: '#ef4444',
                   border: 'none',
-                  color: '#ef4444',
+                  color: 'white',
                   cursor: 'pointer',
-                  padding: '4px',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '8px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 10px rgba(239, 68, 68, 0.2)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
-                <FaPlus size={12} />
+                <FaPlus size={10} />
               </button>
             </div>
           ) : (
@@ -1310,28 +1398,31 @@ const MenuItemCard = ({ item, onAddToCart, onRemoveFromCart, cartQuantity, index
                 onAddToCart(item);
               }}
               style={{
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                background: '#1a1a1a',
                 border: 'none',
                 color: 'white',
-                padding: '8px 16px',
-                borderRadius: '8px',
+                padding: '10px 20px',
+                borderRadius: '12px',
                 cursor: 'pointer',
-                fontWeight: '600',
+                fontWeight: '700',
                 fontSize: '14px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s'
+                gap: '8px',
+                transition: 'all 0.2s',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
               }}
             >
-              <FaPlus size={12} />
               Add
+              <FaPlus size={10} />
             </button>
           )}
         </div>
@@ -1348,10 +1439,10 @@ const PlaceOrderCubePage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#0a0a0a',
-        color: '#ffffff'
+        backgroundColor: '#ffffff',
+        color: '#1a1a1a'
       }}>
-        <FaSpinner size={40} style={{ animation: 'spin 1s linear infinite' }} />
+        <FaSpinner size={40} color="#ef4444" style={{ animation: 'spin 1s linear infinite' }} />
       </div>
     }>
       <PlaceOrderCubeContent />
@@ -1360,4 +1451,3 @@ const PlaceOrderCubePage = () => {
 };
 
 export default PlaceOrderCubePage;
-

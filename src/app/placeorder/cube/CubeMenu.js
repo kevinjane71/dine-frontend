@@ -1,194 +1,150 @@
 'use client';
 
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Text, Float, OrbitControls, Edges, useCursor } from '@react-three/drei';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Text, Float, OrbitControls, RoundedBox, useCursor, Html, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
+
+// --- Configuration ---
+const CUBE_SIZE = 2.6; // Further reduced for mobile
+const BOX_ARGS = [2.4, 2.4, 0.1]; // Smaller faces
 
 // --- Components ---
 
-const MenuItemList = ({ items, color }) => {
+const MenuItemList = ({ items }) => {
+  // Show fewer items but larger
+  const displayItems = items.slice(0, 3);
+
   return (
-    <group position={[-0.8, 0.6, 0.02]}>
-      {items.slice(0, 5).map((item, i) => (
-        <group key={item.id} position={[0, -i * 0.25, 0]}>
-          <Text
-            position={[0, 0, 0]}
-            fontSize={0.12}
-            color="#ffffff"
-            anchorX="left"
-            anchorY="middle"
-            maxWidth={1.2}
-            // Removed custom font to prevent loading errors
-          >
-            {item.name}
-          </Text>
-          <Text
-            position={[1.5, 0, 0]}
-            fontSize={0.12}
-            color={color}
-            anchorX="right"
-            anchorY="middle"
-          >
-            {item.price}
-          </Text>
-        </group>
-      ))}
-      {items.length > 5 && (
-        <Text
-          position={[0, -1.4, 0]}
-          fontSize={0.1}
-          color={color}
-          anchorX="left"
-          anchorY="middle"
-        >
-          + {items.length - 5} more...
-        </Text>
+    <div className="w-[220px] h-[220px] bg-white/95 backdrop-blur-xl rounded-[20px] p-5 flex flex-col shadow-2xl border border-white/60">
+      <div className="flex-1 space-y-3">
+        {displayItems.map((item, i) => (
+          <div key={item.id || i} className="flex justify-between items-start border-b border-gray-100 pb-2 last:border-0 last:pb-0">
+            <div className="flex-1 pr-2 text-left">
+              <h4 className="text-sm font-extrabold text-gray-900 leading-tight mb-0.5">{item.name}</h4>
+              <p className="text-[9px] text-gray-500 font-medium line-clamp-1 leading-relaxed">{item.description}</p>
+            </div>
+            <span className="text-sm font-black text-red-600 whitespace-nowrap">₹{item.price}</span>
+          </div>
+        ))}
+      </div>
+      {items.length > 3 && (
+        <div className="mt-2 pt-2 border-t border-gray-100 text-center">
+          <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-full">
+            + {items.length - 3} MORE
+          </span>
+        </div>
       )}
-    </group>
+    </div>
   );
 };
 
-const CategoryPanel = ({ category, menuItems, position, rotation, onClick, isHovered, onHover, onUnhover }) => {
-  const meshRef = useRef();
-  
-  // Neon Colors
-  const neonCyan = '#00f3ff';
-  const neonPink = '#ff00ff';
-  
-  const isActive = isHovered;
-  const mainColor = isActive ? neonPink : neonCyan;
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      const targetZ = isActive ? 0.2 : 0;
-      meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, targetZ, 0.1);
-    }
-  });
+const CategoryFace = ({ category, items, position, rotation, onClick }) => {
+  const [hovered, setHovered] = useState(false);
+  useCursor(hovered);
 
   return (
     <group position={position} rotation={rotation}>
-      <mesh
-        ref={meshRef}
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick(category);
-        }}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          onHover(category);
-        }}
-        onPointerOut={(e) => {
-          e.stopPropagation();
-          onUnhover();
-        }}
-      >
-        <boxGeometry args={[1.9, 1.9, 0.05]} />
-        {/* Robust Standard Material */}
-        <meshStandardMaterial
-          color="#0a0a1a"
-          emissive={mainColor}
-          emissiveIntensity={isActive ? 0.3 : 0.1}
-          roughness={0.2}
-          metalness={0.8}
-        />
-        
-        {/* Wireframe Edges */}
-        <Edges
-          scale={1}
-          threshold={15}
-          color={mainColor}
-          renderOrder={1000}
-        >
-          <meshBasicMaterial transparent opacity={1} toneMapped={false} linewidth={2} />
-        </Edges>
-      </mesh>
-
-      {/* Decoration Line */}
-      <group position={[0, 0, 0.04]}>
-         <mesh position={[0, 0.8, 0]}>
-            <planeGeometry args={[1.8, 0.02]} />
-            <meshBasicMaterial color={mainColor} opacity={0.8} transparent />
-         </mesh>
-      </group>
-
-      {/* Content */}
-      <group position={[0, 0, 0.06]}>
-        <group position={[-0.8, 0.6, 0]}>
-          <Text
-            fontSize={0.2}
-            color={mainColor}
-            anchorX="left"
-            anchorY="middle"
-            fontWeight="bold"
-            // Removed custom font
+      <Float speed={0} rotationIntensity={0} floatIntensity={0}>
+        {/* The HTML Content */}
+        <Html transform occlude distanceFactor={1.5} position={[0, 0, 0.06]} style={{ pointerEvents: 'none' }}>
+          <div 
+            className={`transition-all duration-500 ease-out transform ${hovered ? 'scale-105' : 'scale-100'}`}
           >
-            {category.toUpperCase()}
-          </Text>
-        </group>
+            <div className="text-center mb-3">
+              <h2 className="text-2xl font-black text-gray-900 tracking-tighter uppercase drop-shadow-sm">{category}</h2>
+              <div className="h-1 w-8 bg-red-500 mx-auto mt-1 rounded-full" />
+            </div>
+            
+            <MenuItemList items={items} />
+            
+            <button 
+              className="mt-5 mx-auto block px-5 py-2 bg-black text-white text-xs font-bold rounded-full shadow-xl hover:bg-gray-800 hover:scale-105 transition-all pointer-events-auto tracking-wide"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick(category);
+              }}
+              onPointerEnter={() => setHovered(true)}
+              onPointerLeave={() => setHovered(false)}
+            >
+              OPEN
+            </button>
+          </div>
+        </Html>
 
-        <MenuItemList items={menuItems} color={mainColor} />
-      </group>
+        {/* The Panel Surface */}
+        <mesh 
+          onPointerOver={() => setHovered(true)} 
+          onPointerOut={() => setHovered(false)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick(category);
+          }}
+        >
+          <RoundedBox args={BOX_ARGS} radius={0.15} smoothness={4}>
+            <meshPhysicalMaterial 
+              color={hovered ? "#ffffff" : "#f8fafc"}
+              roughness={0.15}
+              metalness={0.1}
+              transmission={0} 
+              reflectivity={0.5}
+              clearcoat={1}
+              clearcoatRoughness={0.1}
+            />
+          </RoundedBox>
+        </mesh>
+      </Float>
     </group>
   );
 };
 
-const ExpandedMenu = ({ categories, menu, onCategorySelect }) => {
-  const groupRef = useRef();
-  const [hoveredCategory, setHoveredCategory] = useState(null);
-  useCursor(!!hoveredCategory);
+const MenuCube = ({ categories, menu, onCategorySelect }) => {
+  const cubeRef = useRef();
+  const { viewport } = useThree();
+  
+  // Responsive scaling based on viewport width
+  // If viewport is small (mobile), scale down slightly
+  const scale = viewport.width < 5 ? 0.8 : 1;
 
-  useFrame((state) => {
-    if (groupRef.current) {
-      // Gentle float
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.1;
+  // Smooth idle rotation
+  useFrame((state, delta) => {
+    if (cubeRef.current) {
+      cubeRef.current.rotation.y += delta * 0.08;
+      cubeRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.08;
     }
   });
 
-  const getCategoryItems = (category) => {
-    return menu.filter(item => item.category === category);
-  };
-
-  const displayCategories = useMemo(() => {
-    const cats = categories || []; // Safety check
-    const sliced = cats.slice(0, 6);
-    while (sliced.length < 6) sliced.push(null);
-    return sliced;
+  const faces = useMemo(() => {
+    const activeCats = categories.slice(0, 6);
+    // Pad with placeholders if less than 6
+    while(activeCats.length < 6) activeCats.push(activeCats[0] || 'Menu');
+    
+    // Adjusted positions for smaller cube
+    const offset = CUBE_SIZE / 2;
+    
+    return [
+      { pos: [0, 0, offset], rot: [0, 0, 0], cat: activeCats[0] }, // Front
+      { pos: [offset, 0, 0], rot: [0, Math.PI / 2, 0], cat: activeCats[1] }, // Right
+      { pos: [0, 0, -offset], rot: [0, Math.PI, 0], cat: activeCats[2] }, // Back
+      { pos: [-offset, 0, 0], rot: [0, -Math.PI / 2, 0], cat: activeCats[3] }, // Left
+      { pos: [0, offset, 0], rot: [-Math.PI / 2, 0, 0], cat: activeCats[4] }, // Top
+      { pos: [0, -offset, 0], rot: [Math.PI / 2, 0, 0], cat: activeCats[5] }, // Bottom
+    ];
   }, [categories]);
 
-  // Curved Wall Layout
-  const panels = [
-    { pos: [-2.1, 1.05, 0.4], rot: [0, 0.25, 0] },
-    { pos: [0, 1.05, 0], rot: [0, 0, 0] },
-    { pos: [2.1, 1.05, 0.4], rot: [0, -0.25, 0] },
-    { pos: [-2.1, -1.05, 0.4], rot: [0, 0.25, 0] },
-    { pos: [0, -1.05, 0], rot: [0, 0, 0] },
-    { pos: [2.1, -1.05, 0.4], rot: [0, -0.25, 0] },
-  ];
-
   return (
-    <Float floatIntensity={0.2} rotationIntensity={0.1} speed={1}>
-      <group ref={groupRef}>
-        {panels.map((layout, index) => {
-          const category = displayCategories[index];
-          if (!category) return null;
-
-          return (
-            <CategoryPanel
-              key={category}
-              category={category}
-              menuItems={getCategoryItems(category)}
-              position={layout.pos}
-              rotation={layout.rot}
-              onClick={onCategorySelect}
-              isHovered={hoveredCategory === category}
-              onHover={setHoveredCategory}
-              onUnhover={() => setHoveredCategory(null)}
-            />
-          );
-        })}
-      </group>
-    </Float>
+    <group ref={cubeRef} scale={[scale, scale, scale]}>
+      {faces.map((face, index) => (
+        <CategoryFace
+          key={index}
+          category={face.cat}
+          items={menu.filter(i => i.category === face.cat)}
+          position={face.pos}
+          rotation={face.rot}
+          onClick={onCategorySelect}
+        />
+      ))}
+    </group>
   );
 };
 
@@ -201,73 +157,47 @@ const CubeMenu = ({ categories, menu, onCategorySelect }) => {
 
   if (!mounted) return null;
 
-  // Safety check for data
-  if (!categories || categories.length === 0) {
-    return (
-        <div style={{ color: 'white', textAlign: 'center', paddingTop: '50px' }}>
-            No categories available to display.
-        </div>
-    );
-  }
-
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      minHeight: '600px',
-      position: 'relative',
-      background: '#050510',
-      overflow: 'hidden'
-    }}>
-      <Canvas
-        dpr={[1, 2]}
-        camera={{ position: [0, 0, 7], fov: 45 }}
-      >
-        <color attach="background" args={['#050510']} />
+    <div style={{ width: '100vw', height: '100vh', background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
+      
+      {/* Minimal Header */}
+      <div className="absolute top-0 left-0 w-full p-4 flex flex-col items-center justify-center z-10 pointer-events-none bg-gradient-to-b from-white/80 to-transparent backdrop-blur-[2px]">
+        <h1 className="text-xl font-bold text-gray-900 tracking-tight">MENU CUBE</h1>
+        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Swipe to Explore</p>
+      </div>
+
+      <Canvas camera={{ position: [0, 0, 10], fov: 40 }}>
+        {/* Soft Studio Lighting */}
+        <ambientLight intensity={0.8} />
+        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={0.8} castShadow />
+        <pointLight position={[-10, -10, -10]} intensity={0.4} color="#e0f2fe" />
+        <directionalLight position={[0, 5, 5]} intensity={0.5} />
         
-        {/* Strong Lighting */}
-        <ambientLight intensity={1.5} />
-        <pointLight position={[10, 10, 10]} intensity={1} color="#00f3ff" />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#ff00ff" />
-        <pointLight position={[0, 0, 5]} intensity={1} color="#ffffff" />
+        {/* Environment for nice reflections */}
+        <Environment preset="studio" />
 
-        <ExpandedMenu
-          categories={categories}
-          menu={menu}
-          onCategorySelect={onCategorySelect}
-        />
+        {/* The Menu Cube */}
+        <Float rotationIntensity={0.2} floatIntensity={0.2} speed={1.5}>
+          <MenuCube 
+            categories={categories} 
+            menu={menu} 
+            onCategorySelect={onCategorySelect} 
+          />
+        </Float>
 
+        {/* Soft Shadow */}
+        <ContactShadows position={[0, -3.5, 0]} opacity={0.3} scale={15} blur={2} far={5} />
+
+        {/* Controls */}
         <OrbitControls 
+          enableZoom={false}
           enablePan={false}
-          enableZoom={true}
-          minDistance={4}
-          maxDistance={12}
-          maxPolarAngle={Math.PI / 1.5}
           minPolarAngle={Math.PI / 3}
+          maxPolarAngle={Math.PI / 1.5}
+          rotateSpeed={0.6}
+          dampingFactor={0.08}
         />
       </Canvas>
-
-      {/* UI Overlay */}
-      <div style={{
-        position: 'absolute',
-        top: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        textAlign: 'center',
-        color: '#00f3ff',
-        zIndex: 10,
-        pointerEvents: 'none'
-      }}>
-        <h1 style={{
-          fontSize: '24px',
-          fontWeight: 'bold',
-          letterSpacing: '4px',
-          textTransform: 'uppercase',
-          textShadow: '0 0 10px #00f3ff'
-        }}>
-          Menu Wall
-        </h1>
-      </div>
     </div>
   );
 };
