@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   FaPhone, 
   FaKey, 
@@ -309,7 +310,7 @@ const Login = () => {
         }
       }, 1000); // Increased delay to 1 second to avoid race conditions
     }
-  }, [otp, isFirebaseOTP, loading, demoAutoLoginTriggered, autoSubmitTriggered]);
+  }, [otp, isFirebaseOTP, loading, demoAutoLoginTriggered, autoSubmitTriggered, handleOtpSubmit]);
 
   // Setup Firebase reCAPTCHA
   useEffect(() => {
@@ -813,7 +814,7 @@ const Login = () => {
         zIndex: 50,
         boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
       }}>
-        <a 
+        <Link 
           href="/" 
           style={{ 
             display: 'flex', 
@@ -843,7 +844,7 @@ const Login = () => {
           }}>
             DineOpen
           </span>
-        </a>
+        </Link>
       </div>
 
       <div style={{
