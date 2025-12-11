@@ -236,39 +236,39 @@ const PlaceOrderBistroContent = () => {
 
   return (
     <div style={{ height: '100vh', overflow: 'hidden', position: 'relative', backgroundColor: '#0f0f0f' }}>
-      {/* Cart Icon Button - Top Right */}
-      <button
-        onClick={() => setShowCart(true)}
-        style={{
-          position: 'fixed',
-          top: '16px',
-          right: '16px',
-          zIndex: 100,
-          background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-          color: 'white',
-          border: 'none',
-          padding: '12px',
-          borderRadius: '12px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
-          transition: 'all 0.2s ease-out',
-          minWidth: '48px',
-          height: '48px',
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.transform = 'translateY(-2px) scale(1.05)';
-          e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.5)';
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.transform = 'translateY(0) scale(1)';
-          e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
-        }}
-      >
-        <FaShoppingCart size={20} />
-        {getCartItemCount() > 0 && (
+      {/* Cart Icon Button - Top Right - Only show when cart has items */}
+      {getCartItemCount() > 0 && (
+        <button
+          onClick={() => setShowCart(true)}
+          style={{
+            position: 'fixed',
+            top: '16px',
+            right: '16px',
+            zIndex: 100,
+            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+            color: 'white',
+            border: 'none',
+            padding: '12px',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+            transition: 'all 0.2s ease-out',
+            minWidth: '48px',
+            height: '48px',
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-2px) scale(1.05)';
+            e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0) scale(1)';
+            e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+          }}
+        >
+          <FaShoppingCart size={20} />
           <span
             style={{
               position: 'absolute',
@@ -289,8 +289,8 @@ const PlaceOrderBistroContent = () => {
           >
             {getCartItemCount()}
           </span>
-        )}
-      </button>
+        </button>
+      )}
 
       {/* Main */}
       <div style={{ height: '100vh', width: '100%', margin: 0, padding: 0, overflow: 'hidden' }}>
