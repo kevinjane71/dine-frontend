@@ -115,15 +115,15 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
     const offset = index - activeIndex;
     const absOffset = Math.abs(offset);
     
-    // Config tuned for mobile smoothness and less GPU work
-    const spacing = 170;
-    const scale = Math.max(0.82, 1 - absOffset * 0.1); 
-    const opacity = Math.max(0.55, 1 - absOffset * 0.25); 
+    // Mobile-first: keep neighbors subtle and prevent text overlap
+    const spacing = 140;
+    const scale = Math.max(0.86, 1 - absOffset * 0.08); 
+    const opacity = Math.max(0.25, 1 - absOffset * 0.5); 
     const zIndex = 100 - absOffset;
-    const rotateY = offset * -10; 
+    const rotateY = offset * -8; 
     const translateX = offset * spacing;
     
-    const isVisible = absOffset <= 3;
+    const isVisible = absOffset <= 2;
 
     return {
       transform: `translateX(${translateX}px) scale(${scale}) perspective(900px) rotateY(${rotateY}deg)`,
@@ -137,7 +137,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
       marginTop: 0,
       transformOrigin: 'center center',
       visibility: isVisible ? 'visible' : 'hidden',
-      filter: offset === 0 ? 'drop-shadow(0 12px 28px rgba(0,0,0,0.12))' : 'none',
+      filter: offset === 0 ? 'drop-shadow(0 10px 20px rgba(0,0,0,0.12))' : 'none',
       cursor: offset === 0 ? 'default' : 'pointer'
     };
   };
