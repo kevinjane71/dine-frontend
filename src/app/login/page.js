@@ -310,7 +310,8 @@ const Login = () => {
         }
       }, 1000); // Increased delay to 1 second to avoid race conditions
     }
-  }, [otp, isFirebaseOTP, loading, demoAutoLoginTriggered, autoSubmitTriggered, handleOtpSubmit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otp, isFirebaseOTP, loading, demoAutoLoginTriggered, autoSubmitTriggered]);
 
   // Setup Firebase reCAPTCHA
   useEffect(() => {
