@@ -111,33 +111,53 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
   }, [activeIndex, activeItems]);
 
   // Card Style Calculation
+  const [isMobile, setIsMobile] = useState(true);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const getCardStyle = (index) => {
     const offset = index - activeIndex;
     const absOffset = Math.abs(offset);
     
-    // Mobile-first: keep neighbors subtle and prevent text overlap
-    const spacing = 180;
-    const scale = Math.max(0.78, 1 - absOffset * 0.12); 
-    const opacity = Math.max(0.18, 1 - absOffset * 0.55); 
-    const zIndex = 100 - absOffset;
-    const rotateY = offset * -8; 
-    const translateX = offset * spacing;
+    // Mobile-first: Ensure single view focus
+    // On mobile, use screen width based spacing to push neighbors largely off-screen
+    // Card width is 240px on mobile.
+    const spacing = isMobile ? 260 : 320;
+    const scale = absOffset === 0 ? 1 : 0.85; 
+    const opacity = absOffset === 0 ? 1 : 0.0; // Hide neighbors completely on mobile per request "one view"? 
+    // User said "render thsi for one view" and "prev card showin partial viiable". 
+    // If I hide them (opacity 0), it's truly one view. But swipe feels empty?
+    // Let's scale them down and push them back but keep slight opacity if implied "carousel". 
+    // But user specifically said "render thsi for one view". I will hide neighbors visually or push them far.
+    // If I hide opacity, it solves overlap.
     
-    const isVisible = absOffset <= 2;
+    // Revised strategy: Visible neighbor but far away.
+    const effectiveOpacity = absOffset === 0 ? 1 : (isMobile ? 0 : 0.4); 
+    const zIndex = 100 - absOffset;
+    const rotateY = offset * -2; 
+    const translateX = offset * spacing;
+    const translateZ = absOffset === 0 ? 0 : -100; // Push back neighbors in 3D space
+
+    const isVisible = absOffset <= 1;
 
     return {
-      transform: `translateX(${translateX}px) scale(${scale}) perspective(900px) rotateY(${rotateY}deg)`,
+      transform: `translateX(${translateX}px) translateZ(${translateZ}px) scale(${scale}) rotateY(${rotateY}deg)`,
       zIndex,
-      opacity: isVisible ? opacity : 0,
+      opacity: isVisible ? effectiveOpacity : 0,
       pointerEvents: offset === 0 ? 'auto' : 'none', 
-      transition: 'transform 0.35s ease, opacity 0.35s ease', // faster
+      transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease',
       position: 'absolute',
       left: '50%',
       top: '50%',
       marginTop: 0,
       transformOrigin: 'center center',
       visibility: isVisible ? 'visible' : 'hidden',
-      filter: offset === 0 ? 'drop-shadow(0 10px 20px rgba(0,0,0,0.12))' : 'none',
+      filter: offset === 0 ? 'drop-shadow(0 20px 40px rgba(0,0,0,0.2))' : 'none',
       cursor: offset === 0 ? 'default' : 'pointer'
     };
   };
@@ -225,7 +245,7 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
 
       {/* 3D Carousel Stage */}
       <div 
-        className="relative z-10 flex-1 min-h-0 flex items-center justify-center perspective-container overflow-hidden"
+        className="relative z-10 flex-1 min-h-0 flex items-center justify-center perspective-container overflow-hidden touch-none overscroll-none"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -235,17 +255,19 @@ const Carousel3DMenu = ({ menu, categories, restaurant, addToCart, cart }) => {
         <button 
           onClick={handlePrev}
           disabled={activeIndex === 0}
-          className={`absolute left-2 md:left-8 z-30 p-2.5 rounded-full bg-white border border-gray-200 shadow-md text-gray-700 hover:text-red-500 hover:scale-110 disabled:opacity-0 transition-all duration-300 ${activeIndex === 0 ? 'pointer-events-none' : 'cursor-pointer'}`}
+          className={`absolute left-2 md:left-8 z-50 p-3 rounded-full bg-white border border-gray-200 shadow-lg text-gray-800 hover:text-red-600 active:scale-95 disabled:opacity-0 transition-all duration-300 ${activeIndex === 0 ? 'pointer-events-none' : 'cursor-pointer'}`}
+          aria-label="Previous Item"
         >
-          <FaChevronLeft size={16} />
+          <FaChevronLeft size={20} />
         </button>
 
         <button 
           onClick={handleNext}
           disabled={activeIndex === activeItems.length - 1}
-          className={`absolute right-2 md:right-8 z-30 p-2.5 rounded-full bg-white border border-gray-200 shadow-md text-gray-700 hover:text-red-500 hover:scale-110 disabled:opacity-0 transition-all duration-300 ${activeIndex === activeItems.length - 1 ? 'pointer-events-none' : 'cursor-pointer'}`}
+          className={`absolute right-2 md:right-8 z-50 p-3 rounded-full bg-white border border-gray-200 shadow-lg text-gray-800 hover:text-red-600 active:scale-95 disabled:opacity-0 transition-all duration-300 ${activeIndex === activeItems.length - 1 ? 'pointer-events-none' : 'cursor-pointer'}`}
+          aria-label="Next Item"
         >
-          <FaChevronRight size={16} />
+          <FaChevronRight size={20} />
         </button>
 
         {/* Carousel Items */}
