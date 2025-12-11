@@ -189,20 +189,6 @@ const countries = [
   { code: 'YT', name: 'Mayotte', flag: '🇾🇹', dialCode: '+262' },
   { code: 'RE', name: 'Réunion', flag: '🇷🇪', dialCode: '+262' },
   { code: 'MZ', name: 'Mozambique', flag: '🇲🇿', dialCode: '+258' },
-  { code: 'MW', name: 'Malawi', flag: '🇲🇼', dialCode: '+265' },
-  { code: 'ZM', name: 'Zambia', flag: '🇿🇲', dialCode: '+260' },
-  { code: 'ZW', name: 'Zimbabwe', flag: '🇿🇼', dialCode: '+263' },
-  { code: 'BW', name: 'Botswana', flag: '🇧🇼', dialCode: '+267' },
-  { code: 'NA', name: 'Namibia', flag: '🇳🇦', dialCode: '+264' },
-  { code: 'SZ', name: 'Eswatini', flag: '🇸🇿', dialCode: '+268' },
-  { code: 'LS', name: 'Lesotho', flag: '🇱🇸', dialCode: '+266' },
-  { code: 'MG', name: 'Madagascar', flag: '🇲🇬', dialCode: '+261' },
-  { code: 'MU', name: 'Mauritius', flag: '🇲🇺', dialCode: '+230' },
-  { code: 'SC', name: 'Seychelles', flag: '🇸🇨', dialCode: '+248' },
-  { code: 'KM', name: 'Comoros', flag: '🇰🇲', dialCode: '+269' },
-  { code: 'YT', name: 'Mayotte', flag: '🇾🇹', dialCode: '+262' },
-  { code: 'RE', name: 'Réunion', flag: '🇷🇪', dialCode: '+262' },
-  { code: 'MZ', name: 'Mozambique', flag: '🇲🇿', dialCode: '+258' },
   { code: 'MW', name: 'Malawi', flag: '🇲🇼', dialCode: '+265' }
 ];
 
@@ -1667,6 +1653,8 @@ const Login = () => {
           </p>
         </div>
       </div>
+      {/* End of card container */}
+    </div>
       
       {/* Hidden reCAPTCHA container */}
       <div id="recaptcha-container" style={{ display: 'none' }}></div>
