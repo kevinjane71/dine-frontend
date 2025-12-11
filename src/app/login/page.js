@@ -1399,10 +1399,10 @@ const Login = () => {
                 marginBottom: "24px", 
                 padding: "12px", 
                 backgroundColor: "#f9fafb", 
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between"
+                borderRadius: "8px", 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "space-between" 
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <FaPhone style={{ color: "#6b7280" }} />
@@ -1677,7 +1677,7 @@ const Login = () => {
           onComplete={handleRestaurantOnboardingComplete}
           onSkip={handleRestaurantOnboardingSkip}
         />
-      </div>
+      )}
     </div>
   );  
 };
