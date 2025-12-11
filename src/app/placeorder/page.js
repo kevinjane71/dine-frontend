@@ -71,6 +71,14 @@ const PlaceOrderContent = () => {
       return;
     }
 
+    if (theme === 'carousel') {
+      const params = new URLSearchParams();
+      if (restaurant) params.set('restaurant', restaurant);
+      if (seat) params.set('seat', seat);
+      router.replace(`/placeorder/carousel?${params.toString()}`);
+      return;
+    }
+
     // If no theme in URL, check backend for saved theme
     if (restaurant && !theme) {
       const checkTheme = async () => {
@@ -87,6 +95,7 @@ const PlaceOrderContent = () => {
               'bistro': '/placeorder/bistro',
               'cube': '/placeorder/cube',
               'book': '/placeorder/book',
+              'carousel': '/placeorder/carousel',
             };
             
             const route = themeRoutes[themeResponse.themeId];

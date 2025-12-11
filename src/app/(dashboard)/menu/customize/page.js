@@ -11,12 +11,14 @@ const DefaultMenuPreview = dynamic(() => import('./components/DefaultMenuPreview
 const BistroMenuPreview = dynamic(() => import('./components/BistroMenuPreview'), { ssr: false });
 const CubeMenuPreview = dynamic(() => import('./components/CubeMenuPreview'), { ssr: false });
 const BookMenuPreview = dynamic(() => import('./components/BookMenuPreview'), { ssr: false });
+const CarouselMenuPreview = dynamic(() => import('./components/CarouselMenuPreview'), { ssr: false });
 
 const MENU_THEMES = [
   { id: 'default', name: 'Default', description: 'Classic menu layout', icon: '📱' },
   { id: 'bistro', name: 'Bistro', description: 'Elegant book-style menu', icon: '📖' },
   { id: 'cube', name: 'Cube', description: '3D interactive cube menu', icon: '🎲' },
   { id: 'book', name: 'Book', description: '3D book flip menu', icon: '📚' },
+  { id: 'carousel', name: 'Carousel', description: 'Interactive 3D Cover Flow', icon: '🎠' },
 ];
 
 const MenuCustomizeContent = () => {
@@ -130,6 +132,8 @@ const MenuCustomizeContent = () => {
         return <CubeMenuPreview {...previewProps} />;
       case 'book':
         return <BookMenuPreview {...previewProps} />;
+      case 'carousel':
+        return <CarouselMenuPreview {...previewProps} />;
       default:
         return <DefaultMenuPreview {...previewProps} />;
     }
