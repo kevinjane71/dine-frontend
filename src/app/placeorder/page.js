@@ -85,10 +85,18 @@ const PlaceOrderContent = () => {
       return;
     }
 
+    if (theme === 'classic') {
+      const params = new URLSearchParams();
+      if (restaurant) params.set('restaurant', restaurant);
+      if (seat) params.set('seat', seat);
+      router.replace(`/placeorder/classic?${params.toString()}`);
+      return;
+    }
+
     const checkAndRedirect = async () => {
       try {
         // If theme explicitly provided in URL, redirect immediately
-        if (theme === 'cube' || theme === 'book' || theme === 'bistro' || theme === 'carousel') {
+        if (theme === 'cube' || theme === 'book' || theme === 'bistro' || theme === 'carousel' || theme === 'classic') {
           const params = new URLSearchParams();
           if (restaurant) params.set('restaurant', restaurant);
           if (seat) params.set('seat', seat);
@@ -97,7 +105,8 @@ const PlaceOrderContent = () => {
             cube: '/placeorder/cube',
             book: '/placeorder/book',
             bistro: '/placeorder/bistro',
-            carousel: '/placeorder/carousel'
+            carousel: '/placeorder/carousel',
+            classic: '/placeorder/classic'
           };
 
           const dest = routes[theme];
@@ -122,6 +131,7 @@ const PlaceOrderContent = () => {
               'cube': '/placeorder/cube',
               'book': '/placeorder/book',
               'carousel': '/placeorder/carousel',
+              'classic': '/placeorder/classic',
             };
             
             const route = themeRoutes[themeResponse.themeId];
