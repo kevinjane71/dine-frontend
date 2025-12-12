@@ -530,6 +530,26 @@ export default function LandingPage() {
                   )}
                 </div>
                 
+                <Link href="/restaurants" style={{
+                  color: '#374151',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  fontSize: '15px',
+                  transition: 'all 0.3s ease',
+                  position: 'relative',
+                  padding: '6px 0'
+                }} 
+                onMouseEnter={(e) => {
+                  e.target.style.color = '#ef4444';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = '#374151';
+                  e.target.style.transform = 'translateY(0)';
+                }}>
+                  Find Restaurants
+                </Link>
+
                 <a href="#features" style={{
                   color: '#374151',
                   textDecoration: 'none',
@@ -971,36 +991,36 @@ export default function LandingPage() {
         {/* Floating Elements - Hidden on mobile for better performance */}
         {!isMobile && (
           <>
-            <div style={{
-              position: 'absolute',
-              top: '15%',
-              left: '10%',
-              width: '120px',
-              height: '120px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '50%',
-              animation: 'float 6s ease-in-out infinite'
-            }} />
-            <div style={{
-              position: 'absolute',
-              bottom: '20%',
-              right: '15%',
-              width: '80px',
-              height: '80px',
-              background: 'rgba(255, 255, 255, 0.08)',
-              borderRadius: '50%',
-              animation: 'float 8s ease-in-out infinite reverse'
-            }} />
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '5%',
-              width: '60px',
-              height: '60px',
-              background: 'rgba(255, 255, 255, 0.06)',
-              borderRadius: '50%',
-              animation: 'float 10s ease-in-out infinite'
-            }} />
+        <div style={{
+          position: 'absolute',
+          top: '15%',
+          left: '10%',
+          width: '120px',
+          height: '120px',
+          background: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '50%',
+          animation: 'float 6s ease-in-out infinite'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '20%',
+          right: '15%',
+          width: '80px',
+          height: '80px',
+          background: 'rgba(255, 255, 255, 0.08)',
+          borderRadius: '50%',
+          animation: 'float 8s ease-in-out infinite reverse'
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '5%',
+          width: '60px',
+          height: '60px',
+          background: 'rgba(255, 255, 255, 0.06)',
+          borderRadius: '50%',
+          animation: 'float 10s ease-in-out infinite'
+        }} />
           </>
         )}
         
@@ -1057,15 +1077,15 @@ export default function LandingPage() {
             }}>
               Complete restaurant management with AI-powered voice orders, billing, and table management — all in one affordable system.
             </p>
-
+            
             {/* Pricing Teaser */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
+                alignItems: 'center',
               gap: '6px',
               marginBottom: isMobile ? '32px' : '40px'
-            }}>
+              }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -1419,7 +1439,7 @@ export default function LandingPage() {
             <h2 style={{
               fontSize: isMobile ? '28px' : '48px',
               fontWeight: '900',
-              color: '#1f2937',
+                          color: '#1f2937',
               marginBottom: isMobile ? '16px' : '20px',
               lineHeight: '1.2',
               padding: isMobile ? '0 8px' : '0'
@@ -1435,7 +1455,7 @@ export default function LandingPage() {
               }}>
                 Run Your Restaurant
               </span>
-            </h2>
+                </h2>
             <p style={{
               fontSize: isMobile ? '15px' : '20px',
               color: '#6b7280',
@@ -1452,19 +1472,19 @@ export default function LandingPage() {
             <div 
               className="features-grid"
               style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+              display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
                 gap: isMobile ? '24px' : '32px',
                 width: '100%',
                 maxWidth: '100%',
                 boxSizing: 'border-box',
                 gridAutoRows: 'minmax(auto, 1fr)'
-              }}>
+          }}>
             {features.map((feature, index) => (
               <div
                 key={index}
                 className="feature-card"
-                style={{
+                    style={{
                   padding: isMobile ? '32px 24px' : '40px 32px',
                   backgroundColor: 'white',
                   borderRadius: '20px',
@@ -1929,9 +1949,9 @@ export default function LandingPage() {
                   </h3>
                 </div>
               </Link>
-            ))}
-          </div>
-        </div>
+                ))}
+                </div>
+            </div>
       </section>
 
       {/* Pricing Section */}
@@ -1948,7 +1968,7 @@ export default function LandingPage() {
             <h2 style={{
               fontSize: isMobile ? '26px' : '42px',
               fontWeight: '700',
-              color: '#1f2937',
+                        color: '#1f2937',
               marginBottom: isMobile ? '16px' : '20px',
               lineHeight: '1.2'
             }}>
@@ -2054,12 +2074,12 @@ export default function LandingPage() {
           <div 
             data-pricing-plans
             style={{
-              display: 'grid',
+            display: 'grid',
               gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
-              gap: isMobile ? '24px' : '32px',
+            gap: isMobile ? '24px' : '32px',
               maxWidth: '1000px',
-              margin: '0 auto'
-            }}>
+            margin: '0 auto'
+          }}>
             {plans.map((plan, index) => {
               return (
               <div
@@ -2175,15 +2195,15 @@ export default function LandingPage() {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ marginBottom: '8px' }}>
-                      <span style={{
+                  <div style={{ marginBottom: '8px' }}>
+                    <span style={{
                         fontSize: '48px',
                         fontWeight: '900',
                         color: '#1f2937',
                         lineHeight: '1'
                       }}>
                         {currency === 'INR' ? '₹' : '$'}{(currency === 'INR' ? plan.priceINR : plan.priceUSD).toLocaleString()}
-                      </span>
+                  </span>
                       <span style={{
                         fontSize: '18px',
                         color: '#6b7280',
@@ -2191,7 +2211,7 @@ export default function LandingPage() {
                       }}>
                         /{plan.period}
                       </span>
-                    </div>
+                </div>
                   )}
                 <p style={{
                       fontSize: '14px',
@@ -2499,8 +2519,8 @@ export default function LandingPage() {
               <div style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: '700', marginBottom: '8px' }}>200+</div>
               <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Restaurants</div>
             </div>
-          </div>
-        </div>
+              </div>
+            </div>
       </section>
 
       {/* Footer */}
@@ -2560,6 +2580,9 @@ export default function LandingPage() {
                 Product
               </h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                <li style={{ marginBottom: '8px' }}>
+                  <Link href="/restaurants" style={{ color: '#9ca3af', textDecoration: 'none' }}>Find Restaurants</Link>
+                </li>
                 <li style={{ marginBottom: '8px' }}>
                   <a href="#features" style={{ color: '#9ca3af', textDecoration: 'none' }}>Features</a>
                 </li>

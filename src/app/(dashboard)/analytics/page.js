@@ -59,7 +59,7 @@ const Analytics = () => {
           setLoading(true);
         }
       } else {
-        setLoading(true);
+      setLoading(true);
       }
       
       setError(null);

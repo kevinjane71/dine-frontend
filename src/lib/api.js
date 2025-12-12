@@ -346,6 +346,13 @@ class ApiClient {
     return this.request('/api/restaurants');
   }
 
+  // Public Directory
+  async getPublicRestaurants(filters = {}) {
+    const query = new URLSearchParams(filters).toString();
+    const queryString = query ? `?${query}` : '';
+    return this.request(`/api/public/restaurants${queryString}`);
+  }
+
   async createRestaurant(restaurantData) {
     return this.request('/api/restaurants', {
       method: 'POST',

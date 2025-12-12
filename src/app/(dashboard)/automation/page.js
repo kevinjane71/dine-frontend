@@ -89,7 +89,7 @@ const Automation = () => {
           setBackgroundLoading(true);
           window.dispatchEvent(new CustomEvent('automationBackgroundLoading', { detail: { loading: true } }));
         } else {
-          setLoading(true);
+      setLoading(true);
         }
       } else {
         setLoading(true);

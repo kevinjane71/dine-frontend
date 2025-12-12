@@ -469,7 +469,7 @@ function RestaurantPOSContent() {
     try {
       // Only show full loading on first load or when not using cache
       if (!useCache) {
-        setLoading(true);
+      setLoading(true);
       }
       setError('');
       
@@ -620,7 +620,7 @@ function RestaurantPOSContent() {
           };
           setCachedDashboardData(restaurant.id, dataToCache);
           
-          console.log('✅ Restaurant data loaded successfully');
+        console.log('✅ Restaurant data loaded successfully');
         }
       } else {
         // No restaurant found - automatically create one with default name
@@ -1475,7 +1475,7 @@ function RestaurantPOSContent() {
     
     setAudioLevels([]);
   };
-  
+
   // Voice Assistant Functions
   const startVoiceListening = async () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -1526,9 +1526,9 @@ function RestaurantPOSContent() {
     recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
       if (event.error !== 'no-speech') {
-        setIsListeningVoice(false);
+      setIsListeningVoice(false);
         stopAudioVisualizer();
-        recognition.stop();
+      recognition.stop();
       }
     };
     
@@ -3679,26 +3679,26 @@ function RestaurantPOSContent() {
                 }}>
                   {/* Simple Voice Button */}
                   <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <button
+                  <button
                       onClick={isListeningVoice ? stopVoiceListening : startVoiceListening}
                       title={isListeningVoice ? "Stop Voice Order" : isProcessingVoice ? "Processing..." : "Start Voice Order"}
                       disabled={isProcessingVoice}
-                      style={{
+                    style={{
                         background: isListeningVoice 
                           ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
                           : isProcessingVoice
                           ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
                           : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '50%',
-                        width: isMobile ? '28px' : '32px',
-                        height: isMobile ? '28px' : '32px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: isMobile ? '28px' : '32px',
+                      height: isMobile ? '28px' : '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                         cursor: isProcessingVoice ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.2s ease',
+                      transition: 'all 0.2s ease',
                         boxShadow: isListeningVoice 
                           ? '0 2px 8px rgba(239, 68, 68, 0.3)'
                           : isProcessingVoice
@@ -3706,16 +3706,16 @@ function RestaurantPOSContent() {
                           : '0 2px 8px rgba(16, 185, 129, 0.3)',
                         flexShrink: 0,
                         opacity: isProcessingVoice ? 0.7 : 1
-                      }}
-                    >
+                    }}
+                  >
                       {isProcessingVoice ? (
                         <FaSpinner size={isMobile ? 12 : 14} style={{ animation: 'spin 1s linear infinite' }} />
                       ) : isListeningVoice ? (
                         <FaMicrophoneSlash size={isMobile ? 12 : 14} />
                       ) : (
-                        <FaMicrophone size={isMobile ? 12 : 14} />
+                    <FaMicrophone size={isMobile ? 12 : 14} />
                       )}
-                    </button>
+                  </button>
                     {/* Processing indicator tooltip */}
                     {isProcessingVoice && (
                       <div style={{

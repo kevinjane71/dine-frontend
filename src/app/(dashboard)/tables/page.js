@@ -415,7 +415,7 @@ const TableManagement = () => {
             window.dispatchEvent(new CustomEvent('tablesBackgroundLoading', { detail: { loading: false } }));
           });
         } else {
-          await loadFloorsAndTables(restaurant.id);
+        await loadFloorsAndTables(restaurant.id);
         }
       } else {
         setError('No restaurant found');

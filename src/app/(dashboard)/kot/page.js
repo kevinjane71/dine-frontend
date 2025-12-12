@@ -58,7 +58,7 @@ const KitchenOrderTicket = () => {
   const loadKotData = useCallback(async (showSpinner = true, useCache = true) => {
     try {
       setError('');
-      
+
       // Get current restaurant from localStorage or user data
       const userData = localStorage.getItem('user');
       if (!userData) {
