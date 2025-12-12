@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaArrowLeft, FaSave, FaSpinner, FaCheck, FaMobile, FaTablet, FaDesktop } from 'react-icons/fa';
+import { FaArrowLeft, FaSave, FaSpinner, FaCheck, FaMobile, FaTablet, FaDesktop, FaCamera, FaImage } from 'react-icons/fa';
 import apiClient from '../../../../lib/api';
 import dynamic from 'next/dynamic';
 
@@ -12,9 +12,11 @@ const BistroMenuPreview = dynamic(() => import('./components/BistroMenuPreview')
 const CubeMenuPreview = dynamic(() => import('./components/CubeMenuPreview'), { ssr: false });
 const BookMenuPreview = dynamic(() => import('./components/BookMenuPreview'), { ssr: false });
 const CarouselMenuPreview = dynamic(() => import('./components/CarouselMenuPreview'), { ssr: false });
+const ClassicMenuPreview = dynamic(() => import('./components/ClassicMenuPreview'), { ssr: false });
 
 const MENU_THEMES = [
   { id: 'default', name: 'Default', description: 'Classic menu layout', icon: '📱' },
+  { id: 'classic', name: 'Classic', description: 'Modern list view with header', icon: '📋' },
   { id: 'bistro', name: 'Bistro', description: 'Elegant book-style menu', icon: '📖' },
   { id: 'cube', name: 'Cube', description: '3D interactive cube menu', icon: '🎲' },
   { id: 'book', name: 'Book', description: '3D book flip menu', icon: '📚' },
@@ -33,6 +35,9 @@ const MenuCustomizeContent = () => {
   const [selectedTheme, setSelectedTheme] = useState('default');
   const [previewDevice, setPreviewDevice] = useState('mobile');
   const [success, setSuccess] = useState(false);
+  const [headerImage, setHeaderImage] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -65,6 +70,9 @@ const MenuCustomizeContent = () => {
 
         if (themeResponse?.success && themeResponse.themeId) {
           setSelectedTheme(themeResponse.themeId || 'default');
+          if (themeResponse.headerImage) {
+            setHeaderImage(themeResponse.headerImage);
+          }
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -78,6 +86,41 @@ const MenuCustomizeContent = () => {
     }
   }, [restaurantId]);
 
+  const handleHeaderImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size too large. Maximum 5MB allowed.');
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('type', 'header'); 
+
+      const response = await apiClient.uploadImage(formData);
+      
+      if (response.success && response.imageUrl) {
+        setHeaderImage(response.imageUrl);
+        // Also update local restaurant object to reflect change in preview immediately
+        setRestaurant(prev => ({
+          ...prev,
+          menuTheme: { ...prev?.menuTheme, headerImage: response.imageUrl }
+        }));
+      } else {
+        throw new Error(response.error || 'Failed to upload image');
+      }
+    } catch (error) {
+      console.error('Error uploading header image:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!restaurantId) {
       alert('Restaurant ID is missing. Please refresh the page.');
@@ -88,25 +131,20 @@ const MenuCustomizeContent = () => {
       setSaving(true);
       setSuccess(false);
       
-      console.log('Saving theme:', { restaurantId, selectedTheme });
+      console.log('Saving theme:', { restaurantId, selectedTheme, headerImage });
       
       // Save theme setting to backend
       const response = await apiClient.saveMenuTheme(restaurantId, {
         themeId: selectedTheme,
-        layoutId: selectedTheme, // Use themeId as layoutId
+        layoutId: selectedTheme,
+        headerImage: headerImage || null
       });
 
       console.log('Save response:', response);
 
       if (response?.success) {
         setSuccess(true);
-        // Show success message for longer
         setTimeout(() => setSuccess(false), 5000);
-        // Optionally show a toast notification
-        if (typeof window !== 'undefined' && window.alert) {
-          // Use a better notification method if available
-          console.log('Theme saved successfully!');
-        }
       } else {
         throw new Error(response?.error || 'Failed to save theme');
       }
@@ -119,13 +157,19 @@ const MenuCustomizeContent = () => {
   };
 
   const renderPreview = () => {
+    // Pass headerImage to preview
     const previewProps = {
-      restaurant,
+      restaurant: {
+        ...restaurant,
+        menuTheme: { ...restaurant?.menuTheme, headerImage: headerImage || restaurant?.menuTheme?.headerImage }
+      },
       menu,
       device: previewDevice,
     };
 
     switch (selectedTheme) {
+      case 'classic':
+        return <ClassicMenuPreview {...previewProps} />;
       case 'bistro':
         return <BistroMenuPreview {...previewProps} />;
       case 'cube':
@@ -179,6 +223,84 @@ const MenuCustomizeContent = () => {
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '24px' }}>
         {/* Theme Selection Sidebar */}
         <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '20px', border: '1px solid #e5e7eb' }}>
+          
+          {/* Header Image Upload - Show only for Classic Theme */}
+          {selectedTheme === 'classic' && (
+            <div style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #e5e7eb' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#111827' }}>
+                Header Image
+              </h2>
+              <div 
+                style={{ 
+                  width: '100%', 
+                  height: '120px', 
+                  backgroundColor: '#f3f4f6', 
+                  borderRadius: '10px', 
+                  backgroundImage: headerImage ? `url(${headerImage})` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  border: '2px dashed #d1d5db',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {!headerImage && (
+                  <div style={{ textAlign: 'center', color: '#6b7280' }}>
+                    <FaImage size={24} style={{ marginBottom: '4px' }} />
+                    <p style={{ fontSize: '12px', margin: 0 }}>Click to upload</p>
+                  </div>
+                )}
+                {headerImage && (
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundColor: 'rgba(0,0,0,0.3)',
+                    opacity: 0,
+                    transition: 'opacity 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontWeight: '600',
+                    fontSize: '12px'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = 0}
+                  >
+                    Change Image
+                  </div>
+                )}
+                {uploadingImage && (
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <FaSpinner className="animate-spin text-blue-600" />
+                  </div>
+                )}
+              </div>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleHeaderImageUpload} 
+                accept="image/*" 
+                style={{ display: 'none' }} 
+              />
+              <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '8px' }}>
+                Recommended size: 1200x400px. Used in Classic theme header.
+              </p>
+            </div>
+          )}
+
           <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#111827' }}>
             Select Theme
           </h2>
@@ -374,4 +496,3 @@ const MenuCustomizePage = () => {
 };
 
 export default MenuCustomizePage;
-
