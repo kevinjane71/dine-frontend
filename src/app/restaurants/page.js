@@ -1,15 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaSearch, FaMapMarkerAlt, FaUtensils, FaStar, FaArrowRight, FaFilter } from 'react-icons/fa';
+import { FaSearch, FaMapMarkerAlt, FaUtensils, FaStar, FaArrowRight } from 'react-icons/fa';
 import Link from 'next/link';
 import apiClient from '../../lib/api';
 
-// Metadata for SEO (handled in layout or server component if converting)
-// For client component, we rely on parent layout metadata
-
-export default function RestaurantsDirectory() {
+const RestaurantsDirectoryContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -247,5 +244,16 @@ export default function RestaurantsDirectory() {
       </div>
     </div>
   );
-}
+};
 
+export default function RestaurantsDirectory() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
+      </div>
+    }>
+      <RestaurantsDirectoryContent />
+    </Suspense>
+  );
+}
