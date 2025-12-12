@@ -1559,7 +1559,8 @@ const MenuManagement = () => {
     isAvailable: true,
     stockQuantity: null,
     variants: [],
-    customizations: []
+    customizations: [],
+    generateRecipe: true
   });
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
@@ -2026,7 +2027,8 @@ const MenuManagement = () => {
       isAvailable: true,
       stockQuantity: null,
       variants: [],
-      customizations: []
+      customizations: [],
+      generateRecipe: true
     });
     setEditingItem(null);
     setShowAddForm(false);
@@ -3321,6 +3323,33 @@ const MenuManagement = () => {
                       </p>
               </div>
               
+              {/* AI Recipe Generation Toggle */}
+              {!editingItem && (
+                <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#f0fdf4', borderRadius: '6px', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <input
+                    type="checkbox"
+                    id="generateRecipe"
+                    checked={formData.generateRecipe}
+                    onChange={(e) => setFormData({...formData, generateRecipe: e.target.checked})}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      accentColor: '#16a34a',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <label htmlFor="generateRecipe" style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#166534', cursor: 'pointer' }}>
+                      Generate Smart Recipe with AI
+                    </label>
+                    <p style={{ fontSize: '12px', color: '#15803d', margin: '2px 0 0 0' }}>
+                      Automatically create a list of ingredients and quantities for inventory tracking.
+                    </p>
+                  </div>
+                  <div style={{ fontSize: '20px' }}>🤖</div>
+                </div>
+              )}
+
               {/* Advanced Options - Variants & Customizations */}
               <div style={{ marginTop: '24px', marginBottom: '16px' }}>
                 <button

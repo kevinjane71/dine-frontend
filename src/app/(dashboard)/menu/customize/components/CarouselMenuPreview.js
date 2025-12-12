@@ -168,3 +168,4 @@ const CarouselMenuPreview = ({ restaurant, menu, device }) => {
 
 export default CarouselMenuPreview;
 
+
