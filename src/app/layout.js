@@ -3,9 +3,9 @@ import TokenExtractor from '../components/TokenExtractor'
 import { Analytics } from "@vercel/analytics/next"
 import { LoadingProvider } from '../contexts/LoadingContext'
 export const metadata = {
-  title: 'DineOpen - AI-Powered Restaurant Management System | POS, Inventory & Order Tracking',
-  description: 'Complete AI-powered restaurant management solution with multi-restaurant support, POS system, inventory management, order tracking, QR menus, and real-time analytics. Streamline your restaurant operations with DineOpen.',
-  keywords: 'restaurant management, POS system, inventory management, order tracking, QR menu, restaurant analytics, multi-restaurant management, AI restaurant, food service management, restaurant software, table management, kitchen display system, restaurant POS, order management system',
+  title: 'DineOpen - AI-Powered Restaurant Billing Software & Management System',
+  description: 'Complete AI-powered restaurant billing software and management solution with multi-restaurant support, POS system, inventory management, order tracking, QR menus, and real-time analytics. Streamline your restaurant operations with DineOpen.',
+  keywords: 'restaurant billing software, restaurant management, POS system, inventory management, order tracking, QR menu, restaurant analytics, multi-restaurant management, AI restaurant, food service management, restaurant software, table management, kitchen display system, restaurant POS, order management system',
   authors: [{ name: 'DineOpen Team' }],
   creator: 'DineOpen',
   publisher: 'DineOpen',

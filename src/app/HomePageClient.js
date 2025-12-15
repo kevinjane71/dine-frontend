@@ -3,38 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import apiClient from '../lib/api';
 import SEOStructuredData from '../components/SEOStructuredData';
 import { 
-  FaUtensils,
-  FaChartBar,
-  FaTable, 
-  FaMobile,
-  FaCloud,
-  FaClock,
-  FaUsers,
-  FaCheckCircle,
-  FaArrowRight,
-  FaBars,
-  FaTimes,
-  FaPlay,
-  FaShieldAlt,
-  FaHeadset,
-  FaRocket,
-  FaChevronDown,
-  FaRobot,
-  FaStore,
-  FaBoxes,
-  FaWarehouse,
-  FaBuilding,
-  FaWhatsapp,
-  FaQrcode,
-  FaReceipt,
-  FaMicrophone,
-  FaStar,
-  FaCity,
-  FaCoffee
+  FaUtensils, FaChartBar, FaTable, FaMobile, FaCloud, FaClock, FaUsers, FaCheckCircle, 
+  FaArrowRight, FaBars, FaTimes, FaPlay, FaShieldAlt, FaHeadset, FaRocket, FaChevronDown, 
+  FaRobot, FaStore, FaBoxes, FaWarehouse, FaBuilding, FaWhatsapp, FaQrcode, FaReceipt, 
+  FaMicrophone, FaStar, FaCamera, FaMagic, FaBolt, FaFilePdf, FaImage, FaSpinner, FaPaperPlane
 } from 'react-icons/fa';
 
 export default function LandingPage() {
@@ -42,3093 +17,491 @@ export default function LandingPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showDemoModal, setShowDemoModal] = useState(false);
-  const [demoContactType, setDemoContactType] = useState('phone'); // 'phone' or 'email'
+  const [showProductsDropdown, setShowProductsDropdown] = useState(false);
+  
+  // Animation States
+  const [activeProcessStep, setActiveProcessStep] = useState(0);
+  const [chatStep, setChatStep] = useState(0);
+
+  // Demo Form State
+  const [demoContactType, setDemoContactType] = useState('phone');
   const [demoPhone, setDemoPhone] = useState('');
   const [demoEmail, setDemoEmail] = useState('');
   const [demoComment, setDemoComment] = useState('');
   const [demoSubmitting, setDemoSubmitting] = useState(false);
   const [demoSuccess, setDemoSuccess] = useState(false);
   const [demoError, setDemoError] = useState('');
-  const [currency, setCurrency] = useState('INR'); // 'INR' or 'USD'
-  const [showProductsDropdown, setShowProductsDropdown] = useState(false);
+  const [currency, setCurrency] = useState('INR');
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 1024); // Increased breakpoint for better tablet support
-    };
-    
+    const checkMobile = () => setIsMobile(window.innerWidth <= 1024);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Background authentication check
+  // Cycle Process Steps
   useEffect(() => {
-    const checkAuthInBackground = async () => {
-      if (apiClient.isAuthenticated()) {
-        const redirectPath = apiClient.getRedirectPath();
-        console.log('🔄 User already authenticated, redirecting to:', redirectPath);
-        router.replace(redirectPath);
+    const interval = setInterval(() => setActiveProcessStep(p => (p + 1) % 3), 4000); 
+    return () => clearInterval(interval);
+  }, []);
+
+  // AI Chat Animation
+  useEffect(() => {
+    let mounted = true;
+    const runChatSequence = async () => {
+      while (mounted) {
+        setChatStep(0); await new Promise(r => setTimeout(r, 1000));
+        if(!mounted) break; setChatStep(1); await new Promise(r => setTimeout(r, 2000));
+        if(!mounted) break; setChatStep(2); await new Promise(r => setTimeout(r, 2500));
+        if(!mounted) break; setChatStep(3); await new Promise(r => setTimeout(r, 5000));
       }
     };
+    runChatSequence();
+    return () => { mounted = false; };
+  }, []);
 
-    // Check after a short delay to not block initial render
-    const timeoutId = setTimeout(checkAuthInBackground, 500);
-    return () => clearTimeout(timeoutId);
+  useEffect(() => {
+    const checkAuthInBackground = async () => {
+      if (apiClient.isAuthenticated()) router.replace(apiClient.getRedirectPath());
+    };
+    setTimeout(checkAuthInBackground, 500);
   }, [router]);
 
-  const features = [
-    {
-      icon: <FaRobot size={28} />,
-      title: "AI Agent (Voice & Chat)",
-      description: "Intelligent assistant that takes orders via voice, answers questions, manages tables, and handles operations through natural conversation.",
-      gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-      color: '#8b5cf6'
-    },
-    {
-      icon: <FaStore size={28} />,
-      title: "Restaurant Management",
-      description: "Complete POS system with menu management, order tracking, billing, and real-time kitchen integration.",
-      gradient: 'linear-gradient(135deg, #ef4444, #dc2626)',
-      color: '#ef4444'
-    },
-    {
-      icon: <FaBoxes size={28} />,
-      title: "Inventory Management",
-      description: "Track stock levels, manage suppliers, handle purchase orders, and get AI-powered reorder suggestions.",
-      gradient: 'linear-gradient(135deg, #10b981, #059669)',
-      color: '#10b981'
-    },
-    {
-      icon: <FaWarehouse size={28} />,
-      title: "Supply Chain Management",
-      description: "End-to-end supply chain with GRN, invoices, returns, stock transfers, and supplier performance tracking.",
-      gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-      color: '#3b82f6'
-    },
-    {
-      icon: <FaTable size={28} />,
-      title: "Table Management",
-      description: "Smart table booking, floor management, real-time status tracking, and seamless order-to-table flow.",
-      gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
-      color: '#f59e0b'
-    },
-    {
-      icon: <FaBuilding size={28} />,
-      title: "Hotel Management (PMS)",
-      description: "Complete Property Management System for hotels with room booking, guest management, and housekeeping.",
-      gradient: 'linear-gradient(135deg, #ec4899, #db2777)',
-      color: '#ec4899'
-    }
-  ];
+  const handleLogin = () => {
+    if (apiClient.isAuthenticated()) router.replace(apiClient.getRedirectPath());
+    else router.push('/login');
+  };
+
+  const handleSubmitDemoRequest = async () => {
+    if (demoContactType === 'phone' && !demoPhone.trim()) return setDemoError('Phone number is required');
+    if (demoContactType === 'email' && !demoEmail.trim()) return setDemoError('Email is required');
+    setDemoSubmitting(true); setDemoError('');
+    try {
+      await apiClient.submitDemoRequest(demoContactType, demoPhone.trim(), demoEmail.trim(), demoComment.trim());
+      setDemoSuccess(true);
+      setTimeout(() => { setShowDemoModal(false); setDemoSuccess(false); setDemoPhone(''); setDemoEmail(''); setDemoComment(''); }, 2000);
+    } catch (error) { setDemoError(error.message || 'Failed to submit demo request.'); } 
+    finally { setDemoSubmitting(false); }
+  };
 
   const plans = [
     {
       name: "Pay as You Go",
       type: "payg",
-      registrationFeeINR: 300,
-      registrationFeeUSD: 5,
-      freeOrdersPerMonth: 1000,
-      pricePer500OrdersINR: 150,
-      pricePer500OrdersUSD: 3,
-      description: "Perfect for variable order volumes",
-      features: [
-        "AI Agent (Voice/Chat)",
-        "Unlimited menu items",
-        "Unlimited restaurant locations",
-        "Complete POS system",
-        "Unlimited tables & floors",
-        "Real-time kitchen display",
-        "Staff management",
-        "Analytics & reports",
-        "Inventory management",
-        "Customer loyalty programs",
-        "Email & chat support"
-      ],
-      popular: true,
-      buttonText: "Get Started"
+      price: currency === 'INR' ? '₹300' : '$5',
+      period: 'one-time',
+      subPrice: currency === 'INR' ? 'Then ₹150 / 500 orders' : 'Then $3 / 500 orders',
+      features: ["Restaurant Billing Software", "AI Agent (Voice/Chat)", "QR Menu", "Unlimited Tables", "KOT & Inventory", "CRM & Loyalty"],
+      button: "Get Started Free",
+      popular: true
     },
     {
       name: "Monthly Fixed",
       type: "fixed",
-      priceINR: 600,
-      priceUSD: 15,
-      period: "per month",
-      description: "Best for consistent order volumes",
-      features: [
-        "AI Agent (Voice/Chat)",
-        "Unlimited menu items",
-        "Unlimited restaurant locations",
-        "Complete POS system",
-        "Unlimited tables & floors",
-        "Real-time kitchen display",
-        "Staff management",
-        "Analytics & reports",
-        "Inventory management",
-        "Customer loyalty programs",
-        "Email & chat support"
-      ],
-      popular: false,
-      buttonText: "Get Started"
+      price: currency === 'INR' ? '₹600' : '$15',
+      period: 'per month',
+      subPrice: 'Unlimited Orders',
+      features: ["All Features Included", "Priority Support", "Dedicated Account Manager", "Custom Onboarding", "API Access"],
+      button: "Start 1 Month Trial",
+      popular: false
     }
   ];
 
-  const handleGetStarted = () => {
-    router.push('/login');
-  };
+  const processSteps = [
+    { icon: <FaCamera size={24} /> },
+    { icon: <FaMagic size={24} /> },
+    { icon: <FaQrcode size={24} /> }
+  ];
 
-  const handleLogin = () => {
-    // Check if user is already authenticated
-    if (apiClient.isAuthenticated()) {
-      const redirectPath = apiClient.getRedirectPath();
-      console.log('🔄 User already authenticated, redirecting to:', redirectPath);
-      router.replace(redirectPath);
-    } else {
-      router.push('/login');
-    }
-  };
-
-  const handleDemoLogin = () => {
-    router.push('/login?demo=true');
-  };
-
-  const handleSubmitDemoRequest = async () => {
-    // Validate required fields
-    if (demoContactType === 'phone' && !demoPhone.trim()) {
-      setDemoError('Phone number is required');
-      return;
-    }
-    if (demoContactType === 'email' && !demoEmail.trim()) {
-      setDemoError('Email is required');
-      return;
-    }
-
-    setDemoSubmitting(true);
-    setDemoError('');
-
-    try {
-      await apiClient.submitDemoRequest(
-        demoContactType,
-        demoPhone.trim(),
-        demoEmail.trim(),
-        demoComment.trim()
-      );
-
-      setDemoSuccess(true);
-      setTimeout(() => {
-        setShowDemoModal(false);
-        setDemoSuccess(false);
-        setDemoPhone('');
-        setDemoEmail('');
-        setDemoComment('');
-        setDemoContactType('phone');
-      }, 2000);
-    } catch (error) {
-      setDemoError(error.message || 'Failed to submit demo request. Please try again.');
-    } finally {
-      setDemoSubmitting(false);
-    }
-  };
-
-    return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'white' }}>
-      <style>{`
-        @keyframes pulse {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1.05);
-            opacity: 0.9;
-          }
-        }
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-20px);
-          }
-        }
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-        @media (max-width: 768px) {
-          .features-grid {
-            display: grid !important;
-            grid-template-columns: 1fr !important;
-            width: 100% !important;
-            max-width: 100% !important;
-          }
-          .feature-card {
-            width: 100% !important;
-            max-width: 100% !important;
-            min-width: 0 !important;
-            box-sizing: border-box !important;
-          }
-        }
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', fontFamily: 'Inter, sans-serif', overflowX: 'hidden' }}>
+      <SEOStructuredData />
+      
+      <style jsx global>{`
+        @keyframes float-y { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        @keyframes typing { 0% { opacity: 0.3; transform: translateY(0px); } 50% { opacity: 1; transform: translateY(-3px); } 100% { opacity: 0.3; transform: translateY(0px); } }
+        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(0,0,0,0.05); }
+        .hero-gradient { background: radial-gradient(circle at 50% 0%, rgba(254, 226, 226, 0.4) 0%, rgba(255, 255, 255, 0) 50%); }
+        .text-gradient { background: linear-gradient(135deg, #111827 0%, #4b5563 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .red-gradient-text { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); }
       `}</style>
+
       {/* Navigation */}
-      <nav style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(239, 68, 68, 0.1)',
-        padding: '12px 0',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        boxShadow: '0 4px 20px rgba(239, 68, 68, 0.1)',
-        transition: 'all 0.3s ease'
-      }}>
-        <div style={{ 
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '0 20px',
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between'
-        }}>
-          {/* Logo */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              cursor: 'pointer',
-              transition: 'transform 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                borderRadius: '12px',
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: 'linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%)',
-                  animation: 'shimmer 2s ease-in-out infinite'
-                }} />
-                <FaUtensils color="white" size={20} style={{ position: 'relative', zIndex: 1 }} />
-          </div>
-              <span style={{
-                fontSize: '24px',
-                fontWeight: '900',
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                letterSpacing: '-0.5px'
-              }}>
-                DineOpen
-              </span>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 100, backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #f3f4f6' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '32px', height: '32px', background: '#ef4444', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800' }}>DO</div>
+            <span style={{ fontSize: '20px', fontWeight: '700', color: '#111827' }}>DineOpen</span>
         </div>
           
-          {/* Desktop Navigation */}
-          {!isMobile ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                {/* Products Dropdown */}
-                <div 
-                  style={{ position: 'relative' }}
-                  onMouseEnter={() => setShowProductsDropdown(true)}
-                  onMouseLeave={() => setShowProductsDropdown(false)}
-                >
-                  <a 
-                    href="#" 
-                    style={{
-                      color: '#374151',
-                      textDecoration: 'none',
-                      fontWeight: '600',
-                      fontSize: '15px',
-                      transition: 'all 0.3s ease',
-                      position: 'relative',
-                      padding: '6px 0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      cursor: 'pointer'
-                    }} 
-                    onMouseEnter={(e) => {
-                      e.target.style.color = '#ef4444';
-                      e.target.style.transform = 'translateY(-1px)';
-                      setShowProductsDropdown(true);
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.color = '#374151';
-                      e.target.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    Products
-                    <FaChevronDown size={12} />
-                  </a>
-                  
+          {!isMobile && (
+            <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+              <div style={{ position: 'relative' }} onMouseEnter={() => setShowProductsDropdown(true)} onMouseLeave={() => setShowProductsDropdown(false)}>
+                <button style={{ background: 'none', border: 'none', fontSize: '14px', fontWeight: '600', color: '#4b5563', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', height: '70px' }}>
+                  Products <FaChevronDown size={10} />
+                </button>
                   {showProductsDropdown && (
-                    <>
-                      {/* Invisible bridge to prevent gap */}
-                      <div 
-                        style={{
-                          position: 'absolute',
-                          top: '100%',
-                          left: 0,
-                          right: 0,
-                          height: '8px',
-                          zIndex: 101
-                        }}
-                        onMouseEnter={() => setShowProductsDropdown(true)}
-                      />
-                      <div 
-                        style={{
-                          position: 'absolute',
-                          top: '100%',
-                          left: 0,
-                          marginTop: '8px',
-                          backgroundColor: 'white',
-                          borderRadius: '12px',
-                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                          padding: '12px 0',
-                          minWidth: '280px',
-                          zIndex: 100,
-                          border: '1px solid rgba(239, 68, 68, 0.1)'
-                        }}
-                        onMouseEnter={() => setShowProductsDropdown(true)}
-                        onMouseLeave={() => setShowProductsDropdown(false)}
-                      >
-                      <a 
-                        href="/products/ai-agent" 
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '12px 20px',
-                          color: '#374151',
-                          textDecoration: 'none',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#fef2f2';
-                          e.currentTarget.style.color = '#ef4444';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = '#374151';
-                        }}
-                      >
-                        <FaRobot size={18} color="#ef4444" />
-                        <span style={{ fontWeight: '500', fontSize: '14px' }}>AI Agent for Restaurant</span>
-                      </a>
-                      <a 
-                        href="/products/restaurant-management" 
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '12px 20px',
-                          color: '#374151',
-                          textDecoration: 'none',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#fef2f2';
-                          e.currentTarget.style.color = '#ef4444';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = '#374151';
-                        }}
-                      >
-                        <FaStore size={18} color="#ef4444" />
-                        <span style={{ fontWeight: '500', fontSize: '14px' }}>Restaurant Management System</span>
-                      </a>
-                      <a 
-                        href="/products/inventory-management" 
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '12px 20px',
-                          color: '#374151',
-                          textDecoration: 'none',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#fef2f2';
-                          e.currentTarget.style.color = '#ef4444';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = '#374151';
-                        }}
-                      >
-                        <FaBoxes size={18} color="#ef4444" />
-                        <span style={{ fontWeight: '500', fontSize: '14px' }}>Inventory Management</span>
-                      </a>
-                      <a 
-                        href="/products/supply-management" 
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '12px 20px',
-                          color: '#374151',
-                          textDecoration: 'none',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#fef2f2';
-                          e.currentTarget.style.color = '#ef4444';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = '#374151';
-                        }}
-                      >
-                        <FaWarehouse size={18} color="#ef4444" />
-                        <span style={{ fontWeight: '500', fontSize: '14px' }}>Supply Management</span>
-                      </a>
-                      <a 
-                        href="/products/hotel-management" 
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '12px 20px',
-                          color: '#374151',
-                          textDecoration: 'none',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#fef2f2';
-                          e.currentTarget.style.color = '#ef4444';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = '#374151';
-                        }}
-                      >
-                        <FaBuilding size={18} color="#ef4444" />
-                        <span style={{ fontWeight: '500', fontSize: '14px' }}>Hotel Management</span>
-                      </a>
+                  <div style={{ position: 'absolute', top: '60px', left: '-20px', background: 'white', border: '1px solid #f3f4f6', borderRadius: '16px', padding: '8px', width: '260px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+                    {[
+                      { icon: <FaStore/>, title: "Restaurant POS", desc: "Billing & Ops" },
+                      { icon: <FaRobot/>, title: "AI Captain", desc: "Voice & Chat Staff" },
+                      { icon: <FaBoxes/>, title: "Smart Inventory", desc: "Stock & Recipes" },
+                      { icon: <FaQrcode/>, title: "QR Menu", desc: "Digital Catalog" }
+                    ].map((item, i) => (
+                      <Link key={i} href="#" style={{ display: 'flex', gap: '12px', padding: '12px', textDecoration: 'none', color: '#111827', borderRadius: '12px' }} className="hover:bg-gray-50">
+                        <div style={{ color: '#ef4444' }}>{item.icon}</div>
+                        <div><div style={{ fontSize: '14px', fontWeight: '600' }}>{item.title}</div><div style={{ fontSize: '12px', color: '#6b7280' }}>{item.desc}</div></div>
+                      </Link>
+                    ))}
                       </div>
-                    </>
                   )}
                 </div>
-                
-                <Link href="/restaurants" style={{
-                  color: '#374151',
-                  textDecoration: 'none',
-                  fontWeight: '600',
-                  fontSize: '15px',
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
-                  padding: '6px 0'
-                }} 
-                onMouseEnter={(e) => {
-                  e.target.style.color = '#ef4444';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.color = '#374151';
-                  e.target.style.transform = 'translateY(0)';
-                }}>
-                  Find Restaurants
-                </Link>
-
-                <a href="#features" style={{
-                  color: '#374151',
-                  textDecoration: 'none',
-                  fontWeight: '600',
-                  fontSize: '15px',
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
-                  padding: '6px 0'
-                }} 
-                onMouseEnter={(e) => {
-                  e.target.style.color = '#ef4444';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.color = '#374151';
-                  e.target.style.transform = 'translateY(0)';
-                }}>
-                  Features
-                </a>
-                <Link href="/blog" style={{
-                  color: '#374151',
-                  textDecoration: 'none',
-                  fontWeight: '600',
-                  fontSize: '15px',
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
-                  padding: '6px 0'
-                }} 
-                onMouseEnter={(e) => {
-                  e.target.style.color = '#ef4444';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.color = '#374151';
-                  e.target.style.transform = 'translateY(0)';
-                }}>
-                  Blog
-                </Link>
-                <a href="#pricing" style={{
-                  color: '#374151',
-                  textDecoration: 'none',
-                  fontWeight: '600',
-                  fontSize: '15px',
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
-                  padding: '6px 0'
-                }} 
-                onMouseEnter={(e) => {
-                  e.target.style.color = '#ef4444';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.color = '#374151';
-                  e.target.style.transform = 'translateY(0)';
-                }}>
-                  Pricing
-                </a>
-          </div>
-          
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <button
-                  onClick={() => setShowDemoModal(true)}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: 'transparent',
-                    color: '#ef4444',
-                    border: '2px solid #ef4444',
-                    borderRadius: '8px',
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = '#ef4444';
-                    e.target.style.color = 'white';
-                    e.target.style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.color = '#ef4444';
-                    e.target.style.transform = 'translateY(0)';
-                  }}
-                >
-                  Book Demo
-                </button>
-          <button
-                  onClick={handleLogin}
-            style={{
-                    padding: '8px 16px',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    color: '#ef4444',
-                    border: '2px solid rgba(239, 68, 68, 0.2)',
-                    borderRadius: '8px',
-              fontWeight: '600',
-              fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-                    e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                    e.target.style.transform = 'translateY(-1px)';
-                    e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-                    e.target.style.borderColor = 'rgba(239, 68, 68, 0.2)';
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  Sign In
-          </button>
-          <button
-                  onClick={handleGetStarted}
-            style={{
-                    padding: '8px 16px',
-                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-              color: 'white',
-              border: 'none',
-                    borderRadius: '8px',
-                    fontWeight: '700',
-              fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
-              position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.4)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3)';
-                  }}
-                >
-                  <span style={{ position: 'relative', zIndex: 1 }}>Get Started Free</span>
-                  <div style={{
-                position: 'absolute',
-                    top: 0,
-                    left: '-100%',
-                    width: '100%',
-                    height: '100%',
-                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
-                    transition: 'left 0.5s ease'
-                  }} />
-          </button>
-        </div>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <button
-                onClick={() => setShowMobileMenu(!showMobileMenu)}
-                  style={{
-                  padding: '8px',
-                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                  border: '2px solid rgba(239, 68, 68, 0.2)',
-                  borderRadius: '8px',
-                    cursor: 'pointer',
-                  color: '#ef4444',
-                  fontSize: '16px',
-                    transition: 'all 0.3s ease',
-                  backdropFilter: 'blur(10px)'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-                  e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-                  e.target.style.borderColor = 'rgba(239, 68, 68, 0.2)';
-                }}
-              >
-                {showMobileMenu ? <FaTimes size={18} /> : <FaBars size={18} />}
-                </button>
+              <Link href="/pricing" style={{ fontSize: '14px', fontWeight: '600', color: '#4b5563', textDecoration: 'none' }}>Pricing</Link>
+              <Link href="/restaurants" style={{ fontSize: '14px', fontWeight: '600', color: '#4b5563', textDecoration: 'none' }}>Restaurants</Link>
           </div>
         )}
-          </div>
-          
-        {/* Mobile Menu */}
-        {isMobile && showMobileMenu && (
-            <div style={{ 
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            backgroundColor: 'rgba(255, 255, 255, 0.98)',
-            backdropFilter: 'blur(20px)',
-            borderBottom: '1px solid rgba(239, 68, 68, 0.1)',
-            boxShadow: '0 8px 32px rgba(239, 68, 68, 0.15)',
-            zIndex: 40,
-            padding: '16px 20px',
-            animation: 'slideDown 0.3s ease-out'
-          }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ borderBottom: '1px solid rgba(239, 68, 68, 0.1)', paddingBottom: '12px' }}>
-                <div style={{ 
-                  color: '#374151',
-                  fontWeight: '600',
-                  fontSize: '16px',
-                  marginBottom: '12px'
-                }}>
-                  Products
+
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button onClick={handleLogin} style={{ padding: '8px 20px', borderRadius: '10px', border: '1px solid #e5e7eb', background: 'white', fontWeight: '600', cursor: 'pointer' }}>Login</button>
+            <button onClick={handleLogin} style={{ padding: '8px 20px', borderRadius: '10px', background: '#111827', color: 'white', fontWeight: '600', border: 'none', cursor: 'pointer' }}>Get Started</button>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingLeft: '12px' }}>
-                  <a href="/products/ai-agent" style={{
-                    color: '#6b7280',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                    transition: 'color 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }} 
-                  onClick={() => setShowMobileMenu(false)}
-                  onMouseEnter={(e) => e.target.style.color = '#ef4444'}
-                  onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
-                    <FaRobot size={16} />
-                    AI Agent for Restaurant
-                  </a>
-                  <a href="/products/restaurant-management" style={{
-                    color: '#6b7280',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                    transition: 'color 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }} 
-                  onClick={() => setShowMobileMenu(false)}
-                  onMouseEnter={(e) => e.target.style.color = '#ef4444'}
-                  onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
-                    <FaStore size={16} />
-                    Restaurant Management
-                  </a>
-                  <a href="/products/inventory-management" style={{
-                    color: '#6b7280',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                    transition: 'color 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }} 
-                  onClick={() => setShowMobileMenu(false)}
-                  onMouseEnter={(e) => e.target.style.color = '#ef4444'}
-                  onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
-                    <FaBoxes size={16} />
-                    Inventory Management
-                  </a>
-                  <a href="/products/supply-management" style={{
-                    color: '#6b7280',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                    transition: 'color 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }} 
-                  onClick={() => setShowMobileMenu(false)}
-                  onMouseEnter={(e) => e.target.style.color = '#ef4444'}
-                  onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
-                    <FaWarehouse size={16} />
-                    Supply Management
-                  </a>
-                  <a href="/products/hotel-management" style={{
-                    color: '#6b7280',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                    transition: 'color 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }} 
-                  onClick={() => setShowMobileMenu(false)}
-                  onMouseEnter={(e) => e.target.style.color = '#ef4444'}
-                  onMouseLeave={(e) => e.target.style.color = '#6b7280'}>
-                    <FaBuilding size={16} />
-                    Hotel Management
-                  </a>
                 </div>
-              </div>
-              <a href="#features" style={{
-                color: '#374151',
-                textDecoration: 'none',
-                fontWeight: '600',
-                fontSize: '16px',
-                padding: '8px 0',
-                borderBottom: '1px solid rgba(239, 68, 68, 0.1)',
-                transition: 'color 0.3s ease'
-              }} 
-              onClick={() => setShowMobileMenu(false)}
-              onMouseEnter={(e) => e.target.style.color = '#ef4444'}
-              onMouseLeave={(e) => e.target.style.color = '#374151'}>
-                Features
-              </a>
-              <Link href="/blog" style={{
-                color: '#374151',
-                textDecoration: 'none',
-                fontWeight: '600',
-                fontSize: '16px',
-                padding: '8px 0',
-                borderBottom: '1px solid rgba(239, 68, 68, 0.1)',
-                transition: 'color 0.3s ease'
-              }} 
-              onClick={() => setShowMobileMenu(false)}
-              onMouseEnter={(e) => e.target.style.color = '#ef4444'}
-              onMouseLeave={(e) => e.target.style.color = '#374151'}>
-                Blog
-              </Link>
-              <a href="#pricing" style={{
-                color: '#374151',
-                textDecoration: 'none',
-                fontWeight: '600',
-                fontSize: '16px',
-                padding: '8px 0',
-                borderBottom: '1px solid rgba(239, 68, 68, 0.1)',
-                transition: 'color 0.3s ease'
-              }} 
-              onClick={() => setShowMobileMenu(false)}
-              onMouseEnter={(e) => e.target.style.color = '#ef4444'}
-              onMouseLeave={(e) => e.target.style.color = '#374151'}>
-                Pricing
-              </a>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }}>
-                <button
-                  onClick={() => {
-                    setShowDemoModal(true);
-                    setShowMobileMenu(false);
-                  }}
-                  style={{
-                    padding: '12px 20px',
-                    backgroundColor: 'transparent',
-                    color: '#ef4444',
-                    border: '2px solid #ef4444',
-                    borderRadius: '8px',
-                    fontWeight: '600',
-                    fontSize: '15px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  Book Demo
-                </button>
-                <button
-                  onClick={() => {
-                    handleLogin();
-                    setShowMobileMenu(false);
-                  }}
-                    style={{
-                    padding: '12px 20px',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    color: '#ef4444',
-                    border: '2px solid rgba(239, 68, 68, 0.2)',
-                      borderRadius: '8px',
-                    fontWeight: '600',
-                    fontSize: '15px',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                    onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-                    e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                    }}
-                    onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-                    e.target.style.borderColor = 'rgba(239, 68, 68, 0.2)';
-                  }}
-                >
-                  Sign In
-                </button>
-                <button
-                  onClick={() => {
-                    handleGetStarted();
-                    setShowMobileMenu(false);
-                  }}
-                  style={{
-                    padding: '12px 20px',
-                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                        color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontWeight: '700',
-                    fontSize: '15px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-1px)';
-                    e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.4)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3)';
-                  }}
-                >
-                  Get Started Free
-                </button>
-              </div>
-            </div>
-                      </div>
-                    )}
       </nav>
 
-      {/* Hero Section */}
-      <section style={{
-        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)',
-        padding: isMobile ? '40px 16px 60px 16px' : '80px 20px',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-        minHeight: isMobile ? 'auto' : '100vh',
-        display: 'flex', 
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        {/* Background Pattern */}
-        <div style={{ 
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `
-            radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%)
-          `,
-          zIndex: 0
-        }} />
-        
-        {/* Floating Elements - Hidden on mobile for better performance */}
-        {!isMobile && (
-          <>
-        <div style={{
-          position: 'absolute',
-          top: '15%',
-          left: '10%',
-          width: '120px',
-          height: '120px',
-          background: 'rgba(255, 255, 255, 0.1)',
-          borderRadius: '50%',
-          animation: 'float 6s ease-in-out infinite'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '20%',
-          right: '15%',
-          width: '80px',
-          height: '80px',
-          background: 'rgba(255, 255, 255, 0.08)',
-          borderRadius: '50%',
-          animation: 'float 8s ease-in-out infinite reverse'
-        }} />
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '5%',
-          width: '60px',
-          height: '60px',
-          background: 'rgba(255, 255, 255, 0.06)',
-          borderRadius: '50%',
-          animation: 'float 10s ease-in-out infinite'
-        }} />
-          </>
-        )}
-        
-        <div style={{ 
-          maxWidth: '1400px', 
-          margin: '0 auto', 
-          position: 'relative', 
-          zIndex: 1,
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          alignItems: 'center',
-          gap: isMobile ? '40px' : '80px',
-          width: '100%'
-        }}>
-          {/* Left Side: Text Content */}
-          <div style={{
-            flex: 0.8,
-            textAlign: isMobile ? 'center' : 'left',
-            maxWidth: isMobile ? '100%' : '500px'
-          }}>
+      {/* 1. HERO SECTION - Centered & Bold */}
+      <section className="hero-gradient" style={{ paddingTop: '80px', paddingBottom: '100px', textAlign: 'center', position: 'relative' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', background: '#fff1f2', color: '#be123c', borderRadius: '30px', fontSize: '13px', fontWeight: '700', marginBottom: '32px', border: '1px solid #fecdd3' }}>
+            <FaStar /> #1 Rated Restaurant Billing Software
+            </div>
                     
-            {/* Main Heading */}
-            <h1 style={{
-              fontSize: isMobile ? '28px' : '48px',
-              fontWeight: '900',
-              marginBottom: isMobile ? '20px' : '28px',
-              textShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-              lineHeight: '1.2',
-              maxWidth: '900px',
-              margin: '0 auto 20px auto'
-            }}>
-              <span style={{ color: 'white' }}>Stop losing money on POS</span>
-              <br />
-              <span style={{
-                background: 'linear-gradient(135deg, #fef3c7, #fde68a, #fbbf24)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}>
-                when AI is here to reduce your expenses.
-              </span>
+          <h1 style={{ fontSize: isMobile ? '42px' : '72px', fontWeight: '800', lineHeight: '1.1', color: '#111827', marginBottom: '24px', letterSpacing: '-2px' }}>
+            Restaurant Billing Software <br/>
+            <span className="red-gradient-text">& AI Staff.</span>
             </h1>
             
-            {/* Subtitle */}
-            <p style={{
-              fontSize: isMobile ? '16px' : '20px',
-              color: 'rgba(255, 255, 255, 0.95)',
-              marginBottom: isMobile ? '24px' : '32px',
-              fontWeight: '400',
-              textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-              lineHeight: '1.6',
-              maxWidth: '600px',
-              margin: '0 auto 32px auto'
-            }}>
-              Complete restaurant management with AI-powered voice orders, billing, and table management — all in one affordable system.
-            </p>
-            
-            {/* Pricing Teaser */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-                alignItems: 'center',
-              gap: '6px',
-              marginBottom: isMobile ? '32px' : '40px'
-              }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: isMobile ? '6px' : '8px',
-                fontSize: isMobile ? '16px' : '18px',
-                fontWeight: '700',
-                color: 'white',
-                textAlign: 'center'
-              }}>
-                <FaRocket size={isMobile ? 14 : 16} color="white" />
-                <span>Pay as You Go</span>
-              </div>
-              <div style={{
-                fontSize: isMobile ? '13px' : '15px',
-                color: 'rgba(255, 255, 255, 0.9)',
-                fontWeight: '400',
-                textAlign: 'center'
-              }}>
-                ₹300 one-time registration • 1,000 orders free/month
-              </div>
-            </div>
-            
-            {/* CTA Buttons */}
-            <div style={{ 
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              gap: '16px',
-              justifyContent: isMobile ? 'center' : 'flex-start',
-              alignItems: 'center',
-              flexWrap: 'nowrap'
-            }}>
-              <button
-                onClick={() => setShowDemoModal(true)}
-                style={{
-                  padding: '18px 36px',
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  color: '#dc2626',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  borderRadius: '16px',
-                  fontWeight: '700',
-                  fontSize: isMobile ? '14px' : '16px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
-                  transform: 'translateY(0)',
-                  backdropFilter: 'blur(10px)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  width: isMobile ? '100%' : 'auto',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-4px)';
-                  e.target.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.3)';
-                  e.target.style.background = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
-                  e.target.style.background = 'rgba(255, 255, 255, 0.95)';
-                }}
-              >
-                <FaClock size={20} />
-                <span>Book Demo</span>
+          <p style={{ fontSize: isMobile ? '18px' : '20px', color: '#4b5563', lineHeight: '1.6', maxWidth: '650px', margin: '0 auto 40px' }}>
+            Restaurant Billing, Inventory, and a <strong>Free E-Menu</strong> for your restaurant. The all-in-one OS designed to <strong>engage more customers</strong> with AI-powered automation.
+          </p>
+          
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexDirection: isMobile ? 'column' : 'row', marginBottom: '80px' }}>
+            <button onClick={handleLogin} style={{ padding: '16px 40px', fontSize: '16px', fontWeight: '700', borderRadius: '14px', background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px -5px rgba(239, 68, 68, 0.4)' }}>
+              Create Free Menu
               </button>
-              {/* Start Free Trial Button */}
-              <button
-                onClick={handleGetStarted}
-                style={{
-                  padding: '18px 36px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  color: 'white',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  borderRadius: '16px',
-                  fontWeight: '700',
-                  fontSize: isMobile ? '14px' : '16px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  backdropFilter: 'blur(10px)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  width: isMobile ? '100%' : 'auto',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-                  e.target.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                  e.target.style.transform = 'translateY(0)';
-                }}
-              >
-                <FaRocket size={16} />
-                <span>Start Free Trial</span>
+            <button onClick={() => setShowDemoModal(true)} style={{ padding: '16px 40px', fontSize: '16px', fontWeight: '700', borderRadius: '14px', background: 'white', color: '#111827', border: '1px solid #e5e7eb', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+              <FaPlay size={12} /> Watch Demo
               </button>
-              
-              {/* See Real Demo Button - Commented out */}
-              {/* <button
-                onClick={handleDemoLogin}
-                style={{
-                  padding: '18px 36px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  color: 'white',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  borderRadius: '16px',
-                  fontWeight: '600',
-                  fontSize: isMobile ? '14px' : '16px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  backdropFilter: 'blur(10px)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  width: isMobile ? '100%' : 'auto',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                }}
-              >
-                <FaPlay size={16} />
-                <span>See Real Demo</span>
-              </button> */}
             </div>
             
-            {/* Growth Message */}
+          {/* Hero Visual - Dashboard & Phone Composition */}
+          <div style={{ position: 'relative', height: isMobile ? '300px' : '500px', perspective: '1000px' }}>
+            {/* Dashboard Mockup (Back) */}
             <div style={{ 
-              marginTop: '40px',
-              padding: isMobile ? '20px 16px' : '24px 32px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '16px',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              textAlign: 'center'
+              position: 'absolute', top: 0, left: '50%', transform: isMobile ? 'translateX(-50%)' : 'translateX(-50%) rotateX(10deg)', 
+              width: isMobile ? '95%' : '900px', height: isMobile ? '250px' : '550px', 
+              background: '#f8fafc', borderRadius: '24px', border: '1px solid #e2e8f0', 
+              boxShadow: '0 50px 100px -20px rgba(0,0,0,0.15)', overflow: 'hidden' 
             }}>
-              <p style={{
-                fontSize: isMobile ? '14px' : '16px',
-                color: 'rgba(255, 255, 255, 0.95)',
-                margin: 0,
-                fontWeight: '600',
-                lineHeight: '1.6',
-                marginBottom: '8px'
-              }}>
-                💚 We want to grow you first.
-              </p>
-              <p style={{
-                fontSize: isMobile ? '12px' : '14px',
-                color: 'rgba(255, 255, 255, 0.85)',
-                margin: 0,
-                fontWeight: '400',
-                lineHeight: '1.6'
-              }}>
-                Pay as you go — we only charge after you succeed.
-              </p>
-            </div>
-          </div>
-
-          {/* Right Side: Product Image */}
-          <div style={{
-            flex: isMobile ? '1' : '1.2',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            maxWidth: '100%',
-            width: '100%',
-            marginTop: isMobile ? '40px' : '0'
-          }}>
-            <div style={{
-              position: 'relative',
-              borderRadius: '20px',
-              overflow: 'hidden',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-              border: '3px solid rgba(255, 255, 255, 0.2)',
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-              padding: isMobile ? '12px' : '20px',
-              minHeight: isMobile ? '300px' : '650px',
-              width: '100%'
-            }}>
-              <Image
+              <img
                 src="https://storage.googleapis.com/demoimage-7189/menu-items/LUETVd1eMwu4Bm7PvP9K/item_1760637762769_df90sl6pe/1760767605179-0-Screenshot%202025-10-18%20at%2011.36.31%C3%A2%C2%80%C2%AFAM.png"
-                alt="DineOpen Restaurant Management Dashboard - Complete POS System"
-                width={800}
-                height={600}
-                style={{
-                  width: '100%',
-                  height: isMobile ? '400px' : '600px',
-                  objectFit: 'cover',
-                  borderRadius: '15px',
-                  maxWidth: '100%',
-                  display: 'block'
-                }}
-                unoptimized
-                onError={(e) => {
-                  // Fallback if image doesn't load
-                  e.target.style.display = 'none';
-                  const fallback = document.createElement('div');
-                  fallback.innerHTML = `
-                    <div style="
-                      width: 100%; 
-                      height: ${isMobile ? '400px' : '600px'}; 
-                      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
-                      border-radius: 15px; 
-                      display: flex; 
-                      flex-direction: column; 
-                      align-items: center; 
-                      justify-content: center; 
-                      color: #6b7280;
-                      text-align: center;
-                      padding: 40px;
-                    ">
-                      <div style="font-size: 48px; margin-bottom: 16px;">🍽️</div>
-                      <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">DineOpen Dashboard</div>
-                      <div style="font-size: 16px;">Complete Restaurant Management System</div>
-                      <div style="font-size: 14px; margin-top: 16px; opacity: 0.7;">Menu • Orders • Kitchen • Billing</div>
-                    </div>
-                  `;
-                  e.target.parentElement?.appendChild(fallback.firstChild);
-                }}
+                alt="DineOpen Dashboard Interface"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
               />
-              
-              {/* Live Demo Badge */}
+            </div>
+
+            {/* Phone Mockup (Front/Floating) */}
               <div style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: 'rgba(239, 68, 68, 0.9)',
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                backdropFilter: 'blur(10px)'
-              }}>
-                LIVE DEMO
+              position: 'absolute', bottom: isMobile ? '-20px' : '-40px', right: isMobile ? '10px' : '0px', 
+              width: isMobile ? '140px' : '240px', height: isMobile ? '280px' : '480px', 
+              background: '#111827', borderRadius: '32px', border: '8px solid #1f2937', 
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)', overflow: 'hidden',
+              animation: 'float-y 6s ease-in-out infinite'
+            }}>
+              <div style={{ background: '#fff', height: '100%', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ height: '120px', background: 'url(https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80)', backgroundSize: 'cover' }}></div>
+                <div style={{ padding: '12px' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px' }}>Spice Garden</div>
+                  <div style={{ fontSize: '10px', color: '#666' }}>Indian • Chinese</div>
+                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ width: '32px', height: '32px', background: '#f3f4f6', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🍗</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '10px', fontWeight: 'bold' }}>Butter Chicken</div>
+                        <div style={{ fontSize: '10px', color: '#ef4444' }}>₹320</div>
               </div>
+                      <div style={{ width: '20px', height: '20px', background: '#111', color: 'white', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>+</div>
             </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ width: '32px', height: '32px', background: '#f3f4f6', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🧀</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '10px', fontWeight: 'bold' }}>Paneer Tikka</div>
+                        <div style={{ fontSize: '10px', color: '#ef4444' }}>₹280</div>
           </div>
+                      <div style={{ width: '20px', height: '20px', background: '#111', color: 'white', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>+</div>
         </div>
-      </section>
-
-      {/* Quick Benefits Row */}
-      <section style={{
-        padding: isMobile ? '40px 16px' : '60px 20px',
-        backgroundColor: 'white',
-        borderBottom: '1px solid #e5e7eb'
-      }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(6, 1fr)',
-            gap: isMobile ? '12px' : '30px',
-            alignItems: 'center'
-          }}>
-            {[
-              { icon: <FaReceipt size={24} />, label: 'Fast Billing', color: '#ef4444' },
-              { icon: <FaQrcode size={24} />, label: 'QR Menu', color: '#3b82f6' },
-              { icon: <FaUtensils size={24} />, label: 'KOT System', color: '#10b981' },
-              { icon: <FaTable size={24} />, label: 'Table Management', color: '#8b5cf6' },
-              { icon: <FaBoxes size={24} />, label: 'Inventory', color: '#f59e0b' },
-              { icon: <FaMicrophone size={24} />, label: 'Voice Order AI', color: '#ec4899' }
-            ].map((benefit, index) => (
-              <div
-                key={index}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: isMobile ? '8px' : '12px',
-                  padding: isMobile ? '16px 8px' : '20px',
-                  borderRadius: '12px',
-                  backgroundColor: '#f8fafc',
-                  border: '1px solid #e5e7eb',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer',
-                  minHeight: isMobile ? '100px' : 'auto'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isMobile) {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.1)';
-                    e.currentTarget.style.borderColor = benefit.color;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isMobile) {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                    e.currentTarget.style.borderColor = '#e5e7eb';
-                  }
-                }}
-              >
-                <div style={{ color: benefit.color }}>
-                  {React.cloneElement(benefit.icon, { size: isMobile ? 20 : 24 })}
-                </div>
-                <span style={{
-                  fontSize: isMobile ? '11px' : '14px',
-                  fontWeight: '600',
-                  color: '#1f2937',
-                  textAlign: 'center',
-                  lineHeight: '1.3'
-                }}>
-                  {benefit.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" style={{
-        padding: isMobile ? '60px 16px' : '120px 20px',
-        backgroundColor: '#fafafa',
-        position: 'relative',
-        width: '100%',
-        overflow: 'hidden'
-      }}>
-        <div style={{ 
-          maxWidth: '1400px', 
-          margin: '0 auto',
-          width: '100%',
-          boxSizing: 'border-box',
-          padding: isMobile ? '0' : '0 20px'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: isMobile ? '50px' : '80px' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 20px',
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              borderRadius: '50px',
-              marginBottom: '20px'
-            }}>
-              <FaRocket size={16} color="#ef4444" />
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#ef4444' }}>
-                Complete Solution
-              </span>
             </div>
-            <h2 style={{
-              fontSize: isMobile ? '28px' : '48px',
-              fontWeight: '900',
-                          color: '#1f2937',
-              marginBottom: isMobile ? '16px' : '20px',
-              lineHeight: '1.2',
-              padding: isMobile ? '0 8px' : '0'
-            }}>
-              Everything You Need to
-              {!isMobile && <br />}
-              <span style={{
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                display: isMobile ? 'block' : 'inline'
-              }}>
-                Run Your Restaurant
-              </span>
-                </h2>
-            <p style={{
-              fontSize: isMobile ? '15px' : '20px',
-              color: '#6b7280',
-              maxWidth: '700px',
-              margin: '0 auto',
-              lineHeight: '1.6',
-              padding: isMobile ? '0 8px' : '0'
-            }}>
-              From AI-powered order taking to complete inventory management, 
-              DineOpen provides all the tools you need in one unified platform.
-            </p>
               </div>
-              
-            <div 
-              className="features-grid"
-              style={{
-              display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-                gap: isMobile ? '24px' : '32px',
-                width: '100%',
-                maxWidth: '100%',
-                boxSizing: 'border-box',
-                gridAutoRows: 'minmax(auto, 1fr)'
-          }}>
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="feature-card"
-                    style={{
-                  padding: isMobile ? '32px 24px' : '40px 32px',
-                  backgroundColor: 'white',
-                  borderRadius: '20px',
-                  textAlign: 'left',
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  border: '1px solid #e5e7eb',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                  width: '100%',
-                  maxWidth: '100%',
-                  boxSizing: 'border-box',
-                  minWidth: 0,
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
-                    onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-8px)';
-                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.12)';
-                  e.currentTarget.style.borderColor = feature.color;
-                    }}
-                    onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
-                  e.currentTarget.style.borderColor = '#e5e7eb';
-                }}
-              >
-                {/* Gradient Background Effect */}
-                        <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '4px',
-                  background: feature.gradient,
-                  opacity: 0,
-                  transition: 'opacity 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = '1';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = '0';
-                }}
-                />
-                
-                <div style={{
-                  width: isMobile ? '56px' : '64px',
-                  height: isMobile ? '56px' : '64px',
-                  background: feature.gradient,
-                  borderRadius: '16px',
-                          display: 'flex',
-                          alignItems: 'center',
-                            justifyContent: 'center',
-                  marginBottom: '24px',
-                  color: 'white',
-                  boxShadow: `0 8px 24px ${feature.color}40`
-                        }}>
-                  {feature.icon}
+                {/* Cart Float */}
+                <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', background: '#ef4444', borderRadius: '8px', padding: '8px', color: 'white', fontSize: '10px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>2 Items</span><span>View Cart &gt;</span>
                         </div>
-                <h3 style={{
-                  fontSize: isMobile ? '20px' : '24px',
-                  fontWeight: '700',
-                  color: '#1f2937',
-                  marginBottom: '12px',
-                  lineHeight: '1.3'
-                }}>
-                  {feature.title}
-                </h3>
-                <p style={{
-                  color: '#6b7280',
-                  lineHeight: '1.7',
-                  fontSize: isMobile ? '15px' : '16px',
-                  margin: 0
-                }}>
-                  {feature.description}
-                </p>
                     </div>
-                ))}
-                </div>
             </div>
-            
-            {/* CTA After Features */}
-            <div style={{
-              textAlign: 'center',
-              marginTop: isMobile ? '60px' : '80px',
-              padding: isMobile ? '40px 20px' : '60px 40px',
-              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-              borderRadius: '20px',
-              boxShadow: '0 8px 30px rgba(239, 68, 68, 0.3)'
-            }}>
-              <h3 style={{
-                fontSize: isMobile ? '24px' : '32px',
-                fontWeight: '700',
-                color: 'white',
-                marginBottom: '16px'
-              }}>
-                Start Your Free Trial Today
-              </h3>
-              <p style={{
-                fontSize: isMobile ? '16px' : '18px',
-                color: 'rgba(255, 255, 255, 0.9)',
-                marginBottom: '32px'
-              }}>
-                No credit card required. Get started in minutes.
-              </p>
-              <div style={{
-                display: 'flex',
-                gap: isMobile ? '12px' : '16px',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-                flexDirection: isMobile ? 'column' : 'row'
-              }}>
-                <button
-                  onClick={handleGetStarted}
-                  style={{
-                    padding: isMobile ? '14px 28px' : '16px 32px',
-                    backgroundColor: 'white',
-                    color: '#ef4444',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontWeight: '700',
-                    fontSize: isMobile ? '15px' : '16px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-                    width: isMobile ? '100%' : 'auto'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isMobile) {
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.3)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isMobile) {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-                    }
-                  }}
-                >
-                  Start Free Trial
-                </button>
-                <button
-                  onClick={() => setShowDemoModal(true)}
-                  style={{
-                    padding: isMobile ? '14px 28px' : '16px 32px',
-                    backgroundColor: 'transparent',
-                    color: 'white',
-                    border: '2px solid white',
-                    borderRadius: '12px',
-                    fontWeight: '700',
-                    fontSize: isMobile ? '15px' : '16px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    width: isMobile ? '100%' : 'auto'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isMobile) {
-                      e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isMobile) {
-                      e.target.style.backgroundColor = 'transparent';
-                    }
-                  }}
-                >
-                  Book Demo
-                </button>
-              </div>
-            </div>
-      </section>
-
-      {/* Trust Signals Section */}
-      <section style={{
-        padding: isMobile ? '50px 16px' : '100px 20px',
-        backgroundColor: 'white'
-      }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: isMobile ? '32px' : '60px' }}>
-            <h2 style={{
-              fontSize: isMobile ? '24px' : '40px',
-              fontWeight: '700',
-              color: '#1f2937',
-              marginBottom: '12px',
-              lineHeight: '1.2',
-              padding: isMobile ? '0 8px' : '0'
-            }}>
-              Trusted by 200+ Restaurants Across India
-            </h2>
-            <p style={{
-              fontSize: isMobile ? '14px' : '18px',
-              color: '#6b7280',
-              padding: isMobile ? '0 8px' : '0'
-            }}>
-              Join restaurants that trust DineOpen for their daily operations
-            </p>
-          </div>
-
-          {/* Stats Row */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-            gap: isMobile ? '12px' : '40px',
-            marginBottom: isMobile ? '32px' : '60px'
-          }}>
-            {[
-              { value: '99.9%', label: 'Uptime', icon: <FaShieldAlt size={32} /> },
-              { value: '24/7', label: 'Support', icon: <FaHeadset size={32} /> },
-              { value: '20+', label: 'Cities', icon: <FaCity size={32} /> },
-              { value: '200+', label: 'Restaurants', icon: <FaStore size={32} /> }
-            ].map((stat, index) => (
-              <div
-                key={index}
-                style={{
-                  textAlign: 'center',
-                  padding: isMobile ? '20px 12px' : '30px 20px',
-                  backgroundColor: '#f8fafc',
-                  borderRadius: '16px',
-                  border: '1px solid #e5e7eb',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isMobile) {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.1)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isMobile) {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }
-                }}
-              >
-                <div style={{ color: '#ef4444', marginBottom: isMobile ? '8px' : '12px', display: 'flex', justifyContent: 'center' }}>
-                  {React.cloneElement(stat.icon, { size: isMobile ? 24 : 32 })}
-                </div>
-                <div style={{
-                  fontSize: isMobile ? '24px' : '40px',
-                  fontWeight: '700',
-                  color: '#1f2937',
-                  marginBottom: isMobile ? '4px' : '8px'
-                }}>
-                  {stat.value}
-                </div>
-                <div style={{
-                  fontSize: isMobile ? '12px' : '14px',
-                  color: '#6b7280',
-                  fontWeight: '600'
-                }}>
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Testimonials */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-            gap: isMobile ? '16px' : '24px',
-            marginBottom: isMobile ? '40px' : '60px',
-            width: '100%'
-          }}>
-            {[
-              {
-                name: 'Rajesh Kumar',
-                restaurant: 'Spice Garden Restaurant',
-                city: 'Mumbai',
-                text: 'DineOpen has transformed our operations. The voice AI assistant is incredible - it takes orders accurately even with our busy kitchen noise!',
-                rating: 5
-              },
-              {
-                name: 'Priya Sharma',
-                restaurant: 'Café Delight',
-                city: 'Delhi',
-                text: 'Best POS system we\'ve used. The table management and KOT system saves us so much time. Highly recommend!',
-                rating: 5
-              },
-              {
-                name: 'Amit Patel',
-                restaurant: 'Cloud Kitchen Hub',
-                city: 'Bangalore',
-                text: 'Inventory management and supply chain features are game-changers. We\'ve reduced waste by 30% since switching to DineOpen.',
-                rating: 5
-              }
-            ].map((testimonial, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: isMobile ? '20px' : '30px',
-                  backgroundColor: '#f8fafc',
-                  borderRadius: '16px',
-                  border: '1px solid #e5e7eb',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%',
-                  minHeight: isMobile ? '180px' : '200px'
-                }}
-              >
-                <div style={{ 
-                  marginBottom: isMobile ? '12px' : '16px',
-                  display: 'flex',
-                  gap: '4px',
-                  flexWrap: 'wrap'
-                }}>
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <FaStar key={i} size={isMobile ? 14 : 16} color="#fbbf24" />
-                  ))}
-                </div>
-                <p style={{
-                  color: '#374151',
-                  lineHeight: '1.7',
-                  marginBottom: '20px',
-                  fontSize: isMobile ? '14px' : '15px',
-                  flex: 1,
-                  margin: '0 0 20px 0'
-                }}>
-                  &ldquo;{testimonial.text}&rdquo;
-                </p>
-                <div style={{ marginTop: 'auto' }}>
-                  <div style={{
-                    fontWeight: '700',
-                    color: '#1f2937',
-                    marginBottom: '4px',
-                    fontSize: isMobile ? '14px' : '16px'
-                  }}>
-                    {testimonial.name}
-                  </div>
-                  <div style={{
-                    fontSize: isMobile ? '12px' : '14px',
-                    color: '#6b7280'
-                  }}>
-                    {testimonial.restaurant}, {testimonial.city}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div style={{ textAlign: 'center' }}>
-            <button
-              onClick={handleGetStarted}
-              style={{
-                padding: '16px 40px',
-                backgroundColor: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontWeight: '700',
-                fontSize: '18px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
-              }}
-            >
-              Join 200+ Restaurants
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Niche Pages Section */}
-      <section style={{
-        padding: isMobile ? '50px 16px' : '100px 20px',
-        backgroundColor: '#f8fafc'
-      }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: isMobile ? '32px' : '60px' }}>
-            <h2 style={{
-              fontSize: isMobile ? '24px' : '36px',
-              fontWeight: '700',
-              color: '#1f2937',
-              marginBottom: '12px',
-              lineHeight: '1.2',
-              padding: isMobile ? '0 8px' : '0'
-            }}>
-              Perfect for Every Food Business
-            </h2>
-            <p style={{
-              fontSize: isMobile ? '14px' : '18px',
-              color: '#6b7280',
-              padding: isMobile ? '0 8px' : '0'
-            }}>
-              Tailored solutions for different types of restaurants
-            </p>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)',
-            gap: isMobile ? '12px' : '20px'
-          }}>
-            {[
-              { title: 'POS for Restaurants', icon: <FaUtensils size={28} />, color: '#ef4444' },
-              { title: 'POS for Cafés', icon: <FaCoffee size={28} />, color: '#3b82f6' },
-              { title: 'POS for Cloud Kitchens', icon: <FaBuilding size={28} />, color: '#10b981' },
-              { title: 'POS for Bakeries', icon: <FaStore size={28} />, color: '#f59e0b' },
-              { title: 'POS for Bars & Clubs', icon: <FaUsers size={28} />, color: '#8b5cf6' }
-            ].map((niche, index) => (
-              <Link
-                key={index}
-                href={`/products/restaurant-management?niche=${niche.title.toLowerCase().replace(/\s+/g, '-')}`}
-                style={{
-                  textDecoration: 'none',
-                  display: 'block'
-                }}
-              >
-                <div
-                  style={{
-                    padding: isMobile ? '20px 12px' : '30px 20px',
-                    backgroundColor: 'white',
-                    borderRadius: '16px',
-                    border: '2px solid #e5e7eb',
-                    textAlign: 'center',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: isMobile ? '100px' : 'auto'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isMobile) {
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = `0 8px 24px ${niche.color}30`;
-                      e.currentTarget.style.borderColor = niche.color;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isMobile) {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                      e.currentTarget.style.borderColor = '#e5e7eb';
-                    }
-                  }}
-                >
-                  <div style={{ color: niche.color, marginBottom: isMobile ? '12px' : '16px' }}>
-                    {React.cloneElement(niche.icon, { size: isMobile ? 22 : 28 })}
-                  </div>
-                  <h3 style={{
-                    fontSize: isMobile ? '13px' : '16px',
-                    fontWeight: '700',
-                    color: '#1f2937',
-                    margin: 0,
-                    lineHeight: '1.3'
-                  }}>
-                    {niche.title}
-                  </h3>
-                </div>
-              </Link>
-                ))}
                 </div>
             </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" style={{
-        padding: isMobile ? '50px 16px' : '120px 20px',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ 
-            textAlign: 'center', 
-            marginBottom: isMobile ? '40px' : '80px',
-            padding: isMobile ? '0 8px' : '0 20px'
-          }}>
-            <h2 style={{
-              fontSize: isMobile ? '26px' : '42px',
-              fontWeight: '700',
-                        color: '#1f2937',
-              marginBottom: isMobile ? '16px' : '20px',
-              lineHeight: '1.2'
-            }}>
-              Simple Transparent Pricing
-            </h2>
-            <p style={{
-              fontSize: isMobile ? '16px' : '22px',
-              color: '#ef4444',
-              fontWeight: '700',
-              marginBottom: isMobile ? '8px' : '12px'
-            }}>
-              Flexible Pricing — Choose What Works for You
-            </p>
-            <p style={{
-              fontSize: isMobile ? '14px' : '18px',
-              color: '#6b7280',
-              maxWidth: '700px',
-              margin: '0 auto',
-              marginBottom: isMobile ? '24px' : '32px',
-              lineHeight: '1.6'
-            }}>
-              Pay as you go or choose a fixed monthly plan. All features included in both plans.
-            </p>
-            <button
-              onClick={() => {
-                const pricingSection = document.getElementById('pricing');
-                if (pricingSection) {
-                  const plansSection = pricingSection.querySelector('[data-pricing-plans]');
-                  if (plansSection) {
-                    plansSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
-                }
-              }}
-              style={{
-                padding: '14px 32px',
-                backgroundColor: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontWeight: '700',
-                fontSize: '16px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.4)';
-                e.target.style.backgroundColor = '#dc2626';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
-                e.target.style.backgroundColor = '#ef4444';
-              }}
-            >
-              View Full Pricing
-            </button>
-            
-            {/* Currency Toggle */}
-          <div style={{
-            display: 'flex',
-              justifyContent: 'center',
-                        alignItems: 'center',
-                  gap: '12px',
-              marginBottom: '40px'
-            }}>
-              <button
-                onClick={() => setCurrency('INR')}
-            style={{
-                  padding: '8px 20px',
-                  backgroundColor: currency === 'INR' ? '#ef4444' : 'transparent',
-                  color: currency === 'INR' ? 'white' : '#6b7280',
-                  border: `2px solid ${currency === 'INR' ? '#ef4444' : '#e5e7eb'}`,
-                  borderRadius: '8px',
-                    fontWeight: '600',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                INR (₹)
-              </button>
-            <button 
-                onClick={() => setCurrency('USD')}
-            style={{
-                  padding: '8px 20px',
-                  backgroundColor: currency === 'USD' ? '#ef4444' : 'transparent',
-                  color: currency === 'USD' ? 'white' : '#6b7280',
-                  border: `2px solid ${currency === 'USD' ? '#ef4444' : '#e5e7eb'}`,
-              borderRadius: '8px',
-              fontWeight: '600',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                USD ($)
-                </button>
+      {/* 2. AI CAPTAIN SECTION (Centered) */}
+      <section style={{ padding: '100px 20px', backgroundColor: '#f9fafb' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ fontSize: '13px', fontWeight: '700', color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>POWERED BY GPT-4</div>
+          <h2 style={{ fontSize: isMobile ? '32px' : '48px', fontWeight: '800', color: '#111827', marginBottom: '24px' }}>Meet Your New <span style={{ color: '#7c3aed' }}>AI Captain</span></h2>
+          <p style={{ fontSize: '18px', color: '#6b7280', maxWidth: '600px', margin: '0 auto 60px' }}>
+            Forget waiting for staff. DineOpen AI acts as a personal concierge. It takes orders via <strong>Voice or Chat</strong>, checks real-time inventory, and punches orders directly into your POS.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '60px', alignItems: 'center' }}>
+            {/* AI Visual - Chat Interface */}
+            <div style={{ background: 'white', borderRadius: '32px', boxShadow: '0 20px 50px -10px rgba(124, 58, 237, 0.15)', padding: '24px', border: '1px solid #f3f4f6' }}>
+              <div style={{ background: '#f9fafb', borderRadius: '24px', padding: '24px', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ width: '40px', height: '40px', background: '#7c3aed', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FaRobot color="white" size={20}/></div>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontWeight: '700', fontSize: '14px' }}>DineOpen AI</div>
+                    <div style={{ fontSize: '12px', color: '#10b981' }}>● Online</div>
               </div>
             </div>
             
-          <div 
-            data-pricing-plans
-            style={{
-            display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
-            gap: isMobile ? '24px' : '32px',
-              maxWidth: '1000px',
-            margin: '0 auto'
-          }}>
-            {plans.map((plan, index) => {
-              return (
-              <div
-                key={index}
-                  style={{
-                  position: 'relative',
-                    padding: isMobile ? '32px 24px' : '40px 32px',
-            backgroundColor: 'white',
-                    borderRadius: '20px',
-                  border: plan.popular ? '2px solid #ef4444' : '1px solid #e5e7eb',
-                    boxShadow: plan.popular ? '0 8px 32px rgba(239, 68, 68, 0.15)' : '0 2px 8px rgba(0,0,0,0.05)',
-                    transition: 'all 0.3s ease',
-                    transform: 'translateY(0)'
-              }}
-              onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-8px)';
-                    e.currentTarget.style.boxShadow = plan.popular 
-                      ? '0 12px 40px rgba(239, 68, 68, 0.2)' 
-                      : '0 8px 24px rgba(0,0,0,0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = plan.popular 
-                      ? '0 8px 32px rgba(239, 68, 68, 0.15)' 
-                      : '0 2px 8px rgba(0,0,0,0.05)';
-                }}
-              >
-                {plan.popular && (
-                  <div style={{
-                    position: 'absolute',
-                      top: '-16px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                      backgroundColor: '#ef4444',
-                    color: 'white',
-                      padding: '8px 20px',
-                    borderRadius: '20px',
-                      fontSize: '11px',
-                    fontWeight: 'bold',
-                    textTransform: 'uppercase',
-                      zIndex: 10,
-                      whiteSpace: 'nowrap',
-                      boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
-                  }}>
-                    Most Popular
+                {/* Chat Bubbles */}
+                <div className="chat-bubble" style={{ alignSelf: 'flex-start', background: 'white', padding: '12px 16px', borderRadius: '16px 16px 16px 4px', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                  Hi! 👋 I'm your AI waiter. Ask me for recommendations or order directly here!
+                </div>
+                
+                {chatStep >= 1 && (
+                  <div className="chat-bubble" style={{ alignSelf: 'flex-end', background: '#7c3aed', color: 'white', padding: '12px 16px', borderRadius: '16px 16px 4px 16px', fontSize: '14px' }}>
+                    I want something spicy. 🌶️
               </div>
                 )}
 
-                  <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                  <h3 style={{
-                      fontSize: '24px',
-                    fontWeight: 'bold',
-                    color: '#1f2937',
-                      marginBottom: '12px'
-                  }}>
-                    {plan.name}
-                  </h3>
-                  {plan.type === 'payg' ? (
-                    <div style={{ marginBottom: '8px' }}>
-                      <div style={{ marginBottom: '12px' }}>
-                        <div style={{
-                          fontSize: '14px',
-                          color: '#6b7280',
-                          marginBottom: '4px'
-                        }}>
-                          One-time Registration
-                        </div>
-                        <span style={{
-                          fontSize: '32px',
-                          fontWeight: '900',
-                          color: '#1f2937',
-                          lineHeight: '1'
-                        }}>
-                          {currency === 'INR' ? '₹' : '$'}{(currency === 'INR' ? plan.registrationFeeINR : plan.registrationFeeUSD).toLocaleString()}
-                        </span>
-                      </div>
-                      <div style={{
-                        padding: '12px',
-                        backgroundColor: '#f3f4f6',
-                        borderRadius: '12px',
-                        marginTop: '12px'
-                      }}>
-                        <div style={{
-                          fontSize: '14px',
-                          color: '#10b981',
-                          fontWeight: '600',
-                          marginBottom: '4px'
-                        }}>
-                          {plan.freeOrdersPerMonth.toLocaleString()} orders free/month
-                        </div>
-                        <div style={{
-                          fontSize: '13px',
-                          color: '#6b7280',
-                          marginBottom: '8px'
-                        }}>
-                          After that:
-                        </div>
-                        <div style={{
-                          fontSize: '20px',
-                          fontWeight: '700',
-                          color: '#1f2937'
-                        }}>
-                          {currency === 'INR' ? '₹' : '$'}{(currency === 'INR' ? plan.pricePer500OrdersINR : plan.pricePer500OrdersUSD).toLocaleString()}
-                          <span style={{
-                            fontSize: '14px',
-                            fontWeight: '400',
-                            color: '#6b7280',
-                            marginLeft: '4px'
-                          }}>
-                            per 500 orders
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                  <div style={{ marginBottom: '8px' }}>
-                    <span style={{
-                        fontSize: '48px',
-                        fontWeight: '900',
-                        color: '#1f2937',
-                        lineHeight: '1'
-                      }}>
-                        {currency === 'INR' ? '₹' : '$'}{(currency === 'INR' ? plan.priceINR : plan.priceUSD).toLocaleString()}
-                  </span>
-                      <span style={{
-                        fontSize: '18px',
-                        color: '#6b7280',
-                        marginLeft: '4px'
-                      }}>
-                        /{plan.period}
-                      </span>
+                {chatStep === 2 && (
+                  <div className="chat-bubble" style={{ alignSelf: 'flex-start', background: 'white', padding: '12px', borderRadius: '16px', width: '60px', display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                    <div style={{ width: '6px', height: '6px', background: '#ccc', borderRadius: '50%', animation: 'typing 1s infinite' }}></div>
+                    <div style={{ width: '6px', height: '6px', background: '#ccc', borderRadius: '50%', animation: 'typing 1s infinite 0.2s' }}></div>
+                    <div style={{ width: '6px', height: '6px', background: '#ccc', borderRadius: '50%', animation: 'typing 1s infinite 0.4s' }}></div>
                 </div>
-                  )}
-                <p style={{
-                      fontSize: '14px',
-                      color: '#6b7280',
-                      marginTop: '8px'
-                    }}>
-                    {plan.description}
-                </p>
+                )}
+
+                {chatStep >= 3 && (
+                  <div className="chat-bubble" style={{ alignSelf: 'flex-start', width: '100%' }}>
+                    <div style={{ background: 'white', padding: '12px 16px', borderRadius: '16px 16px 16px 4px', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '8px' }}>
+                      How about our <strong>Schezwan Noodles?</strong> 🔥 It's a customer favorite!
+                </div>
+                    <div style={{ background: 'white', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid #f3f4f6' }}>
+                      <div style={{ fontSize: '24px' }}>🍜</div>
+                      <div style={{ flex: 1, textAlign: 'left' }}>
+                        <div style={{ fontWeight: '700', fontSize: '14px' }}>Schezwan Noodles</div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>₹ 180</div>
+              </div>
+                      <button style={{ padding: '6px 12px', background: '#7c3aed', color: 'white', borderRadius: '8px', border: 'none', fontSize: '12px', fontWeight: 'bold' }}>Add</button>
             </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* AI Features Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', textAlign: 'left' }}>
+              {[
+                { title: "Voice & Text", desc: "Takes complex orders naturally.", icon: <FaMicrophone/> },
+                { title: "Inventory Sync", desc: "Checks stock before confirming.", icon: <FaBoxes/> },
+                { title: "Auto-Upsell", desc: "Suggests drinks & desserts.", icon: <FaChartBar/> },
+                { title: "Instant KOT", desc: "Sends straight to kitchen.", icon: <FaReceipt/> }
+              ].map((f, i) => (
+                <div key={i} className="feature-card" style={{ padding: '24px', background: 'white', borderRadius: '20px', border: '1px solid #f3f4f6', transition: 'all 0.3s' }}>
+                  <div style={{ width: '40px', height: '40px', background: '#f5f3ff', color: '#7c3aed', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>{f.icon}</div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>{f.title}</h3>
+                  <p style={{ fontSize: '14px', color: '#6b7280' }}>{f.desc}</p>
+                </div>
+              ))}
+            </div>
+              </div>
+            </div>
+      </section>
+
+      {/* 3. MENU ECOSYSTEM (Bento Grid) */}
+      <section style={{ padding: '100px 20px', backgroundColor: 'white' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <h2 style={{ fontSize: isMobile ? '32px' : '48px', fontWeight: '800', color: '#111827', marginBottom: '16px' }}>The Smart Menu Ecosystem</h2>
+            <p style={{ fontSize: '18px', color: '#6b7280' }}>Everything starts with a QR.</p>
+            </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.2fr 1fr', gap: '32px' }}>
             
-                <ul style={{
-                  listStyle: 'none',
-                  padding: 0,
-                    margin: '0 0 32px 0'
-                  }}>
-                    {plan.features.map((feature, featureIndex) => {
-                      const isAIFeature = feature.includes('AI Agent');
-                      return (
-                        <li key={featureIndex} style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                  gap: '12px',
-                          padding: isAIFeature ? '12px 14px' : '8px 0',
-                          fontSize: '14px',
-                          color: isAIFeature ? '#000000' : '#374151',
-                          fontWeight: isAIFeature ? 'bold' : 'normal',
-                          backgroundColor: isAIFeature ? '#f3f4f6' : 'transparent',
-                          borderRadius: isAIFeature ? '8px' : '0',
-                          marginBottom: isAIFeature ? '8px' : '0'
-                        }}>
-                          <FaCheckCircle size={16} color={isAIFeature ? "#000000" : "#10b981"} style={{ marginTop: '2px', flexShrink: 0 }} />
-                      <span>{feature}</span>
-                    </li>
-                      );
-                    })}
-                </ul>
-
-              <button
-                    onClick={() => handleGetStarted()}
-                style={{
-                    width: '100%',
-                      padding: '16px 24px',
-                    background: plan.popular 
-                      ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
-                      : 'transparent',
-                    color: plan.popular ? 'white' : '#ef4444',
-                      border: `2px solid ${plan.popular ? 'transparent' : '#ef4444'}`,
-                      borderRadius: '12px',
-                      fontWeight: '700',
-                      fontSize: '16px',
-                  cursor: 'pointer',
-                      transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                      if (!plan.popular) {
-                      e.target.style.backgroundColor = '#ef4444';
-                      e.target.style.color = 'white';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                      if (!plan.popular) {
-                      e.target.style.backgroundColor = 'transparent';
-                      e.target.style.color = '#ef4444';
-                    }
-                  }}
-                >
-                    {plan.buttonText || 'Get Started'}
-              </button>
-                </div>
-              );
-            })}
-              </div>
-            </div>
-      </section>
-
-      {/* CTA Section */}
-      <section style={{
-        padding: isMobile ? '80px 20px' : '120px 20px',
-        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <h2 style={{
-            fontSize: isMobile ? '32px' : '48px',
-            fontWeight: '900',
-            color: 'white',
-            marginBottom: '24px',
-            lineHeight: '1.2'
-                }}>
-            Ready to Transform Your Restaurant?
-          </h2>
-          <p style={{
-            fontSize: isMobile ? '18px' : '22px',
-            color: 'rgba(255, 255, 255, 0.9)',
-            marginBottom: '40px',
-            lineHeight: '1.6'
-          }}>
-            Join thousands of restaurants using DineOpen to streamline operations, 
-            increase efficiency, and boost revenue.
-          </p>
-                      <div style={{
-                        display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-            gap: '16px',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-              <button
-            onClick={handleGetStarted}
-                style={{
-                padding: '18px 36px',
-                background: 'white',
-                color: '#ef4444',
-                  border: 'none',
-                borderRadius: '16px',
-                fontWeight: '700',
-                fontSize: '16px',
-                  cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
-                          display: 'flex',
-                  alignItems: 'center',
-              gap: '8px',
-                width: isMobile ? '100%' : 'auto',
-                whiteSpace: 'nowrap'
-            }}
-            onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-4px)';
-                e.target.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.3)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
-              }}
-            >
-              <FaRocket size={20} />
-              <span>Start 1 Month Free Trial</span>
-            </button>
-            <button 
-              onClick={() => setShowDemoModal(true)}
-            style={{
-                padding: '18px 36px',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                color: 'white',
-                border: '2px solid rgba(255, 255, 255, 0.3)',
-                borderRadius: '16px',
-              fontWeight: '600',
-                    fontSize: '16px',
-                  cursor: 'pointer',
-              transition: 'all 0.3s ease',
-                backdropFilter: 'blur(10px)',
-                    display: 'flex',
-                    alignItems: 'center',
-              gap: '8px',
-                width: isMobile ? '100%' : 'auto',
-                whiteSpace: 'nowrap'
-            }}
-            onMouseEnter={(e) => {
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-            }}
-            onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-              }}
-            >
-              <FaClock size={16} />
-              <span>Book Demo</span>
-              </button>
-              </div>
-            </div>
-      </section>
-
-      {/* Strong CTA Footer Section */}
-      <section style={{
-        padding: isMobile ? '50px 16px' : '100px 20px',
-        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
-        color: 'white'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{
-            fontSize: isMobile ? '24px' : '48px',
-            fontWeight: '900',
-            marginBottom: isMobile ? '16px' : '20px',
-            color: 'white',
-            lineHeight: '1.2',
-            padding: isMobile ? '0 8px' : '0'
-          }}>
-            Start Your Free Trial — No Credit Card Needed
-          </h2>
-          <p style={{
-            fontSize: isMobile ? '15px' : '22px',
-            color: 'rgba(255, 255, 255, 0.9)',
-            marginBottom: isMobile ? '32px' : '40px',
-            maxWidth: '700px',
-            margin: '0 auto',
-            padding: isMobile ? '0 8px' : '0',
-            lineHeight: '1.6'
-          }}>
-            Join 200+ restaurants using DineOpen. Get started in minutes with our 1-month free trial.
-          </p>
-          <div style={{
-            display: 'flex',
-            gap: isMobile ? '12px' : '20px',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            marginBottom: isMobile ? '32px' : '40px',
-            width: '100%'
-          }}>
-            <button
-              onClick={handleGetStarted}
-              style={{
-                padding: isMobile ? '16px 32px' : '20px 48px',
-                backgroundColor: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontWeight: '700',
-                fontSize: isMobile ? '16px' : '18px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 8px 24px rgba(239, 68, 68, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                width: isMobile ? '100%' : 'auto',
-                justifyContent: 'center'
-              }}
-              onMouseEnter={(e) => {
-                if (!isMobile) {
-                  e.target.style.transform = 'translateY(-4px)';
-                  e.target.style.boxShadow = '0 12px 32px rgba(239, 68, 68, 0.5)';
-                  e.target.style.backgroundColor = '#dc2626';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isMobile) {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.4)';
-                  e.target.style.backgroundColor = '#ef4444';
-                }
-              }}
-            >
-              <FaRocket size={isMobile ? 18 : 20} />
-              Start Free Trial
-            </button>
-            {/* WhatsApp button disabled for now */}
-            {false && (
-              <a
-                href="https://wa.me/919876543210?text=Hi, I'd like to get a demo of DineOpen"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  padding: '20px 48px',
-                  backgroundColor: '#25D366',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  fontWeight: '700',
-                  fontSize: '18px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 8px 24px rgba(37, 211, 102, 0.4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  textDecoration: 'none'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-4px)';
-                  e.target.style.boxShadow = '0 12px 32px rgba(37, 211, 102, 0.5)';
-                  e.target.style.backgroundColor = '#20BA5A';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 8px 24px rgba(37, 211, 102, 0.4)';
-                  e.target.style.backgroundColor = '#25D366';
-                }}
-              >
-                <FaWhatsapp size={20} />
-                Chat on WhatsApp
-              </a>
-            )}
+            {/* Card 1: WhatsApp Ordering */}
+            <div className="feature-card" style={{ background: '#f0fdf4', borderRadius: '32px', padding: '40px', position: 'relative', overflow: 'hidden', border: '1px solid #dcfce7' }}>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fff', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', color: '#15803d', marginBottom: '24px' }}>
+                  <FaWhatsapp /> ZERO HARDWARE
           </div>
-          <div style={{
-            display: 'flex',
-            gap: isMobile ? '20px' : '40px',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            marginTop: isMobile ? '32px' : '40px',
-            paddingTop: isMobile ? '32px' : '40px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-          }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: '700', marginBottom: '8px' }}>1 Month</div>
-              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Free Trial</div>
+                <h3 style={{ fontSize: '32px', fontWeight: '800', color: '#14532d', marginBottom: '16px' }}>WhatsApp Ordering</h3>
+                <p style={{ fontSize: '16px', color: '#166534', maxWidth: '400px', marginBottom: '32px', lineHeight: '1.6' }}>
+                  Customers scan QR → View Menu → Order on WhatsApp. Simple, fast, and builds your customer database automatically.
+                </p>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  <div style={{ background: 'white', padding: '16px', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
+                    <FaQrcode size={32} color="#15803d" />
+                    <div style={{ fontSize: '12px', fontWeight: '700', marginTop: '8px' }}>Scan</div>
+        </div>
+                  <FaArrowRight color="#15803d" />
+                  <div style={{ background: 'white', padding: '16px', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
+                    <FaWhatsapp size={32} color="#15803d" />
+                    <div style={{ fontSize: '12px', fontWeight: '700', marginTop: '8px' }}>Order</div>
+    </div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: '700', marginBottom: '8px' }}>₹999</div>
-              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Starting Price</div>
+          </div>
+              {/* Decorative phone partially visible */}
+              <div style={{ position: 'absolute', bottom: '-50px', right: '-50px', width: '250px', height: '400px', background: '#111827', borderRadius: '32px', transform: 'rotate(-15deg)', opacity: 0.9 }}>
+                <div style={{ padding: '20px', paddingTop: '60px' }}>
+                  <div style={{ background: '#dcf8c6', padding: '10px', borderRadius: '10px', marginBottom: '10px', fontSize: '12px' }}>New Order: 1x Pizza</div>
+        </div>
+      </div>
+    </div>
+
+            {/* Card 2: PDF to QR */}
+            <div className="feature-card" style={{ background: 'white', borderRadius: '32px', padding: '40px', border: '1px solid #f3f4f6', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ marginBottom: 'auto' }}>
+                <h3 style={{ fontSize: '28px', fontWeight: '800', color: '#111827', marginBottom: '12px' }}>PDF to QR in 5 Mins</h3>
+                <p style={{ fontSize: '16px', color: '#6b7280' }}>AI scans your menu photo and builds your digital catalog.</p>
+              </div>
+              
+              {/* Interactive Steps Visual */}
+              <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '24px', left: '0', right: '0', height: '2px', background: '#e5e7eb', zIndex: 0 }}></div>
+                {processSteps.map((step, i) => (
+                  <div key={i} style={{ position: 'relative', zIndex: 1, textAlign: 'center', opacity: activeProcessStep === i ? 1 : 0.5, transform: activeProcessStep === i ? 'scale(1.1)' : 'scale(1)', transition: 'all 0.3s' }}>
+                    <div style={{ width: '48px', height: '48px', background: activeProcessStep === i ? '#111827' : 'white', border: '2px solid #111827', color: activeProcessStep === i ? 'white' : '#111827', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                      {step.icon}
+              </div>
+                    <div style={{ fontSize: '12px', fontWeight: '700' }}>Step {i+1}</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: '700', marginBottom: '8px' }}>200+</div>
-              <div style={{ fontSize: isMobile ? '12px' : '14px', color: 'rgba(255, 255, 255, 0.7)' }}>Restaurants</div>
-            </div>
+                ))}
+              </div>
+              </div>
+
               </div>
             </div>
+      </section>
+
+      {/* 4. BILLING OS SECTION (Full Width) */}
+      <section style={{ padding: '80px 20px', backgroundColor: '#f8fafc' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: isMobile ? '32px' : '48px', fontWeight: '800', marginBottom: '40px' }}>Full-Stack <span style={{ color: '#ef4444' }}>Restaurant OS</span></h2>
+          
+          <div style={{ background: 'white', borderRadius: '24px', border: '1px solid #e5e7eb', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', overflow: 'hidden', textAlign: 'left' }}>
+            <div style={{ borderBottom: '1px solid #e5e7eb', padding: '16px 24px', display: 'flex', gap: '32px', background: '#fff' }}>
+              <div style={{ fontWeight: '700', color: '#ef4444', borderBottom: '2px solid #ef4444', paddingBottom: '14px', marginBottom: '-17px' }}>Tables</div>
+              <div style={{ fontWeight: '600', color: '#6b7280' }}>Orders</div>
+              <div style={{ fontWeight: '600', color: '#6b7280' }}>Inventory</div>
+              <div style={{ fontWeight: '600', color: '#6b7280' }}>Reports</div>
+              </div>
+            <div style={{ padding: '32px', minHeight: '400px', backgroundImage: 'radial-gradient(#e5e7eb 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '24px' }}>
+                {[1,2,3,4,5,6,7,8].map(t => (
+                  <div key={t} style={{ background: 'white', padding: '24px', borderRadius: '16px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: '700', color: '#374151' }}>Table {t}</span>
+                      <span style={{ fontSize: '12px', padding: '2px 8px', background: t < 4 ? '#fee2e2' : '#ecfdf5', color: t < 4 ? '#ef4444' : '#10b981', borderRadius: '10px' }}>{t < 4 ? 'Occupied' : 'Free'}</span>
+                    </div>
+                    {t < 4 && (
+                      <>
+                        <div style={{ fontSize: '24px', fontWeight: '800' }}>₹{t * 450 + 120}</div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>{t+1} items • 20m ago</div>
+                      </>
+                    )}
+                    {t >= 4 && <div style={{ fontSize: '14px', color: '#9ca3af', marginTop: 'auto' }}>Ready for guests</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section - Clean Cards */}
+      <section id="pricing" style={{ padding: '100px 20px', backgroundColor: 'white' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '42px', fontWeight: '800', marginBottom: '60px' }}>Simple Pricing</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '32px' }}>
+            {plans.map((plan, i) => (
+              <div key={i} style={{ padding: '40px', borderRadius: '32px', border: plan.popular ? '2px solid #111827' : '1px solid #e5e7eb', background: plan.popular ? '#111827' : 'white', color: plan.popular ? 'white' : '#111827', textAlign: 'left', position: 'relative' }}>
+                {plan.popular && <div style={{ position: 'absolute', top: '-12px', right: '40px', background: '#ef4444', color: 'white', fontSize: '12px', fontWeight: '700', padding: '4px 12px', borderRadius: '20px' }}>POPULAR</div>}
+                <h3 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>{plan.name}</h3>
+                <div style={{ fontSize: '42px', fontWeight: '800', marginBottom: '8px' }}>{plan.price}</div>
+                <p style={{ opacity: 0.7, marginBottom: '32px' }}>{plan.subPrice}</p>
+                <button style={{ width: '100%', padding: '16px', borderRadius: '12px', background: plan.popular ? 'white' : '#111827', color: plan.popular ? '#111827' : 'white', border: 'none', fontWeight: '700', marginBottom: '32px', cursor: 'pointer' }}>{plan.button}</button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {plan.features.map(f => (
+                    <div key={f} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <FaCheckCircle color={plan.popular ? '#ef4444' : '#10b981'} /> {f}
+              </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Footer */}
-      <footer style={{
-        backgroundColor: '#111827',
-                  color: 'white',
-        padding: isMobile ? '40px 20px' : '60px 20px'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-    <div style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
-            gap: '40px',
-            marginBottom: '40px'
-          }}>
-            <div>
-              <div style={{
-      display: 'flex',
-      alignItems: 'center',
-                gap: '12px',
-                marginBottom: '16px'
-    }}>
-      <div style={{
-                  width: '32px',
-                  height: '32px',
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <FaUtensils color="white" size={16} />
+      <footer style={{ padding: '80px 20px', background: '#fafafa', borderTop: '1px solid #e5e7eb' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr 1fr', gap: '40px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+              <div style={{ width: '32px', height: '32px', background: '#ef4444', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800' }}>DO</div>
+              <span style={{ fontSize: '20px', fontWeight: '700' }}>DineOpen</span>
             </div>
-                <span style={{
-                  fontSize: '20px',
-                  fontWeight: 'bold'
-                }}>
-                  DineOpen
-                  </span>
+            <p style={{ color: '#6b7280' }}>The operating system for modern restaurants.</p>
           </div>
-              <p style={{
-                color: '#9ca3af',
-                fontSize: '14px',
-                lineHeight: '1.6'
-              }}>
-                Modern restaurant management platform designed to streamline operations and boost efficiency.
-                </p>
-        </div>
-
-            <div>
-              <h4 style={{
-                fontSize: '16px',
-                fontWeight: 'bold',
-                marginBottom: '16px',
-                color: 'white'
-              }}>
-                Product
-              </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ marginBottom: '8px' }}>
-                  <Link href="/restaurants" style={{ color: '#9ca3af', textDecoration: 'none' }}>Find Restaurants</Link>
-                </li>
-                <li style={{ marginBottom: '8px' }}>
-                  <a href="#features" style={{ color: '#9ca3af', textDecoration: 'none' }}>Features</a>
-                </li>
-                <li style={{ marginBottom: '8px' }}>
-                  <a href="#pricing" style={{ color: '#9ca3af', textDecoration: 'none' }}>Pricing</a>
-                </li>
-              </ul>
-    </div>
-            
-            <div>
-              <h4 style={{
-                fontSize: '16px',
-                fontWeight: 'bold',
-                marginBottom: '16px',
-                color: 'white'
-              }}>
-                Support
-              </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ marginBottom: '8px' }}>
-                  <a 
-                    href="#" 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowDemoModal(true);
-                    }}
-                    style={{ color: '#9ca3af', textDecoration: 'none', cursor: 'pointer' }}
-                  >
-                    Contact
-                  </a>
-                </li>
-              </ul>
+          <div>
+            <h4 style={{ fontWeight: '700', marginBottom: '16px' }}>Product</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', color: '#6b7280' }}>
+              <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Features</Link>
+              <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Pricing</Link>
             </div>
-
-            <div>
-              <h4 style={{
-                fontSize: '16px',
-                fontWeight: 'bold',
-                marginBottom: '16px',
-                color: 'white'
-              }}>
-                Legal
-              </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ marginBottom: '8px' }}>
-                  <a href="/privacy" style={{ color: '#9ca3af', textDecoration: 'none' }}>Privacy Policy</a>
-                </li>
-                <li style={{ marginBottom: '8px' }}>
-                  <a href="/terms" style={{ color: '#9ca3af', textDecoration: 'none' }}>Terms of Service</a>
-                </li>
-                <li style={{ marginBottom: '8px' }}>
-                  <a href="/cookies" style={{ color: '#9ca3af', textDecoration: 'none' }}>Cookie Policy</a>
-                </li>
-              </ul>
+          </div>
+          <div>
+            <h4 style={{ fontWeight: '700', marginBottom: '16px' }}>Company</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', color: '#6b7280' }}>
+              <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>About</Link>
+              <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Contact</Link>
+            </div>
+          </div>
+          <div>
+            <h4 style={{ fontWeight: '700', marginBottom: '16px' }}>Legal</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', color: '#6b7280' }}>
+              <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy</Link>
+              <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Terms</Link>
+            </div>
           </div>
         </div>
-
-        <div style={{
-            borderTop: '1px solid #374151',
-            paddingTop: '20px',
-            textAlign: 'center'
-          }}>
-            <p style={{
-              color: '#9ca3af',
-              fontSize: '14px',
-              margin: 0
-            }}>
-              © 2024 DineOpen. All rights reserved.
-            </p>
-      </div>
-    </div>
       </footer>
-      
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
 
-      {/* Demo Booking Modal */}
       {showDemoModal && (
-        <div
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowDemoModal(false);
-              setDemoError('');
-              setDemoPhone('');
-              setDemoEmail('');
-              setDemoComment('');
-              setDemoContactType('phone');
-            }
-          }}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px',
-            animation: 'fadeIn 0.2s ease'
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              padding: '32px',
-              maxWidth: '500px',
-              width: '100%',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-              animation: 'slideUp 0.3s ease',
-              maxHeight: '90vh',
-              overflowY: 'auto'
-            }}
-          >
-            {/* Header */}
-            <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-              <h2 style={{
-                fontSize: '24px',
-                fontWeight: 'bold',
-                color: '#ef4444',
-                margin: '0 0 12px 0'
-              }}>
-                Contact Us
-              </h2>
-              <div style={{
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: '8px',
-                padding: '12px',
-                marginBottom: '12px'
-              }}>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#991b1b',
-                  margin: '0 0 4px 0',
-                  fontWeight: '600'
-                }}>
-                  📧 Email us at:
-                </p>
-                <a 
-                  href="mailto:info@dineopen.com" 
-                  style={{
-                    fontSize: '16px',
-                    color: '#ef4444',
-                    textDecoration: 'none',
-                    fontWeight: '600'
-                  }}
-                >
-                  info@dineopen.com
-                </a>
-              </div>
-              <p style={{
-                fontSize: '14px',
-                color: '#6b7280',
-                margin: '12px 0 0 0',
-                fontWeight: '500'
-              }}>
-                Or fill the form below to get in touch
-              </p>
-            </div>
-
-            {/* Success Message */}
-            {demoSuccess && (
-              <div style={{
-                backgroundColor: '#f0fdf4',
-                border: '2px solid #22c55e',
-                color: '#166534',
-                padding: '16px',
-                borderRadius: '8px',
-                marginBottom: '20px',
-                textAlign: 'center',
-                fontWeight: '600'
-              }}>
-                ✅ {demoSuccess ? 'Demo request submitted successfully! We\'ll contact you soon.' : ''}
-              </div>
-            )}
-
-            {/* Error Message */}
-            {demoError && (
-              <div style={{
-                backgroundColor: '#fef2f2',
-                border: '2px solid #ef4444',
-                color: '#dc2626',
-                padding: '16px',
-                borderRadius: '8px',
-                marginBottom: '20px',
-                fontSize: '14px'
-              }}>
-                {demoError}
-              </div>
-            )}
-
-            {/* Contact Type Selection */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#374151',
-                marginBottom: '12px'
-              }}>
-                How would you like us to contact you?
-              </label>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button
-                  onClick={() => {
-                    setDemoContactType('phone');
-                    setDemoError('');
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    backgroundColor: demoContactType === 'phone' ? '#ef4444' : '#f3f4f6',
-                    color: demoContactType === 'phone' ? 'white' : '#374151',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  📞 Phone
-                </button>
-                <button
-                  onClick={() => {
-                    setDemoContactType('email');
-                    setDemoError('');
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    backgroundColor: demoContactType === 'email' ? '#ef4444' : '#f3f4f6',
-                    color: demoContactType === 'email' ? 'white' : '#374151',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  ✉️ Email
-                </button>
-              </div>
-            </div>
-
-            {/* Phone Input (if phone selected) */}
-            {demoContactType === 'phone' && (
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
-                  Phone Number <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <input
-                  type="tel"
-                  value={demoPhone}
-                  onChange={(e) => setDemoPhone(e.target.value)}
-                  placeholder="+91 9876543210"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#ef4444';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Email Input (if email selected) */}
-            {demoContactType === 'email' && (
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
-                  Email Address <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <input
-                  type="email"
-                  value={demoEmail}
-                  onChange={(e) => setDemoEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#ef4444';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Comment Text Area */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#374151',
-                marginBottom: '8px'
-              }}>
-                Additional Comments (Optional)
-              </label>
-              <textarea
-                value={demoComment}
-                onChange={(e) => setDemoComment(e.target.value)}
-                placeholder="Tell us about your restaurant or any specific requirements..."
-                rows={4}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                  resize: 'vertical',
-                  fontFamily: 'inherit',
-                  transition: 'all 0.2s ease'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#ef4444';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
-            </div>
-
-            {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                onClick={() => {
-                  setShowDemoModal(false);
-                  setDemoError('');
-                  setDemoPhone('');
-                  setDemoEmail('');
-                  setDemoComment('');
-                  setDemoContactType('phone');
-                }}
-                style={{
-                  flex: 1,
-                  padding: '12px 24px',
-                  backgroundColor: '#f3f4f6',
-                  color: '#374151',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#e5e7eb';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#f3f4f6';
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmitDemoRequest}
-                disabled={demoSubmitting || demoSuccess}
-                style={{
-                  flex: 1,
-                  padding: '12px 24px',
-                  background: (demoSubmitting || demoSuccess) 
-                    ? '#d1d5db' 
-                    : 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: (demoSubmitting || demoSuccess) ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  if (!demoSubmitting && !demoSuccess) {
-                    e.target.style.transform = 'translateY(-1px)';
-                    e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              >
-                {demoSubmitting ? 'Submitting...' : 'Submit Request'}
-              </button>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(5px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '40px', width: '100%', maxWidth: '480px', position: 'relative' }}>
+            <button onClick={() => setShowDemoModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', border: 'none', background: 'none', fontSize: '20px', cursor: 'pointer' }}><FaTimes /></button>
+            <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '24px' }}>Get a Free Demo</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <input type="text" placeholder="Phone Number" value={demoPhone} onChange={(e) => setDemoPhone(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb' }} />
+              <button onClick={handleSubmitDemoRequest} style={{ padding: '12px', borderRadius: '8px', background: '#111827', color: 'white', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>Request Demo</button>
             </div>
           </div>
         </div>
       )}
-
-      {/* Floating WhatsApp CTA Button - Disabled for now */}
-      {false && (
-        <div style={{ position: 'relative' }}>
-          <a
-            href="https://wa.me/919876543210?text=Hi, I'd like to get a demo of DineOpen"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              position: 'fixed',
-              bottom: isMobile ? '20px' : '30px',
-              right: isMobile ? '20px' : '30px',
-              width: isMobile ? '56px' : '64px',
-              height: isMobile ? '56px' : '64px',
-              backgroundColor: '#25D366',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 20px rgba(37, 211, 102, 0.4)',
-              zIndex: 1000,
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              textDecoration: 'none',
-              animation: 'pulse 2s ease-in-out infinite'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.1)';
-              e.currentTarget.style.boxShadow = '0 6px 30px rgba(37, 211, 102, 0.6)';
-              const tooltip = e.currentTarget.nextElementSibling;
-              if (tooltip) tooltip.style.opacity = '1';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 4px 20px rgba(37, 211, 102, 0.4)';
-              const tooltip = e.currentTarget.nextElementSibling;
-              if (tooltip) tooltip.style.opacity = '0';
-            }}
-            title="Get Demo on WhatsApp"
-          >
-            <FaWhatsapp size={isMobile ? 28 : 32} color="white" />
-          </a>
-          {/* Tooltip */}
-          <div style={{
-            position: 'fixed',
-            bottom: isMobile ? '90px' : '100px',
-            right: isMobile ? '20px' : '30px',
-            backgroundColor: '#1f2937',
-            color: 'white',
-            padding: '10px 16px',
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontWeight: '600',
-            whiteSpace: 'nowrap',
-            opacity: 0,
-            pointerEvents: 'none',
-            transition: 'opacity 0.3s ease',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-            zIndex: 999,
-            transform: 'translateX(0)'
-          }}>
-            Get Demo on WhatsApp
-            <div style={{
-              position: 'absolute',
-              bottom: '-6px',
-              right: '20px',
-              width: 0,
-              height: 0,
-              borderLeft: '6px solid transparent',
-              borderRight: '6px solid transparent',
-              borderTop: '6px solid #1f2937'
-            }} />
-          </div>
-        </div>
-      )}
-
-      {/* SEO Structured Data */}
-      <SEOStructuredData />
     </div>
   );
 }
-
