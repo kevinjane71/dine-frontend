@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import apiClient from '../lib/api';
 import SEOStructuredData from '../components/SEOStructuredData';
 import { 
@@ -32,7 +33,7 @@ export default function LandingPage() {
   const [demoSuccess, setDemoSuccess] = useState(false);
   const [demoError, setDemoError] = useState('');
   const [currency, setCurrency] = useState('INR');
-
+  
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 1024);
     checkMobile();
@@ -135,7 +136,7 @@ export default function LandingPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '32px', height: '32px', background: '#ef4444', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800' }}>DO</div>
             <span style={{ fontSize: '20px', fontWeight: '700', color: '#111827' }}>DineOpen</span>
-        </div>
+          </div>
           
           {!isMobile && (
             <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
@@ -143,7 +144,7 @@ export default function LandingPage() {
                 <button style={{ background: 'none', border: 'none', fontSize: '14px', fontWeight: '600', color: '#4b5563', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', height: '70px' }}>
                   Products <FaChevronDown size={10} />
                 </button>
-                  {showProductsDropdown && (
+                {showProductsDropdown && (
                   <div style={{ position: 'absolute', top: '60px', left: '-20px', background: 'white', border: '1px solid #f3f4f6', borderRadius: '16px', padding: '8px', width: '260px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
                     {[
                       { icon: <FaStore/>, title: "Restaurant POS", desc: "Billing & Ops" },
@@ -156,19 +157,19 @@ export default function LandingPage() {
                         <div><div style={{ fontSize: '14px', fontWeight: '600' }}>{item.title}</div><div style={{ fontSize: '12px', color: '#6b7280' }}>{item.desc}</div></div>
                       </Link>
                     ))}
-                      </div>
-                  )}
-                </div>
+                  </div>
+                )}
+              </div>
               <Link href="/pricing" style={{ fontSize: '14px', fontWeight: '600', color: '#4b5563', textDecoration: 'none' }}>Pricing</Link>
               <Link href="/restaurants" style={{ fontSize: '14px', fontWeight: '600', color: '#4b5563', textDecoration: 'none' }}>Restaurants</Link>
-          </div>
-        )}
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: '12px' }}>
             <button onClick={handleLogin} style={{ padding: '8px 20px', borderRadius: '10px', border: '1px solid #e5e7eb', background: 'white', fontWeight: '600', cursor: 'pointer' }}>Login</button>
             <button onClick={handleLogin} style={{ padding: '8px 20px', borderRadius: '10px', background: '#111827', color: 'white', fontWeight: '600', border: 'none', cursor: 'pointer' }}>Get Started</button>
-                </div>
-                </div>
+          </div>
+        </div>
       </nav>
 
       {/* 1. HERO SECTION - Centered & Bold */}
@@ -176,13 +177,13 @@ export default function LandingPage() {
         <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', background: '#fff1f2', color: '#be123c', borderRadius: '30px', fontSize: '13px', fontWeight: '700', marginBottom: '32px', border: '1px solid #fecdd3' }}>
             <FaStar /> #1 Rated Restaurant Billing Software
-            </div>
-                    
+          </div>
+          
           <h1 style={{ fontSize: isMobile ? '42px' : '72px', fontWeight: '800', lineHeight: '1.1', color: '#111827', marginBottom: '24px', letterSpacing: '-2px' }}>
             Restaurant Billing Software <br/>
             <span className="red-gradient-text">& AI Staff.</span>
-            </h1>
-            
+          </h1>
+          
           <p style={{ fontSize: isMobile ? '18px' : '20px', color: '#4b5563', lineHeight: '1.6', maxWidth: '650px', margin: '0 auto 40px' }}>
             Restaurant Billing, Inventory, and a <strong>Free E-Menu</strong> for your restaurant. The all-in-one OS designed to <strong>engage more customers</strong> with AI-powered automation.
           </p>
@@ -190,12 +191,12 @@ export default function LandingPage() {
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexDirection: isMobile ? 'column' : 'row', marginBottom: '80px' }}>
             <button onClick={handleLogin} style={{ padding: '16px 40px', fontSize: '16px', fontWeight: '700', borderRadius: '14px', background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px -5px rgba(239, 68, 68, 0.4)' }}>
               Create Free Menu
-              </button>
+            </button>
             <button onClick={() => setShowDemoModal(true)} style={{ padding: '16px 40px', fontSize: '16px', fontWeight: '700', borderRadius: '14px', background: 'white', color: '#111827', border: '1px solid #e5e7eb', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <FaPlay size={12} /> Watch Demo
-              </button>
-            </div>
-            
+            </button>
+          </div>
+
           {/* Hero Visual - Dashboard & Phone Composition */}
           <div style={{ position: 'relative', height: isMobile ? '300px' : '500px', perspective: '1000px' }}>
             {/* Dashboard Mockup (Back) */}
@@ -205,15 +206,18 @@ export default function LandingPage() {
               background: '#f8fafc', borderRadius: '24px', border: '1px solid #e2e8f0', 
               boxShadow: '0 50px 100px -20px rgba(0,0,0,0.15)', overflow: 'hidden' 
             }}>
-              <img
-                src="https://storage.googleapis.com/demoimage-7189/menu-items/LUETVd1eMwu4Bm7PvP9K/item_1760637762769_df90sl6pe/1760767605179-0-Screenshot%202025-10-18%20at%2011.36.31%C3%A2%C2%80%C2%AFAM.png"
+              <Image 
+                src="https://storage.googleapis.com/demoimage-7189/menu-items/LUETVd1eMwu4Bm7PvP9K/item_1760637762769_df90sl6pe/1760767605179-0-Screenshot%202025-10-18%20at%2011.36.31%C3%A2%C2%80%C2%AFAM.png" 
                 alt="DineOpen Dashboard Interface"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+                fill
+                sizes="(max-width: 768px) 95vw, 900px"
+                priority
+                style={{ objectFit: 'cover', objectPosition: 'top' }}
               />
             </div>
 
             {/* Phone Mockup (Front/Floating) */}
-              <div style={{
+            <div style={{ 
               position: 'absolute', bottom: isMobile ? '-20px' : '-40px', right: isMobile ? '10px' : '0px', 
               width: isMobile ? '140px' : '240px', height: isMobile ? '280px' : '480px', 
               background: '#111827', borderRadius: '32px', border: '8px solid #1f2937', 
@@ -231,27 +235,27 @@ export default function LandingPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '10px', fontWeight: 'bold' }}>Butter Chicken</div>
                         <div style={{ fontSize: '10px', color: '#ef4444' }}>₹320</div>
-              </div>
+                      </div>
                       <div style={{ width: '20px', height: '20px', background: '#111', color: 'white', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>+</div>
-            </div>
+                    </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <div style={{ width: '32px', height: '32px', background: '#f3f4f6', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🧀</div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '10px', fontWeight: 'bold' }}>Paneer Tikka</div>
                         <div style={{ fontSize: '10px', color: '#ef4444' }}>₹280</div>
-          </div>
+                      </div>
                       <div style={{ width: '20px', height: '20px', background: '#111', color: 'white', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>+</div>
-        </div>
-            </div>
-              </div>
+                    </div>
+                  </div>
+                </div>
                 {/* Cart Float */}
                 <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', background: '#ef4444', borderRadius: '8px', padding: '8px', color: 'white', fontSize: '10px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
                   <span>2 Items</span><span>View Cart &gt;</span>
-                        </div>
-                    </div>
-            </div>
                 </div>
+              </div>
             </div>
+          </div>
+        </div>
       </section>
 
       {/* 2. AI CAPTAIN SECTION (Centered) */}
@@ -272,18 +276,18 @@ export default function LandingPage() {
                   <div style={{ textAlign: 'left' }}>
                     <div style={{ fontWeight: '700', fontSize: '14px' }}>DineOpen AI</div>
                     <div style={{ fontSize: '12px', color: '#10b981' }}>● Online</div>
-              </div>
-            </div>
-            
+                  </div>
+                </div>
+                
                 {/* Chat Bubbles */}
                 <div className="chat-bubble" style={{ alignSelf: 'flex-start', background: 'white', padding: '12px 16px', borderRadius: '16px 16px 16px 4px', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                  Hi! 👋 I'm your AI waiter. Ask me for recommendations or order directly here!
+                  Hi! 👋 I&apos;m your AI waiter. Ask me for recommendations or order directly here!
                 </div>
                 
                 {chatStep >= 1 && (
                   <div className="chat-bubble" style={{ alignSelf: 'flex-end', background: '#7c3aed', color: 'white', padding: '12px 16px', borderRadius: '16px 16px 4px 16px', fontSize: '14px' }}>
                     I want something spicy. 🌶️
-              </div>
+                  </div>
                 )}
 
                 {chatStep === 2 && (
@@ -291,22 +295,22 @@ export default function LandingPage() {
                     <div style={{ width: '6px', height: '6px', background: '#ccc', borderRadius: '50%', animation: 'typing 1s infinite' }}></div>
                     <div style={{ width: '6px', height: '6px', background: '#ccc', borderRadius: '50%', animation: 'typing 1s infinite 0.2s' }}></div>
                     <div style={{ width: '6px', height: '6px', background: '#ccc', borderRadius: '50%', animation: 'typing 1s infinite 0.4s' }}></div>
-                </div>
+                  </div>
                 )}
 
                 {chatStep >= 3 && (
                   <div className="chat-bubble" style={{ alignSelf: 'flex-start', width: '100%' }}>
                     <div style={{ background: 'white', padding: '12px 16px', borderRadius: '16px 16px 16px 4px', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '8px' }}>
-                      How about our <strong>Schezwan Noodles?</strong> 🔥 It's a customer favorite!
-                </div>
+                      How about our <strong>Schezwan Noodles?</strong> 🔥 It&apos;s a customer favorite!
+                    </div>
                     <div style={{ background: 'white', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid #f3f4f6' }}>
                       <div style={{ fontSize: '24px' }}>🍜</div>
                       <div style={{ flex: 1, textAlign: 'left' }}>
                         <div style={{ fontWeight: '700', fontSize: '14px' }}>Schezwan Noodles</div>
                         <div style={{ fontSize: '12px', color: '#6b7280' }}>₹ 180</div>
-              </div>
+                      </div>
                       <button style={{ padding: '6px 12px', background: '#7c3aed', color: 'white', borderRadius: '8px', border: 'none', fontSize: '12px', fontWeight: 'bold' }}>Add</button>
-            </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -327,8 +331,8 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-              </div>
-            </div>
+          </div>
+        </div>
       </section>
 
       {/* 3. MENU ECOSYSTEM (Bento Grid) */}
@@ -337,7 +341,7 @@ export default function LandingPage() {
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
             <h2 style={{ fontSize: isMobile ? '32px' : '48px', fontWeight: '800', color: '#111827', marginBottom: '16px' }}>The Smart Menu Ecosystem</h2>
             <p style={{ fontSize: '18px', color: '#6b7280' }}>Everything starts with a QR.</p>
-            </div>
+          </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.2fr 1fr', gap: '32px' }}>
             
@@ -346,7 +350,7 @@ export default function LandingPage() {
               <div style={{ position: 'relative', zIndex: 1 }}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fff', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', color: '#15803d', marginBottom: '24px' }}>
                   <FaWhatsapp /> ZERO HARDWARE
-          </div>
+                </div>
                 <h3 style={{ fontSize: '32px', fontWeight: '800', color: '#14532d', marginBottom: '16px' }}>WhatsApp Ordering</h3>
                 <p style={{ fontSize: '16px', color: '#166534', maxWidth: '400px', marginBottom: '32px', lineHeight: '1.6' }}>
                   Customers scan QR → View Menu → Order on WhatsApp. Simple, fast, and builds your customer database automatically.
@@ -355,21 +359,21 @@ export default function LandingPage() {
                   <div style={{ background: 'white', padding: '16px', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
                     <FaQrcode size={32} color="#15803d" />
                     <div style={{ fontSize: '12px', fontWeight: '700', marginTop: '8px' }}>Scan</div>
-        </div>
+                  </div>
                   <FaArrowRight color="#15803d" />
                   <div style={{ background: 'white', padding: '16px', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
                     <FaWhatsapp size={32} color="#15803d" />
                     <div style={{ fontSize: '12px', fontWeight: '700', marginTop: '8px' }}>Order</div>
-    </div>
-            </div>
-          </div>
+                  </div>
+                </div>
+              </div>
               {/* Decorative phone partially visible */}
               <div style={{ position: 'absolute', bottom: '-50px', right: '-50px', width: '250px', height: '400px', background: '#111827', borderRadius: '32px', transform: 'rotate(-15deg)', opacity: 0.9 }}>
                 <div style={{ padding: '20px', paddingTop: '60px' }}>
                   <div style={{ background: '#dcf8c6', padding: '10px', borderRadius: '10px', marginBottom: '10px', fontSize: '12px' }}>New Order: 1x Pizza</div>
-        </div>
-      </div>
-    </div>
+                </div>
+              </div>
+            </div>
 
             {/* Card 2: PDF to QR */}
             <div className="feature-card" style={{ background: 'white', borderRadius: '32px', padding: '40px', border: '1px solid #f3f4f6', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
@@ -385,15 +389,15 @@ export default function LandingPage() {
                   <div key={i} style={{ position: 'relative', zIndex: 1, textAlign: 'center', opacity: activeProcessStep === i ? 1 : 0.5, transform: activeProcessStep === i ? 'scale(1.1)' : 'scale(1)', transition: 'all 0.3s' }}>
                     <div style={{ width: '48px', height: '48px', background: activeProcessStep === i ? '#111827' : 'white', border: '2px solid #111827', color: activeProcessStep === i ? 'white' : '#111827', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
                       {step.icon}
-              </div>
+                    </div>
                     <div style={{ fontSize: '12px', fontWeight: '700' }}>Step {i+1}</div>
-            </div>
+                  </div>
                 ))}
               </div>
-              </div>
-
-              </div>
             </div>
+
+          </div>
+        </div>
       </section>
 
       {/* 4. BILLING OS SECTION (Full Width) */}
@@ -407,7 +411,7 @@ export default function LandingPage() {
               <div style={{ fontWeight: '600', color: '#6b7280' }}>Orders</div>
               <div style={{ fontWeight: '600', color: '#6b7280' }}>Inventory</div>
               <div style={{ fontWeight: '600', color: '#6b7280' }}>Reports</div>
-              </div>
+            </div>
             <div style={{ padding: '32px', minHeight: '400px', backgroundImage: 'radial-gradient(#e5e7eb 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '24px' }}>
                 {[1,2,3,4,5,6,7,8].map(t => (
@@ -447,7 +451,7 @@ export default function LandingPage() {
                   {plan.features.map(f => (
                     <div key={f} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       <FaCheckCircle color={plan.popular ? '#ef4444' : '#10b981'} /> {f}
-              </div>
+                    </div>
                   ))}
                 </div>
               </div>
