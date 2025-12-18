@@ -6,8 +6,8 @@ export const revalidate = false; // Never revalidate - fully static
 
 // Enhanced SEO Metadata for homepage - Optimized for search engines and AI chatbots
 export const metadata = {
-  title: 'DineOpen - Restaurant Billing Software & POS + AI Agent | Management System',
-  description: 'Best Restaurant Billing Software & POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Complete restaurant management software with inventory, supply chain, and hotel PMS. Pay as you go (₹300 one-time) or fixed monthly (₹600/month). Best restaurant software for Indian restaurants.',
+  title: 'Restaurant POS Software India | Billing & Inventory System',
+  description: 'DineOpen is restaurant POS software for small restaurants in India. Includes billing software, menu management, inventory tracking, and GST billing. Affordable pricing from ₹300. Alternative to Zomato POS and Petpooja.',
   keywords: 'restaurant billing software, restaurant management software, restaurant POS system, restaurant management system, POS for restaurants, restaurant management, restaurant software India, restaurant POS software, restaurant management platform, restaurant inventory management, restaurant table management, restaurant KOT system, restaurant order management, cloud restaurant POS, restaurant automation software, AI restaurant management, voice order taking restaurant, restaurant management solution, restaurant operations software, restaurant technology platform, restaurant management tools, restaurant management app, restaurant management system India, restaurant POS India, restaurant management software free trial',
   authors: [{ name: 'DineOpen Team' }],
   creator: 'DineOpen',
