@@ -162,6 +162,7 @@ export default function LandingPage() {
               </div>
               <Link href="/pricing" style={{ fontSize: '14px', fontWeight: '600', color: '#4b5563', textDecoration: 'none' }}>Pricing</Link>
               <Link href="/restaurants" style={{ fontSize: '14px', fontWeight: '600', color: '#4b5563', textDecoration: 'none' }}>Restaurants</Link>
+              <Link href="/blog" style={{ fontSize: '14px', fontWeight: '600', color: '#4b5563', textDecoration: 'none' }}>Blog</Link>
             </div>
           )}
 

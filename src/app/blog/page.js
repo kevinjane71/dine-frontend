@@ -1,5 +1,6 @@
 import BlogCard from '../../components/BlogCard';
 import StaticBlogCard from '../../components/StaticBlogCard';
+import FoodWasteBlogCard from '../../components/FoodWasteBlogCard';
 import { blogPosts } from './blogData';
 
 // This page is statically generated at build time
@@ -143,7 +144,8 @@ export default function BlogPage() {
             gap: '32px',
             marginBottom: '48px',
           }}>
-            {/* Static HTML Blog Post - Increase Footfall 2026 */}
+            {/* Static HTML Blog Posts */}
+            <FoodWasteBlogCard />
             <StaticBlogCard />
             
             {blogPosts.map((post) => (
