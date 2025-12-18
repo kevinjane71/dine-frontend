@@ -77,7 +77,7 @@ export default function FoodWasteBlogCard() {
           lineHeight: '1.6',
           marginBottom: '16px',
         }}>
-          Learn how DineOpen's smart inventory management tracks food waste, reduces costs by 30-50%, and helps cafes and restaurants boost profitability. Real case studies and proven strategies.
+          Learn how DineOpen&apos;s smart inventory management tracks food waste, reduces costs by 30-50%, and helps cafes and restaurants boost profitability. Real case studies and proven strategies.
         </p>
         <div style={{
           fontSize: '14px',
