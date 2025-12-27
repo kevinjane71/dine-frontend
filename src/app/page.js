@@ -6,9 +6,9 @@ export const revalidate = false; // Never revalidate - fully static
 
 // Enhanced SEO Metadata for homepage - Optimized for search engines and AI chatbots
 export const metadata = {
-  title: 'Restaurant POS Software India | Billing & Inventory System',
-  description: 'DineOpen is restaurant POS software for small restaurants in India. Includes billing software, menu management, inventory tracking, and GST billing. Affordable pricing from ₹300. Alternative to Zomato POS and Petpooja.',
-  keywords: 'restaurant billing software, restaurant management software, restaurant POS system, restaurant management system, POS for restaurants, restaurant management, restaurant software India, restaurant POS software, restaurant management platform, restaurant inventory management, restaurant table management, restaurant KOT system, restaurant order management, cloud restaurant POS, restaurant automation software, AI restaurant management, voice order taking restaurant, restaurant management solution, restaurant operations software, restaurant technology platform, restaurant management tools, restaurant management app, restaurant management system India, restaurant POS India, restaurant management software free trial',
+  title: 'Best Restaurant POS Software India 2025 | Free QR Menu + AI Agent + Inventory Management',
+  description: 'DineOpen - Complete Restaurant POS Software for India. Free QR Code Menu, AI Voice Assistant, Billing Software, Inventory Management & GST Billing. Affordable pricing from ₹300. Best alternative to Zomato POS & Petpooja. Perfect for small restaurants, cafes & cloud kitchens.',
+  keywords: 'restaurant POS software India, restaurant billing software, restaurant management software, free QR menu, AI restaurant assistant, inventory management software, restaurant POS system, GST billing software, cloud kitchen POS, cafe management software, restaurant software India, digital menu QR code, POS for small restaurants, restaurant billing system, online ordering system, KOT system, table management software, restaurant automation, voice AI waiter, cloud based POS, affordable restaurant software, zomato POS alternative, petpooja alternative, restaurant tech India, food business software, hospitality management system',
   authors: [{ name: 'DineOpen Team' }],
   creator: 'DineOpen',
   publisher: 'DineOpen',
@@ -24,8 +24,8 @@ export const metadata = {
     },
   },
   openGraph: {
-    title: 'DineOpen - Restaurant POS + AI Agent | Restaurant Management Software',
-    description: 'Restaurant POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Complete restaurant management software. Pay as you go (₹300 one-time) or fixed monthly (₹600/month).',
+    title: 'Best Restaurant POS Software India 2025 | Free QR Menu + AI Agent',
+    description: 'Complete Restaurant Management Software with Free QR Code Menu, AI Voice Assistant, Billing, Inventory Management & GST Billing. Starting ₹300. Best alternative to Zomato POS. Perfect for small restaurants & cafes.',
     url: 'https://www.dineopen.com',
     siteName: 'DineOpen',
     images: [
@@ -33,7 +33,7 @@ export const metadata = {
         url: 'https://www.dineopen.com/favicon.png',
         width: 1200,
         height: 630,
-        alt: 'DineOpen Restaurant Management System - POS + AI Agent',
+        alt: 'DineOpen - Best Restaurant POS Software India with Free QR Menu and AI Agent',
       },
     ],
     locale: 'en_US',
@@ -41,8 +41,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DineOpen - Restaurant POS + AI Agent | Restaurant Management Software',
-    description: 'Restaurant POS + AI Agent in One Platform. Fast Billing, KOT, Menu Management, Table Orders & Voice-AI Assistant. Pay as you go (₹300 one-time) or fixed monthly (₹600/month).',
+    title: 'Best Restaurant POS Software India | Free QR Menu + AI Agent',
+    description: 'Complete Restaurant POS with Free QR Menu, AI Voice Assistant, Billing & Inventory Management. Starting ₹300. Best Zomato POS alternative for small restaurants.',
     images: ['https://www.dineopen.com/favicon.png'],
     creator: '@dineopen',
   },
