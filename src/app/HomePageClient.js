@@ -21,10 +21,14 @@ export default function LandingPage() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showDemoModal, setShowDemoModal] = useState(false);
   const [showProductsDropdown, setShowProductsDropdown] = useState(false);
-  
+
   // Animation States
   const [activeProcessStep, setActiveProcessStep] = useState(0);
   const [chatStep, setChatStep] = useState(0);
+  const [rotatingTextIndex, setRotatingTextIndex] = useState(0);
+  const [fadeState, setFadeState] = useState('fade-in');
+
+  const rotatingWords = ['Restaurants', 'Cafes', 'Bars', 'Cloud Kitchens', 'Food Trucks', 'Bakeries'];
 
   // Demo Form State
   const [demoContactType, setDemoContactType] = useState('phone');
@@ -45,9 +49,21 @@ export default function LandingPage() {
 
   // Cycle Process Steps
   useEffect(() => {
-    const interval = setInterval(() => setActiveProcessStep(p => (p + 1) % 3), 4000); 
+    const interval = setInterval(() => setActiveProcessStep(p => (p + 1) % 3), 4000);
     return () => clearInterval(interval);
   }, []);
+
+  // Rotating Text Animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFadeState('fade-out');
+      setTimeout(() => {
+        setRotatingTextIndex((prev) => (prev + 1) % rotatingWords.length);
+        setFadeState('fade-in');
+      }, 500);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [rotatingWords.length]);
 
   // AI Chat Animation
   useEffect(() => {
@@ -124,13 +140,34 @@ export default function LandingPage() {
       
       <style jsx global>{`
         @keyframes float-y { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        @keyframes float-x { 0%, 100% { transform: translateX(0px); } 50% { transform: translateX(10px); } }
         @keyframes typing { 0% { opacity: 0.3; transform: translateY(0px); } 50% { opacity: 1; transform: translateY(-3px); } 100% { opacity: 0.3; transform: translateY(0px); } }
         @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scale-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slide-in-left { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slide-in-right { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); } 50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.6); } }
+        @keyframes gradient-shift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+        @keyframes rotate-fade-in {
+          0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes rotate-fade-out {
+          0% { opacity: 1; transform: translateY(0) scale(1); }
+          100% { opacity: 0; transform: translateY(-20px) scale(0.95); }
+        }
         .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(0,0,0,0.05); }
         .hero-gradient { background: radial-gradient(circle at 50% 0%, rgba(254, 226, 226, 0.4) 0%, rgba(255, 255, 255, 0) 50%); }
-        .text-gradient { background: linear-gradient(135deg, #111827 0%, #4b5563 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .red-gradient-text { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); }
+        .text-gradient { background: linear-gradient(135deg, #111827 0%, #4b5563 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .red-gradient-text { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .animated-gradient { background: linear-gradient(270deg, #ef4444, #dc2626, #b91c1c); background-size: 600% 600%; animation: gradient-shift 3s ease infinite; }
+        .feature-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .feature-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); }
+        .shimmer-effect { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent); background-size: 200% 100%; animation: shimmer 2s infinite; }
+        .fade-in { animation: rotate-fade-in 0.5s ease-out forwards; }
+        .fade-out { animation: rotate-fade-out 0.5s ease-out forwards; }
       `}</style>
 
       {/* Enhanced Professional Navigation */}
@@ -197,150 +234,407 @@ export default function LandingPage() {
                 Restaurants
               </Link>
               
-              <div style={{ position: 'relative' }} onMouseEnter={() => setShowProductsDropdown(true)} onMouseLeave={() => setShowProductsDropdown(false)}>
-                <button style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  fontSize: '15px', 
-                  fontWeight: '600', 
-                  color: '#111827', 
-                  cursor: 'pointer', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '6px', 
+              <div
+                style={{ position: 'relative' }}
+                onMouseEnter={() => setShowProductsDropdown(true)}
+                onMouseLeave={() => setShowProductsDropdown(false)}
+              >
+                <button style={{
+                  background: showProductsDropdown ? '#f3f4f6' : 'none',
+                  border: 'none',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  color: '#111827',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
                   height: '40px',
                   padding: '0 12px',
                   borderRadius: '8px',
                   transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => { e.target.style.backgroundColor = '#f3f4f6'; }}
-                onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; }}
-                >
-                  Products <FaChevronDown size={10} />
+                }}>
+                  Products <FaChevronDown size={10} style={{ transform: showProductsDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
                 </button>
                 {showProductsDropdown && (
-                  <div style={{ 
-                    position: 'absolute', 
-                    top: '48px', 
+                  <div style={{
+                    position: 'absolute',
+                    top: '48px',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    background: 'white', 
-                    border: '1px solid #e5e7eb', 
-                    borderRadius: '16px', 
-                    padding: '16px 8px', 
-                    minWidth: '420px', 
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-                    animation: 'fade-in-up 0.2s ease-out'
+                    background: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '20px',
+                    padding: '32px',
+                    minWidth: '800px',
+                    boxShadow: '0 25px 80px rgba(0,0,0,0.15)',
+                    animation: 'fade-in-up 0.25s ease-out',
+                    zIndex: 1000
                   }}>
-                    {/* POS Software Section */}
-                    <div style={{ 
-                      padding: '12px 16px', 
-                      background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
-                      borderRadius: '10px',
-                      marginBottom: '12px'
-                    }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#dc2626', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
-                        🏪 POS Software
-                      </div>
-                      <Link href="/products/pos-software.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', marginBottom: '6px', background: 'white' }}
-                        onMouseEnter={(e) => { e.target.style.backgroundColor = '#fee2e2'; e.target.style.color = '#dc2626'; e.target.style.transform = 'translateX(4px)'; }}
-                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
-                      >
-                        POS Software Overview
-                      </Link>
-                      <div style={{ paddingLeft: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <Link href="/products/pos-software/small-restaurants.html" style={{ display: 'block', padding: '8px 12px', textDecoration: 'none', color: '#6b7280', borderRadius: '6px', fontSize: '13px', transition: 'all 0.2s' }}
-                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#fee2e2'; e.target.style.color = '#dc2626'; }}
-                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; }}
-                        >
-                          → Small Restaurants
-                        </Link>
-                        <Link href="/products/pos-software/cafes.html" style={{ display: 'block', padding: '8px 12px', textDecoration: 'none', color: '#6b7280', borderRadius: '6px', fontSize: '13px', transition: 'all 0.2s' }}
-                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#fee2e2'; e.target.style.color = '#dc2626'; }}
-                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; }}
-                        >
-                          → Cafes
-                        </Link>
-                        <Link href="/products/pos-software/cloud-kitchens.html" style={{ display: 'block', padding: '8px 12px', textDecoration: 'none', color: '#6b7280', borderRadius: '6px', fontSize: '13px', transition: 'all 0.2s' }}
-                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#fee2e2'; e.target.style.color = '#dc2626'; }}
-                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; }}
-                        >
-                          → Cloud Kitchens
-                        </Link>
-                      </div>
-                    </div>
+                    {/* 3-Column Grid Layout */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
 
-                    {/* Billing Software Section */}
-                    <div style={{ 
-                      padding: '12px 16px', 
-                      background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-                      borderRadius: '10px',
-                      marginBottom: '12px'
-                    }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#2563eb', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
-                        💰 Billing Software
-                      </div>
-                      <Link href="/products/billing-software.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', marginBottom: '6px', background: 'white' }}
-                        onMouseEnter={(e) => { e.target.style.backgroundColor = '#dbeafe'; e.target.style.color = '#2563eb'; e.target.style.transform = 'translateX(4px)'; }}
-                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
-                      >
-                        Billing Software Overview
-                      </Link>
-                      <div style={{ paddingLeft: '12px' }}>
-                        <Link href="/products/billing-software/gst-billing.html" style={{ display: 'block', padding: '8px 12px', textDecoration: 'none', color: '#6b7280', borderRadius: '6px', fontSize: '13px', transition: 'all 0.2s' }}
-                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#dbeafe'; e.target.style.color = '#2563eb'; }}
-                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; }}
-                        >
-                          → GST Billing
-                        </Link>
-                      </div>
-                    </div>
+                      {/* Column 1: POS Software */}
+                      <div>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          fontSize: '12px',
+                          fontWeight: '800',
+                          color: '#dc2626',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px',
+                          marginBottom: '16px',
+                          paddingBottom: '12px',
+                          borderBottom: '2px solid #fee2e2'
+                        }}>
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px'
+                          }}>🏪</div>
+                          POS Software
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <Link href="/products/pos-software" style={{
+                            display: 'block',
+                            padding: '10px 12px',
+                            textDecoration: 'none',
+                            color: '#111827',
+                            borderRadius: '10px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            transition: 'all 0.2s',
+                            background: 'transparent'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#fef2f2'; e.target.style.color = '#dc2626'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#111827'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            POS Overview
+                          </Link>
+                          <Link href="/products/pos-software/small-restaurants" style={{
+                            display: 'block',
+                            padding: '8px 12px',
+                            textDecoration: 'none',
+                            color: '#6b7280',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#fef2f2'; e.target.style.color = '#dc2626'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            Small Restaurants
+                          </Link>
+                          <Link href="/products/pos-software/cafes" style={{
+                            display: 'block',
+                            padding: '8px 12px',
+                            textDecoration: 'none',
+                            color: '#6b7280',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#fef2f2'; e.target.style.color = '#dc2626'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            Cafes & Coffee Shops
+                          </Link>
+                          <Link href="/products/pos-software/cloud-kitchens" style={{
+                            display: 'block',
+                            padding: '8px 12px',
+                            textDecoration: 'none',
+                            color: '#6b7280',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#fef2f2'; e.target.style.color = '#dc2626'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            Cloud Kitchens
+                          </Link>
+                        </div>
 
-                    {/* Core Features Section */}
-                    <div style={{ 
-                      padding: '12px 16px', 
-                      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                      borderRadius: '10px',
-                      marginBottom: '12px'
-                    }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#16a34a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
-                        📦 Core Features
+                        {/* Billing Software */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          fontSize: '12px',
+                          fontWeight: '800',
+                          color: '#2563eb',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px',
+                          marginTop: '24px',
+                          marginBottom: '16px',
+                          paddingBottom: '12px',
+                          borderBottom: '2px solid #dbeafe'
+                        }}>
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px'
+                          }}>💰</div>
+                          Billing Software
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <Link href="/products/billing-software" style={{
+                            display: 'block',
+                            padding: '10px 12px',
+                            textDecoration: 'none',
+                            color: '#111827',
+                            borderRadius: '10px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#eff6ff'; e.target.style.color = '#2563eb'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#111827'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            Billing Overview
+                          </Link>
+                          <Link href="/products/billing-software/gst-billing" style={{
+                            display: 'block',
+                            padding: '8px 12px',
+                            textDecoration: 'none',
+                            color: '#6b7280',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#eff6ff'; e.target.style.color = '#2563eb'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            GST Billing
+                          </Link>
+                        </div>
                       </div>
-                      <Link href="/products/inventory-management.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', marginBottom: '6px', background: 'white' }}
-                        onMouseEnter={(e) => { e.target.style.backgroundColor = '#dcfce7'; e.target.style.color = '#16a34a'; e.target.style.transform = 'translateX(4px)'; }}
-                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
-                      >
-                        Inventory Management
-                      </Link>
-                      <Link href="/products/online-orders.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', background: 'white' }}
-                        onMouseEnter={(e) => { e.target.style.backgroundColor = '#dcfce7'; e.target.style.color = '#16a34a'; e.target.style.transform = 'translateX(4px)'; }}
-                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
-                      >
-                        Online Orders
-                      </Link>
-                    </div>
 
-                    {/* Comparisons Section */}
-                    <div style={{ 
-                      padding: '12px 16px', 
-                      background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)',
-                      borderRadius: '10px'
-                    }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#9333ea', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
-                        ⚖️ Comparisons
+                      {/* Column 2: Core Features */}
+                      <div>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          fontSize: '12px',
+                          fontWeight: '800',
+                          color: '#16a34a',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px',
+                          marginBottom: '16px',
+                          paddingBottom: '12px',
+                          borderBottom: '2px solid #dcfce7'
+                        }}>
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px'
+                          }}>📦</div>
+                          Core Features
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <Link href="/products/inventory-management" style={{
+                            display: 'block',
+                            padding: '10px 12px',
+                            textDecoration: 'none',
+                            color: '#111827',
+                            borderRadius: '10px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#f0fdf4'; e.target.style.color = '#16a34a'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#111827'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            Inventory Management
+                          </Link>
+                          <Link href="/products/online-orders" style={{
+                            display: 'block',
+                            padding: '10px 12px',
+                            textDecoration: 'none',
+                            color: '#111827',
+                            borderRadius: '10px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#f0fdf4'; e.target.style.color = '#16a34a'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#111827'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            Online Orders
+                          </Link>
+                          <Link href="/products/ai-agent" style={{
+                            display: 'block',
+                            padding: '10px 12px',
+                            textDecoration: 'none',
+                            color: '#111827',
+                            borderRadius: '10px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#f0fdf4'; e.target.style.color = '#16a34a'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#111827'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            AI Voice Agent
+                          </Link>
+                          <Link href="/products/restaurant-management" style={{
+                            display: 'block',
+                            padding: '8px 12px',
+                            textDecoration: 'none',
+                            color: '#6b7280',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#f0fdf4'; e.target.style.color = '#16a34a'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            Restaurant Management
+                          </Link>
+                          <Link href="/products/hotel-management" style={{
+                            display: 'block',
+                            padding: '8px 12px',
+                            textDecoration: 'none',
+                            color: '#6b7280',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#f0fdf4'; e.target.style.color = '#16a34a'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            Hotel Management
+                          </Link>
+                          <Link href="/products/supply-management" style={{
+                            display: 'block',
+                            padding: '8px 12px',
+                            textDecoration: 'none',
+                            color: '#6b7280',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#f0fdf4'; e.target.style.color = '#16a34a'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            Supply Management
+                          </Link>
+                        </div>
                       </div>
-                      <Link href="/products/comparisons/dineopen-vs-zomato.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', marginBottom: '6px', background: 'white' }}
-                        onMouseEnter={(e) => { e.target.style.backgroundColor = '#f3e8ff'; e.target.style.color = '#9333ea'; e.target.style.transform = 'translateX(4px)'; }}
-                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
-                      >
-                        DineOpen vs Zomato
-                      </Link>
-                      <Link href="/products/comparisons/dineopen-vs-petpooja.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', background: 'white' }}
-                        onMouseEnter={(e) => { e.target.style.backgroundColor = '#f3e8ff'; e.target.style.color = '#9333ea'; e.target.style.transform = 'translateX(4px)'; }}
-                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
-                      >
-                        DineOpen vs Petpooja
-                      </Link>
+
+                      {/* Column 3: Comparisons & Industries */}
+                      <div>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          fontSize: '12px',
+                          fontWeight: '800',
+                          color: '#9333ea',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px',
+                          marginBottom: '16px',
+                          paddingBottom: '12px',
+                          borderBottom: '2px solid #f3e8ff'
+                        }}>
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px'
+                          }}>⚖️</div>
+                          Comparisons
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <Link href="/products/comparisons/dineopen-vs-zomato" style={{
+                            display: 'block',
+                            padding: '10px 12px',
+                            textDecoration: 'none',
+                            color: '#111827',
+                            borderRadius: '10px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#faf5ff'; e.target.style.color = '#9333ea'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#111827'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            vs Zomato POS
+                          </Link>
+                          <Link href="/products/comparisons/dineopen-vs-petpooja" style={{
+                            display: 'block',
+                            padding: '10px 12px',
+                            textDecoration: 'none',
+                            color: '#111827',
+                            borderRadius: '10px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => { e.target.style.backgroundColor = '#faf5ff'; e.target.style.color = '#9333ea'; e.target.style.paddingLeft = '16px'; }}
+                          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#111827'; e.target.style.paddingLeft = '12px'; }}
+                          >
+                            vs Petpooja
+                          </Link>
+                        </div>
+
+                        {/* Call-to-Action Box */}
+                        <div style={{
+                          marginTop: '24px',
+                          padding: '20px',
+                          background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                          borderRadius: '12px',
+                          border: '1px solid #fecaca'
+                        }}>
+                          <div style={{ fontSize: '14px', fontWeight: '800', color: '#111827', marginBottom: '8px' }}>
+                            🚀 Ready to Start?
+                          </div>
+                          <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px', lineHeight: '1.5' }}>
+                            Get started with DineOpen today. Free trial available!
+                          </p>
+                          <button
+                            onClick={handleLogin}
+                            style={{
+                              width: '100%',
+                              padding: '10px 16px',
+                              borderRadius: '8px',
+                              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                              color: 'white',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontSize: '13px',
+                              fontWeight: '700',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)'; }}
+                            onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'none'; }}
+                          >
+                            Start Free Trial
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -405,191 +699,245 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* 1. HERO SECTION - Restored Original Design */}
-      <section className="hero-gradient" style={{ paddingTop: isMobile ? '60px' : '100px', paddingBottom: isMobile ? '60px' : '120px', textAlign: 'center', position: 'relative' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: isMobile ? '0 20px' : '0 40px' }}>
-          <div style={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '8px', 
-            padding: '8px 20px', 
-            background: 'linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%)', 
-            color: '#be123c', 
-            borderRadius: '30px', 
-            fontSize: '13px', 
-            fontWeight: '700', 
-            marginBottom: '32px', 
+      {/* 1. HERO SECTION - Enhanced with Modern Animations */}
+      <section className="hero-gradient" style={{
+        paddingTop: isMobile ? '60px' : '100px',
+        paddingBottom: isMobile ? '60px' : '120px',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Animated Background Elements */}
+        <div style={{
+          position: 'absolute',
+          top: '10%',
+          right: '5%',
+          width: '300px',
+          height: '300px',
+          background: 'radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 70%)',
+          borderRadius: '50%',
+          animation: 'float-y 8s ease-in-out infinite',
+          pointerEvents: 'none'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          bottom: '20%',
+          left: '10%',
+          width: '200px',
+          height: '200px',
+          background: 'radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%)',
+          borderRadius: '50%',
+          animation: 'float-x 6s ease-in-out infinite',
+          pointerEvents: 'none'
+        }}></div>
+
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: isMobile ? '0 20px' : '0 40px', position: 'relative', zIndex: 1 }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 20px',
+            background: 'linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%)',
+            color: '#be123c',
+            borderRadius: '30px',
+            fontSize: '13px',
+            fontWeight: '700',
+            marginBottom: '32px',
             border: '1px solid #fecdd3',
-            boxShadow: '0 2px 8px rgba(239, 68, 68, 0.1)'
+            boxShadow: '0 2px 8px rgba(239, 68, 68, 0.1)',
+            animation: 'scale-in 0.5s ease-out'
           }}>
-            <FaStar /> #1 Rated Restaurant Billing Software
+            <FaStar style={{ animation: 'pulse-glow 2s ease-in-out infinite' }} /> #1 Rated Restaurant Billing Software in India
           </div>
-          
-          <h1 style={{ 
-            fontSize: isMobile ? '36px' : '64px', 
-            fontWeight: '900', 
-            lineHeight: '1.1', 
-            color: '#111827', 
-            marginBottom: '24px', 
-            letterSpacing: '-2px' 
+
+          <h1 style={{
+            fontSize: isMobile ? '38px' : '72px',
+            fontWeight: '900',
+            lineHeight: '1.1',
+            color: '#111827',
+            marginBottom: '24px',
+            letterSpacing: '-2px',
+            animation: 'fade-in-up 0.6s ease-out 0.1s backwards',
+            minHeight: isMobile ? '120px' : '160px'
           }}>
-            Restaurant Billing <br/>
-            <span className="red-gradient-text">& AI Agent Staff</span>
+            AI Agent for <br/>
+            <span
+              className={fadeState}
+              style={{
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                display: 'inline-block'
+              }}
+            >
+              {rotatingWords[rotatingTextIndex]}
+            </span>
           </h1>
-          
-          <p style={{ 
-            fontSize: isMobile ? '18px' : '22px', 
-            color: '#4b5563', 
-            lineHeight: '1.6', 
-            maxWidth: '700px', 
+
+          <p style={{
+            fontSize: isMobile ? '18px' : '24px',
+            color: '#4b5563',
+            lineHeight: '1.7',
+            maxWidth: '820px',
             margin: '0 auto 48px',
-            fontWeight: '400'
+            fontWeight: '400',
+            animation: 'fade-in-up 0.6s ease-out 0.3s backwards'
           }}>
-            Restaurant Billing, Inventory, and a <strong>Free E-Menu</strong> for your restaurant. The all-in-one OS designed to <strong>engage more customers</strong> with AI-powered automation.
+            The only POS you need. <strong>AI takes orders on WhatsApp</strong>, billing happens in seconds, inventory updates automatically, and your <strong>free QR menu</strong> goes live instantly. No hardware. No headaches. <strong>Just growth.</strong>
           </p>
           
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: '16px', 
-            flexDirection: isMobile ? 'column' : 'row', 
-            marginBottom: isMobile ? '40px' : '80px',
-            alignItems: 'center'
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '16px',
+            flexDirection: isMobile ? 'column' : 'row',
+            marginBottom: isMobile ? '32px' : '48px',
+            alignItems: 'center',
+            animation: 'fade-in-up 0.6s ease-out 0.4s backwards'
           }}>
-            <button 
-              onClick={handleLogin} 
-              style={{ 
-                padding: isMobile ? '14px 32px' : '18px 48px', 
-                fontSize: isMobile ? '15px' : '17px', 
-                fontWeight: '700', 
-                borderRadius: '14px', 
-                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', 
-                color: 'white', 
-                border: 'none', 
-                cursor: 'pointer', 
+            <button
+              onClick={handleLogin}
+              style={{
+                padding: isMobile ? '16px 40px' : '20px 56px',
+                fontSize: isMobile ? '16px' : '18px',
+                fontWeight: '700',
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
                 boxShadow: '0 10px 25px -5px rgba(239, 68, 68, 0.4)',
-                transition: 'all 0.3s'
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
               }}
-              onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 15px 35px -5px rgba(239, 68, 68, 0.5)'; }}
-              onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 10px 25px -5px rgba(239, 68, 68, 0.4)'; }}
+              onMouseEnter={(e) => { e.target.style.transform = 'translateY(-3px) scale(1.02)'; e.target.style.boxShadow = '0 20px 40px -10px rgba(239, 68, 68, 0.6)'; }}
+              onMouseLeave={(e) => { e.target.style.transform = 'translateY(0) scale(1)'; e.target.style.boxShadow = '0 10px 25px -5px rgba(239, 68, 68, 0.4)'; }}
             >
-              Create Free Menu
+              <FaRocket size={16} /> Start Free Trial
             </button>
-            <button 
-              onClick={() => setShowDemoModal(true)} 
-              style={{ 
-                padding: isMobile ? '14px 32px' : '18px 48px', 
-                fontSize: isMobile ? '15px' : '17px', 
-                fontWeight: '700', 
-                borderRadius: '14px', 
-                background: 'white', 
-                color: '#111827', 
-                border: '1px solid #e5e7eb', 
-                cursor: 'pointer', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                gap: '8px', 
+            <button
+              onClick={() => setShowDemoModal(true)}
+              style={{
+                padding: isMobile ? '16px 40px' : '20px 56px',
+                fontSize: isMobile ? '16px' : '18px',
+                fontWeight: '700',
+                borderRadius: '16px',
+                background: 'white',
+                color: '#111827',
+                border: '2px solid #e5e7eb',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
                 boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-                transition: 'all 0.3s'
+                transition: 'all 0.3s ease'
               }}
-              onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.borderColor = '#d1d5db'; e.target.style.boxShadow = '0 8px 16px -4px rgba(0,0,0,0.1)'; }}
-              onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)'; }}
+              onMouseEnter={(e) => { e.target.style.transform = 'translateY(-3px)'; e.target.style.borderColor = '#ef4444'; e.target.style.color = '#ef4444'; e.target.style.boxShadow = '0 12px 24px -8px rgba(0,0,0,0.15)'; }}
+              onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.borderColor = '#e5e7eb'; e.target.style.color = '#111827'; e.target.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)'; }}
             >
-              <FaPlay size={12} /> Watch Demo
+              <FaPlay size={14} /> Watch Demo
             </button>
           </div>
 
-          {/* Hero Visual - Dashboard & Phone Composition */}
-          <div style={{ position: 'relative', height: isMobile ? '300px' : '500px', perspective: '1000px' }}>
-            {/* Dashboard Mockup (Back) */}
-            <div style={{ 
-              position: 'absolute', top: 0, left: '50%', transform: isMobile ? 'translateX(-50%)' : 'translateX(-50%) rotateX(10deg)', 
-              width: isMobile ? '95%' : '900px', height: isMobile ? '250px' : '550px', 
-              background: '#f8fafc', borderRadius: '24px', border: '1px solid #e2e8f0', 
-              boxShadow: '0 50px 100px -20px rgba(0,0,0,0.15)', overflow: 'hidden' 
-            }}>
-              <Image 
-                src="https://storage.googleapis.com/demoimage-7189/menu-items/LUETVd1eMwu4Bm7PvP9K/item_1760637762769_df90sl6pe/1760767605179-0-Screenshot%202025-10-18%20at%2011.36.31%C3%A2%C2%80%C2%AFAM.png" 
-                alt="DineOpen Dashboard Interface"
-                fill
-                sizes="(max-width: 768px) 95vw, 900px"
-                priority
-                style={{ objectFit: 'cover', objectPosition: 'top' }}
-              />
+          {/* Trust Indicators */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: isMobile ? '24px' : '48px',
+            flexWrap: 'wrap',
+            animation: 'fade-in 0.8s ease-out 0.5s backwards'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: isMobile ? '28px' : '36px', fontWeight: '900', color: '#111827' }}>500+</div>
+              <div style={{ fontSize: '14px', color: '#6b7280', fontWeight: '600' }}>Restaurants</div>
             </div>
-
-            {/* Phone Mockup (Front/Floating) */}
-            <div style={{ 
-              position: 'absolute', bottom: isMobile ? '-20px' : '-40px', right: isMobile ? '10px' : '0px', 
-              width: isMobile ? '140px' : '240px', height: isMobile ? '280px' : '480px', 
-              background: '#111827', borderRadius: '32px', border: '8px solid #1f2937', 
-              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)', overflow: 'hidden',
-              animation: 'float-y 6s ease-in-out infinite'
-            }}>
-              <div style={{ background: '#fff', height: '100%', overflow: 'hidden', position: 'relative' }}>
-                <div style={{ height: '120px', background: 'url(https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80)', backgroundSize: 'cover' }}></div>
-                <div style={{ padding: '12px' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '14px' }}>Spice Garden</div>
-                  <div style={{ fontSize: '10px', color: '#666' }}>Indian • Chinese</div>
-                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <div style={{ width: '32px', height: '32px', background: '#f3f4f6', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🍗</div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '10px', fontWeight: 'bold' }}>Butter Chicken</div>
-                        <div style={{ fontSize: '10px', color: '#ef4444' }}>₹320</div>
-                      </div>
-                      <div style={{ width: '20px', height: '20px', background: '#111', color: 'white', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>+</div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <div style={{ width: '32px', height: '32px', background: '#f3f4f6', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🧀</div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '10px', fontWeight: 'bold' }}>Paneer Tikka</div>
-                        <div style={{ fontSize: '10px', color: '#ef4444' }}>₹280</div>
-                      </div>
-                      <div style={{ width: '20px', height: '20px', background: '#111', color: 'white', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>+</div>
-                    </div>
-                  </div>
-                </div>
-                {/* Cart Float */}
-                <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', background: '#ef4444', borderRadius: '8px', padding: '8px', color: 'white', fontSize: '10px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>2 Items</span><span>View Cart &gt;</span>
-                </div>
-              </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: isMobile ? '28px' : '36px', fontWeight: '900', color: '#111827' }}>50K+</div>
+              <div style={{ fontSize: '14px', color: '#6b7280', fontWeight: '600' }}>Orders/Month</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: isMobile ? '28px' : '36px', fontWeight: '900', color: '#111827' }}>4.9★</div>
+              <div style={{ fontSize: '14px', color: '#6b7280', fontWeight: '600' }}>Customer Rating</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. AI CAPTAIN SECTION (Centered) */}
-      <section style={{ padding: '100px 20px', backgroundColor: '#f9fafb' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: '13px', fontWeight: '700', color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>POWERED BY GPT-4</div>
-          <h2 style={{ fontSize: isMobile ? '32px' : '48px', fontWeight: '800', color: '#111827', marginBottom: '24px' }}>Meet Your New <span style={{ color: '#7c3aed' }}>AI Captain</span></h2>
-          <p style={{ fontSize: '18px', color: '#6b7280', maxWidth: '600px', margin: '0 auto 60px' }}>
-            Forget waiting for staff. DineOpen AI acts as a personal concierge. It takes orders via <strong>Voice or Chat</strong>, checks real-time inventory, and punches orders directly into your POS.
+      {/* 2. AI AUTOMATION SECTION */}
+      <section style={{ padding: isMobile ? '80px 20px' : '120px 20px', backgroundColor: '#f9fafb', position: 'relative', overflow: 'hidden' }}>
+        {/* Background Decoration */}
+        <div style={{
+          position: 'absolute',
+          top: '0',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '600px',
+          height: '600px',
+          background: 'radial-gradient(circle, rgba(239, 68, 68, 0.06) 0%, transparent 70%)',
+          borderRadius: '50%',
+          pointerEvents: 'none'
+        }}></div>
+
+        <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+          <div style={{
+            fontSize: '13px',
+            fontWeight: '800',
+            color: '#dc2626',
+            textTransform: 'uppercase',
+            letterSpacing: '1.5px',
+            marginBottom: '16px',
+            display: 'inline-block',
+            padding: '6px 16px',
+            background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+            borderRadius: '20px',
+            border: '1px solid #fecaca'
+          }}>
+            🤖 AI AUTOMATION
+          </div>
+          <h2 style={{
+            fontSize: isMobile ? '36px' : '56px',
+            fontWeight: '900',
+            color: '#111827',
+            marginBottom: '24px',
+            lineHeight: '1.2',
+            letterSpacing: '-1px'
+          }}>
+            AI Takes Orders While <span style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>You Focus on Food</span>
+          </h2>
+          <p style={{
+            fontSize: isMobile ? '18px' : '22px',
+            color: '#6b7280',
+            maxWidth: '750px',
+            margin: '0 auto 60px',
+            lineHeight: '1.7'
+          }}>
+            Stop missing orders during peak hours. DineOpen AI chats with customers on WhatsApp, takes their orders, upsells add-ons automatically, and sends everything to your kitchen. No staff needed. <strong>Included free in all plans.</strong>
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '60px', alignItems: 'center' }}>
             {/* AI Visual - Chat Interface */}
-            <div style={{ background: 'white', borderRadius: '32px', boxShadow: '0 20px 50px -10px rgba(124, 58, 237, 0.15)', padding: '24px', border: '1px solid #f3f4f6' }}>
+            <div style={{ background: 'white', borderRadius: '32px', boxShadow: '0 20px 50px -10px rgba(239, 68, 68, 0.12)', padding: '24px', border: '1px solid #f3f4f6' }}>
               <div style={{ background: '#f9fafb', borderRadius: '24px', padding: '24px', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                  <div style={{ width: '40px', height: '40px', background: '#7c3aed', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FaRobot color="white" size={20}/></div>
+                  <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FaRobot color="white" size={20}/></div>
                   <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontWeight: '700', fontSize: '14px' }}>DineOpen AI</div>
-                    <div style={{ fontSize: '12px', color: '#10b981' }}>● Online</div>
+                    <div style={{ fontWeight: '700', fontSize: '14px' }}>AI Assistant</div>
+                    <div style={{ fontSize: '12px', color: '#10b981' }}>● Active 24/7</div>
                   </div>
                 </div>
-                
+
                 {/* Chat Bubbles */}
                 <div className="chat-bubble" style={{ alignSelf: 'flex-start', background: 'white', padding: '12px 16px', borderRadius: '16px 16px 16px 4px', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                  Hi! 👋 I&apos;m your AI waiter. Ask me for recommendations or order directly here!
+                  Welcome! What would you like to order today?
                 </div>
-                
+
                 {chatStep >= 1 && (
-                  <div className="chat-bubble" style={{ alignSelf: 'flex-end', background: '#7c3aed', color: 'white', padding: '12px 16px', borderRadius: '16px 16px 4px 16px', fontSize: '14px' }}>
-                    I want something spicy. 🌶️
+                  <div className="chat-bubble" style={{ alignSelf: 'flex-end', background: '#111827', color: 'white', padding: '12px 16px', borderRadius: '16px 16px 4px 16px', fontSize: '14px' }}>
+                    Show me your best dishes
                   </div>
                 )}
 
@@ -604,15 +952,15 @@ export default function LandingPage() {
                 {chatStep >= 3 && (
                   <div className="chat-bubble" style={{ alignSelf: 'flex-start', width: '100%' }}>
                     <div style={{ background: 'white', padding: '12px 16px', borderRadius: '16px 16px 16px 4px', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '8px' }}>
-                      How about our <strong>Schezwan Noodles?</strong> 🔥 It&apos;s a customer favorite!
+                      Here&apos;s our <strong>Bestseller</strong> - Butter Chicken! 🔥 Customers love it!
                     </div>
                     <div style={{ background: 'white', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid #f3f4f6' }}>
-                      <div style={{ fontSize: '24px' }}>🍜</div>
+                      <div style={{ fontSize: '24px' }}>🍗</div>
                       <div style={{ flex: 1, textAlign: 'left' }}>
-                        <div style={{ fontWeight: '700', fontSize: '14px' }}>Schezwan Noodles</div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>₹ 180</div>
+                        <div style={{ fontWeight: '700', fontSize: '14px' }}>Butter Chicken</div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>₹ 320 • ⭐ 4.8 Rating</div>
                       </div>
-                      <button style={{ padding: '6px 12px', background: '#7c3aed', color: 'white', borderRadius: '8px', border: 'none', fontSize: '12px', fontWeight: 'bold' }}>Add</button>
+                      <button style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: 'white', borderRadius: '8px', border: 'none', fontSize: '12px', fontWeight: 'bold' }}>Add</button>
                     </div>
                   </div>
                 )}
@@ -622,13 +970,13 @@ export default function LandingPage() {
             {/* AI Features Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', textAlign: 'left' }}>
               {[
-                { title: "Voice & Text", desc: "Takes complex orders naturally.", icon: <FaMicrophone/> },
-                { title: "Inventory Sync", desc: "Checks stock before confirming.", icon: <FaBoxes/> },
-                { title: "Auto-Upsell", desc: "Suggests drinks & desserts.", icon: <FaChartBar/> },
-                { title: "Instant KOT", desc: "Sends straight to kitchen.", icon: <FaReceipt/> }
+                { title: "WhatsApp Integration", desc: "Orders via chat, no app needed.", icon: <FaWhatsapp/> },
+                { title: "Stock Verification", desc: "Checks availability before confirming.", icon: <FaBoxes/> },
+                { title: "Smart Upselling", desc: "Recommends add-ons automatically.", icon: <FaChartBar/> },
+                { title: "Direct to Kitchen", desc: "KOT sent instantly.", icon: <FaReceipt/> }
               ].map((f, i) => (
                 <div key={i} className="feature-card" style={{ padding: '24px', background: 'white', borderRadius: '20px', border: '1px solid #f3f4f6', transition: 'all 0.3s' }}>
-                  <div style={{ width: '40px', height: '40px', background: '#f5f3ff', color: '#7c3aed', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>{f.icon}</div>
+                  <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)', color: '#ef4444', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>{f.icon}</div>
                   <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>{f.title}</h3>
                   <p style={{ fontSize: '14px', color: '#6b7280' }}>{f.desc}</p>
                 </div>
@@ -638,64 +986,220 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. MENU ECOSYSTEM (Bento Grid) */}
-      <section style={{ padding: '100px 20px', backgroundColor: 'white' }}>
+      {/* 3. FREE QR MENU SECTION - Redesigned */}
+      <section style={{ padding: isMobile ? '80px 20px' : '120px 20px', backgroundColor: 'white' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{ fontSize: isMobile ? '32px' : '48px', fontWeight: '800', color: '#111827', marginBottom: '16px' }}>The Smart Menu Ecosystem</h2>
-            <p style={{ fontSize: '18px', color: '#6b7280' }}>Everything starts with a QR.</p>
+            <div style={{
+              fontSize: '13px',
+              fontWeight: '800',
+              color: '#059669',
+              textTransform: 'uppercase',
+              letterSpacing: '1.5px',
+              marginBottom: '16px',
+              display: 'inline-block',
+              padding: '6px 16px',
+              background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+              borderRadius: '20px',
+              border: '1px solid #bbf7d0'
+            }}>
+              ✨ ALWAYS FREE
+            </div>
+            <h2 style={{
+              fontSize: isMobile ? '36px' : '56px',
+              fontWeight: '900',
+              color: '#111827',
+              marginBottom: '20px',
+              lineHeight: '1.2',
+              letterSpacing: '-1px'
+            }}>
+              Turn Your Menu Into a <span style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Smart QR Code</span>
+            </h2>
+            <p style={{ fontSize: isMobile ? '18px' : '22px', color: '#6b7280', maxWidth: '750px', margin: '0 auto', lineHeight: '1.7' }}>
+              Upload your menu PDF or photo. Get a beautiful digital menu with QR code in under 3 minutes. Customers order directly without any app. <strong>Print the QR, stick it on tables. Done.</strong>
+            </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.2fr 1fr', gap: '32px' }}>
-            
-            {/* Card 1: WhatsApp Ordering */}
-            <div className="feature-card" style={{ background: '#f0fdf4', borderRadius: '32px', padding: '40px', position: 'relative', overflow: 'hidden', border: '1px solid #dcfce7' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '32px' }}>
+
+            {/* Card 1: Instant Menu Creation */}
+            <div className="feature-card" style={{
+              background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+              borderRadius: '32px',
+              padding: '48px',
+              position: 'relative',
+              overflow: 'hidden',
+              border: '2px solid #10b981',
+              boxShadow: '0 20px 40px -10px rgba(16, 185, 129, 0.2)'
+            }}>
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fff', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', color: '#15803d', marginBottom: '24px' }}>
-                  <FaWhatsapp /> ZERO HARDWARE
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#10b981',
+                  color: 'white',
+                  padding: '8px 16px',
+                  borderRadius: '30px',
+                  fontSize: '12px',
+                  fontWeight: '800',
+                  marginBottom: '24px',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                }}>
+                  <FaBolt /> INSTANT SETUP
                 </div>
-                <h3 style={{ fontSize: '32px', fontWeight: '800', color: '#14532d', marginBottom: '16px' }}>WhatsApp Ordering</h3>
-                <p style={{ fontSize: '16px', color: '#166534', maxWidth: '400px', marginBottom: '32px', lineHeight: '1.6' }}>
-                  Customers scan QR → View Menu → Order on WhatsApp. Simple, fast, and builds your customer database automatically.
+                <h3 style={{ fontSize: isMobile ? '26px' : '32px', fontWeight: '900', color: '#065f46', marginBottom: '16px', lineHeight: '1.2' }}>
+                  From PDF to Live Menu in 3 Minutes
+                </h3>
+                <p style={{ fontSize: '16px', color: '#047857', marginBottom: '32px', lineHeight: '1.6' }}>
+                  Upload any menu format - PDF, image, or even a photo from your phone. Our AI converts it into a gorgeous digital menu instantly. Add photos, prices, descriptions later.
                 </p>
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                  <div style={{ background: 'white', padding: '16px', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
-                    <FaQrcode size={32} color="#15803d" />
-                    <div style={{ fontSize: '12px', fontWeight: '700', marginTop: '8px' }}>Scan</div>
-                  </div>
-                  <FaArrowRight color="#15803d" />
-                  <div style={{ background: 'white', padding: '16px', borderRadius: '16px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
-                    <FaWhatsapp size={32} color="#15803d" />
-                    <div style={{ fontSize: '12px', fontWeight: '700', marginTop: '8px' }}>Order</div>
-                  </div>
-                </div>
-              </div>
-              {/* Decorative phone partially visible */}
-              <div style={{ position: 'absolute', bottom: '-50px', right: '-50px', width: '250px', height: '400px', background: '#111827', borderRadius: '32px', transform: 'rotate(-15deg)', opacity: 0.9 }}>
-                <div style={{ padding: '20px', paddingTop: '60px' }}>
-                  <div style={{ background: '#dcf8c6', padding: '10px', borderRadius: '10px', marginBottom: '10px', fontSize: '12px' }}>New Order: 1x Pizza</div>
+
+                {/* Process Flow */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {[
+                    { icon: '📤', title: 'Upload Menu', desc: 'PDF, JPG, or photo' },
+                    { icon: '🤖', title: 'AI Converts', desc: 'Automatic item detection' },
+                    { icon: '✅', title: 'Get QR Code', desc: 'Ready to print & use' }
+                  ].map((item, i) => (
+                    <div key={i} style={{
+                      background: 'white',
+                      padding: '16px 20px',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                    }}>
+                      <div style={{ fontSize: '28px' }}>{item.icon}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '15px', fontWeight: '800', color: '#111827', marginBottom: '2px' }}>{item.title}</div>
+                        <div style={{ fontSize: '13px', color: '#6b7280' }}>{item.desc}</div>
+                      </div>
+                      <div style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        background: '#10b981',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        fontWeight: '800'
+                      }}>
+                        {i + 1}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Card 2: PDF to QR */}
-            <div className="feature-card" style={{ background: 'white', borderRadius: '32px', padding: '40px', border: '1px solid #f3f4f6', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ marginBottom: 'auto' }}>
-                <h3 style={{ fontSize: '28px', fontWeight: '800', color: '#111827', marginBottom: '12px' }}>PDF to QR in 5 Mins</h3>
-                <p style={{ fontSize: '16px', color: '#6b7280' }}>AI scans your menu photo and builds your digital catalog.</p>
+            {/* Card 2: WhatsApp Ordering */}
+            <div className="feature-card" style={{
+              background: 'white',
+              borderRadius: '32px',
+              padding: '48px',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 10px 30px -10px rgba(0,0,0,0.08)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#dcfce7',
+                  color: '#065f46',
+                  padding: '8px 16px',
+                  borderRadius: '30px',
+                  fontSize: '12px',
+                  fontWeight: '800',
+                  marginBottom: '24px'
+                }}>
+                  <FaWhatsapp /> NO APP NEEDED
+                </div>
+                <h3 style={{ fontSize: isMobile ? '26px' : '32px', fontWeight: '900', color: '#111827', marginBottom: '16px', lineHeight: '1.2' }}>
+                  Customers Order on WhatsApp
+                </h3>
+                <p style={{ fontSize: '16px', color: '#6b7280', marginBottom: '32px', lineHeight: '1.6' }}>
+                  Table QR → Browse Menu → Tap WhatsApp → Order Sent. Zero friction. Works on any phone. Builds your customer database automatically for marketing.
+                </p>
               </div>
-              
-              {/* Interactive Steps Visual */}
-              <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '24px', left: '0', right: '0', height: '2px', background: '#e5e7eb', zIndex: 0 }}></div>
-                {processSteps.map((step, i) => (
-                  <div key={i} style={{ position: 'relative', zIndex: 1, textAlign: 'center', opacity: activeProcessStep === i ? 1 : 0.5, transform: activeProcessStep === i ? 'scale(1.1)' : 'scale(1)', transition: 'all 0.3s' }}>
-                    <div style={{ width: '48px', height: '48px', background: activeProcessStep === i ? '#111827' : 'white', border: '2px solid #111827', color: activeProcessStep === i ? 'white' : '#111827', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                      {step.icon}
+
+              {/* Visual Flow */}
+              <div style={{
+                background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
+                borderRadius: '20px',
+                padding: '24px',
+                border: '1px solid #e5e7eb'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <div style={{
+                      width: '56px',
+                      height: '56px',
+                      background: 'white',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 8px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                    }}>
+                      <FaQrcode size={28} color="#10b981" />
                     </div>
-                    <div style={{ fontSize: '12px', fontWeight: '700' }}>Step {i+1}</div>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151' }}>Scan QR</div>
                   </div>
-                ))}
+                  <FaArrowRight size={20} color="#d1d5db" />
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <div style={{
+                      width: '56px',
+                      height: '56px',
+                      background: 'white',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 8px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                    }}>
+                      <FaMobile size={28} color="#10b981" />
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151' }}>View Menu</div>
+                  </div>
+                  <FaArrowRight size={20} color="#d1d5db" />
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <div style={{
+                      width: '56px',
+                      height: '56px',
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 8px',
+                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                    }}>
+                      <FaWhatsapp size={28} color="white" />
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151' }}>Order</div>
+                  </div>
+                </div>
+                <div style={{
+                  background: 'white',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  fontSize: '13px',
+                  color: '#6b7280',
+                  textAlign: 'center',
+                  fontWeight: '600'
+                }}>
+                  💬 Orders arrive directly on your WhatsApp
+                </div>
               </div>
             </div>
 
@@ -703,37 +1207,324 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. BILLING OS SECTION (Full Width) */}
-      <section style={{ padding: '80px 20px', backgroundColor: '#f8fafc' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: isMobile ? '32px' : '48px', fontWeight: '800', marginBottom: '40px' }}>Full-Stack <span style={{ color: '#ef4444' }}>Restaurant OS</span></h2>
-          
-          <div style={{ background: 'white', borderRadius: '24px', border: '1px solid #e5e7eb', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', overflow: 'hidden', textAlign: 'left' }}>
-            <div style={{ borderBottom: '1px solid #e5e7eb', padding: '16px 24px', display: 'flex', gap: '32px', background: '#fff' }}>
-              <div style={{ fontWeight: '700', color: '#ef4444', borderBottom: '2px solid #ef4444', paddingBottom: '14px', marginBottom: '-17px' }}>Tables</div>
-              <div style={{ fontWeight: '600', color: '#6b7280' }}>Orders</div>
-              <div style={{ fontWeight: '600', color: '#6b7280' }}>Inventory</div>
-              <div style={{ fontWeight: '600', color: '#6b7280' }}>Reports</div>
+      {/* 4. COMPREHENSIVE FEATURES SECTION */}
+      <section style={{ padding: isMobile ? '80px 20px' : '120px 20px', backgroundColor: '#f8fafc' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <div style={{
+              fontSize: '13px',
+              fontWeight: '800',
+              color: '#ef4444',
+              textTransform: 'uppercase',
+              letterSpacing: '1.5px',
+              marginBottom: '16px',
+              display: 'inline-block',
+              padding: '6px 16px',
+              background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+              borderRadius: '20px',
+              border: '1px solid #fecaca'
+            }}>
+              ⚡ ALL-IN-ONE PLATFORM
             </div>
-            <div style={{ padding: '32px', minHeight: '400px', backgroundImage: 'radial-gradient(#e5e7eb 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '24px' }}>
-                {[1,2,3,4,5,6,7,8].map(t => (
-                  <div key={t} style={{ background: 'white', padding: '24px', borderRadius: '16px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: '700', color: '#374151' }}>Table {t}</span>
-                      <span style={{ fontSize: '12px', padding: '2px 8px', background: t < 4 ? '#fee2e2' : '#ecfdf5', color: t < 4 ? '#ef4444' : '#10b981', borderRadius: '10px' }}>{t < 4 ? 'Occupied' : 'Free'}</span>
-                    </div>
-                    {t < 4 && (
-                      <>
-                        <div style={{ fontSize: '24px', fontWeight: '800' }}>₹{t * 450 + 120}</div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>{t+1} items • 20m ago</div>
-                      </>
-                    )}
-                    {t >= 4 && <div style={{ fontSize: '14px', color: '#9ca3af', marginTop: 'auto' }}>Ready for guests</div>}
-                  </div>
-                ))}
+            <h2 style={{
+              fontSize: isMobile ? '36px' : '56px',
+              fontWeight: '900',
+              color: '#111827',
+              marginBottom: '20px',
+              lineHeight: '1.2',
+              letterSpacing: '-1px'
+            }}>
+              Everything You Need to <span style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Run Your Restaurant</span>
+            </h2>
+            <p style={{ fontSize: isMobile ? '18px' : '22px', color: '#6b7280', maxWidth: '700px', margin: '0 auto', lineHeight: '1.7' }}>
+              Complete restaurant management system with POS billing, inventory tracking, table management, and real-time analytics.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '32px', marginBottom: '48px' }}>
+            {/* Feature 1: POS Billing */}
+            <div className="feature-card" style={{
+              background: 'white',
+              padding: '40px',
+              borderRadius: '24px',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '24px'
+              }}>
+                <FaReceipt size={28} color="#ef4444" />
+              </div>
+              <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#111827', marginBottom: '12px' }}>
+                POS Billing System
+              </h3>
+              <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: '1.6', marginBottom: '20px' }}>
+                Fast & accurate billing software with GST support. Accept payments via cash, card, UPI & wallets. Print bills instantly.
+              </p>
+              <div style={{ fontSize: '14px', color: '#10b981', fontWeight: '700' }}>
+                ✓ GST Compliant • ✓ Multi-Payment • ✓ Instant Billing
               </div>
             </div>
+
+            {/* Feature 2: Inventory Management */}
+            <div className="feature-card" style={{
+              background: 'white',
+              padding: '40px',
+              borderRadius: '24px',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '24px'
+              }}>
+                <FaWarehouse size={28} color="#3b82f6" />
+              </div>
+              <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#111827', marginBottom: '12px' }}>
+                Inventory Management
+              </h3>
+              <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: '1.6', marginBottom: '20px' }}>
+                Track stock levels, get low-stock alerts, manage ingredients & suppliers. Auto-deduct items on orders.
+              </p>
+              <div style={{ fontSize: '14px', color: '#10b981', fontWeight: '700' }}>
+                ✓ Real-time Tracking • ✓ Low Stock Alerts • ✓ Auto Deduction
+              </div>
+            </div>
+
+            {/* Feature 3: Table Management */}
+            <div className="feature-card" style={{
+              background: 'white',
+              padding: '40px',
+              borderRadius: '24px',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '24px'
+              }}>
+                <FaTable size={28} color="#10b981" />
+              </div>
+              <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#111827', marginBottom: '12px' }}>
+                Table Management
+              </h3>
+              <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: '1.6', marginBottom: '20px' }}>
+                Manage unlimited tables, merge bills, split payments. Track occupied & free tables in real-time.
+              </p>
+              <div style={{ fontSize: '14px', color: '#10b981', fontWeight: '700' }}>
+                ✓ Unlimited Tables • ✓ Bill Splitting • ✓ Real-time Status
+              </div>
+            </div>
+
+            {/* Feature 4: KOT System */}
+            <div className="feature-card" style={{
+              background: 'white',
+              padding: '40px',
+              borderRadius: '24px',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '24px'
+              }}>
+                <FaUtensils size={28} color="#f59e0b" />
+              </div>
+              <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#111827', marginBottom: '12px' }}>
+                KOT System
+              </h3>
+              <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: '1.6', marginBottom: '20px' }}>
+                Kitchen Order Tickets sent instantly to kitchen. Track order status from preparation to serving.
+              </p>
+              <div style={{ fontSize: '14px', color: '#10b981', fontWeight: '700' }}>
+                ✓ Instant KOT • ✓ Order Tracking • ✓ Kitchen Display
+              </div>
+            </div>
+
+            {/* Feature 5: Analytics & Reports */}
+            <div className="feature-card" style={{
+              background: 'white',
+              padding: '40px',
+              borderRadius: '24px',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '24px'
+              }}>
+                <FaChartBar size={28} color="#7c3aed" />
+              </div>
+              <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#111827', marginBottom: '12px' }}>
+                Analytics & Reports
+              </h3>
+              <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: '1.6', marginBottom: '20px' }}>
+                Detailed sales reports, revenue analytics, top-selling items. Export reports as PDF or Excel.
+              </p>
+              <div style={{ fontSize: '14px', color: '#10b981', fontWeight: '700' }}>
+                ✓ Sales Analytics • ✓ Revenue Reports • ✓ PDF Export
+              </div>
+            </div>
+
+            {/* Feature 6: CRM & Loyalty */}
+            <div className="feature-card" style={{
+              background: 'white',
+              padding: '40px',
+              borderRadius: '24px',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                background: 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '24px'
+              }}>
+                <FaUsers size={28} color="#ec4899" />
+              </div>
+              <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#111827', marginBottom: '12px' }}>
+                CRM & Loyalty
+              </h3>
+              <p style={{ fontSize: '16px', color: '#6b7280', lineHeight: '1.6', marginBottom: '20px' }}>
+                Build customer database, track order history, send offers. Reward loyal customers automatically.
+              </p>
+              <div style={{ fontSize: '14px', color: '#10b981', fontWeight: '700' }}>
+                ✓ Customer Database • ✓ Order History • ✓ Loyalty Rewards
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. LIVE RESTAURANT DASHBOARD SECTION */}
+      <section style={{ padding: isMobile ? '80px 20px' : '100px 20px', backgroundColor: 'white' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
+          <div style={{
+            fontSize: '13px',
+            fontWeight: '800',
+            color: '#ef4444',
+            textTransform: 'uppercase',
+            letterSpacing: '1.5px',
+            marginBottom: '16px',
+            display: 'inline-block',
+            padding: '6px 16px',
+            background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+            borderRadius: '20px',
+            border: '1px solid #fecaca'
+          }}>
+            📊 REAL-TIME ANALYTICS
+          </div>
+          <h2 style={{
+            fontSize: isMobile ? '32px' : '52px',
+            fontWeight: '900',
+            marginBottom: '20px',
+            lineHeight: '1.2',
+            letterSpacing: '-1px'
+          }}>
+            Live <span style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Restaurant Dashboard</span>
+          </h2>
+          <p style={{
+            fontSize: isMobile ? '16px' : '20px',
+            color: '#6b7280',
+            maxWidth: '700px',
+            margin: '0 auto 48px',
+            lineHeight: '1.7'
+          }}>
+            Monitor your entire restaurant from one powerful dashboard. Track tables, orders, inventory, and sales in real-time.
+          </p>
+
+          {/* Dashboard Visual */}
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: '1100px',
+            margin: '0 auto',
+            borderRadius: '24px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 60px -10px rgba(0,0,0,0.2)',
+            border: '1px solid #e5e7eb',
+            background: '#f8fafc'
+          }}>
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              height: isMobile ? '300px' : '600px'
+            }}>
+              <Image
+                src="https://storage.googleapis.com/demoimage-7189/menu-items/LUETVd1eMwu4Bm7PvP9K/item_1760637762769_df90sl6pe/1760767605179-0-Screenshot%202025-10-18%20at%2011.36.31%C3%A2%C2%80%C2%AFAM.png"
+                alt="DineOpen Restaurant Dashboard - Real-time POS System Interface"
+                fill
+                sizes="(max-width: 768px) 100vw, 1100px"
+                style={{ objectFit: 'cover', objectPosition: 'top' }}
+                priority
+              />
+            </div>
+          </div>
+
+          {/* Feature Pills */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: isMobile ? '12px' : '16px',
+            marginTop: '40px',
+            flexWrap: 'wrap'
+          }}>
+            {[
+              { icon: '📊', text: 'Live Analytics' },
+              { icon: '🍽️', text: 'Table Management' },
+              { icon: '📦', text: 'Inventory Tracking' },
+              { icon: '💰', text: 'Revenue Reports' }
+            ].map((item, i) => (
+              <div key={i} style={{
+                padding: isMobile ? '10px 16px' : '12px 24px',
+                background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
+                borderRadius: '30px',
+                fontSize: isMobile ? '13px' : '14px',
+                fontWeight: '700',
+                color: '#374151',
+                border: '1px solid #e5e7eb',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>{item.icon}</span> {item.text}
+              </div>
+            ))}
           </div>
         </div>
       </section>
