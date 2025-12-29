@@ -18,3 +18,4 @@ export default function POSSoftwarePage() {
   return <POSSoftwareClient />;
 }
 
+

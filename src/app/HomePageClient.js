@@ -21,7 +21,7 @@ export default function LandingPage() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showDemoModal, setShowDemoModal] = useState(false);
   const [showProductsDropdown, setShowProductsDropdown] = useState(false);
-
+  
   // Animation States
   const [activeProcessStep, setActiveProcessStep] = useState(0);
   const [chatStep, setChatStep] = useState(0);
@@ -34,6 +34,7 @@ export default function LandingPage() {
   const [demoContactType, setDemoContactType] = useState('phone');
   const [demoPhone, setDemoPhone] = useState('');
   const [demoEmail, setDemoEmail] = useState('');
+  const [demoRestaurantName, setDemoRestaurantName] = useState('');
   const [demoComment, setDemoComment] = useState('');
   const [demoSubmitting, setDemoSubmitting] = useState(false);
   const [demoSuccess, setDemoSuccess] = useState(false);
@@ -49,7 +50,7 @@ export default function LandingPage() {
 
   // Cycle Process Steps
   useEffect(() => {
-    const interval = setInterval(() => setActiveProcessStep(p => (p + 1) % 3), 4000);
+    const interval = setInterval(() => setActiveProcessStep(p => (p + 1) % 3), 4000); 
     return () => clearInterval(interval);
   }, []);
 
@@ -93,13 +94,22 @@ export default function LandingPage() {
   };
 
   const handleSubmitDemoRequest = async () => {
+    if (!demoRestaurantName.trim()) return setDemoError('Restaurant name is required');
     if (demoContactType === 'phone' && !demoPhone.trim()) return setDemoError('Phone number is required');
     if (demoContactType === 'email' && !demoEmail.trim()) return setDemoError('Email is required');
     setDemoSubmitting(true); setDemoError('');
     try {
-      await apiClient.submitDemoRequest(demoContactType, demoPhone.trim(), demoEmail.trim(), demoComment.trim());
+      const comment = `Restaurant: ${demoRestaurantName.trim()}\n${demoComment.trim()}`;
+      await apiClient.submitDemoRequest(demoContactType, demoPhone.trim(), demoEmail.trim(), comment);
       setDemoSuccess(true);
-      setTimeout(() => { setShowDemoModal(false); setDemoSuccess(false); setDemoPhone(''); setDemoEmail(''); setDemoComment(''); }, 2000);
+      setTimeout(() => { 
+        setShowDemoModal(false); 
+        setDemoSuccess(false); 
+        setDemoRestaurantName('');
+        setDemoPhone(''); 
+        setDemoEmail(''); 
+        setDemoComment(''); 
+      }, 2000);
     } catch (error) { setDemoError(error.message || 'Failed to submit demo request.'); } 
     finally { setDemoSubmitting(false); }
   };
@@ -154,10 +164,14 @@ export default function LandingPage() {
           0% { opacity: 0; transform: translateY(20px) scale(0.95); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes rotate-fade-out {
-          0% { opacity: 1; transform: translateY(0) scale(1); }
-          100% { opacity: 0; transform: translateY(-20px) scale(0.95); }
-        }
+         @keyframes rotate-fade-out {
+           0% { opacity: 1; transform: translateY(0) scale(1); }
+           100% { opacity: 0; transform: translateY(-20px) scale(0.95); }
+         }
+         @keyframes spin {
+           from { transform: rotate(0deg); }
+           to { transform: rotate(360deg); }
+         }
         .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(0,0,0,0.05); }
         .hero-gradient { background: radial-gradient(circle at 50% 0%, rgba(254, 226, 226, 0.4) 0%, rgba(255, 255, 255, 0) 50%); }
         .text-gradient { background: linear-gradient(135deg, #111827 0%, #4b5563 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -317,7 +331,7 @@ export default function LandingPage() {
                           onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#111827'; e.target.style.paddingLeft = '12px'; }}
                           >
                             POS Overview
-                          </Link>
+                      </Link>
                           <Link href="/products/pos-software/small-restaurants" style={{
                             display: 'block',
                             padding: '8px 12px',
@@ -640,20 +654,40 @@ export default function LandingPage() {
                 )}
               </div>
 
-              <Link href="/blog" style={{ 
+            <button
+              onClick={() => setShowDemoModal(true)}
+              style={{ 
                 fontSize: '15px', 
                 fontWeight: '600', 
                 color: '#111827', 
                 textDecoration: 'none',
                 padding: '8px 12px',
                 borderRadius: '8px',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
               }}
               onMouseEnter={(e) => { e.target.style.backgroundColor = '#f3f4f6'; }}
               onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; }}
-              >
-                Blog
-              </Link>
+            >
+              Demo
+            </button>
+
+            <Link href="/blog" style={{ 
+              fontSize: '15px', 
+              fontWeight: '600', 
+              color: '#111827', 
+              textDecoration: 'none',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => { e.target.style.backgroundColor = '#f3f4f6'; }}
+            onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; }}
+            >
+              Blog
+            </Link>
             </div>
           )}
 
@@ -747,9 +781,9 @@ export default function LandingPage() {
             boxShadow: '0 2px 8px rgba(239, 68, 68, 0.1)',
             animation: 'scale-in 0.5s ease-out'
           }}>
-            <FaStar style={{ animation: 'pulse-glow 2s ease-in-out infinite' }} /> #1 Rated Restaurant Billing Software in India
+            <FaStar style={{ animation: 'pulse-glow 2s ease-in-out infinite' }} /> Top Rated Restaurant Point od Sale (POS) System.
           </div>
-
+          
           <h1 style={{
             fontSize: isMobile ? '38px' : '72px',
             fontWeight: '900',
@@ -774,18 +808,236 @@ export default function LandingPage() {
               {rotatingWords[rotatingTextIndex]}
             </span>
           </h1>
-
-          <p style={{
-            fontSize: isMobile ? '18px' : '24px',
-            color: '#4b5563',
-            lineHeight: '1.7',
-            maxWidth: '820px',
+          
+          <div style={{
+            maxWidth: '900px',
             margin: '0 auto 48px',
-            fontWeight: '400',
             animation: 'fade-in-up 0.6s ease-out 0.3s backwards'
           }}>
-            The only POS you need. <strong>AI takes orders on WhatsApp</strong>, billing happens in seconds, inventory updates automatically, and your <strong>free QR menu</strong> goes live instantly. No hardware. No headaches. <strong>Just growth.</strong>
-          </p>
+            <p style={{
+              fontSize: isMobile ? '18px' : '22px',
+              color: '#4b5563',
+              lineHeight: '1.7',
+              marginBottom: '32px',
+              fontWeight: '400'
+            }}>
+              The all-in-one restaurant management system that <strong>takes orders, manages bookings, and handles everything automatically.</strong> No hardware required. <strong>Just growth.</strong>
+            </p>
+
+            {/* Feature Highlights Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+              gap: '16px',
+              marginBottom: '24px'
+            }}>
+              {/* Feature 1: POS System */}
+              <div style={{
+                background: 'linear-gradient(135deg, #fff5f5 0%, #fee2e2 100%)',
+                border: '2px solid #fecdd3',
+                borderRadius: '16px',
+                padding: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(239, 68, 68, 0.15)';
+                e.currentTarget.style.borderColor = '#ef4444';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.borderColor = '#fecdd3';
+              }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                }}>
+                  <FaReceipt size={22} color="white" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>
+                    Complete POS System
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.4' }}>
+                    Billing in seconds
+                  </div>
+                </div>
+          </div>
+
+              {/* Feature 2: Free QR Menu */}
+            <div style={{ 
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                border: '2px solid #bbf7d0',
+                borderRadius: '16px',
+                padding: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(16, 185, 129, 0.15)';
+                e.currentTarget.style.borderColor = '#10b981';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.borderColor = '#bbf7d0';
+              }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                }}>
+                  <FaQrcode size={22} color="white" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>
+                    Free QR Code Menu
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.4' }}>
+                    Goes live instantly
+                  </div>
+                </div>
+            </div>
+
+              {/* Feature 3: Auto Inventory */}
+            <div style={{ 
+                background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                border: '2px solid #fcd34d',
+                borderRadius: '16px',
+                padding: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(245, 158, 11, 0.15)';
+                e.currentTarget.style.borderColor = '#f59e0b';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.borderColor = '#fcd34d';
+              }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+                }}>
+                  <FaBoxes size={22} color="white" />
+                      </div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>
+                    Auto Inventory Tracking
+                    </div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.4' }}>
+                    Updates automatically
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+            {/* AI Voice Agent Highlight */}
+            <div style={{
+              background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)',
+              border: '2px solid #e9d5ff',
+              borderRadius: '20px',
+              padding: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '20px',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 16px 32px rgba(139, 92, 246, 0.15)';
+              e.currentTarget.style.borderColor = '#a78bfa';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.borderColor = '#e9d5ff';
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: '-50%',
+                right: '-10%',
+                width: '200px',
+                height: '200px',
+                background: 'radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%)',
+                borderRadius: '50%',
+                pointerEvents: 'none'
+              }}></div>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 8px 20px rgba(139, 92, 246, 0.4)',
+                position: 'relative',
+                zIndex: 1
+              }}>
+                <FaMicrophone size={28} color="white" />
+                </div>
+              <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(139, 92, 246, 0.1)',
+                  padding: '4px 12px',
+                  borderRadius: '20px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  color: '#7c3aed',
+                  marginBottom: '8px'
+                }}>
+                  <FaBolt size={10} /> AI-POWERED
+              </div>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#111827', marginBottom: '6px', whiteSpace: 'nowrap' }}>
+                  AI Agent for Bakeries
+                </div>
+                <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.5' }}>
+                  Takes phone orders, manages table bookings, and handles customer inquiries <strong>24/7 automatically</strong>. No staff needed.
+                </div>
+              </div>
+            </div>
+          </div>
           
           <div style={{
             display: 'flex',
@@ -839,12 +1091,12 @@ export default function LandingPage() {
               onMouseEnter={(e) => { e.target.style.transform = 'translateY(-3px)'; e.target.style.borderColor = '#ef4444'; e.target.style.color = '#ef4444'; e.target.style.boxShadow = '0 12px 24px -8px rgba(0,0,0,0.15)'; }}
               onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.borderColor = '#e5e7eb'; e.target.style.color = '#111827'; e.target.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05)'; }}
             >
-              <FaPlay size={14} /> Watch Demo
+              <FaPlay size={14} /> Demo Connect
             </button>
           </div>
 
           {/* Trust Indicators */}
-          <div style={{
+            <div style={{ 
             display: 'flex',
             justifyContent: 'center',
             gap: isMobile ? '24px' : '48px',
@@ -858,7 +1110,7 @@ export default function LandingPage() {
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: isMobile ? '28px' : '36px', fontWeight: '900', color: '#111827' }}>50K+</div>
               <div style={{ fontSize: '14px', color: '#6b7280', fontWeight: '600' }}>Orders/Month</div>
-            </div>
+                      </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: isMobile ? '28px' : '36px', fontWeight: '900', color: '#111827' }}>4.9★</div>
               <div style={{ fontSize: '14px', color: '#6b7280', fontWeight: '600' }}>Customer Rating</div>
@@ -929,12 +1181,12 @@ export default function LandingPage() {
                     <div style={{ fontSize: '12px', color: '#10b981' }}>● Active 24/7</div>
                   </div>
                 </div>
-
+                
                 {/* Chat Bubbles */}
                 <div className="chat-bubble" style={{ alignSelf: 'flex-start', background: 'white', padding: '12px 16px', borderRadius: '16px 16px 16px 4px', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                   Welcome! What would you like to order today?
                 </div>
-
+                
                 {chatStep >= 1 && (
                   <div className="chat-bubble" style={{ alignSelf: 'flex-end', background: '#111827', color: 'white', padding: '12px 16px', borderRadius: '16px 16px 4px 16px', fontSize: '14px' }}>
                     Show me your best dishes
@@ -970,7 +1222,7 @@ export default function LandingPage() {
             {/* AI Features Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', textAlign: 'left' }}>
               {[
-                { title: "WhatsApp Integration", desc: "Orders via chat, no app needed.", icon: <FaWhatsapp/> },
+                 { title: "AI Voice Agent", desc: "Takes orders via phone calls automatically.", icon: <FaMicrophone/> },
                 { title: "Stock Verification", desc: "Checks availability before confirming.", icon: <FaBoxes/> },
                 { title: "Smart Upselling", desc: "Recommends add-ons automatically.", icon: <FaChartBar/> },
                 { title: "Direct to Kitchen", desc: "KOT sent instantly.", icon: <FaReceipt/> }
@@ -1075,7 +1327,7 @@ export default function LandingPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '15px', fontWeight: '800', color: '#111827', marginBottom: '2px' }}>{item.title}</div>
                         <div style={{ fontSize: '13px', color: '#6b7280' }}>{item.desc}</div>
-                      </div>
+                  </div>
                       <div style={{
                         width: '24px',
                         height: '24px',
@@ -1089,14 +1341,14 @@ export default function LandingPage() {
                         fontWeight: '800'
                       }}>
                         {i + 1}
-                      </div>
-                    </div>
+                  </div>
+                </div>
                   ))}
+              </div>
                 </div>
               </div>
-            </div>
 
-            {/* Card 2: WhatsApp Ordering */}
+            {/* Card 2: QR Menu & AI Voice Agent */}
             <div className="feature-card" style={{
               background: 'white',
               borderRadius: '32px',
@@ -1112,23 +1364,23 @@ export default function LandingPage() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
-                  background: '#dcfce7',
-                  color: '#065f46',
+                  background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                  color: '#dc2626',
                   padding: '8px 16px',
                   borderRadius: '30px',
                   fontSize: '12px',
                   fontWeight: '800',
                   marginBottom: '24px'
                 }}>
-                  <FaWhatsapp /> NO APP NEEDED
+                  <FaQrcode /> FREE QR MENU
                 </div>
                 <h3 style={{ fontSize: isMobile ? '26px' : '32px', fontWeight: '900', color: '#111827', marginBottom: '16px', lineHeight: '1.2' }}>
-                  Customers Order on WhatsApp
+                  QR Menu + AI Voice Agent
                 </h3>
                 <p style={{ fontSize: '16px', color: '#6b7280', marginBottom: '32px', lineHeight: '1.6' }}>
-                  Table QR → Browse Menu → Tap WhatsApp → Order Sent. Zero friction. Works on any phone. Builds your customer database automatically for marketing.
+                  Customers scan QR code to view menu. <strong>AI voice agent</strong> takes phone orders, manages table bookings, and sends orders directly to your kitchen. Works 24/7 automatically.
                 </p>
-              </div>
+            </div>
 
               {/* Visual Flow */}
               <div style={{
@@ -1150,7 +1402,7 @@ export default function LandingPage() {
                       margin: '0 auto 8px',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
                     }}>
-                      <FaQrcode size={28} color="#10b981" />
+                      <FaQrcode size={28} color="#ef4444" />
                     </div>
                     <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151' }}>Scan QR</div>
                   </div>
@@ -1167,7 +1419,7 @@ export default function LandingPage() {
                       margin: '0 auto 8px',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
                     }}>
-                      <FaMobile size={28} color="#10b981" />
+                      <FaMobile size={28} color="#ef4444" />
                     </div>
                     <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151' }}>View Menu</div>
                   </div>
@@ -1176,17 +1428,17 @@ export default function LandingPage() {
                     <div style={{
                       width: '56px',
                       height: '56px',
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                       borderRadius: '16px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       margin: '0 auto 8px',
-                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                      boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
                     }}>
-                      <FaWhatsapp size={28} color="white" />
+                      <FaMicrophone size={28} color="white" />
                     </div>
-                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151' }}>Order</div>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151' }}>AI Agent</div>
                   </div>
                 </div>
                 <div style={{
@@ -1198,13 +1450,13 @@ export default function LandingPage() {
                   textAlign: 'center',
                   fontWeight: '600'
                 }}>
-                  💬 Orders arrive directly on your WhatsApp
+                  🤖 AI voice agent takes orders & manages bookings automatically
                 </div>
               </div>
-            </div>
-
-          </div>
-        </div>
+              </div>
+              
+                    </div>
+                  </div>
       </section>
 
       {/* 4. COMPREHENSIVE FEATURES SECTION */}
@@ -1225,7 +1477,7 @@ export default function LandingPage() {
               border: '1px solid #fecaca'
             }}>
               ⚡ ALL-IN-ONE PLATFORM
-            </div>
+              </div>
             <h2 style={{
               fontSize: isMobile ? '36px' : '56px',
               fontWeight: '900',
@@ -1239,7 +1491,7 @@ export default function LandingPage() {
             <p style={{ fontSize: isMobile ? '18px' : '22px', color: '#6b7280', maxWidth: '700px', margin: '0 auto', lineHeight: '1.7' }}>
               Complete restaurant management system with POS billing, inventory tracking, table management, and real-time analytics.
             </p>
-          </div>
+            </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '32px', marginBottom: '48px' }}>
             {/* Feature 1: POS Billing */}
@@ -1494,7 +1746,7 @@ export default function LandingPage() {
                 priority
               />
             </div>
-          </div>
+                    </div>
 
           {/* Feature Pills */}
           <div style={{
@@ -1523,8 +1775,8 @@ export default function LandingPage() {
                 gap: '8px'
               }}>
                 <span>{item.icon}</span> {item.text}
-              </div>
-            ))}
+                  </div>
+                ))}
           </div>
         </div>
       </section>
@@ -1615,7 +1867,7 @@ export default function LandingPage() {
                 How does online order management work?
               </h3>
               <p style={{ fontSize: isMobile ? '15px' : '16px', lineHeight: '1.7', color: '#374151' }}>
-                Online order management in DineOpen processes orders from WhatsApp, QR menus, and web platforms. Orders appear in real-time on the POS system, can be accepted or rejected, and are automatically sent to the kitchen via KOT. The system tracks order status from placement to delivery.
+                Online order management in DineOpen processes orders from QR menus, AI voice agent phone calls, and web platforms. Orders appear in real-time on the POS system, can be accepted or rejected, and are automatically sent to the kitchen via KOT. The system tracks order status from placement to delivery.
               </p>
             </div>
 
@@ -1800,13 +2052,225 @@ export default function LandingPage() {
 
       {showDemoModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(5px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '40px', width: '100%', maxWidth: '480px', position: 'relative' }}>
-            <button onClick={() => setShowDemoModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', border: 'none', background: 'none', fontSize: '20px', cursor: 'pointer' }}><FaTimes /></button>
-            <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '24px' }}>Get a Free Demo</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <input type="text" placeholder="Phone Number" value={demoPhone} onChange={(e) => setDemoPhone(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb' }} />
-              <button onClick={handleSubmitDemoRequest} style={{ padding: '12px', borderRadius: '8px', background: '#111827', color: 'white', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>Request Demo</button>
+          <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '40px', width: '100%', maxWidth: '520px', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }}>
+            <button 
+              onClick={() => {
+                setShowDemoModal(false);
+                setDemoRestaurantName('');
+                setDemoPhone('');
+                setDemoEmail('');
+                setDemoComment('');
+                setDemoError('');
+                setDemoSuccess(false);
+              }} 
+              style={{ position: 'absolute', top: '20px', right: '20px', border: 'none', background: 'none', fontSize: '24px', cursor: 'pointer', color: '#6b7280', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
+              onMouseEnter={(e) => { e.target.style.backgroundColor = '#f3f4f6'; }}
+              onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; }}
+            >
+              <FaTimes />
+            </button>
+            
+            {demoSuccess ? (
+              <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <div style={{ width: '80px', height: '80px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                  <FaCheckCircle size={40} color="white" />
             </div>
+                <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '12px', color: '#111827' }}>Demo Request Submitted!</h3>
+                <p style={{ fontSize: '16px', color: '#6b7280' }}>We&apos;ll contact you shortly to schedule your demo.</p>
+          </div>
+            ) : (
+              <>
+                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                  <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <FaPlay size={28} color="#ef4444" />
+                  </div>
+                  <h3 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', color: '#111827' }}>Request a Free Demo</h3>
+                  <p style={{ fontSize: '16px', color: '#6b7280' }}>See how DineOpen can transform your restaurant</p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                      Restaurant Name <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter your restaurant name" 
+                      value={demoRestaurantName} 
+                      onChange={(e) => setDemoRestaurantName(e.target.value)} 
+                      style={{ 
+                        width: '100%',
+                        padding: '14px 16px', 
+                        borderRadius: '12px', 
+                        border: '1px solid #e5e7eb',
+                        fontSize: '15px',
+                        transition: 'all 0.2s'
+                      }}
+                      onFocus={(e) => { e.target.style.borderColor = '#ef4444'; e.target.style.outline = 'none'; }}
+                      onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '12px' }}>
+                      Contact Method <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                      <button
+                        onClick={() => { setDemoContactType('phone'); setDemoEmail(''); }}
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          borderRadius: '10px',
+                          border: `2px solid ${demoContactType === 'phone' ? '#ef4444' : '#e5e7eb'}`,
+                          background: demoContactType === 'phone' ? '#fef2f2' : 'white',
+                          color: demoContactType === 'phone' ? '#ef4444' : '#6b7280',
+                          fontWeight: '600',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        📞 Phone
+                      </button>
+                      <button
+                        onClick={() => { setDemoContactType('email'); setDemoPhone(''); }}
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          borderRadius: '10px',
+                          border: `2px solid ${demoContactType === 'email' ? '#ef4444' : '#e5e7eb'}`,
+                          background: demoContactType === 'email' ? '#fef2f2' : 'white',
+                          color: demoContactType === 'email' ? '#ef4444' : '#6b7280',
+                          fontWeight: '600',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        ✉️ Email
+                      </button>
+                    </div>
+                  </div>
+
+                  {demoContactType === 'phone' ? (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                        Phone Number <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <input 
+                        type="tel" 
+                        placeholder="+91 98765 43210" 
+                        value={demoPhone} 
+                        onChange={(e) => setDemoPhone(e.target.value)} 
+                        style={{ 
+                          width: '100%',
+                          padding: '14px 16px', 
+                          borderRadius: '12px', 
+                          border: '1px solid #e5e7eb',
+                          fontSize: '15px',
+                          transition: 'all 0.2s'
+                        }}
+                        onFocus={(e) => { e.target.style.borderColor = '#ef4444'; e.target.style.outline = 'none'; }}
+                        onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; }}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                        Email Address <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <input 
+                        type="email" 
+                        placeholder="your@email.com" 
+                        value={demoEmail} 
+                        onChange={(e) => setDemoEmail(e.target.value)} 
+                        style={{ 
+                          width: '100%',
+                          padding: '14px 16px', 
+                          borderRadius: '12px', 
+                          border: '1px solid #e5e7eb',
+                          fontSize: '15px',
+                          transition: 'all 0.2s'
+                        }}
+                        onFocus={(e) => { e.target.style.borderColor = '#ef4444'; e.target.style.outline = 'none'; }}
+                        onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; }}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                      Additional Details (Optional)
+                    </label>
+                    <textarea 
+                      placeholder="Tell us about your restaurant, number of tables, current system, etc." 
+                      value={demoComment} 
+                      onChange={(e) => setDemoComment(e.target.value)} 
+                      rows={4}
+                      style={{ 
+                        width: '100%',
+                        padding: '14px 16px', 
+                        borderRadius: '12px', 
+                        border: '1px solid #e5e7eb',
+                        fontSize: '15px',
+                        fontFamily: 'inherit',
+                        resize: 'vertical',
+                        transition: 'all 0.2s'
+                      }}
+                      onFocus={(e) => { e.target.style.borderColor = '#ef4444'; e.target.style.outline = 'none'; }}
+                      onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; }}
+                    />
+                  </div>
+
+                  {demoError && (
+                    <div style={{ 
+                      padding: '12px 16px', 
+                      background: '#fef2f2', 
+                      border: '1px solid #fecaca', 
+                      borderRadius: '10px', 
+                      color: '#dc2626', 
+                      fontSize: '14px' 
+                    }}>
+                      {demoError}
+                    </div>
+                  )}
+
+                  <button 
+                    onClick={handleSubmitDemoRequest}
+                    disabled={demoSubmitting}
+                    style={{ 
+                      width: '100%',
+                      padding: '16px', 
+                      borderRadius: '12px', 
+                      background: demoSubmitting ? '#9ca3af' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', 
+                      color: 'white', 
+                      fontWeight: '700', 
+                      fontSize: '16px',
+                      border: 'none', 
+                      cursor: demoSubmitting ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseEnter={(e) => { if (!demoSubmitting) e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 8px 20px rgba(239, 68, 68, 0.3)'; }}
+                    onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'none'; }}
+                  >
+                    {demoSubmitting ? (
+                      <>
+                        <FaSpinner style={{ animation: 'spin 1s linear infinite' }} /> Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <FaPaperPlane /> Request Demo
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
