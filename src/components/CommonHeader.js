@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FaChevronDown } from 'react-icons/fa';
+import { FaChevronDown, FaRobot, FaStore, FaBoxes, FaWarehouse, FaBuilding } from 'react-icons/fa';
 
 export default function CommonHeader() {
   const router = useRouter();
@@ -85,152 +85,186 @@ export default function CommonHeader() {
               Restaurants
             </Link>
             
-            <div style={{ position: 'relative' }} onMouseEnter={() => setShowProductsDropdown(true)} onMouseLeave={() => setShowProductsDropdown(false)}>
-              <button style={{ 
-                background: 'none', 
-                border: 'none', 
-                fontSize: '15px', 
-                fontWeight: '600', 
-                color: '#111827', 
-                cursor: 'pointer', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '6px', 
-                height: '40px',
-                padding: '0 12px',
-                borderRadius: '8px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => { e.target.style.backgroundColor = '#f3f4f6'; }}
-              onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; }}
+            <div 
+              style={{ position: 'relative' }} 
+              onMouseEnter={() => setShowProductsDropdown(true)} 
+              onMouseLeave={() => setShowProductsDropdown(false)}
+            >
+              <a
+                href="#"
+                onClick={(e) => e.preventDefault()}
+                style={{
+                  color: '#374151',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  fontSize: '15px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = '#ef4444';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = '#374151';
+                }}
               >
-                Products <FaChevronDown size={10} />
-              </button>
+                Products
+                <FaChevronDown size={12} />
+              </a>
+              
               {showProductsDropdown && (
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '48px', 
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: 'white', 
-                  border: '1px solid #e5e7eb', 
-                  borderRadius: '16px', 
-                  padding: '16px 8px', 
-                  minWidth: '420px', 
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-                  animation: 'fade-in-up 0.2s ease-out'
-                }}>
-                  {/* POS Software Section */}
-                  <div style={{ 
-                    padding: '12px 16px', 
-                    background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
-                    borderRadius: '10px',
-                    marginBottom: '12px'
-                  }}>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#dc2626', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
-                      🏪 POS Software
-                    </div>
-                    <Link href="/products/pos-software.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', marginBottom: '6px', background: 'white' }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = '#fee2e2'; e.target.style.color = '#dc2626'; e.target.style.transform = 'translateX(4px)'; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
+                <>
+                  {/* Invisible bridge to prevent gap */}
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      height: '8px',
+                      zIndex: 101
+                    }}
+                    onMouseEnter={() => setShowProductsDropdown(true)}
+                  />
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      marginTop: '8px',
+                      backgroundColor: 'white',
+                      borderRadius: '12px',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                      padding: '12px 0',
+                      minWidth: '280px',
+                      zIndex: 100,
+                      border: '1px solid rgba(239, 68, 68, 0.1)'
+                    }}
+                    onMouseEnter={() => setShowProductsDropdown(true)}
+                    onMouseLeave={() => setShowProductsDropdown(false)}
+                  >
+                    <Link 
+                      href="/products/ai-agent" 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 20px',
+                        color: '#374151',
+                        textDecoration: 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#fef2f2';
+                        e.currentTarget.style.color = '#ef4444';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#374151';
+                      }}
                     >
-                      POS Software Overview
+                      <FaRobot size={18} color="#ef4444" />
+                      <span style={{ fontWeight: '500', fontSize: '14px' }}>AI Agent for Restaurant</span>
                     </Link>
-                    <div style={{ paddingLeft: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <Link href="/products/pos-software/small-restaurants.html" style={{ display: 'block', padding: '8px 12px', textDecoration: 'none', color: '#6b7280', borderRadius: '6px', fontSize: '13px', transition: 'all 0.2s' }}
-                        onMouseEnter={(e) => { e.target.style.backgroundColor = '#fee2e2'; e.target.style.color = '#dc2626'; }}
-                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; }}
-                      >
-                        → Small Restaurants
-                      </Link>
-                      <Link href="/products/pos-software/cafes.html" style={{ display: 'block', padding: '8px 12px', textDecoration: 'none', color: '#6b7280', borderRadius: '6px', fontSize: '13px', transition: 'all 0.2s' }}
-                        onMouseEnter={(e) => { e.target.style.backgroundColor = '#fee2e2'; e.target.style.color = '#dc2626'; }}
-                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; }}
-                      >
-                        → Cafes
-                      </Link>
-                      <Link href="/products/pos-software/cloud-kitchens.html" style={{ display: 'block', padding: '8px 12px', textDecoration: 'none', color: '#6b7280', borderRadius: '6px', fontSize: '13px', transition: 'all 0.2s' }}
-                        onMouseEnter={(e) => { e.target.style.backgroundColor = '#fee2e2'; e.target.style.color = '#dc2626'; }}
-                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; }}
-                      >
-                        → Cloud Kitchens
-                      </Link>
-                    </div>
+                    <Link 
+                      href="/products/restaurant-management" 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 20px',
+                        color: '#374151',
+                        textDecoration: 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#fef2f2';
+                        e.currentTarget.style.color = '#ef4444';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#374151';
+                      }}
+                    >
+                      <FaStore size={18} color="#ef4444" />
+                      <span style={{ fontWeight: '500', fontSize: '14px' }}>Restaurant Management System</span>
+                    </Link>
+                    <Link 
+                      href="/products/inventory-management" 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 20px',
+                        color: '#374151',
+                        textDecoration: 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#fef2f2';
+                        e.currentTarget.style.color = '#ef4444';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#374151';
+                      }}
+                    >
+                      <FaBoxes size={18} color="#ef4444" />
+                      <span style={{ fontWeight: '500', fontSize: '14px' }}>Inventory Management</span>
+                    </Link>
+                    <Link 
+                      href="/products/supply-management" 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 20px',
+                        color: '#374151',
+                        textDecoration: 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#fef2f2';
+                        e.currentTarget.style.color = '#ef4444';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#374151';
+                      }}
+                    >
+                      <FaWarehouse size={18} color="#ef4444" />
+                      <span style={{ fontWeight: '500', fontSize: '14px' }}>Supply Management</span>
+                    </Link>
+                    <Link 
+                      href="/products/hotel-management" 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 20px',
+                        color: '#374151',
+                        textDecoration: 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#fef2f2';
+                        e.currentTarget.style.color = '#ef4444';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#374151';
+                      }}
+                    >
+                      <FaBuilding size={18} color="#ef4444" />
+                      <span style={{ fontWeight: '500', fontSize: '14px' }}>Hotel Management</span>
+                    </Link>
                   </div>
-
-                  {/* Billing Software Section */}
-                  <div style={{ 
-                    padding: '12px 16px', 
-                    background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-                    borderRadius: '10px',
-                    marginBottom: '12px'
-                  }}>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#2563eb', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
-                      💰 Billing Software
-                    </div>
-                    <Link href="/products/billing-software.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', marginBottom: '6px', background: 'white' }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = '#dbeafe'; e.target.style.color = '#2563eb'; e.target.style.transform = 'translateX(4px)'; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
-                    >
-                      Billing Software Overview
-                    </Link>
-                    <div style={{ paddingLeft: '12px' }}>
-                      <Link href="/products/billing-software/gst-billing.html" style={{ display: 'block', padding: '8px 12px', textDecoration: 'none', color: '#6b7280', borderRadius: '6px', fontSize: '13px', transition: 'all 0.2s' }}
-                        onMouseEnter={(e) => { e.target.style.backgroundColor = '#dbeafe'; e.target.style.color = '#2563eb'; }}
-                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#6b7280'; }}
-                      >
-                        → GST Billing
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Core Features Section */}
-                  <div style={{ 
-                    padding: '12px 16px', 
-                    background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                    borderRadius: '10px',
-                    marginBottom: '12px'
-                  }}>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#16a34a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
-                      📦 Core Features
-                    </div>
-                    <Link href="/products/inventory-management.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', marginBottom: '6px', background: 'white' }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = '#dcfce7'; e.target.style.color = '#16a34a'; e.target.style.transform = 'translateX(4px)'; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
-                    >
-                      Inventory Management
-                    </Link>
-                    <Link href="/products/online-orders.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', background: 'white' }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = '#dcfce7'; e.target.style.color = '#16a34a'; e.target.style.transform = 'translateX(4px)'; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
-                    >
-                      Online Orders
-                    </Link>
-                  </div>
-
-                  {/* Comparisons Section */}
-                  <div style={{ 
-                    padding: '12px 16px', 
-                    background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)',
-                    borderRadius: '10px'
-                  }}>
-                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#9333ea', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
-                      ⚖️ Comparisons
-                    </div>
-                    <Link href="/products/comparisons/dineopen-vs-zomato.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', marginBottom: '6px', background: 'white' }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = '#f3e8ff'; e.target.style.color = '#9333ea'; e.target.style.transform = 'translateX(4px)'; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
-                    >
-                      DineOpen vs Zomato
-                    </Link>
-                    <Link href="/products/comparisons/dineopen-vs-petpooja.html" style={{ display: 'block', padding: '10px 12px', textDecoration: 'none', color: '#111827', borderRadius: '8px', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s', background: 'white' }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = '#f3e8ff'; e.target.style.color = '#9333ea'; e.target.style.transform = 'translateX(4px)'; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.color = '#111827'; e.target.style.transform = 'translateX(0)'; }}
-                    >
-                      DineOpen vs Petpooja
-                    </Link>
-                  </div>
-                </div>
+                </>
               )}
             </div>
 
