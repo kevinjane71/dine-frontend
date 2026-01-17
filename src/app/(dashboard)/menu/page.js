@@ -1536,9 +1536,10 @@ const MenuManagement = () => {
   const [showItemModal, setShowItemModal] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [currentRestaurant, setCurrentRestaurant] = useState({ id: 'test-restaurant', name: 'Test Restaurant' });
+  const [currentRestaurant, setCurrentRestaurant] = useState(null);
   const [isClient, setIsClient] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState({});
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
   const hasLoadedData = useRef(false);
@@ -1955,7 +1956,7 @@ const MenuManagement = () => {
     }
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDeleteClick = () => {
     if (!currentRestaurant?.id) {
       setError('No restaurant selected');
       return;
@@ -1964,35 +1965,40 @@ const MenuManagement = () => {
     const activeItemsCount = menuItems.filter(item => item.status !== 'deleted').length;
 
     if (activeItemsCount === 0) {
-      alert('No menu items to delete');
+      setError('No menu items to delete');
       return;
     }
 
-    const confirmMessage = `Are you sure you want to delete ALL ${activeItemsCount} menu items?\n\nThis action will delete:\n- All menu items\n- From all categories\n\nThis cannot be undone easily. Are you absolutely sure?`;
+    // Show confirmation modal
+    setShowBulkDeleteConfirm(true);
+  };
 
-    if (!confirm(confirmMessage)) return;
-
-    // Double confirmation for safety
-    if (!confirm('FINAL CONFIRMATION: Delete all menu items?')) return;
-
+  const confirmBulkDelete = async () => {
     try {
       setOperationLoading(true);
+      setShowBulkDeleteConfirm(false);
+
       const response = await apiClient.bulkDeleteMenuItems(currentRestaurant.id);
 
       // Clear all menu items from state
       setMenuItems([]);
 
       // Show success message
-      alert(`Successfully deleted ${response.deletedCount} menu items`);
+      setSuccessMessage(`Successfully deleted ${response.deletedCount} menu items`);
+
+      // Clear success message after 5 seconds
+      setTimeout(() => setSuccessMessage(''), 5000);
 
       // Reload menu data to ensure consistency
       if (currentRestaurant?.id) {
-        loadMenuItems(currentRestaurant.id);
+        await loadMenuData(currentRestaurant.id, false);
       }
     } catch (error) {
       console.error('Error bulk deleting menu items:', error);
       setError('Failed to delete menu items: ' + (error.message || 'Unknown error'));
-      alert('Failed to delete menu items. Please try again.');
+
+      // Clear error message after 5 seconds
+      setTimeout(() => setError(''), 5000);
     } finally {
       setOperationLoading(false);
     }
@@ -2635,7 +2641,7 @@ const MenuManagement = () => {
               Customize Menu
             </button>
             <button
-              onClick={handleBulkDelete}
+              onClick={handleBulkDeleteClick}
               disabled={operationLoading || menuItems.filter(item => item.status !== 'deleted').length === 0}
               style={{
                 padding: '6px 12px',
@@ -3816,6 +3822,141 @@ const MenuManagement = () => {
         restaurantName={currentRestaurant?.name}
         restaurant={currentRestaurant}
       />
+
+      {/* Bulk Delete Confirmation Modal */}
+      {showBulkDeleteConfirm && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
+          }}>
+            {/* Icon */}
+            <div style={{
+              width: '64px',
+              height: '64px',
+              margin: '0 auto 24px',
+              backgroundColor: '#fee2e2',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <FaExclamationTriangle size={32} color="#dc2626" />
+            </div>
+
+            {/* Title */}
+            <h2 style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: '#1f2937',
+              marginBottom: '16px',
+              textAlign: 'center'
+            }}>
+              Delete All Menu Items?
+            </h2>
+
+            {/* Message */}
+            <div style={{
+              fontSize: '16px',
+              color: '#6b7280',
+              marginBottom: '32px',
+              lineHeight: '1.6',
+              textAlign: 'center'
+            }}>
+              <p style={{ marginBottom: '12px' }}>
+                Are you sure you want to delete <strong style={{ color: '#dc2626' }}>ALL {menuItems.filter(item => item.status !== 'deleted').length} menu items</strong>?
+              </p>
+              <p style={{ fontSize: '14px', color: '#9ca3af' }}>
+                This will delete all items from all categories. This action cannot be undone easily.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={() => setShowBulkDeleteConfirm(false)}
+                disabled={operationLoading}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: operationLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  opacity: operationLoading ? 0.5 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!operationLoading) e.target.style.backgroundColor = '#e5e7eb';
+                }}
+                onMouseLeave={(e) => {
+                  if (!operationLoading) e.target.style.backgroundColor = '#f3f4f6';
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmBulkDelete}
+                disabled={operationLoading}
+                style={{
+                  padding: '12px 24px',
+                  background: operationLoading ? '#9ca3af' : 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: operationLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onMouseEnter={(e) => {
+                  if (!operationLoading) e.target.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)';
+                }}
+                onMouseLeave={(e) => {
+                  if (!operationLoading) e.target.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                }}
+              >
+                {operationLoading ? (
+                  <>
+                    <FaSpinner className="animate-spin" size={16} />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <FaTrash size={16} />
+                    Yes, Delete All
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hidden Camera Input */}
       <input
