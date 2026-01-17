@@ -1536,7 +1536,7 @@ const MenuManagement = () => {
   const [showItemModal, setShowItemModal] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [currentRestaurant, setCurrentRestaurant] = useState(null);
+  const [currentRestaurant, setCurrentRestaurant] = useState(null); // Will be loaded from user data
   const [isClient, setIsClient] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState({});
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
@@ -1688,21 +1688,23 @@ const MenuManagement = () => {
   useEffect(() => {
     const loadRestaurantContext = async () => {
       try {
-        console.log('Loading restaurant context...');
+        console.log('🏪 Menu: Loading restaurant context...');
         const userData = localStorage.getItem('user');
         if (!userData) {
-          console.log('No user data found, redirecting to login');
+          console.log('❌ Menu: No user data found, redirecting to login');
           router.push('/login');
           return;
         }
 
         const user = JSON.parse(userData);
+        console.log('👤 Menu: User role:', user.role);
         let restaurantId = null;
         let restaurant = null;
 
         // For staff members, use their assigned restaurant
         if (user.restaurantId) {
           restaurantId = user.restaurantId;
+          console.log('👨‍💼 Menu: Staff member - using assigned restaurant:', restaurantId);
           // Set restaurant object for staff
           restaurant = {
             id: user.restaurantId,
@@ -1711,7 +1713,8 @@ const MenuManagement = () => {
           setCurrentRestaurant(restaurant);
         }
         // For owners or customers, get selected restaurant
-        else if (user.role === 'owner' || user.role === 'customer') {
+        else {
+          console.log('👑 Menu: Owner/Customer - fetching restaurants...');
           const restaurantsResponse = await apiClient.getRestaurants();
           if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
             const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
@@ -1719,16 +1722,19 @@ const MenuManagement = () => {
                                       restaurantsResponse.restaurants[0];
             restaurantId = selectedRestaurant.id;
             restaurant = selectedRestaurant;
+            console.log('✅ Menu: Selected restaurant:', restaurantId);
             setCurrentRestaurant(selectedRestaurant);
+          } else {
+            console.warn('⚠️ Menu: No restaurants found');
           }
         }
 
         if (restaurantId && !hasLoadedData.current) {
-          console.log('Restaurant ID found:', restaurantId);
+          console.log('📋 Menu: Loading menu data for restaurant:', restaurantId);
           // Try to load cached data immediately
           const cachedData = getCachedMenuData(restaurantId);
           if (cachedData) {
-            console.log('⚡ Loading cached menu data on mount...');
+            console.log('⚡ Menu: Loading cached menu data on mount...');
             if (cachedData.menuItems) {
               setMenuItems(cachedData.menuItems);
               setHasInitialData(true);
@@ -1738,13 +1744,13 @@ const MenuManagement = () => {
           }
           await loadMenuData(restaurantId, true); // Use cache
         } else if (!restaurantId) {
-          console.log('No restaurant found');
+          console.error('❌ Menu: No restaurant ID available');
           setError('No restaurant found. Please set up a restaurant first.');
           setLoading(false);
         }
       } catch (error) {
-        console.error('Error loading restaurant context:', error);
-        setError('Failed to load restaurant information');
+        console.error('❌ Menu: Error loading restaurant context:', error);
+        setError('Failed to load restaurant information: ' + error.message);
         setLoading(false);
       }
     };
@@ -1971,8 +1977,11 @@ const MenuManagement = () => {
   };
 
   const handleBulkDeleteClick = () => {
+    console.log('🗑️ Bulk delete clicked. Current restaurant:', currentRestaurant);
+
     if (!currentRestaurant?.id) {
-      setError('No restaurant selected');
+      console.error('❌ No restaurant selected for bulk delete');
+      setError('No restaurant selected. Please refresh the page and try again.');
       return;
     }
 
@@ -1983,6 +1992,7 @@ const MenuManagement = () => {
       return;
     }
 
+    console.log('✅ Showing bulk delete confirmation for', activeItemsCount, 'items');
     // Show confirmation modal
     setShowBulkDeleteConfirm(true);
   };
