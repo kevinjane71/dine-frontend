@@ -32,7 +32,10 @@ import {
   FaChartLine,
   FaShoppingBag,
   FaArrowUp,
-  FaArrowDown
+  FaArrowDown,
+  FaFileInvoice,
+  FaDownload,
+  FaPrint
 } from 'react-icons/fa';
 
 const OrderHistory = () => {
@@ -58,6 +61,7 @@ const OrderHistory = () => {
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [expandedOrders, setExpandedOrders] = useState(new Set());
   const [selectedOrderForModal, setSelectedOrderForModal] = useState(null);
+  const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState(null);
 
   useEffect(() => {
     // Initialize language
@@ -313,6 +317,14 @@ const OrderHistory = () => {
   
   const handleViewOrder = (order) => {
     setSelectedOrderForModal(order);
+  };
+
+  const handleViewInvoice = (order) => {
+    setSelectedOrderForInvoice(order);
+  };
+
+  const handleDownloadPDF = () => {
+    window.print();
   };
 
   const handleCancelOrder = async (orderId) => {
@@ -798,11 +810,11 @@ const OrderHistory = () => {
                           <span className="font-bold text-xl text-gray-900">₹{orderTotal}</span>
                           <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                             <button 
-                              onClick={() => handleEditOrder(order.id)} 
-                              className="p-2 text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors shadow-sm" 
-                              title={t('orderHistory.edit')}
+                              onClick={() => handleViewInvoice(order)} 
+                              className="p-2 text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors" 
+                              title="Invoice"
                             >
-                              <FaEdit size={12} />
+                              <FaFileInvoice size={12} />
                             </button>
                             <button 
                               onClick={() => handleViewOrder(order)} 
@@ -810,6 +822,13 @@ const OrderHistory = () => {
                               title={t('orderHistory.view')}
                             >
                               <FaEye size={12} />
+                            </button>
+                            <button 
+                              onClick={() => handleEditOrder(order.id)} 
+                              className="p-2 text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors shadow-sm" 
+                              title={t('orderHistory.edit')}
+                            >
+                              <FaEdit size={12} />
                             </button>
                           </div>
                         </div>
@@ -903,6 +922,12 @@ const OrderHistory = () => {
                           >
                             <FaEye /> {t('orderHistory.view')}
                           </button>
+                          <button 
+                            onClick={() => handleViewInvoice(order)} 
+                            className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border-2 border-blue-200 rounded-lg hover:bg-blue-100 transition-all flex items-center gap-2"
+                          >
+                            <FaFileInvoice /> Invoice
+                          </button>
                           {order.status !== 'completed' && order.status !== 'cancelled' && (
                             <button 
                               onClick={() => handleCancelOrder(order.id)} 
@@ -965,7 +990,213 @@ const OrderHistory = () => {
           onClose={() => setSelectedOrderForModal(null)} 
         />
       )}
+
+      {selectedOrderForInvoice && (
+        <InvoiceModal 
+          order={selectedOrderForInvoice} 
+          restaurant={restaurant}
+          onClose={() => setSelectedOrderForInvoice(null)}
+          onDownloadPDF={handleDownloadPDF}
+          calculateOrderTotal={calculateOrderTotal}
+          formatDate={formatDate}
+        />
+      )}
     </div>
+  );
+};
+
+// Invoice Modal Component
+const InvoiceModal = ({ order, restaurant, onClose, onDownloadPDF, calculateOrderTotal, formatDate }) => {
+  if (!order) return null;
+  
+  const orderTotal = calculateOrderTotal(order);
+  const subtotal = order.items?.reduce((sum, item) => sum + (item.total || (item.price * item.quantity) || 0), 0) || 0;
+  const taxAmount = order.taxAmount || Math.max(0, orderTotal - subtotal);
+  const invoiceNumber = order.dailyOrderId || order.orderNumber || (order.id ? order.id.slice(-4).toUpperCase() : 'N/A');
+  
+  return (
+    <>
+      {/* Print Styles */}
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .invoice-print, .invoice-print * {
+            visibility: visible;
+          }
+          .invoice-print {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 20px;
+            background: white;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      {/* Modal Overlay */}
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+        <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border-2 border-gray-200">
+          <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
+            <h2 className="text-2xl font-bold text-gray-900">Invoice #{invoiceNumber}</h2>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={onDownloadPDF}
+                className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border-2 border-blue-200 rounded-lg hover:bg-blue-100 transition-all flex items-center gap-2"
+              >
+                <FaDownload /> Download PDF
+              </button>
+              <button 
+                onClick={onClose} 
+                className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+              >
+                <FaTimes className="text-gray-500 text-lg" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6">
+            {/* Invoice Content - Printable */}
+            <div className="invoice-print bg-white p-8 max-w-4xl mx-auto">
+              {/* Header */}
+              <div className="border-b-2 border-gray-300 pb-6 mb-6">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{restaurant?.name || 'Restaurant'}</h1>
+                    {restaurant?.address && <p className="text-gray-600 text-sm">{restaurant.address}</p>}
+                    {restaurant?.phone && <p className="text-gray-600 text-sm">Phone: {restaurant.phone}</p>}
+                    {restaurant?.email && <p className="text-gray-600 text-sm">Email: {restaurant.email}</p>}
+                    {restaurant?.gstin && <p className="text-gray-600 text-sm">GSTIN: {restaurant.gstin}</p>}
+                  </div>
+                  <div className="text-right">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">INVOICE</h2>
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <p><strong>Invoice #:</strong> {invoiceNumber}</p>
+                      <p><strong>Date:</strong> {formatDate(order.createdAt)}</p>
+                      {order.status && <p><strong>Status:</strong> <span className="uppercase">{order.status}</span></p>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bill To */}
+              <div className="grid grid-cols-2 gap-8 mb-6">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 uppercase mb-2">Bill To:</h3>
+                  <div className="text-gray-900">
+                    <p className="font-semibold">{order.customerDisplay?.name || 'Walk-in Customer'}</p>
+                    {order.customerDisplay?.phone && <p className="text-sm">Phone: {order.customerDisplay.phone}</p>}
+                    {order.customerDisplay?.email && <p className="text-sm">Email: {order.customerDisplay.email}</p>}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 uppercase mb-2">Order Details:</h3>
+                  <div className="text-gray-900 text-sm">
+                    {order.customerDisplay?.tableNumber && <p>Table: {order.customerDisplay.tableNumber}</p>}
+                    {order.customerDisplay?.floorName && <p>Floor: {order.customerDisplay.floorName}</p>}
+                    {order.orderType && <p>Type: <span className="capitalize">{order.orderType.replace('-', ' ')}</span></p>}
+                    {order.paymentMethod && <p>Payment: <span className="capitalize">{order.paymentMethod}</span></p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Items Table */}
+              <div className="mb-6">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100 border-b-2 border-gray-300">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Item</th>
+                      <th className="text-center py-3 px-4 font-semibold text-gray-700">Qty</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Unit Price</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {order.items?.map((item, i) => (
+                      <tr key={i} className="border-b border-gray-200">
+                        <td className="py-3 px-4">
+                          <div className="font-medium text-gray-900">{item.name}</div>
+                          {item.variant && (
+                            <div className="text-xs text-gray-500 mt-1">Variant: {item.variant.name}</div>
+                          )}
+                          {item.addons?.length > 0 && (
+                            <div className="text-xs text-gray-500 mt-1">Addons: {item.addons.map(a => a.name).join(', ')}</div>
+                          )}
+                          {item.notes && (
+                            <div className="text-xs text-amber-700 mt-1 italic">Note: {item.notes}</div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-center text-gray-700">{item.quantity}</td>
+                        <td className="py-3 px-4 text-right text-gray-700">₹{item.price?.toFixed(2) || '0.00'}</td>
+                        <td className="py-3 px-4 text-right font-semibold text-gray-900">₹{(item.total || (item.price * item.quantity))?.toFixed(2) || '0.00'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Notes */}
+              {order.notes && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded">
+                  <p className="text-sm text-amber-900"><strong>Order Notes:</strong> {order.notes}</p>
+                </div>
+              )}
+
+              {/* Totals */}
+              <div className="border-t-2 border-gray-300 pt-4">
+                <div className="flex justify-end">
+                  <div className="w-64 space-y-2">
+                    <div className="flex justify-between text-gray-700">
+                      <span>Subtotal:</span>
+                      <span>₹{subtotal.toFixed(2)}</span>
+                    </div>
+                    {taxAmount > 0 && (
+                      <div className="flex justify-between text-gray-700">
+                        <span>Tax:</span>
+                        <span>₹{taxAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-xl font-bold text-gray-900 pt-2 border-t-2 border-gray-300">
+                      <span>Total:</span>
+                      <span className="text-red-600">₹{orderTotal.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
+                <p className="font-medium">Thank you for your business!</p>
+                <p className="mt-2">For any queries, please contact us.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons - Non-printable */}
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border-t-2 border-gray-200 p-6 no-print">
+            <div className="flex gap-3 justify-end">
+              <button 
+                onClick={onDownloadPDF}
+                className="px-5 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-lg flex items-center gap-2"
+              >
+                <FaPrint /> Print / Download PDF
+              </button>
+              <button 
+                onClick={onClose}
+                className="px-5 py-3 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 
