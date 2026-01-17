@@ -1698,19 +1698,27 @@ const MenuManagement = () => {
 
         const user = JSON.parse(userData);
         let restaurantId = null;
+        let restaurant = null;
 
         // For staff members, use their assigned restaurant
         if (user.restaurantId) {
           restaurantId = user.restaurantId;
-        } 
+          // Set restaurant object for staff
+          restaurant = {
+            id: user.restaurantId,
+            name: user.restaurant?.name || 'Restaurant'
+          };
+          setCurrentRestaurant(restaurant);
+        }
         // For owners or customers, get selected restaurant
         else if (user.role === 'owner' || user.role === 'customer') {
           const restaurantsResponse = await apiClient.getRestaurants();
           if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
             const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
-            const selectedRestaurant = restaurantsResponse.restaurants.find(r => r.id === savedRestaurantId) || 
+            const selectedRestaurant = restaurantsResponse.restaurants.find(r => r.id === savedRestaurantId) ||
                                       restaurantsResponse.restaurants[0];
             restaurantId = selectedRestaurant.id;
+            restaurant = selectedRestaurant;
             setCurrentRestaurant(selectedRestaurant);
           }
         }
@@ -1762,6 +1770,12 @@ const MenuManagement = () => {
 
           if (user.restaurantId) {
             restaurantId = user.restaurantId;
+            // Set restaurant object for staff
+            const restaurant = {
+              id: user.restaurantId,
+              name: user.restaurant?.name || 'Restaurant'
+            };
+            setCurrentRestaurant(restaurant);
           } else if (user.role === 'owner' || user.role === 'admin') {
             const restaurantsResponse = await apiClient.getRestaurants();
             const restaurants = restaurantsResponse.restaurants || [];
