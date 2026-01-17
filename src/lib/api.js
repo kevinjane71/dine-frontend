@@ -175,35 +175,11 @@ class ApiClient {
 
   clearToken() {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      localStorage.removeItem('restaurant');
-      localStorage.removeItem('selectedRestaurant');
-      localStorage.removeItem('selectedRestaurantId');
-      localStorage.removeItem('cart');
-      localStorage.removeItem('dine_cart');
-      localStorage.removeItem('dine_saved_order');
-      localStorage.removeItem('order');
-      localStorage.removeItem('currentOrder');
-      localStorage.removeItem('menuItems');
-      localStorage.removeItem('categories');
-      localStorage.removeItem('staff');
-      localStorage.removeItem('settings');
-      localStorage.removeItem('tables');
-      localStorage.removeItem('floors');
-      localStorage.removeItem('analytics');
-      localStorage.removeItem('inventory');
-      localStorage.removeItem('payments');
-      localStorage.removeItem('customers');
-      localStorage.removeItem('bookings');
-      localStorage.removeItem('loyalty');
-      localStorage.removeItem('feedback');
-      localStorage.removeItem('suppliers');
-      localStorage.removeItem('userRestaurants');
-      localStorage.removeItem('restaurantSettings');
-      localStorage.removeItem('discountSettings');
+      // Clear ALL localStorage (not just specific keys)
+      // This ensures all cache keys are cleared too
+      localStorage.clear();
       
-      // Clear session storage as well
+      // Clear ALL sessionStorage
       sessionStorage.clear();
     }
   }
