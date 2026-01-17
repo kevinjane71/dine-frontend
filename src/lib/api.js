@@ -1590,6 +1590,64 @@ class ApiClient {
       throw error;
     }
   }
+
+  // ==================== HOTEL MANAGEMENT ====================
+
+  // Create hotel check-in
+  async hotelCheckIn(checkInData) {
+    return this.request('/api/hotel/checkin', {
+      method: 'POST',
+      body: checkInData,
+    });
+  }
+
+  // Get all check-ins for a restaurant
+  async getHotelCheckIns(restaurantId, status = 'all') {
+    return this.request(`/api/hotel/checkins/${restaurantId}?status=${status}`);
+  }
+
+  // Get check-in by room number
+  async getCheckInByRoom(restaurantId, roomNumber) {
+    return this.request(`/api/hotel/checkin/room/${restaurantId}/${roomNumber}`);
+  }
+
+  // Link order to hotel check-in
+  async linkOrderToCheckIn(checkInId, orderId, orderAmount) {
+    return this.request('/api/hotel/link-order', {
+      method: 'POST',
+      body: { checkInId, orderId, orderAmount },
+    });
+  }
+
+  // Hotel checkout
+  async hotelCheckOut(checkInId, checkoutData) {
+    return this.request(`/api/hotel/checkout/${checkInId}`, {
+      method: 'POST',
+      body: checkoutData,
+    });
+  }
+
+  // Get invoice for check-in
+  async getHotelInvoice(checkInId) {
+    return this.request(`/api/hotel/invoice/${checkInId}`);
+  }
+
+  // Update check-in details
+  async updateCheckIn(checkInId, updates) {
+    return this.request(`/api/hotel/checkin/${checkInId}`, {
+      method: 'PATCH',
+      body: updates,
+    });
+  }
+
+  // Search guests
+  async searchGuests(restaurantId, searchParams) {
+    const params = new URLSearchParams();
+    if (searchParams.phone) params.append('phone', searchParams.phone);
+    if (searchParams.name) params.append('name', searchParams.name);
+
+    return this.request(`/api/hotel/guests/${restaurantId}?${params.toString()}`);
+  }
 }
 
 const apiClient = new ApiClient();
