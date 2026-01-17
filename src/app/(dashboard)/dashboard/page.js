@@ -3832,14 +3832,14 @@ function RestaurantPOSContent() {
             {viewMode === 'orders' ? (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: useModernCards 
+              gridTemplateColumns: useModernCards
                 ? (isMobile ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(150px, 1fr))')
                 : (isMobile ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(150px, 1fr))'),
-              gap: useModernCards 
-                ? (isMobile ? '10px' : '12px')
-                : (isMobile ? '8px' : '10px'),
+              gap: useModernCards
+                ? (isMobile ? '12px' : '20px')
+                : (isMobile ? '10px' : '16px'),
               justifyContent: 'center',
-              padding: useModernCards ? '0 8px' : '0 6px'
+              padding: useModernCards ? '0 12px' : '0 8px'
             }}>
               {filteredItems.map((item) => {
                 const quantityInCart = getItemQuantityInCart(item.id);

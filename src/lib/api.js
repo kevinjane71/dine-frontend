@@ -399,6 +399,12 @@ class ApiClient {
     });
   }
 
+  async bulkDeleteMenuItems(restaurantId) {
+    return this.request(`/api/menus/${restaurantId}/bulk-delete`, {
+      method: 'DELETE',
+    });
+  }
+
   async markMenuItemAsFavorite(restaurantId, itemId) {
     return this.post(`/api/menus/${restaurantId}/item/${itemId}/favorite`);
   }

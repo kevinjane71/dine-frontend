@@ -1955,6 +1955,49 @@ const MenuManagement = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (!currentRestaurant?.id) {
+      setError('No restaurant selected');
+      return;
+    }
+
+    const activeItemsCount = menuItems.filter(item => item.status !== 'deleted').length;
+
+    if (activeItemsCount === 0) {
+      alert('No menu items to delete');
+      return;
+    }
+
+    const confirmMessage = `Are you sure you want to delete ALL ${activeItemsCount} menu items?\n\nThis action will delete:\n- All menu items\n- From all categories\n\nThis cannot be undone easily. Are you absolutely sure?`;
+
+    if (!confirm(confirmMessage)) return;
+
+    // Double confirmation for safety
+    if (!confirm('FINAL CONFIRMATION: Delete all menu items?')) return;
+
+    try {
+      setOperationLoading(true);
+      const response = await apiClient.bulkDeleteMenuItems(currentRestaurant.id);
+
+      // Clear all menu items from state
+      setMenuItems([]);
+
+      // Show success message
+      alert(`Successfully deleted ${response.deletedCount} menu items`);
+
+      // Reload menu data to ensure consistency
+      if (currentRestaurant?.id) {
+        loadMenuItems(currentRestaurant.id);
+      }
+    } catch (error) {
+      console.error('Error bulk deleting menu items:', error);
+      setError('Failed to delete menu items: ' + (error.message || 'Unknown error'));
+      alert('Failed to delete menu items. Please try again.');
+    } finally {
+      setOperationLoading(false);
+    }
+  };
+
   const handleToggleFavorite = async (item) => {
     if (!currentRestaurant?.id) {
       setError('No restaurant selected');
@@ -2590,6 +2633,44 @@ const MenuManagement = () => {
             >
               <FaEye size={10} />
               Customize Menu
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              disabled={operationLoading || menuItems.filter(item => item.status !== 'deleted').length === 0}
+              style={{
+                padding: '6px 12px',
+                background: operationLoading || menuItems.filter(item => item.status !== 'deleted').length === 0
+                  ? 'linear-gradient(135deg, #9ca3af, #6b7280)'
+                  : 'linear-gradient(135deg, #ef4444, #dc2626)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontWeight: '600',
+                fontSize: '12px',
+                cursor: operationLoading || menuItems.filter(item => item.status !== 'deleted').length === 0 ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                whiteSpace: 'nowrap',
+                minWidth: 'auto',
+                opacity: operationLoading || menuItems.filter(item => item.status !== 'deleted').length === 0 ? 0.5 : 1
+              }}
+              onMouseEnter={(e) => {
+                if (!operationLoading && menuItems.filter(item => item.status !== 'deleted').length > 0) {
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!operationLoading && menuItems.filter(item => item.status !== 'deleted').length > 0) {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                }
+              }}
+            >
+              <FaTrash size={10} />
+              Delete All Menu
             </button>
           </div>
         </div>
