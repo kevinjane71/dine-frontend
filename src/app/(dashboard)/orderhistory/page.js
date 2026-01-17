@@ -1017,32 +1017,44 @@ const InvoiceModal = ({ order, restaurant, onClose, onDownloadPDF, calculateOrde
   return (
     <>
       {/* Print Styles */}
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{__html: `
         @media print {
+          @page {
+            margin: 1.5cm;
+            size: A4;
+          }
           body * {
             visibility: hidden;
           }
-          .invoice-print, .invoice-print * {
+          .invoice-print-wrapper,
+          .invoice-print-wrapper * {
             visibility: visible;
           }
-          .invoice-print {
+          .invoice-print-wrapper {
             position: absolute;
             left: 0;
             top: 0;
             width: 100%;
-            padding: 20px;
+            background: white;
+            z-index: 99999;
+          }
+          .invoice-print {
+            position: relative;
+            width: 100%;
+            margin: 0;
+            padding: 0;
             background: white;
           }
           .no-print {
             display: none !important;
           }
         }
-      `}</style>
+      `}} />
 
       {/* Modal Overlay */}
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
         <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border-2 border-gray-200">
-          <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
+          <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white no-print">
             <h2 className="text-2xl font-bold text-gray-900">Invoice #{invoiceNumber}</h2>
             <div className="flex items-center gap-2">
               <button 
@@ -1062,7 +1074,8 @@ const InvoiceModal = ({ order, restaurant, onClose, onDownloadPDF, calculateOrde
 
           <div className="flex-1 overflow-y-auto p-6">
             {/* Invoice Content - Printable */}
-            <div className="invoice-print bg-white p-8 max-w-4xl mx-auto">
+            <div className="invoice-print-wrapper">
+              <div className="invoice-print bg-white p-8 max-w-4xl mx-auto">
               {/* Header */}
               <div className="border-b-2 border-gray-300 pb-6 mb-6">
                 <div className="flex justify-between items-start">
@@ -1173,6 +1186,7 @@ const InvoiceModal = ({ order, restaurant, onClose, onDownloadPDF, calculateOrde
               <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
                 <p className="font-medium">Thank you for your business!</p>
                 <p className="mt-2">For any queries, please contact us.</p>
+              </div>
               </div>
             </div>
           </div>
