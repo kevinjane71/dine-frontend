@@ -115,16 +115,24 @@ const TableManagement = () => {
   const [selectedFloorForTable, setSelectedFloorForTable] = useState(null);
   const [editingFloor, setEditingFloor] = useState(null);
   const [showNewFloorForm, setShowNewFloorForm] = useState(false);
-  
+  const [showBulkAddTable, setShowBulkAddTable] = useState(false);
+  const [addMode, setAddMode] = useState('single'); // 'single' or 'bulk'
+
   // Dropdown state
   const [activeDropdown, setActiveDropdown] = useState(null);
-  
+
   // Form states
   const [newFloor, setNewFloor] = useState({ name: '', description: '' });
   const [newTable, setNewTable] = useState({
     name: '',
     capacity: 4,
     type: 'regular',
+    floorId: null
+  });
+  const [bulkTableData, setBulkTableData] = useState({
+    fromNumber: '',
+    toNumber: '',
+    capacity: 4,
     floorId: null
   });
   const [bookingData, setBookingData] = useState({
@@ -669,10 +677,80 @@ const TableManagement = () => {
       setSelectedFloorForTable(null);
       setShowAddTable(false);
       showSuccess('Table added successfully!');
-      
+
     } catch (err) {
       console.error('Error adding table:', err);
       showError(`Failed to add table: ${err.message}`);
+    }
+  };
+
+  const bulkAddTables = async () => {
+    if (!bulkTableData.fromNumber || !bulkTableData.toNumber || !selectedFloorForTable || !selectedRestaurant) {
+      showError('Please fill in all required fields');
+      return;
+    }
+
+    const from = parseInt(bulkTableData.fromNumber);
+    const to = parseInt(bulkTableData.toNumber);
+
+    if (isNaN(from) || isNaN(to)) {
+      showError('From and To must be valid numbers');
+      return;
+    }
+
+    if (from > to) {
+      showError('From number must be less than or equal to To number');
+      return;
+    }
+
+    if (to - from > 100) {
+      showError('Cannot create more than 100 tables at once');
+      return;
+    }
+
+    try {
+      // Find the selected floor to get its name
+      const selectedFloor = floors.find(floor => floor.id === selectedFloorForTable);
+      if (!selectedFloor) {
+        showError('Selected floor not found');
+        return;
+      }
+
+      const bulkData = {
+        floor: selectedFloor.name, // Send floor name instead of floorId
+        fromNumber: from,
+        toNumber: to,
+        capacity: parseInt(bulkTableData.capacity)
+      };
+
+      const response = await apiClient.bulkCreateTables(selectedRestaurant.id, bulkData);
+
+      // Update floors state with new tables
+      if (response.tables && response.tables.length > 0) {
+        setFloors(prev => prev.map(floor => {
+          if (floor.id === selectedFloorForTable) {
+            return {
+              ...floor,
+              tables: [...(floor.tables || []), ...response.tables]
+            };
+          }
+          return floor;
+        }));
+      }
+
+      setBulkTableData({ fromNumber: '', toNumber: '', capacity: 4, floorId: null });
+      setSelectedFloorForTable(null);
+      setShowBulkAddTable(false);
+
+      let message = `Successfully created ${response.created} tables`;
+      if (response.skipped > 0) {
+        message += ` (${response.skipped} duplicates skipped)`;
+      }
+      showSuccess(message);
+
+    } catch (err) {
+      console.error('Error bulk adding tables:', err);
+      showError(`Failed to bulk add tables: ${err.message}`);
     }
   };
 
@@ -1867,9 +1945,49 @@ const TableManagement = () => {
           }}>
             <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Add Table or Floor</h2>
-              <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 0 0' }}>Choose what you want to add</p>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 12px 0' }}>Choose what you want to add</p>
+
+              {/* Mode Toggle */}
+              <div style={{ display: 'flex', gap: '8px', backgroundColor: '#f3f4f6', padding: '4px', borderRadius: '8px' }}>
+                <button
+                  onClick={() => setAddMode('single')}
+                  style={{
+                    flex: 1,
+                    padding: '8px 16px',
+                    backgroundColor: addMode === 'single' ? 'white' : 'transparent',
+                    color: addMode === 'single' ? '#dc2626' : '#6b7280',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    boxShadow: addMode === 'single' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  Single Table
+                </button>
+                <button
+                  onClick={() => setAddMode('bulk')}
+                  style={{
+                    flex: 1,
+                    padding: '8px 16px',
+                    backgroundColor: addMode === 'bulk' ? 'white' : 'transparent',
+                    color: addMode === 'bulk' ? '#dc2626' : '#6b7280',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    boxShadow: addMode === 'bulk' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  Bulk Add Tables
+                </button>
+              </div>
             </div>
-            
+
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {/* Floor Selection */}
               <div>
@@ -2006,79 +2124,184 @@ const TableManagement = () => {
                 </div>
               )}
 
-              {/* Table Details */}
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                    Table Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={newTable.name}
-                    onChange={(e) => setNewTable({...newTable, name: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      boxSizing: 'border-box'
-                    }}
-                    placeholder="e.g., T1, V1"
-                  />
-                </div>
-                
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                    Capacity *
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="20"
-                    value={newTable.capacity}
-                    onChange={(e) => setNewTable({...newTable, capacity: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      backgroundColor: '#fef7f0',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
-                  Table Type
-                </label>
-                <select
-                  value={newTable.type}
-                  onChange={(e) => setNewTable({...newTable, type: e.target.value})}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    border: '1px solid #d1d5db',
+              {/* Conditional Form Based on Mode */}
+              {addMode === 'single' ? (
+                <>
+                  {/* Table Details - Single */}
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                        Table Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={newTable.name}
+                        onChange={(e) => setNewTable({...newTable, name: e.target.value})}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          outline: 'none',
+                          backgroundColor: '#fef7f0',
+                          boxSizing: 'border-box'
+                        }}
+                        placeholder="e.g., T1, V1"
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                        Capacity *
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={newTable.capacity}
+                        onChange={(e) => setNewTable({...newTable, capacity: e.target.value})}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          outline: 'none',
+                          backgroundColor: '#fef7f0',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                      Table Type
+                    </label>
+                    <select
+                      value={newTable.type}
+                      onChange={(e) => setNewTable({...newTable, type: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        backgroundColor: '#fef7f0',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      <option value="small">Small (1-2 seats)</option>
+                      <option value="regular">Regular (3-4 seats)</option>
+                      <option value="large">Large (5-8 seats)</option>
+                      <option value="vip">VIP</option>
+                      <option value="private">Private Room</option>
+                    </select>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Bulk Add Form */}
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#fef9f5',
                     borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    backgroundColor: '#fef7f0',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <option value="small">Small (1-2 seats)</option>
-                  <option value="regular">Regular (3-4 seats)</option>
-                  <option value="large">Large (5-8 seats)</option>
-                  <option value="vip">VIP</option>
-                  <option value="private">Private Room</option>
-                </select>
-              </div>
+                    border: '2px dashed #f97316'
+                  }}>
+                    <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 12px 0', textAlign: 'center' }}>
+                      Create multiple tables with sequential numbering
+                    </p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                          From Number *
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={bulkTableData.fromNumber}
+                          onChange={(e) => setBulkTableData({...bulkTableData, fromNumber: e.target.value})}
+                          style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            outline: 'none',
+                            backgroundColor: 'white',
+                            boxSizing: 'border-box'
+                          }}
+                          placeholder="e.g., 1"
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                          To Number *
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={bulkTableData.toNumber}
+                          onChange={(e) => setBulkTableData({...bulkTableData, toNumber: e.target.value})}
+                          style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            outline: 'none',
+                            backgroundColor: 'white',
+                            boxSizing: 'border-box'
+                          }}
+                          placeholder="e.g., 10"
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '12px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                        Capacity (per table) *
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={bulkTableData.capacity}
+                        onChange={(e) => setBulkTableData({...bulkTableData, capacity: e.target.value})}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          outline: 'none',
+                          backgroundColor: 'white',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+
+                    {bulkTableData.fromNumber && bulkTableData.toNumber && (
+                      <div style={{
+                        marginTop: '12px',
+                        padding: '8px 12px',
+                        backgroundColor: '#dcfce7',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        color: '#166534',
+                        textAlign: 'center'
+                      }}>
+                        Will create {parseInt(bulkTableData.toNumber) - parseInt(bulkTableData.fromNumber) + 1} tables
+                        ({bulkTableData.fromNumber} - {bulkTableData.toNumber})
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
             
             <div style={{ padding: '20px', backgroundColor: '#fef7f0', display: 'flex', gap: '10px' }}>
@@ -2087,8 +2310,10 @@ const TableManagement = () => {
                   setShowAddModal(false);
                   setSelectedFloorForTable(null);
                   setNewTable({ name: '', capacity: 4, type: 'regular', floorId: null });
+                  setBulkTableData({ fromNumber: '', toNumber: '', capacity: 4, floorId: null });
                   setNewFloor({ name: '', description: '' });
                   setShowNewFloorForm(false);
+                  setAddMode('single');
                 }}
                 style={{
                   flex: 1,
@@ -2106,13 +2331,26 @@ const TableManagement = () => {
               </button>
               <button
                 onClick={async () => {
-                  await addTable();
+                  if (addMode === 'single') {
+                    await addTable();
+                  } else {
+                    await bulkAddTables();
+                  }
                   setShowAddModal(false);
+                  setAddMode('single');
                 }}
-                disabled={!newTable.name.trim() || !selectedFloorForTable}
+                disabled={
+                  addMode === 'single'
+                    ? (!newTable.name.trim() || !selectedFloorForTable)
+                    : (!bulkTableData.fromNumber || !bulkTableData.toNumber || !selectedFloorForTable)
+                }
                 style={{
                   flex: 1,
-                  background: (newTable.name.trim() && selectedFloorForTable)
+                  background: (
+                    addMode === 'single'
+                      ? (newTable.name.trim() && selectedFloorForTable)
+                      : (bulkTableData.fromNumber && bulkTableData.toNumber && selectedFloorForTable)
+                  )
                     ? 'linear-gradient(135deg, #e53e3e, #dc2626)'
                     : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
                   color: 'white',
@@ -2120,11 +2358,15 @@ const TableManagement = () => {
                   borderRadius: '8px',
                   fontWeight: '600',
                   border: 'none',
-                  cursor: (newTable.name.trim() && selectedFloorForTable) ? 'pointer' : 'not-allowed',
+                  cursor: (
+                    addMode === 'single'
+                      ? (newTable.name.trim() && selectedFloorForTable)
+                      : (bulkTableData.fromNumber && bulkTableData.toNumber && selectedFloorForTable)
+                  ) ? 'pointer' : 'not-allowed',
                   fontSize: '14px'
                 }}
               >
-                Add Table
+                {addMode === 'single' ? 'Add Table' : 'Create Tables'}
               </button>
             </div>
           </div>

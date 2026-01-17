@@ -578,6 +578,13 @@ class ApiClient {
     });
   }
 
+  async bulkCreateTables(restaurantId, bulkData) {
+    return this.request(`/api/tables/${restaurantId}/bulk`, {
+      method: 'POST',
+      body: bulkData,
+    });
+  }
+
   async updateTableStatus(tableId, status, orderId = null, restaurantId = null) {
     const body = { status };
     if (orderId) body.orderId = orderId;
