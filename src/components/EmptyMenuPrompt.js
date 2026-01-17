@@ -165,7 +165,7 @@ const EmptyMenuPrompt = ({ restaurantName, selectedRestaurant, onAddMenu, onMenu
             console.log('🔍 Number of items to save:', allMenuItems.length);
             
             try {
-              const saveResponse = await apiClient.bulkSaveMenuItems(restaurantId, allMenuItems);
+              const saveResponse = await apiClient.bulkSaveMenuItems(restaurantId, allMenuItems, response.extractedCategories || []);
               
               if (saveResponse.savedCount > 0) {
                 console.log(`✅ Successfully saved ${saveResponse.savedCount} menu items to database`);

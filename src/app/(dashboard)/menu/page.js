@@ -1505,20 +1505,7 @@ const MenuManagement = () => {
   const { isLoading } = useLoading();
   const router = useRouter();
   const [menuItems, setMenuItems] = useState([]);
-  const [categories, setCategories] = useState([
-    { id: 'appetizer', name: 'Appetizers', emoji: '🥗' },
-    { id: 'main-course', name: 'Main Course', emoji: '🍽️' },
-    { id: 'dessert', name: 'Desserts', emoji: '🍰' },
-    { id: 'beverages', name: 'Beverages', emoji: '🥤' },
-    { id: 'pizza', name: 'Pizza', emoji: '🍕' },
-    { id: 'chinese', name: 'Chinese', emoji: '🥢' },
-    { id: 'bread', name: 'Bread', emoji: '🍞' },
-    { id: 'rice', name: 'Rice', emoji: '🍚' },
-    { id: 'dal', name: 'Dal', emoji: '🍛' },
-    { id: 'south-indian', name: 'South Indian', emoji: '🍛' },
-    { id: 'north-indian', name: 'North Indian', emoji: '🍽️' },
-    { id: 'fast-food', name: 'Fast Food', emoji: '🍔' }
-  ]);
+  const [categories, setCategories] = useState([]); // Dynamic: from backend or from menu photo extraction
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedVegFilter, setSelectedVegFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -1564,22 +1551,6 @@ const MenuManagement = () => {
     generateRecipe: true
   });
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-
-  // Generic categories
-  const genericCategories = [
-    { id: 'appetizer', name: 'Appetizers', emoji: '🥗' },
-    { id: 'main-course', name: 'Main Course', emoji: '🍽️' },
-    { id: 'dessert', name: 'Desserts', emoji: '🍰' },
-    { id: 'beverages', name: 'Beverages', emoji: '🥤' },
-    { id: 'rice', name: 'Rice & Biryani', emoji: '🍚' },
-    { id: 'bread', name: 'Bread & Roti', emoji: '🥖' },
-    { id: 'dal', name: 'Dal & Curry', emoji: '🍛' },
-    { id: 'fast-food', name: 'Fast Food', emoji: '🍔' },
-    { id: 'chinese', name: 'Chinese', emoji: '🥢' },
-    { id: 'pizza', name: 'Pizza', emoji: '🍕' },
-    { id: 'south-indian', name: 'South Indian', emoji: '🍛' },
-    { id: 'north-indian', name: 'North Indian', emoji: '🍽️' }
-  ];
 
   // Mobile detection with client-side hydration safety
   useEffect(() => {
@@ -1628,33 +1599,10 @@ const MenuManagement = () => {
       // Always set hasInitialData to true once we've loaded data (even if empty, we know the state)
       setHasInitialData(true);
 
-      // Use categories from backend, fallback to generic categories if none exist
+      // Use categories from backend only (dynamic). No hardcoded defaults – user adds or they come from menu photo extraction.
       const backendCategories = categoriesResponse.categories || [];
-      let finalCategories = [];
-      
-      if (backendCategories.length > 0) {
-        finalCategories = backendCategories;
-        setCategories(finalCategories);
-      } else {
-        // If no categories exist, create default categories
-        const defaultCategories = [
-          { id: 'appetizer', name: 'Appetizers', emoji: '🥗', description: 'Starters and appetizers' },
-          { id: 'main-course', name: 'Main Course', emoji: '🍽️', description: 'Main dishes' },
-          { id: 'dessert', name: 'Desserts', emoji: '🍰', description: 'Sweet treats' },
-          { id: 'beverages', name: 'Beverages', emoji: '🥤', description: 'Drinks and beverages' }
-        ];
-        finalCategories = defaultCategories;
-        setCategories(finalCategories);
-        
-        // Create default categories in backend
-        try {
-          for (const category of defaultCategories) {
-            await apiClient.createCategory(restaurantId, category);
-          }
-        } catch (error) {
-          console.error('Error creating default categories:', error);
-        }
-      }
+      const finalCategories = backendCategories.length > 0 ? backendCategories : [];
+      setCategories(finalCategories);
 
       if (finalCategories.length > 0 && !formData.category) {
         setFormData(prev => ({ ...prev, category: finalCategories[0].id }));
@@ -1860,6 +1808,26 @@ const MenuManagement = () => {
         ));
       } else {
         // Add new item
+        // Ensure the category exists in backend before saving item
+        if (itemData.category && currentRestaurant?.id) {
+          const categoryId = itemData.category.toLowerCase();
+          const categoryExists = categories.some(c => (c.id || '').toLowerCase() === categoryId);
+          if (!categoryExists) {
+            try {
+              // Create category if it doesn't exist
+              const categoryName = categoryId.charAt(0).toUpperCase() + categoryId.slice(1).replace(/-/g, ' ');
+              await apiClient.createCategory(currentRestaurant.id, { name: categoryName, emoji: '🍽️', description: '' });
+              // Refresh categories
+              const categoriesResponse = await apiClient.getCategories(currentRestaurant.id);
+              if (categoriesResponse.categories) {
+                setCategories(categoriesResponse.categories);
+              }
+            } catch (catError) {
+              console.log('Category might already exist or failed to create:', catError.message);
+            }
+          }
+        }
+        
         const response = await apiClient.createMenuItem(currentRestaurant.id, itemData);
         const newItem = response.menuItem;
         setMenuItems(items => [...items, newItem]);
@@ -2262,9 +2230,9 @@ const MenuManagement = () => {
 
 
   const handleMenuItemsAdded = async () => {
-    // Reload menu data when new items are added
+    // Reload menu data when new items are added (including categories)
     if (currentRestaurant) {
-      await loadMenuData(currentRestaurant.id, true); // Use cache
+      await loadMenuData(currentRestaurant.id, false); // Force fresh fetch to get new categories
     }
   };
 
@@ -2364,7 +2332,52 @@ const MenuManagement = () => {
           const successfulFiles = extractionResults.filter(result => result.extractionStatus === 'success');
           
           if (allMenuItems.length > 0) {
-            setMenuItems(prev => [...prev, ...allMenuItems]);
+            const toId = (s) => (s && String(s).trim()) ? String(s).trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'other' : 'other';
+            const normalized = allMenuItems.map(it => ({ ...it, category: toId(it.category) }));
+            setMenuItems(prev => [...prev, ...normalized]);
+            
+            // Save extracted categories to backend immediately so they persist
+            const fromExtraction = response.extractedCategories || [];
+            if (fromExtraction.length > 0 && currentRestaurant?.id) {
+              try {
+                // Save each new category to backend
+                const existingIds = new Set(categories.map(c => (c.id || '').toLowerCase()));
+                for (const c of fromExtraction) {
+                  const name = (c && c.name) ? String(c.name).trim() : '';
+                  if (!name) continue;
+                  const id = toId(name);
+                  if (id && id !== 'other' && !existingIds.has(id)) {
+                    try {
+                      await apiClient.createCategory(currentRestaurant.id, { name, emoji: '🍽️', description: '' });
+                      existingIds.add(id); // Track so we don't try to create duplicate
+                      console.log('✅ Saved new category to backend:', id, name);
+                    } catch (catError) {
+                      // Category might already exist, ignore error
+                      console.log('Category might already exist:', id, catError.message);
+                    }
+                  }
+                }
+                // Refresh categories from backend to get the saved ones
+                const categoriesResponse = await apiClient.getCategories(currentRestaurant.id);
+                if (categoriesResponse.categories) {
+                  setCategories(categoriesResponse.categories);
+                }
+              } catch (error) {
+                console.error('Error saving categories to backend:', error);
+                // Still merge to local state so UI works
+                setCategories(prev => {
+                  const seen = new Set(prev.map(c => (c.id || '').toLowerCase()));
+                  const next = [...prev];
+                  for (const c of fromExtraction) {
+                    const name = (c && c.name) ? String(c.name).trim() : '';
+                    if (!name) continue;
+                    const id = toId(name);
+                    if (id && id !== 'other' && !seen.has(id)) { seen.add(id); next.push({ id, name, emoji: '🍽️' }); }
+                  }
+                  return next;
+                });
+              }
+            }
             console.log('📋 Menu items added from photo:', allMenuItems.length);
             
             // Create detailed success message

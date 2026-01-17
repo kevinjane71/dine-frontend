@@ -26,6 +26,7 @@ const BulkMenuUpload = ({
 }) => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [extractedMenus, setExtractedMenus] = useState([]);
+  const [extractedCategories, setExtractedCategories] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -158,6 +159,7 @@ const BulkMenuUpload = ({
 
       if (response.data && response.data.length > 0) {
         setExtractedMenus(response.data);
+        setExtractedCategories(response.extractedCategories || []);
         
         // Process extraction results
         const allMenuItems = response.data.flatMap(menu => menu.menuItems);
@@ -173,7 +175,7 @@ const BulkMenuUpload = ({
             console.log('Auto-saving extracted menu items to database...');
             setSuccess('Saving menu items to database...');
             setProcessing(true); // Show loading state during save
-            const saveResponse = await apiClient.bulkSaveMenuItems(restaurantId, allMenuItems);
+            const saveResponse = await apiClient.bulkSaveMenuItems(restaurantId, allMenuItems, response.extractedCategories || []);
             
             if (saveResponse.savedCount > 0) {
               // Create detailed success message
@@ -283,7 +285,7 @@ const BulkMenuUpload = ({
       setProcessing(true);
       setError('');
 
-      const response = await apiClient.bulkSaveMenuItems(restaurantId, selectedItems);
+      const response = await apiClient.bulkSaveMenuItems(restaurantId, selectedItems, extractedCategories);
 
       if (response.success === false) {
         setError(response.error || 'Save failed');
@@ -345,6 +347,7 @@ const BulkMenuUpload = ({
   const resetForm = () => {
     setUploadedFiles([]);
     setExtractedMenus([]);
+    setExtractedCategories([]);
     setSelectedItems([]);
     setEditingItem(null);
     setPreviewMode(false);
@@ -846,6 +849,7 @@ const BulkMenuUpload = ({
                     setSuccess('');
                     setPreviewMode(false);
                     setExtractedMenus([]);
+                    setExtractedCategories([]);
                     setSelectedItems([]);
                   }}
                   style={{

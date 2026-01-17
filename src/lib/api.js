@@ -418,10 +418,14 @@ class ApiClient {
     }
   }
 
-  async bulkSaveMenuItems(restaurantId, menuItems) {
+  async bulkSaveMenuItems(restaurantId, menuItems, categories = null) {
+    const body = { menuItems };
+    if (categories && Array.isArray(categories) && categories.length > 0) {
+      body.categories = categories;
+    }
     return this.request(`/api/menus/bulk-save/${restaurantId}`, {
       method: 'POST',
-      body: { menuItems },
+      body,
     });
   }
 
