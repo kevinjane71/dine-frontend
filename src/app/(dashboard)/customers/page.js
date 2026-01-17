@@ -309,7 +309,9 @@ const Customers = () => {
   const [sortOrder, setSortOrder] = useState('desc');
   const [isMobile, setIsMobile] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('en');
-  
+  const [restaurantId, setRestaurantId] = useState(null);
+  const [restaurant, setRestaurant] = useState(null);
+
   // Customer form state
   const [customerForm, setCustomerForm] = useState({
     name: '',
@@ -334,16 +336,96 @@ const Customers = () => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Load customers - use cache for instant load
+  // Load restaurant and user data
   useEffect(() => {
-    loadCustomers(true); // Use cache
-  }, []);
+    const loadUserAndRestaurant = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token || !userData.id) {
+          console.log('❌ Customers: No auth token or user, redirecting to login');
+          router.push('/login');
+          return;
+        }
+
+        console.log('👤 Customers: User loaded:', userData.role);
+
+        // Try multiple sources for restaurant ID (in order of priority)
+        let finalRestaurantId = null;
+        let finalRestaurant = null;
+
+        // 1. For staff members - use assigned restaurant from user data
+        if (userData.restaurantId) {
+          finalRestaurantId = userData.restaurantId;
+          finalRestaurant = {
+            id: userData.restaurantId,
+            name: userData.restaurant?.name || 'Restaurant'
+          };
+          console.log('👨‍💼 Customers: Using staff assigned restaurant:', finalRestaurantId);
+        }
+        // 2. For owners - try saved restaurant first
+        else {
+          const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+          const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || 'null');
+
+          if (savedRestaurantId && savedRestaurant) {
+            finalRestaurantId = savedRestaurantId;
+            finalRestaurant = savedRestaurant;
+            console.log('💾 Customers: Using saved restaurant from localStorage:', finalRestaurantId);
+          }
+          // 3. If no saved restaurant, fetch from API
+          else {
+            console.log('🔄 Customers: No saved restaurant, fetching from API...');
+            try {
+              const restaurantsResponse = await apiClient.getRestaurants();
+              if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
+                const firstRestaurant = restaurantsResponse.restaurants[0];
+                finalRestaurantId = firstRestaurant.id;
+                finalRestaurant = firstRestaurant;
+                console.log('✅ Customers: Using first restaurant from API:', finalRestaurantId);
+
+                // Save to localStorage for future use
+                localStorage.setItem('selectedRestaurantId', finalRestaurantId);
+                localStorage.setItem('selectedRestaurant', JSON.stringify(finalRestaurant));
+              }
+            } catch (error) {
+              console.error('❌ Customers: Error fetching restaurants:', error);
+            }
+          }
+        }
+
+        if (finalRestaurantId) {
+          console.log('✅ Customers: Restaurant set successfully:', finalRestaurantId);
+          setRestaurantId(finalRestaurantId);
+          setRestaurant(finalRestaurant);
+        } else {
+          console.error('❌ Customers: No restaurant ID available');
+          setError('No restaurant found. Please contact support.');
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('❌ Customers: Error in loadUserAndRestaurant:', error);
+        setError('Failed to load user data');
+        setLoading(false);
+      }
+    };
+
+    loadUserAndRestaurant();
+  }, [router]);
+
+  // Load customers when restaurant is set
+  useEffect(() => {
+    if (restaurantId) {
+      loadCustomers(true); // Use cache
+    }
+  }, [restaurantId]);
 
   // Listen for restaurant changes
   useEffect(() => {
@@ -364,14 +446,8 @@ const Customers = () => {
         return;
       }
 
-      // Get selected restaurant ID (Navigation saves it as selectedRestaurantId)
-      const selectedRestaurantId = localStorage.getItem('selectedRestaurantId');
-      const selectedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
-      const restaurant = JSON.parse(localStorage.getItem('restaurant') || '{}');
-      
-      const restaurantId = selectedRestaurantId || selectedRestaurant.id || restaurant.id;
       if (!restaurantId) {
-        setError('No restaurant selected');
+        console.log('⚠️ Customers: No restaurant ID available yet');
         return;
       }
 
@@ -382,7 +458,7 @@ const Customers = () => {
           console.log('⚡ Loading cached customers data instantly...');
           setCustomers(cachedData.customers || []);
           setLoading(false);
-          
+
           // Show background loading
           setBackgroundLoading(true);
           window.dispatchEvent(new CustomEvent('customersBackgroundLoading', { detail: { loading: true } }));
@@ -397,14 +473,14 @@ const Customers = () => {
       const response = await apiClient.request(`/api/customers/${restaurantId}`);
       const freshCustomers = response.customers || [];
       setCustomers(freshCustomers);
-      
+
       // Cache the data
       const dataToCache = {
         customers: freshCustomers
       };
       setCachedCustomersData(restaurantId, dataToCache);
       console.log('✅ Customers data cached');
-      
+
     } catch (error) {
       console.error('Error loading customers:', error);
       setError(t('customers.messages.failedToLoad'));
@@ -445,7 +521,7 @@ const Customers = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Form submitted!', customerForm);
-    
+
     if (!validateForm()) {
       console.log('Form validation failed');
       return;
@@ -457,27 +533,15 @@ const Customers = () => {
       console.log('Setting saving to true');
       setSaving(true);
       console.log('Saving state set to true');
-      
-      // Get restaurant ID from localStorage (Navigation saves it as selectedRestaurantId)
-      const selectedRestaurantId = localStorage.getItem('selectedRestaurantId');
-      const selectedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
-      const restaurant = JSON.parse(localStorage.getItem('restaurant') || '{}');
-      
-      console.log('Selected restaurant ID:', selectedRestaurantId);
-      console.log('Selected restaurant object:', selectedRestaurant);
-      console.log('Restaurant object:', restaurant);
-      
-      // Try multiple ways to get restaurant ID
-      let restaurantId = selectedRestaurantId || selectedRestaurant.id || restaurant.id;
-      
+
       if (!restaurantId) {
         console.log('No restaurant ID found, setting error');
         setError(t('customers.messages.noRestaurantSelected'));
         return;
       }
-      
+
       console.log('Using restaurant ID:', restaurantId);
-      
+
       const customerData = {
         name: customerForm.name || null,
         phone: customerForm.phone || null,
@@ -515,10 +579,10 @@ const Customers = () => {
       setCustomerForm({ name: '', phone: '', email: '', city: '', dob: '' });
       setFormErrors({});
       setSelectedCustomer(null);
-      
+
       // Reload customers
       await loadCustomers();
-      
+
     } catch (error) {
       console.error('Error saving customer:', error);
       console.error('Error details:', error.message, error.stack);
@@ -718,10 +782,10 @@ const Customers = () => {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         height: '100vh',
         backgroundColor: '#f9fafb'
       }}>
@@ -734,17 +798,12 @@ const Customers = () => {
   }
 
   // Check if restaurant is selected
-  const selectedRestaurantId = localStorage.getItem('selectedRestaurantId');
-  const selectedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
-  const restaurant = JSON.parse(localStorage.getItem('restaurant') || '{}');
-  const hasRestaurant = selectedRestaurantId || selectedRestaurant.id || restaurant.id;
-
-  if (!hasRestaurant) {
+  if (!restaurantId || !restaurant) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         height: '100vh',
         backgroundColor: '#f9fafb'
       }}>

@@ -214,18 +214,83 @@ const OrderHistory = () => {
   }, [restaurantId, currentPage, limit, selectedStatus, selectedOrderType, myOrdersOnly, searchTerm, todayOrdersOnly, user?.id]);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
-    const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || '{}');
+    const loadUserAndRestaurant = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
 
-    if (!token || !userData.id) {
-      router.push('/login');
-      return;
-    }
-    setUser(userData);
-    setRestaurantId(savedRestaurantId);
-    setRestaurant(savedRestaurant);
+        if (!token || !userData.id) {
+          console.log('❌ OrderHistory: No auth token or user, redirecting to login');
+          router.push('/login');
+          return;
+        }
+
+        console.log('👤 OrderHistory: User loaded:', userData.role);
+        setUser(userData);
+
+        // Try multiple sources for restaurant ID (in order of priority)
+        let finalRestaurantId = null;
+        let finalRestaurant = null;
+
+        // 1. For staff members - use assigned restaurant from user data
+        if (userData.restaurantId) {
+          finalRestaurantId = userData.restaurantId;
+          finalRestaurant = {
+            id: userData.restaurantId,
+            name: userData.restaurant?.name || 'Restaurant'
+          };
+          console.log('👨‍💼 OrderHistory: Using staff assigned restaurant:', finalRestaurantId);
+        }
+        // 2. For owners - try saved restaurant first
+        else {
+          const savedRestaurantId = localStorage.getItem('selectedRestaurantId');
+          const savedRestaurant = JSON.parse(localStorage.getItem('selectedRestaurant') || 'null');
+
+          if (savedRestaurantId && savedRestaurant) {
+            finalRestaurantId = savedRestaurantId;
+            finalRestaurant = savedRestaurant;
+            console.log('💾 OrderHistory: Using saved restaurant from localStorage:', finalRestaurantId);
+          }
+          // 3. If no saved restaurant, fetch from API
+          else {
+            console.log('🔄 OrderHistory: No saved restaurant, fetching from API...');
+            try {
+              const restaurantsResponse = await apiClient.getRestaurants();
+              if (restaurantsResponse.restaurants && restaurantsResponse.restaurants.length > 0) {
+                const firstRestaurant = restaurantsResponse.restaurants[0];
+                finalRestaurantId = firstRestaurant.id;
+                finalRestaurant = firstRestaurant;
+                console.log('✅ OrderHistory: Using first restaurant from API:', finalRestaurantId);
+
+                // Save to localStorage for future use
+                localStorage.setItem('selectedRestaurantId', finalRestaurantId);
+                localStorage.setItem('selectedRestaurant', JSON.stringify(finalRestaurant));
+              } else {
+                console.warn('⚠️ OrderHistory: No restaurants found in API response');
+              }
+            } catch (error) {
+              console.error('❌ OrderHistory: Error fetching restaurants:', error);
+            }
+          }
+        }
+
+        if (finalRestaurantId) {
+          console.log('✅ OrderHistory: Restaurant set successfully:', finalRestaurantId);
+          setRestaurantId(finalRestaurantId);
+          setRestaurant(finalRestaurant);
+        } else {
+          console.error('❌ OrderHistory: No restaurant ID available');
+          setError('No restaurant found. Please contact support.');
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('❌ OrderHistory: Error in loadUserAndRestaurant:', error);
+        setError('Failed to load user data');
+        setLoading(false);
+      }
+    };
+
+    loadUserAndRestaurant();
   }, [router]);
 
   useEffect(() => {
