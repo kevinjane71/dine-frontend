@@ -11,7 +11,6 @@ import {
   FaExclamationTriangle,
   FaUser,
   FaPhone,
-  FaDoorOpen,
   FaCalendar,
   FaMoneyBillWave,
   FaFileInvoice,
@@ -19,10 +18,13 @@ import {
   FaUtensils,
   FaBed,
   FaUserCheck,
-  FaIdCard,
   FaTimes,
   FaReceipt,
-  FaEdit
+  FaPrint,
+  FaEnvelope,
+  FaIdCard,
+  FaBuilding,
+  FaClock
 } from 'react-icons/fa';
 
 const Hotel = () => {
@@ -31,11 +33,10 @@ const Hotel = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [restaurantId, setRestaurantId] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
 
   // Data
   const [checkIns, setCheckIns] = useState([]);
-  const [activeFilter, setActiveFilter] = useState('active'); // active, all, checked-out
+  const [activeFilter, setActiveFilter] = useState('active');
 
   // Modals
   const [showCheckInModal, setShowCheckInModal] = useState(false);
@@ -44,7 +45,7 @@ const Hotel = () => {
   const [selectedCheckIn, setSelectedCheckIn] = useState(null);
   const [invoice, setInvoice] = useState(null);
 
-  // Check-in form
+  // Forms
   const [checkInForm, setCheckInForm] = useState({
     guestName: '',
     guestPhone: '',
@@ -62,21 +63,12 @@ const Hotel = () => {
     gstCompanyName: ''
   });
 
-  // Checkout form
   const [checkOutForm, setCheckOutForm] = useState({
     finalPayment: '',
     paymentMode: 'cash',
     discount: '',
     notes: ''
   });
-
-  // Mobile detection
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Load restaurant
   useEffect(() => {
@@ -257,216 +249,225 @@ const Hotel = () => {
 
   if (loading && !checkIns.length) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#f9fafb' }}>
-        <div style={{ textAlign: 'center' }}>
-          <FaSpinner className="animate-spin" size={32} style={{ color: '#ef4444', marginBottom: '16px' }} />
-          <p style={{ color: '#6b7280' }}>Loading hotel data...</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <FaSpinner className="animate-spin text-4xl text-red-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading hotel data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', paddingTop: isMobile ? '60px' : '80px' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: isMobile ? '8px' : '24px' }}>
-        {/* Header */}
-        <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: isMobile ? '16px' : '24px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: isMobile ? '40px' : '48px', height: isMobile ? '40px' : '48px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                <FaHotel size={isMobile ? 20 : 24} />
-              </div>
-              <div>
-                <h1 style={{ margin: 0, fontSize: isMobile ? '20px' : '28px', fontWeight: '700', color: '#1f2937' }}>Hotel Management</h1>
-                <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: isMobile ? '13px' : '15px' }}>Manage check-ins, check-outs & room billing</p>
-              </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <FaHotel className="text-red-600" />
+                Hotel Management
+              </h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Manage check-ins, check-outs & room billing
+              </p>
             </div>
             <button
               onClick={() => setShowCheckInModal(true)}
-              style={{ padding: isMobile ? '10px 16px' : '12px 24px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', borderRadius: '10px', fontSize: isMobile ? '14px' : '16px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)' }}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
             >
-              <FaPlus size={14} />
-              New Check-In
+              <FaPlus /> New Check-In
             </button>
           </div>
+        </div>
+      </div>
 
-          {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '16px', marginTop: '20px' }}>
-            <div style={{ padding: '16px', backgroundColor: '#f0fdf4', borderRadius: '12px', border: '2px solid #bbf7d0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', backgroundColor: '#22c55e', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                  <FaBed size={20} />
-                </div>
-                <div>
-                  <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#166534' }}>{activeCheckInsCount}</p>
-                  <p style={{ margin: 0, fontSize: '13px', color: '#166534' }}>Active Rooms</p>
-                </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm">Active Rooms</p>
+                <p className="text-3xl font-bold mt-2">{activeCheckInsCount}</p>
+                <p className="text-green-100 text-xs mt-1">Currently occupied</p>
               </div>
+              <FaBed className="text-4xl opacity-50" />
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#eff6ff', borderRadius: '12px', border: '2px solid #bfdbfe' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', backgroundColor: '#3b82f6', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                  <FaMoneyBillWave size={20} />
-                </div>
-                <div>
-                  <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1e40af' }}>₹{totalRevenue.toFixed(0)}</p>
-                  <p style={{ margin: 0, fontSize: '13px', color: '#1e40af' }}>Total Revenue</p>
-                </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-red-100 text-sm">Total Revenue</p>
+                <p className="text-3xl font-bold mt-2">₹{totalRevenue.toFixed(0)}</p>
+                <p className="text-red-100 text-xs mt-1">All bookings</p>
               </div>
+              <FaMoneyBillWave className="text-4xl opacity-50" />
             </div>
-            <div style={{ padding: '16px', backgroundColor: '#fef3c7', borderRadius: '12px', border: '2px solid #fde68a' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', backgroundColor: '#f59e0b', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                  <FaReceipt size={20} />
-                </div>
-                <div>
-                  <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#92400e' }}>₹{pendingAmount.toFixed(0)}</p>
-                  <p style={{ margin: 0, fontSize: '13px', color: '#92400e' }}>Pending Dues</p>
-                </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-yellow-100 text-sm">Pending Dues</p>
+                <p className="text-3xl font-bold mt-2">₹{pendingAmount.toFixed(0)}</p>
+                <p className="text-yellow-100 text-xs mt-1">To be collected</p>
               </div>
+              <FaReceipt className="text-4xl opacity-50" />
             </div>
           </div>
         </div>
 
         {/* Messages */}
         {error && (
-          <div style={{ backgroundColor: '#fef2f2', border: '2px solid #fecaca', borderRadius: '12px', padding: '14px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px', color: '#dc2626' }}>
-            <FaExclamationTriangle size={18} />
-            <span>{error}</span>
-            <button onClick={() => setError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }}>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 flex items-center gap-3">
+            <FaExclamationTriangle className="text-red-600" />
+            <div className="flex-1">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+            <button onClick={() => setError(null)} className="text-red-600">
               <FaTimes />
             </button>
           </div>
         )}
 
         {success && (
-          <div style={{ backgroundColor: '#f0fdf4', border: '2px solid #bbf7d0', borderRadius: '12px', padding: '14px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px', color: '#16a34a' }}>
-            <FaCheckCircle size={18} />
-            <span>{success}</span>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 flex items-center gap-3">
+            <FaCheckCircle className="text-green-600" />
+            <span className="text-sm text-green-800">{success}</span>
           </div>
         )}
 
-        {/* Filters */}
-        <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '12px', marginBottom: '16px', display: 'flex', gap: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          {['active', 'all', 'checked-out'].map(filter => (
-            <button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: activeFilter === filter ? '#667eea' : '#f3f4f6',
-                color: activeFilter === filter ? 'white' : '#6b7280',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                textTransform: 'capitalize'
-              }}
-            >
-              {filter === 'active' ? 'Active' : filter === 'all' ? 'All' : 'Checked Out'}
-            </button>
-          ))}
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow-sm border mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
+              {[
+                { id: 'active', label: 'Active' },
+                { id: 'all', label: 'All' },
+                { id: 'checked-out', label: 'Checked Out' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveFilter(tab.id)}
+                  className={`
+                    flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors
+                    ${activeFilter === tab.id
+                      ? 'border-red-600 text-red-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }
+                  `}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
 
         {/* Check-ins List */}
-        <div style={{ backgroundColor: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <div className="bg-white rounded-lg shadow-sm border">
           {checkIns.length > 0 ? (
-            checkIns.map((checkIn, index) => (
-              <div key={checkIn.id} style={{ padding: isMobile ? '16px' : '20px', borderBottom: index < checkIns.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between' }}>
-                  {/* Room & Guest Info */}
-                  <div style={{ flex: 1, minWidth: '200px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                      <div style={{ width: '48px', height: '48px', background: checkIn.status === 'checked-in' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : '#9ca3af', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '18px', fontWeight: '700' }}>
+            <div className="divide-y divide-gray-200">
+              {checkIns.map((checkIn) => (
+                <div key={checkIn.id} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
+                    {/* Room & Guest Info */}
+                    <div className="flex items-center gap-4 flex-1 min-w-[250px]">
+                      <div className={`w-16 h-16 rounded-lg ${checkIn.status === 'checked-in' ? 'bg-green-600' : 'bg-gray-400'} flex items-center justify-center text-white text-xl font-bold`}>
                         {checkIn.roomNumber}
                       </div>
-                      <div>
-                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <FaUser size={12} />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                          <FaUser className="text-gray-400" size={12} />
                           {checkIn.guestName}
                         </h3>
-                        <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <FaPhone size={10} />
+                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                          <FaPhone className="text-gray-400" size={10} />
                           {checkIn.guestPhone}
                         </p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <FaCalendar size={10} />
+                            {new Date(checkIn.checkInDate).toLocaleDateString()} - {new Date(checkIn.checkOutDate).toLocaleDateString()}
+                          </span>
+                          <span>• {checkIn.stayDuration} nights</span>
+                          {checkIn.numberOfGuests > 1 && <span>• {checkIn.numberOfGuests} guests</span>}
+                        </div>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '12px', color: '#6b7280' }}>
-                      <span><FaCalendar size={10} /> {new Date(checkIn.checkInDate).toLocaleDateString()} - {new Date(checkIn.checkOutDate).toLocaleDateString()}</span>
-                      <span>• {checkIn.stayDuration} nights</span>
-                      {checkIn.numberOfGuests > 1 && <span>• {checkIn.numberOfGuests} guests</span>}
-                    </div>
-                  </div>
 
-                  {/* Billing Info */}
-                  <div style={{ textAlign: isMobile ? 'left' : 'right' }}>
-                    <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>
-                      Room: ₹{checkIn.totalRoomCharges?.toFixed(2) || '0.00'}
-                      {checkIn.totalFoodCharges > 0 && (
-                        <span style={{ marginLeft: '8px' }}>
-                          <FaUtensils size={10} style={{ marginRight: '4px' }} />
-                          Food: ₹{checkIn.totalFoodCharges.toFixed(2)}
-                        </span>
+                    {/* Billing Info */}
+                    <div className="text-right">
+                      <div className="text-sm text-gray-600 mb-1">
+                        Room: ₹{checkIn.totalRoomCharges?.toFixed(2) || '0.00'}
+                        {checkIn.totalFoodCharges > 0 && (
+                          <span className="ml-2 text-yellow-600">
+                            | Food: ₹{checkIn.totalFoodCharges.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-2xl font-bold ${checkIn.status === 'checked-in' ? 'text-yellow-600' : 'text-green-600'}`}>
+                        {checkIn.status === 'checked-in' ? `₹${checkIn.balanceAmount?.toFixed(2) || '0.00'}` : 'Paid'}
+                      </p>
+                      <span className="text-xs text-gray-500">
+                        {checkIn.status === 'checked-in' ? 'Balance Due' : `Total: ₹${checkIn.totalPaid?.toFixed(2) || '0.00'}`}
+                      </span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      {checkIn.status === 'checked-in' ? (
+                        <button
+                          onClick={() => openCheckOut(checkIn)}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 text-sm font-medium"
+                        >
+                          <FaSignOutAlt size={12} />
+                          Check Out
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => viewInvoice(checkIn)}
+                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center gap-2 text-sm font-medium"
+                        >
+                          <FaFileInvoice size={12} />
+                          Invoice
+                        </button>
                       )}
                     </div>
-                    <p style={{ margin: '4px 0', fontSize: '20px', fontWeight: '700', color: checkIn.status === 'checked-in' ? '#f59e0b' : '#16a34a' }}>
-                      {checkIn.status === 'checked-in' ? `₹${checkIn.balanceAmount?.toFixed(2) || '0.00'}` : 'Paid'}
-                    </p>
-                    <span style={{ fontSize: '11px', color: '#6b7280' }}>
-                      {checkIn.status === 'checked-in' ? 'Balance Due' : `Total: ₹${checkIn.totalPaid?.toFixed(2) || '0.00'}`}
-                    </span>
                   </div>
 
-                  {/* Actions */}
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    {checkIn.status === 'checked-in' ? (
-                      <button
-                        onClick={() => openCheckOut(checkIn)}
-                        style={{ padding: '10px 16px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <FaSignOutAlt size={12} />
-                        Check Out
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => viewInvoice(checkIn)}
-                        style={{ padding: '10px 16px', backgroundColor: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <FaFileInvoice size={12} />
-                        Invoice
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Food Orders */}
-                {checkIn.foodOrders && checkIn.foodOrders.length > 0 && (
-                  <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#fef3c7', borderRadius: '8px' }}>
-                    <p style={{ margin: '0 0 8px 0', fontSize: '12px', fontWeight: '600', color: '#92400e' }}>
-                      <FaUtensils size={10} style={{ marginRight: '6px' }} />
-                      Food Orders ({checkIn.foodOrders.length})
-                    </p>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '11px', color: '#92400e' }}>
-                      {checkIn.foodOrders.map((order, i) => (
-                        <span key={i}>• ₹{order.amount.toFixed(2)}</span>
-                      ))}
+                  {/* Food Orders */}
+                  {checkIn.foodOrders && checkIn.foodOrders.length > 0 && (
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-xs font-semibold text-yellow-900 mb-2">
+                        <FaUtensils className="inline mr-1" size={10} />
+                        Food Orders ({checkIn.foodOrders.length})
+                      </p>
+                      <div className="flex gap-2 flex-wrap text-xs text-yellow-800">
+                        {checkIn.foodOrders.map((order, i) => (
+                          <span key={i} className="bg-yellow-100 px-2 py-1 rounded">
+                            Order #{order.orderNumber || i+1}: ₹{order.amount.toFixed(2)}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))
+                  )}
+                </div>
+              ))}
+            </div>
           ) : (
-            <div style={{ padding: '60px 20px', textAlign: 'center' }}>
-              <FaHotel size={48} style={{ color: '#d1d5db', marginBottom: '16px' }} />
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#6b7280' }}>No check-ins found</h3>
-              <p style={{ margin: '8px 0 16px 0', fontSize: '14px', color: '#9ca3af' }}>Create your first check-in to get started</p>
+            <div className="p-12 text-center">
+              <FaHotel className="mx-auto text-gray-300 mb-4" size={48} />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No check-ins found</h3>
+              <p className="text-sm text-gray-600 mb-4">Create your first check-in to get started</p>
               <button
                 onClick={() => setShowCheckInModal(true)}
-                style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 inline-flex items-center gap-2"
               >
-                <FaPlus size={12} style={{ marginRight: '6px' }} />
-                New Check-In
+                <FaPlus /> New Check-In
               </button>
             </div>
           )}
@@ -475,73 +476,162 @@ const Hotel = () => {
 
       {/* Check-In Modal */}
       {showCheckInModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-          <div style={{ backgroundColor: 'white', borderRadius: '16px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid #f3f4f6', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', borderRadius: '16px 16px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>Quick Check-In</h2>
-              <button onClick={() => setShowCheckInModal(false)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '8px', color: 'white', padding: '8px', cursor: 'pointer' }}>
-                <FaTimes size={16} />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-red-600 text-white p-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-xl font-bold">New Check-In</h2>
+              <button onClick={() => setShowCheckInModal(false)} className="text-white hover:text-gray-200">
+                <FaTimes size={20} />
               </button>
             </div>
-            <form onSubmit={handleCheckIn} style={{ padding: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
+            <form onSubmit={handleCheckIn} className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Guest Name *</label>
-                  <input type="text" required value={checkInForm.guestName} onChange={e => setCheckInForm({ ...checkInForm, guestName: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Guest Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={checkInForm.guestName}
+                    onChange={e => setCheckInForm({ ...checkInForm, guestName: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Phone *</label>
-                  <input type="tel" required value={checkInForm.guestPhone} onChange={e => setCheckInForm({ ...checkInForm, guestPhone: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={checkInForm.guestPhone}
+                    onChange={e => setCheckInForm({ ...checkInForm, guestPhone: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Email</label>
-                  <input type="email" value={checkInForm.guestEmail} onChange={e => setCheckInForm({ ...checkInForm, guestEmail: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={checkInForm.guestEmail}
+                    onChange={e => setCheckInForm({ ...checkInForm, guestEmail: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Room Number *</label>
-                  <input type="text" required value={checkInForm.roomNumber} onChange={e => setCheckInForm({ ...checkInForm, roomNumber: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Room Number *</label>
+                  <input
+                    type="text"
+                    required
+                    value={checkInForm.roomNumber}
+                    onChange={e => setCheckInForm({ ...checkInForm, roomNumber: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Check-In *</label>
-                  <input type="date" required value={checkInForm.checkInDate} onChange={e => setCheckInForm({ ...checkInForm, checkInDate: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Check-In Date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={checkInForm.checkInDate}
+                    onChange={e => setCheckInForm({ ...checkInForm, checkInDate: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Check-Out *</label>
-                  <input type="date" required value={checkInForm.checkOutDate} onChange={e => setCheckInForm({ ...checkInForm, checkOutDate: e.target.value })} min={checkInForm.checkInDate} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Check-Out Date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={checkInForm.checkOutDate}
+                    onChange={e => setCheckInForm({ ...checkInForm, checkOutDate: e.target.value })}
+                    min={checkInForm.checkInDate}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Room Tariff/Night</label>
-                  <input type="number" step="0.01" value={checkInForm.roomTariff} onChange={e => setCheckInForm({ ...checkInForm, roomTariff: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Room Tariff/Night</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={checkInForm.roomTariff}
+                    onChange={e => setCheckInForm({ ...checkInForm, roomTariff: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Advance Payment</label>
-                  <input type="number" step="0.01" value={checkInForm.advancePayment} onChange={e => setCheckInForm({ ...checkInForm, advancePayment: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Advance Payment</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={checkInForm.advancePayment}
+                    onChange={e => setCheckInForm({ ...checkInForm, advancePayment: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>ID Proof Type</label>
-                  <select value={checkInForm.idProofType} onChange={e => setCheckInForm({ ...checkInForm, idProofType: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px', backgroundColor: 'white' }}>
-                    <option value="aadhar">Aadhar</option>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ID Proof Type</label>
+                  <select
+                    value={checkInForm.idProofType}
+                    onChange={e => setCheckInForm({ ...checkInForm, idProofType: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  >
+                    <option value="aadhar">Aadhar Card</option>
                     <option value="passport">Passport</option>
                     <option value="driving_license">Driving License</option>
+                    <option value="voter_id">Voter ID</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>ID Number</label>
-                  <input type="text" value={checkInForm.idProofNumber} onChange={e => setCheckInForm({ ...checkInForm, idProofNumber: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
+                  <input
+                    type="text"
+                    value={checkInForm.idProofNumber}
+                    onChange={e => setCheckInForm({ ...checkInForm, idProofNumber: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>GST Number</label>
-                  <input type="text" value={checkInForm.gstNumber} onChange={e => setCheckInForm({ ...checkInForm, gstNumber: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">GST Number (Optional)</label>
+                  <input
+                    type="text"
+                    value={checkInForm.gstNumber}
+                    onChange={e => setCheckInForm({ ...checkInForm, gstNumber: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    placeholder="22AAAAA0000A1Z5"
+                  />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Company Name</label>
-                  <input type="text" value={checkInForm.gstCompanyName} onChange={e => setCheckInForm({ ...checkInForm, gstCompanyName: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                  <input
+                    type="text"
+                    value={checkInForm.gstCompanyName}
+                    onChange={e => setCheckInForm({ ...checkInForm, gstCompanyName: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
                 </div>
               </div>
-              <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={() => setShowCheckInModal(false)} style={{ padding: '10px 20px', backgroundColor: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" disabled={loading} style={{ padding: '10px 20px', background: loading ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {loading ? <><FaSpinner className="animate-spin" size={14} /> Processing...</> : <><FaUserCheck size={14} /> Check In</>}
+              <div className="flex items-center justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowCheckInModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2 disabled:bg-gray-400"
+                >
+                  {loading ? (
+                    <>
+                      <FaSpinner className="animate-spin" size={14} />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <FaUserCheck size={14} />
+                      Check In
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -551,60 +641,106 @@ const Hotel = () => {
 
       {/* Check-Out Modal */}
       {showCheckOutModal && selectedCheckIn && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-          <div style={{ backgroundColor: 'white', borderRadius: '16px', width: '100%', maxWidth: '500px' }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid #f3f4f6', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', borderRadius: '16px 16px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>Check Out - Room {selectedCheckIn.roomNumber}</h2>
-              <button onClick={() => { setShowCheckOutModal(false); setSelectedCheckIn(null); }} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '8px', color: 'white', padding: '8px', cursor: 'pointer' }}>
-                <FaTimes size={16} />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="bg-green-600 text-white p-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-xl font-bold">Check Out - Room {selectedCheckIn.roomNumber}</h2>
+              <button onClick={() => { setShowCheckOutModal(false); setSelectedCheckIn(null); }} className="text-white hover:text-gray-200">
+                <FaTimes size={20} />
               </button>
             </div>
-            <form onSubmit={handleCheckOut} style={{ padding: '20px' }}>
-              <div style={{ padding: '16px', backgroundColor: '#f0fdf4', borderRadius: '10px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
-                  <span>Room Charges:</span>
-                  <span style={{ fontWeight: '600' }}>₹{selectedCheckIn.totalRoomCharges?.toFixed(2)}</span>
-                </div>
-                {selectedCheckIn.totalFoodCharges > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
-                    <span>Food Charges:</span>
-                    <span style={{ fontWeight: '600' }}>₹{selectedCheckIn.totalFoodCharges.toFixed(2)}</span>
+            <form onSubmit={handleCheckOut} className="p-6">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Room Charges:</span>
+                    <span className="font-semibold">₹{selectedCheckIn.totalRoomCharges?.toFixed(2)}</span>
                   </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
-                  <span>Advance Paid:</span>
-                  <span style={{ fontWeight: '600', color: '#16a34a' }}>- ₹{selectedCheckIn.advancePayment?.toFixed(2) || '0.00'}</span>
+                  {selectedCheckIn.totalFoodCharges > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Food Charges:</span>
+                      <span className="font-semibold">₹{selectedCheckIn.totalFoodCharges.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Advance Paid:</span>
+                    <span className="font-semibold text-green-600">- ₹{selectedCheckIn.advancePayment?.toFixed(2) || '0.00'}</span>
+                  </div>
+                  <div className="h-px bg-green-200 my-2" />
+                  <div className="flex justify-between text-lg">
+                    <span className="font-bold text-green-900">Balance Due:</span>
+                    <span className="font-bold text-green-900">₹{selectedCheckIn.balanceAmount?.toFixed(2)}</span>
+                  </div>
                 </div>
-                <div style={{ height: '1px', backgroundColor: '#bbf7d0', margin: '12px 0' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '700', color: '#166534' }}>
-                  <span>Balance Due:</span>
-                  <span>₹{selectedCheckIn.balanceAmount?.toFixed(2)}</span>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Final Payment Amount *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={checkOutForm.finalPayment}
+                    onChange={e => setCheckOutForm({ ...checkOutForm, finalPayment: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Payment Mode</label>
+                  <select
+                    value={checkOutForm.paymentMode}
+                    onChange={e => setCheckOutForm({ ...checkOutForm, paymentMode: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="upi">UPI</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Discount (Optional)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={checkOutForm.discount}
+                    onChange={e => setCheckOutForm({ ...checkOutForm, discount: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <textarea
+                    value={checkOutForm.notes}
+                    onChange={e => setCheckOutForm({ ...checkOutForm, notes: e.target.value })}
+                    rows="2"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                  />
                 </div>
               </div>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Final Payment Amount</label>
-                <input type="number" step="0.01" required value={checkOutForm.finalPayment} onChange={e => setCheckOutForm({ ...checkOutForm, finalPayment: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
-              </div>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Payment Mode</label>
-                <select value={checkOutForm.paymentMode} onChange={e => setCheckOutForm({ ...checkOutForm, paymentMode: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px', backgroundColor: 'white' }}>
-                  <option value="cash">Cash</option>
-                  <option value="card">Card</option>
-                  <option value="upi">UPI</option>
-                </select>
-              </div>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Discount (Optional)</label>
-                <input type="number" step="0.01" value={checkOutForm.discount} onChange={e => setCheckOutForm({ ...checkOutForm, discount: e.target.value })} style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' }} />
-              </div>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Notes</label>
-                <textarea value={checkOutForm.notes} onChange={e => setCheckOutForm({ ...checkOutForm, notes: e.target.value })} rows="2" style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical' }} />
-              </div>
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={() => { setShowCheckOutModal(false); setSelectedCheckIn(null); }} style={{ padding: '10px 20px', backgroundColor: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" disabled={loading} style={{ padding: '10px 20px', background: loading ? '#9ca3af' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {loading ? <><FaSpinner className="animate-spin" size={14} /> Processing...</> : <><FaSignOutAlt size={14} /> Complete Checkout</>}
+              <div className="flex items-center justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => { setShowCheckOutModal(false); setSelectedCheckIn(null); }}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:bg-gray-400"
+                >
+                  {loading ? (
+                    <>
+                      <FaSpinner className="animate-spin" size={14} />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <FaSignOutAlt size={14} />
+                      Complete Checkout
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -612,66 +748,221 @@ const Hotel = () => {
         </div>
       )}
 
-      {/* Invoice Modal */}
+      {/* Invoice Modal - Detailed & Professional */}
       {showInvoiceModal && invoice && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-          <div style={{ backgroundColor: 'white', borderRadius: '16px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid #f3f4f6', background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', color: 'white', borderRadius: '16px 16px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>Invoice - Room {invoice.roomNumber}</h2>
-              <button onClick={() => { setShowInvoiceModal(false); setInvoice(null); }} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '8px', color: 'white', padding: '8px', cursor: 'pointer' }}>
-                <FaTimes size={16} />
-              </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* Invoice Header */}
+            <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-6 rounded-t-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <FaFileInvoice />
+                    Hotel Invoice
+                  </h2>
+                  <p className="text-red-100 text-sm mt-1">Room #{invoice.roomNumber}</p>
+                </div>
+                <button onClick={() => { setShowInvoiceModal(false); setInvoice(null); }} className="text-white hover:text-gray-200">
+                  <FaTimes size={24} />
+                </button>
+              </div>
             </div>
-            <div style={{ padding: '20px' }}>
-              <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #e5e7eb' }}>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>{invoice.guestName}</h3>
-                <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>{invoice.guestPhone}</p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#9ca3af' }}>
-                  {new Date(invoice.checkInDate).toLocaleDateString()} - {new Date(invoice.checkOutDate).toLocaleDateString()} ({invoice.stayDuration} nights)
-                </p>
+
+            {/* Invoice Body */}
+            <div className="p-6">
+              {/* Guest Details */}
+              <div className="grid md:grid-cols-2 gap-6 mb-6 pb-6 border-b border-gray-200">
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <FaUser className="text-red-600" />
+                    Guest Information
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Name:</span>
+                      <span className="font-medium">{invoice.guestName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Phone:</span>
+                      <span className="font-medium">{invoice.guestPhone}</span>
+                    </div>
+                    {invoice.guestEmail && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Email:</span>
+                        <span className="font-medium">{invoice.guestEmail}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <FaCalendar className="text-red-600" />
+                    Booking Details
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Check-In:</span>
+                      <span className="font-medium">{new Date(invoice.checkInDate).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Check-Out:</span>
+                      <span className="font-medium">{new Date(invoice.checkOutDate).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Duration:</span>
+                      <span className="font-medium">{invoice.stayDuration} night(s)</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div style={{ fontSize: '14px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span>Room Charges ({invoice.stayDuration} × ₹{invoice.roomTariff}):</span>
-                  <span>₹{invoice.roomCharges?.toFixed(2)}</span>
+
+              {/* ID & GST Info */}
+              {(invoice.idProof || invoice.gstInfo) && (
+                <div className="grid md:grid-cols-2 gap-6 mb-6 pb-6 border-b border-gray-200">
+                  {invoice.idProof && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <FaIdCard className="text-red-600" />
+                        ID Proof
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Type:</span>
+                          <span className="font-medium capitalize">{invoice.idProof.type?.replace('_', ' ')}</span>
+                        </div>
+                        {invoice.idProof.number && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Number:</span>
+                            <span className="font-medium">{invoice.idProof.number}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {invoice.gstInfo && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <FaBuilding className="text-red-600" />
+                        GST Information
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">GST No:</span>
+                          <span className="font-medium">{invoice.gstInfo.gstNumber}</span>
+                        </div>
+                        {invoice.gstInfo.companyName && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Company:</span>
+                            <span className="font-medium">{invoice.gstInfo.companyName}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {invoice.foodCharges > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span>Food Charges:</span>
-                    <span>₹{invoice.foodCharges.toFixed(2)}</span>
+              )}
+
+              {/* Charges Breakdown */}
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <FaMoneyBillWave className="text-red-600" />
+                  Charges Breakdown
+                </h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700">Room Charges ({invoice.stayDuration} × ₹{invoice.roomTariff})</span>
+                    <span className="font-semibold text-gray-900">₹{invoice.roomCharges?.toFixed(2)}</span>
                   </div>
-                )}
-                {invoice.discountAmount > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#16a34a' }}>
-                    <span>Discount:</span>
-                    <span>- ₹{invoice.discountAmount.toFixed(2)}</span>
+                  {invoice.foodCharges > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 flex items-center gap-2">
+                        <FaUtensils className="text-yellow-600" size={12} />
+                        Food & Beverage Charges
+                      </span>
+                      <span className="font-semibold text-gray-900">₹{invoice.foodCharges.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {invoice.additionalCharges && invoice.additionalCharges.length > 0 && (
+                    invoice.additionalCharges.map((charge, i) => (
+                      <div key={i} className="flex justify-between items-center">
+                        <span className="text-gray-700">{charge.description}</span>
+                        <span className="font-semibold text-gray-900">₹{charge.amount.toFixed(2)}</span>
+                      </div>
+                    ))
+                  )}
+                  {invoice.discountAmount > 0 && (
+                    <div className="flex justify-between items-center text-green-600">
+                      <span>Discount</span>
+                      <span className="font-semibold">- ₹{invoice.discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="h-px bg-gray-300 my-2" />
+                  <div className="flex justify-between items-center text-lg">
+                    <span className="font-bold text-gray-900">Grand Total</span>
+                    <span className="font-bold text-gray-900">₹{invoice.totalAmount?.toFixed(2)}</span>
                   </div>
-                )}
-                <div style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '12px 0' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontWeight: '600' }}>
-                  <span>Total Amount:</span>
-                  <span>₹{invoice.totalAmount?.toFixed(2)}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#16a34a' }}>
-                  <span>Total Paid:</span>
-                  <span>₹{invoice.totalPaid?.toFixed(2)}</span>
-                </div>
-                {invoice.balanceAmount > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: '700', color: '#dc2626' }}>
-                    <span>Balance:</span>
-                    <span>₹{invoice.balanceAmount.toFixed(2)}</span>
-                  </div>
-                )}
-                {invoice.balanceAmount === 0 && (
-                  <div style={{ padding: '12px', backgroundColor: '#f0fdf4', borderRadius: '8px', textAlign: 'center', color: '#166534', fontWeight: '600', marginTop: '12px' }}>
-                    <FaCheckCircle size={16} style={{ marginRight: '8px' }} />
-                    Fully Paid
-                  </div>
-                )}
               </div>
-              <button onClick={() => { setShowInvoiceModal(false); setInvoice(null); }} style={{ width: '100%', padding: '12px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
-                Close
-              </button>
+
+              {/* Payment Summary */}
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <FaReceipt className="text-red-600" />
+                  Payment Summary
+                </h3>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700">Advance Payment</span>
+                    <span className="font-semibold text-green-700">₹{invoice.advancePayment?.toFixed(2) || '0.00'}</span>
+                  </div>
+                  {invoice.finalPayment > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700">Final Payment</span>
+                      <span className="font-semibold text-green-700">₹{invoice.finalPayment.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="h-px bg-green-300 my-2" />
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-gray-900">Total Paid</span>
+                    <span className="font-bold text-green-700">₹{invoice.totalPaid?.toFixed(2)}</span>
+                  </div>
+                  {invoice.balanceAmount > 0 ? (
+                    <div className="flex justify-between items-center text-red-600">
+                      <span className="font-bold">Balance Due</span>
+                      <span className="font-bold">₹{invoice.balanceAmount.toFixed(2)}</span>
+                    </div>
+                  ) : (
+                    <div className="mt-3 p-3 bg-green-100 rounded-lg text-center">
+                      <FaCheckCircle className="inline mr-2 text-green-600" />
+                      <span className="font-semibold text-green-800">Fully Paid</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Timestamp */}
+              <div className="text-center text-xs text-gray-500 mb-4 flex items-center justify-center gap-2">
+                <FaClock />
+                Invoice generated on {new Date().toLocaleString()}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => window.print()}
+                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2"
+                >
+                  <FaPrint />
+                  Print Invoice
+                </button>
+                <button
+                  onClick={() => { setShowInvoiceModal(false); setInvoice(null); }}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
+                >
+                  <FaTimes />
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
