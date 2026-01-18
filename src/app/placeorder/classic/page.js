@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaShoppingCart, FaSpinner, FaPlus, FaMinus, FaTrash, FaTimes, FaLock } from 'react-icons/fa';
+import { FaShoppingCart, FaSpinner, FaPlus, FaMinus, FaTrash, FaTimes, FaLock, FaChair, FaHotel } from 'react-icons/fa';
 import apiClient from '../../../lib/api';
 import dynamic from 'next/dynamic';
 
@@ -30,7 +30,8 @@ const PlaceOrderClassicContent = () => {
   const [menu, setMenu] = useState([]);
   const [categories, setCategories] = useState([]);
   const [cart, setCart] = useState([]);
-  const [customerInfo, setCustomerInfo] = useState({ phone: '', seatNumber: '', name: '' });
+  const [customerInfo, setCustomerInfo] = useState({ phone: '', seatNumber: '', roomNumber: '', name: '' });
+  const [orderType, setOrderType] = useState('table'); // 'table' or 'room'
   const [showCart, setShowCart] = useState(false);
   const [error, setError] = useState('');
   
@@ -170,6 +171,10 @@ const PlaceOrderClassicContent = () => {
       setError('Phone number is required');
       return;
     }
+    if (orderType === 'room' && !customerInfo.roomNumber.trim()) {
+      setError('Room number is required for room orders');
+      return;
+    }
     if (cart.length === 0) {
       setError('Please add items to cart');
       return;
@@ -186,7 +191,8 @@ const PlaceOrderClassicContent = () => {
       const orderData = {
         customerPhone: customerInfo.phone.trim(),
         customerName: customerInfo.name.trim() || 'Customer',
-        seatNumber: customerInfo.seatNumber.trim() || 'Walk-in',
+        seatNumber: orderType === 'table' ? (customerInfo.seatNumber.trim() || 'Walk-in') : null,
+        roomNumber: orderType === 'room' ? (customerInfo.roomNumber.trim() || null) : null,
         items: cart.map((i) => ({
           menuItemId: i.id,
           name: i.name,
@@ -195,7 +201,9 @@ const PlaceOrderClassicContent = () => {
           shortCode: i.shortCode,
         })),
         totalAmount: getCartTotal(),
-        notes: `Customer self-order from seat ${customerInfo.seatNumber || 'Walk-in'}`,
+        notes: orderType === 'room'
+          ? `Customer self-order for Room ${customerInfo.roomNumber || 'N/A'}`
+          : `Customer self-order from seat ${customerInfo.seatNumber || 'Walk-in'}`,
         otp: 'verified',
         verificationId: firebaseUid,
       };
@@ -577,6 +585,8 @@ const PlaceOrderClassicContent = () => {
                         }}
                       />
                     </div>
+
+                    {/* Order Type Toggle */}
                     <div>
                       <label
                         style={{
@@ -587,13 +597,78 @@ const PlaceOrderClassicContent = () => {
                           marginBottom: '8px',
                         }}
                       >
-                        Table / Seat
+                        Order Type
+                      </label>
+                      <div style={{ display: 'flex', gap: '8px', padding: '4px', backgroundColor: '#f3f4f6', borderRadius: '8px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setOrderType('table')}
+                          style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            backgroundColor: orderType === 'table' ? '#ef4444' : 'transparent',
+                            color: orderType === 'table' ? '#ffffff' : '#6b7280',
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          <FaChair size={12} /> Table
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setOrderType('room')}
+                          style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            backgroundColor: orderType === 'room' ? '#ef4444' : 'transparent',
+                            color: orderType === 'room' ? '#ffffff' : '#6b7280',
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          <FaHotel size={12} /> Room
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Conditional Field: Table Number or Room Number */}
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          color: '#374151',
+                          marginBottom: '8px',
+                        }}
+                      >
+                        {orderType === 'table' ? 'Table / Seat' : 'Room Number'} {orderType === 'room' && <span style={{ color: '#ef4444' }}>*</span>}
                       </label>
                       <input
                         type="text"
-                        value={customerInfo.seatNumber}
-                        onChange={(e) => setCustomerInfo({ ...customerInfo, seatNumber: e.target.value })}
-                        placeholder="Table/Seat number"
+                        value={orderType === 'table' ? customerInfo.seatNumber : customerInfo.roomNumber}
+                        onChange={(e) => setCustomerInfo({
+                          ...customerInfo,
+                          [orderType === 'table' ? 'seatNumber' : 'roomNumber']: e.target.value
+                        })}
+                        placeholder={orderType === 'table' ? 'Table/Seat number (optional)' : 'Enter room number'}
+                        required={orderType === 'room'}
                         style={{
                           width: '100%',
                           padding: '12px 16px',
